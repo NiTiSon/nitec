@@ -103,21 +103,32 @@ public sealed class Lexer
 		RET:
 			return new IntegerToken(beginPosition, content.Substring((int)begin, (int)(pos - begin)));
 		}
-		else if (IsDecDigit(c)) // 01231232132131291938712
+		if (Consume("true"))
 		{
-			MoveNext();
-			while (IsDecDigit(c) || c is '_')
-				MoveNext();
-
-			return new IntegerToken(beginPosition, content.Substring((int)begin, (int)(pos - begin)));
+			
 		}
-		
+		if (Consume("false"))
+		{
+
+		}
 		#endregion
 
 		MoveNext();
 		return new UnexpectedToken(Position);
 	}
 
+	private bool Consume(string content)
+	{
+		int c = string.Compare(this.content, (int)pos, content, 0, content.Length);
+
+		if (c == 0)
+		{
+			pos += (uint)content.Length;
+			return true;
+		}
+
+		return false;
+	}
 	private bool IsCharBegin(char c) // Currently allowed only ascii characters - TODO: Add support for world-wide chars
 		=> c >= 'a' && c <= 'z'
 		|| c >= 'A' && c <= 'Z'
