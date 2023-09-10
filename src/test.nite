@@ -1,3 +1,11 @@
+0x001
+0
+1
+2
+-2
+0b00101010101
+0b1312321321
+
 public static void main(string args)
 {
     bool x = true;
