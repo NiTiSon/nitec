@@ -1,4 +1,11 @@
 public static void main(string args)
 {
-    
+    bool x = true;
+
+    if x
+        return;
+    else
+    {
+        return;
+    }
 }

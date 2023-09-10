@@ -2,22 +2,22 @@ namespace NiteCompiler;
 
 public readonly struct TextAnchor
 {
-    public readonly uint Index;
-    public readonly uint Column;
-    public readonly uint Row;
+	public readonly uint Index;
+	public readonly uint Line;
+	public readonly uint Column;
 
-    public TextAnchor()
-        => this = default;
+	public TextAnchor()
+		=> this = default;
 
-    public TextAnchor(uint position, uint column, uint row)
-    {
-        Index = position;
-        Column = column;
-        Row = row;
-    }
+	public TextAnchor(uint position, uint line, uint column)
+	{
+		Index = position;
+		Line = line;
+		Column = column;
+	}
 
-    internal string ContentToString()
-        => $"{Column}:{Row}";
-    public override string ToString()
-        => $"{{{ContentToString()}}}";
+	internal string ContentToString()
+		=> $"{Line}:{Column}";
+	public override string ToString()
+		=> $"{{{ContentToString()}}}";
 }

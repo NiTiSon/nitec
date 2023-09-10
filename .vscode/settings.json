@@ -2,5 +2,9 @@
     "files.exclude": {
         "src/bin": true,
         "src/obj": true
-    }
+    },
+    "cSpell.words": [
+        "nitec",
+        "retusa",
+    ]
 }
