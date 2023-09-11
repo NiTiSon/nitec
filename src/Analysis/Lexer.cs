@@ -84,32 +84,44 @@ public sealed class Lexer
 
 			MoveNext();
 		DEC:
-			while(IsDecDigit(c))
+			while(IsDecDigit(c) || c is '_')
 				MoveNext();
-			goto RET;
+			goto POSTFIX;
 		
 		BIN:
 			MoveNext(); // Because of 0B
-			while(IsBinDigit(c))
+			while(IsBinDigit(c) || c is '_')
 				MoveNext();
-			goto RET;
+			goto POSTFIX;
 		
 		HEX:
 			MoveNext(); // Because of 0X
-			while(IsHexDigit(c))
+			while(IsHexDigit(c) || c is '_')
 				MoveNext();
-			goto RET;
+			goto POSTFIX;
 
-		RET:
+		POSTFIX:
+			_= Consume(Names.U8)
+			|| Consume(Names.U16)
+			|| Consume(Names.U32)
+			|| Consume(Names.U64)
+			|| Consume(Names.U128)
+			|| Consume(Names.I8)
+			|| Consume(Names.I16)
+			|| Consume(Names.I32)
+			|| Consume(Names.I64)
+			|| Consume(Names.I128)
+			|| Consume("u");
+
 			return new IntegerToken(beginPosition, content.Substring((int)begin, (int)(pos - begin)));
 		}
-		if (Consume("true"))
+		if (Consume(Names.True))
 		{
-			
+			return new BooleanToken(beginPosition, true);
 		}
-		if (Consume("false"))
+		if (Consume(Names.False))
 		{
-
+			return new BooleanToken(beginPosition, false);
 		}
 		#endregion
 
