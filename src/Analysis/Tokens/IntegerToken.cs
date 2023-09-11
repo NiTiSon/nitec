@@ -4,7 +4,7 @@ public sealed class IntegerToken : Token
 {
 	public readonly string Content;
 	public IntegerToken(TextAnchor position, string content)
-		: base(TokenKind.BooleanLiteral, position)
+		: base(TokenKind.IntegerLiteral, position)
 	{
 		Content = content;
 	}

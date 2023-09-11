@@ -68,6 +68,49 @@ public sealed class Lexer
 		}
 		#endregion
 
+		#region Operators
+		if (c is '+')
+		{
+			TokenKind kind = TokenKind.OperatorPlus;
+			if (!MoveNext())
+				goto END_TOKEN; 
+
+			if (c is '+')
+			{
+				MoveNext();
+				kind = TokenKind.OperatorInc;
+			}
+			else if (c is '=')
+			{
+				MoveNext();
+				kind = TokenKind.OperatorPlusEq;
+			}
+
+		END_TOKEN:
+			return new OperatorToken(beginPosition, kind);
+		}
+		if (c is '-')
+		{
+			TokenKind kind = TokenKind.OperatorMinus;
+			if (!MoveNext())
+				goto END_TOKEN; 
+
+			if (c is '-')
+			{
+				MoveNext();
+				kind = TokenKind.OperatorDec;
+			}
+			else if (c is '=')
+			{
+				MoveNext();
+				kind = TokenKind.OperatorMinusEq;
+			}
+
+		END_TOKEN:
+			return new OperatorToken(beginPosition, kind);
+		}
+		#endregion
+
 		#region Literals
 		if (IsDecDigit(c))
 		{
@@ -128,7 +171,6 @@ public sealed class Lexer
 		MoveNext();
 		return new UnexpectedToken(Position);
 	}
-
 	private bool Consume(string content)
 	{
 		int c = string.Compare(this.content, (int)pos, content, 0, content.Length);
@@ -181,7 +223,7 @@ public sealed class Lexer
 		if (pos >= content.Length - 1)
 		{
 			#if DEBUG
-			System.Console.Error.WriteLine($"Stream is end: {pos}");
+			System.Console.Error.WriteLine($"Stream is end: {pos + 1}");
 			#endif
 			return false;
 		}
@@ -190,7 +232,7 @@ public sealed class Lexer
 		if (next is '\n')
 		{
 			line++;
-			column = 1;
+			column = 0; // Works for some reason
 		}
 		else if (next is not '\r')
 		{
