@@ -12,6 +12,7 @@ public static class EntryPoint
 	public static void Main(string[] args)
 	{
 		string? outputName = null;
+		uint? threadsCount = null;
 		CompilationTarget target = CompilationTarget.Library;
 		string? entryPoint = null;
 
@@ -24,6 +25,31 @@ public static class EntryPoint
 			{
 				switch (arg)
 				{
+					case "-tr":
+					case "--threads":
+						if (args.Length - 1 == i)
+						{
+							Console.Error.WriteLine("Threads parameter is empty!");
+							Console.Error.WriteLine("Allowed values: <unsigned integer>");
+							Environment.Exit(4);
+						}
+						else
+						{
+							string argumentValue = args[++i];
+
+							if (uint.TryParse(argumentValue, out uint threads))
+							{
+								threadsCount = threads;
+							}
+							else
+							{
+								Console.Error.WriteLine("Threads parameter is wrong!");
+								Console.Error.WriteLine("Allowed values: <unsigned integer>");
+								Environment.Exit(5);
+							}
+							continue;
+						}
+						break;
 					case "-t":
 					case "--target":
 						if (args.Length - 1 == i)
@@ -34,7 +60,7 @@ public static class EntryPoint
 						}
 						else
 						{
-							switch (args[i + 1].ToLowerInvariant())
+							switch (args[++i].ToLowerInvariant())
 							{
 								case "lib":
 								case "library":
@@ -54,7 +80,6 @@ public static class EntryPoint
 									Environment.Exit(3);
 									break;
 							}
-							i++; // Skip next argument
 							continue;
 						}
 						break;
@@ -105,10 +130,19 @@ public static class EntryPoint
 		if (files.Count is 0)
 			files.AddRange(Glob.Files(Environment.CurrentDirectory, "**/*.nite"));
 
-		Compile(files, target, outputName ?? "unnamed%OUT_EXT%");
+		if (files.Count > 1 && threadsCount is null)
+		{
+			threadsCount = Math.Max((uint)Environment.ProcessorCount, 4u);
+		}
+		else
+		{
+			threadsCount = 1;
+		}
+
+		Compile(files, target, outputName ?? "unnamed%OUT_EXT%", threadsCount.Value);
 	}
 
-	private static void Compile(IReadOnlyList<string> files, CompilationTarget target, string outputName)
+	private static void Compile(IReadOnlyList<string> files, CompilationTarget target, string outputName, uint threadsCount)
 	{
 		outputName = outputName.Replace("%OUT_EXT%", target switch
 		{
@@ -126,7 +160,7 @@ public static class EntryPoint
 			string content = File.ReadAllText(file);
 
 			Lexer lexer = new(content);
-			for (Token token = lexer.Next(); token.Kind is not TokenKind.EndOfFile; token = lexer.Next())
+			for (Token token = lexer.Next(); token.Kind is not SyntaxKind.EndOfFile; token = lexer.Next())
 			{
 				Console.WriteLine(token);
 			}

@@ -1,10 +1,12 @@
+using NiteCompiler.Analysis.Text;
+
 namespace NiteCompiler.Analysis.Tokens;
 
 public sealed class BooleanToken : Token
 {
     public readonly bool Value;
 	public BooleanToken(TextAnchor position, bool value)
-		: base(TokenKind.BooleanLiteral, position)
+		: base(SyntaxKind.BooleanLiteral, position)
 	{
         Value = value;
 	}

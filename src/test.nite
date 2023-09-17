@@ -1,3 +1,6 @@
-0
-true -> Console:writeLine("true is true");
-false -!> Console:writeLine("false is false");
+public static void main()
+{
+	i32 x = new();
+	i32 y;
+	true;
+}

@@ -1,4 +1,5 @@
 using System;
+using NiteCompiler.Analysis.Text;
 using NiteCompiler.Analysis.Tokens;
 
 namespace NiteCompiler.Analysis;
@@ -58,12 +59,12 @@ public sealed class Lexer
 		#region Identifiers
 		if (IsCharBegin(c))
 		{
-			MoveNext();
-			while(IsCharContinue(c))
-			{
-				MoveNext();
-			}
+			if (!MoveNext())
+				goto ID_END;
+			
+			while(IsCharContinue(c) && MoveNext()) { }
 
+		ID_END:
 			return new IdentifierToken(beginPosition, content.Substring((int)begin, (int)(pos - begin))); // Substring is rich operation; Not recommended to use it  
 		}
 		#endregion
@@ -71,19 +72,19 @@ public sealed class Lexer
 		#region Operators
 		if (c is '+')
 		{
-			TokenKind kind = TokenKind.OperatorPlus;
+			SyntaxKind kind = SyntaxKind.OperatorPlus;
 			if (!MoveNext())
 				goto END_TOKEN; 
 
 			if (c is '+')
 			{
 				MoveNext();
-				kind = TokenKind.OperatorInc;
+				kind = SyntaxKind.OperatorInc;
 			}
 			else if (c is '=')
 			{
 				MoveNext();
-				kind = TokenKind.OperatorPlusEq;
+				kind = SyntaxKind.OperatorPlusAssign;
 			}
 
 		END_TOKEN:
@@ -91,23 +92,100 @@ public sealed class Lexer
 		}
 		if (c is '-')
 		{
-			TokenKind kind = TokenKind.OperatorMinus;
+			SyntaxKind kind = SyntaxKind.OperatorMinus;
 			if (!MoveNext())
 				goto END_TOKEN; 
 
 			if (c is '-')
 			{
 				MoveNext();
-				kind = TokenKind.OperatorDec;
+				kind = SyntaxKind.OperatorDec;
 			}
 			else if (c is '=')
 			{
 				MoveNext();
-				kind = TokenKind.OperatorMinusEq;
+				kind = SyntaxKind.OperatorMinusAssign;
 			}
 
 		END_TOKEN:
 			return new OperatorToken(beginPosition, kind);
+		}
+		if (c is '=')
+		{
+			MoveNext();
+			return new OperatorToken(beginPosition, SyntaxKind.OperatorAssign);
+		}
+		if (c is ';')
+		{
+			MoveNext();
+			return new PunctuationToken(beginPosition, SyntaxKind.Semicolon);
+		}
+		if (c is ':')
+		{
+			SyntaxKind kind = SyntaxKind.OperatorColon;
+			if (!MoveNext())
+				goto END_TOKEN;
+
+			if (c is ':')
+			{
+				MoveNext();
+				kind = SyntaxKind.OperatorColonColon;
+			}
+
+		END_TOKEN:
+			return new OperatorToken(beginPosition, kind);
+		}
+		if (c is '.')
+		{
+			SyntaxKind kind = SyntaxKind.OperatorDot;
+			if (!MoveNext())
+				goto END_TOKEN;
+
+			if (c is '.')
+			{
+				kind = SyntaxKind.OperatorDotDot;
+				if (!MoveNext())
+					goto END_TOKEN;
+
+				if (c is '.')
+				{
+					kind = SyntaxKind.OperatorRange;
+					MoveNext();
+				}
+			}
+
+		END_TOKEN:
+			return new OperatorToken(beginPosition, kind);
+		}
+		if (c is '(')
+		{
+			MoveNext();
+			return new PunctuationToken(beginPosition, SyntaxKind.LParenthesis);
+		}
+		if (c is ')')
+		{
+			MoveNext();
+			return new PunctuationToken(beginPosition, SyntaxKind.RParenthesis);
+		}
+		if (c is '{')
+		{
+			MoveNext();
+			return new PunctuationToken(beginPosition, SyntaxKind.LBrace);
+		}
+		if (c is '}')
+		{
+			MoveNext();
+			return new PunctuationToken(beginPosition, SyntaxKind.RBrace);
+		}
+		if (c is '[')
+		{
+			MoveNext();
+			return new PunctuationToken(beginPosition, SyntaxKind.LBracket);
+		}
+		if (c is ']')
+		{
+			MoveNext();
+			return new PunctuationToken(beginPosition, SyntaxKind.RBracket);
 		}
 		#endregion
 
@@ -169,7 +247,7 @@ public sealed class Lexer
 		#endregion
 
 		MoveNext();
-		return new UnexpectedToken(Position);
+		return new BadToken(Position);
 	}
 	private bool Consume(string content)
 	{
@@ -223,7 +301,8 @@ public sealed class Lexer
 		if (pos >= content.Length - 1)
 		{
 			#if DEBUG
-			System.Console.Error.WriteLine($"Stream is end: {pos + 1}");
+			pos = (uint)content.Length;
+			System.Console.Error.WriteLine($"Stream is end: {pos}");
 			#endif
 			return false;
 		}
