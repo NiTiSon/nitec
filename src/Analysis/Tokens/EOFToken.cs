@@ -7,6 +7,4 @@ public sealed class EOFToken : Token
 	public EOFToken(TextAnchor position)
 		: base(SyntaxKind.EndOfFile, position)
 	{ }
-
-
 }

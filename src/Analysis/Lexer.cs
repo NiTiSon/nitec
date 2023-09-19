@@ -6,261 +6,37 @@ namespace NiteCompiler.Analysis;
 
 public sealed class Lexer
 {
-	private readonly string content;
+	/// <summary>
+	/// The source text file consumed for tokenization.
+	/// </summary>
+	private readonly CodeSource source;
+	private readonly DiagnosticBag diagnostics;
 	private uint pos, line, column;
 
-	public Lexer(string content)
+	public Lexer(CodeSource source, DiagnosticBag diagnostics)
 	{
-		this.content = content;
+		this.source = source;
+		this.diagnostics = diagnostics;
 		pos = 0;
 		line = column = 1;
 	}
 
-	private char this[uint index]
-		=> content[(int)index];
-
 	public bool IsEOF
-		=> pos >= content.Length;
+		=> pos >= source.Content.Length;
 	private TextAnchor Position
 		=> new(pos, line, column);
 
-
 	private char c;
-	public Token Next()
+	public Token NextToken()
 	{
 		if (IsEOF)
 			return new EOFToken(Position);
 
-		c = this[pos];
-	
-	SKIP_WHITESPACE:
-		uint begin = pos;
-		TextAnchor beginPosition = Position;
-
-		if (c is '#')
-			throw new Exception("Directives not allowed yet!");
-		
-		#region Space
-		if (IsSpace(c))
-		{
-			MoveNext();
-			while(IsSpace(c))
-				MoveNext();
-
-			goto SKIP_WHITESPACE;
-		}
-		else if (IsNewLine(c))
-		{
-			MoveNext();
-			goto SKIP_WHITESPACE;
-		}
-		#endregion
-
-		#region Identifiers
-		if (IsCharBegin(c))
-		{
-			if (!MoveNext())
-				goto ID_END;
-			
-			while(IsCharContinue(c) && MoveNext()) { }
-
-		ID_END:
-			return new IdentifierToken(beginPosition, content.Substring((int)begin, (int)(pos - begin))); // Substring is rich operation; Not recommended to use it  
-		}
-		#endregion
-
-		#region Operators
-		if (c is '+')
-		{
-			SyntaxKind kind = SyntaxKind.OperatorPlus;
-			if (!MoveNext())
-				goto END_TOKEN; 
-
-			if (c is '+')
-			{
-				MoveNext();
-				kind = SyntaxKind.OperatorInc;
-			}
-			else if (c is '=')
-			{
-				MoveNext();
-				kind = SyntaxKind.OperatorPlusAssign;
-			}
-
-		END_TOKEN:
-			return new OperatorToken(beginPosition, kind);
-		}
-		if (c is '-')
-		{
-			SyntaxKind kind = SyntaxKind.OperatorMinus;
-			if (!MoveNext())
-				goto END_TOKEN; 
-
-			if (c is '-')
-			{
-				MoveNext();
-				kind = SyntaxKind.OperatorDec;
-			}
-			else if (c is '=')
-			{
-				MoveNext();
-				kind = SyntaxKind.OperatorMinusAssign;
-			}
-
-		END_TOKEN:
-			return new OperatorToken(beginPosition, kind);
-		}
-		if (c is '=')
-		{
-			MoveNext();
-			return new OperatorToken(beginPosition, SyntaxKind.OperatorAssign);
-		}
-		if (c is ';')
-		{
-			MoveNext();
-			return new PunctuationToken(beginPosition, SyntaxKind.Semicolon);
-		}
-		if (c is ':')
-		{
-			SyntaxKind kind = SyntaxKind.OperatorColon;
-			if (!MoveNext())
-				goto END_TOKEN;
-
-			if (c is ':')
-			{
-				MoveNext();
-				kind = SyntaxKind.OperatorColonColon;
-			}
-
-		END_TOKEN:
-			return new OperatorToken(beginPosition, kind);
-		}
-		if (c is '.')
-		{
-			SyntaxKind kind = SyntaxKind.OperatorDot;
-			if (!MoveNext())
-				goto END_TOKEN;
-
-			if (c is '.')
-			{
-				kind = SyntaxKind.OperatorDotDot;
-				if (!MoveNext())
-					goto END_TOKEN;
-
-				if (c is '.')
-				{
-					kind = SyntaxKind.OperatorRange;
-					MoveNext();
-				}
-			}
-
-		END_TOKEN:
-			return new OperatorToken(beginPosition, kind);
-		}
-		if (c is '(')
-		{
-			MoveNext();
-			return new PunctuationToken(beginPosition, SyntaxKind.LParenthesis);
-		}
-		if (c is ')')
-		{
-			MoveNext();
-			return new PunctuationToken(beginPosition, SyntaxKind.RParenthesis);
-		}
-		if (c is '{')
-		{
-			MoveNext();
-			return new PunctuationToken(beginPosition, SyntaxKind.LBrace);
-		}
-		if (c is '}')
-		{
-			MoveNext();
-			return new PunctuationToken(beginPosition, SyntaxKind.RBrace);
-		}
-		if (c is '[')
-		{
-			MoveNext();
-			return new PunctuationToken(beginPosition, SyntaxKind.LBracket);
-		}
-		if (c is ']')
-		{
-			MoveNext();
-			return new PunctuationToken(beginPosition, SyntaxKind.RBracket);
-		}
-		#endregion
-
-		#region Literals
-		if (IsDecDigit(c))
-		{
-			if (c is '0')
-			{
-				MoveNext();
-				if (c is 'x' or 'X')
-					goto HEX;
-				else if (c is 'b' or 'B')
-					goto BIN;
-				else
-					goto DEC; 
-			}
-
-			MoveNext();
-		DEC:
-			while(IsDecDigit(c) || c is '_')
-				MoveNext();
-			goto POSTFIX;
-		
-		BIN:
-			MoveNext(); // Because of 0B
-			while(IsBinDigit(c) || c is '_')
-				MoveNext();
-			goto POSTFIX;
-		
-		HEX:
-			MoveNext(); // Because of 0X
-			while(IsHexDigit(c) || c is '_')
-				MoveNext();
-			goto POSTFIX;
-
-		POSTFIX:
-			_= Consume(Names.U8)
-			|| Consume(Names.U16)
-			|| Consume(Names.U32)
-			|| Consume(Names.U64)
-			|| Consume(Names.U128)
-			|| Consume(Names.I8)
-			|| Consume(Names.I16)
-			|| Consume(Names.I32)
-			|| Consume(Names.I64)
-			|| Consume(Names.I128)
-			|| Consume("u");
-
-			return new IntegerToken(beginPosition, content.Substring((int)begin, (int)(pos - begin)));
-		}
-		if (Consume(Names.True))
-		{
-			return new BooleanToken(beginPosition, true);
-		}
-		if (Consume(Names.False))
-		{
-			return new BooleanToken(beginPosition, false);
-		}
-		#endregion
 
 		MoveNext();
 		return new BadToken(Position);
 	}
-	private bool Consume(string content)
-	{
-		int c = string.Compare(this.content, (int)pos, content, 0, content.Length);
 
-		if (c == 0)
-		{
-			pos += (uint)content.Length;
-			return true;
-		}
-
-		return false;
-	}
 	private bool IsCharBegin(char c) // Currently allowed only ascii characters - TODO: Add support for world-wide chars
 		=> c >= 'a' && c <= 'z'
 		|| c >= 'A' && c <= 'Z'
@@ -298,16 +74,16 @@ public sealed class Lexer
 
 	private bool MoveNext()
 	{
-		if (pos >= content.Length - 1)
+		if (pos >= source.Content.Length - 1)
 		{
 			#if DEBUG
-			pos = (uint)content.Length;
+			pos = (uint)source.Content.Length;
 			System.Console.Error.WriteLine($"Stream is end: {pos}");
 			#endif
 			return false;
 		}
 
-		char next = this[++pos];
+		char next = source.Content[(int)++pos];
 		if (next is '\n')
 		{
 			line++;

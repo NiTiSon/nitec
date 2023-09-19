@@ -46,5 +46,8 @@ public static class Names
 	public static readonly string F32 = "f32";
 	public static readonly string F64 = "f64";
 	public static readonly string Char = "char";
-
+	public static readonly string Char8 = "char8"; // UTF8
+	public static readonly string Char16 = "char16"; // UTF16
+	public static readonly string Char32 = "char32"; // UTF32
+	public static readonly string Char7 = "char7"; // ASCII
 }
