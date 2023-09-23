@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Primitives;
 using NiteCompiler.Analysis.Text;
 
 namespace NiteCompiler.Analysis.Tokens;
@@ -6,20 +7,21 @@ public abstract class Token
 {
 	public readonly SyntaxKind Kind;
 	public readonly TextAnchor Location;
-	public readonly string? Content;
+	public readonly StringSegment Content;
 
-	protected Token(SyntaxKind kind, TextAnchor location, string content)
+	protected Token(SyntaxKind kind, TextAnchor location, StringSegment content)
 	{
 		Kind = kind;
 		Location = location;
 		Content = content;
 	}
+
+	protected Token(SyntaxKind kind, TextAnchor location, string content)
+		: this(kind, location, new StringSegment(content)) { }
+
 	protected Token(SyntaxKind kind, TextAnchor location)
-	{
-		Kind = kind;
-		Location = location;
-	}
+		: this(kind, location, StringSegment.Empty) { }
 
 	public override string ToString()
-		=> $"{(Content is null ? Kind : Content)} @{Location}";
+		=> $"{(Content.Length is 0 ? Kind : Content)} @{Location}";
 }

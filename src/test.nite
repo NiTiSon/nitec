@@ -1,6 +1,8 @@
 public static void main()
 {
-	i32 x = new();
-	i32 y;
-	true;
+	i32 x, y, z;
+
+	Standard.IO.File:writeText("", "Hello World!"ascii); // Write 'Hello World' to file with ASCII encoding.
+
+	return;
 }

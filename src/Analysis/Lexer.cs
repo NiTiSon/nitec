@@ -10,11 +10,13 @@ public sealed class Lexer
 	/// The source text file consumed for tokenization.
 	/// </summary>
 	private readonly CodeSource source;
+	private readonly LanguageOptions options;
 	private readonly DiagnosticBag diagnostics;
 	private uint pos, line, column;
 
-	public Lexer(CodeSource source, DiagnosticBag diagnostics)
+	public Lexer(LanguageOptions options, CodeSource source, DiagnosticBag diagnostics)
 	{
+		this.options = options;
 		this.source = source;
 		this.diagnostics = diagnostics;
 		pos = 0;

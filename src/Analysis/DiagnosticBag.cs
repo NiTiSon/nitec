@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using NiteCompiler.Analysis.Text;
 
 namespace NiteCompiler.Analysis;
@@ -11,6 +12,9 @@ public sealed class DiagnosticBag : IEnumerable<Diagnostic>
 	{
 		diagnostics = new();
 	}
+
+	public bool ContainsError
+		=> diagnostics.Any(t => t.IsError);
 
 	public void ReportWarning(TextAnchor location, string code, string message)
 	{
