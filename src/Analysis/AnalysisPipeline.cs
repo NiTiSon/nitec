@@ -51,4 +51,22 @@ public class AnalysisPipeline
             tokens.Add(lexer.NextToken());
         }
     }
+    #if DEBUG
+    internal void WriteTokens()
+    {
+        if (tokens is null)
+        {
+            Nitec.CriticalExitWithError($"Tokens are not generated yet for file '{Path.GetFullPath(filePath)}'!");
+        }
+
+        using FileStream fs = File.OpenWrite(filePath + ".tokens");
+        using TextWriter tw = new StreamWriter(fs);
+
+        tw.WriteLine($"Tokens of file '{Path.GetFullPath(filePath)}':");
+        foreach (Token token in tokens!)
+        {
+            tw.WriteLine(token);
+        }
+    }
+    #endif
 }

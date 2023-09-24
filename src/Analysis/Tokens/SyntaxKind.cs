@@ -17,6 +17,7 @@ public enum SyntaxKind
 	RealNumberLiteral, // 0.32f or 0.8123123123213f64 or 0.1 (by default f32+)
 	StringLiteral, // "Some Text" (by default StringUtf32)
 	BooleanLiteral, // true, false (always boolean)
+	Identifier,
 
 	Assign,
 	Plus,
@@ -82,6 +83,8 @@ public enum SyntaxKind
 	KwDefault, // use as default in Rust
 	KwSizeOf,
 	KwTypeOf,
+	KwSelf,
+	KwSelfType,
 
 	// Types:
 	KwVoid, // use as default in C# + void type
@@ -97,6 +100,7 @@ public enum SyntaxKind
 	KwF32,
 	KwF64,
 	KwF128,
+	KwChar, // Default char (utf16 by default, may be changed by compiler parameters)
 	KwChar7, // ASCII
 	KwChar8, // Utf8
 	KwChar16, // Utf16

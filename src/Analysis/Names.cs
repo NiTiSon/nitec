@@ -49,5 +49,5 @@ public static class Names
 	public static readonly string Char8 = "char8"; // UTF8
 	public static readonly string Char16 = "char16"; // UTF16
 	public static readonly string Char32 = "char32"; // UTF32
-	public static readonly string Char7 = "char7"; // ASCII
+	public static readonly string Char7 = "char7"; // ASCII (for real, 8-bit size, cause of processors architecture)
 }

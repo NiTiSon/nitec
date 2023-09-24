@@ -1,7 +1,7 @@
 namespace NiteCompiler.Analysis.Text;
 
 /// <summary>
-/// Represent a place inside text file.
+/// Represent a position inside text file.
 /// </summary>
 public readonly struct TextAnchor
 {

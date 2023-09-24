@@ -114,6 +114,10 @@ internal static class Nitec
 
 				pipeline.ReadFile();
 				pipeline.Tokenize();
+				
+				#if DEBUG
+				pipeline.WriteTokens();
+				#endif
 
 #if DEBUG
 				sw.Stop();
