@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using GlobExpressions;
+using NiteCompiler.Analysis;
 
 namespace NiteCompiler;
 
@@ -80,7 +81,7 @@ internal static class Nitec
 			for (int i = 0; i < tasks.Length; i++)
 			{
 				AnalysisPipeline pipeline = tasks[i];
-				Console.WriteLine($"Pipeline [{i:000}]: in {pipeline.MeasureTicks,7} ticks ({(pipeline.MeasureTicks / 10_000_000d):0.0000} sec.) Tokens: {pipeline.tokens?.Count}");
+				Console.WriteLine($"Pipeline [{i:000}]: in {pipeline.MeasureTicks,7} ticks ({pipeline.MeasureSeconds:0.0000} sec.) Tokens: {pipeline.tokens?.Count}");
 			}
 #endif
 
