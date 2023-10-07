@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace NiteCompiler;
 
@@ -12,12 +7,12 @@ internal class Parameters
 	private string outputPath;
 	private string[] inputFiles;
 	private Dictionary<string, string?> defines;
-	private string languageVersion;
+	private uint languageVersion;
 
 	public string OutputPath => outputPath;
 	public string[] InputFiles => inputFiles;
 	public IReadOnlyDictionary<string, string?> Defines => defines;
-	public string LanguageVersion => languageVersion;
+	public uint LanguageVersion => languageVersion;
 
 	public Parameters()
 	{
@@ -57,7 +52,7 @@ internal class Parameters
 					case "--threads":
 						if (args.IsNextAvilable(i))
 						{
-							if (!(UInt32.TryParse(args[i + 1], out threadsCount) && threadsCount <= 256))
+							if (!(uint.TryParse(args[i + 1], out threadsCount) && threadsCount <= 256))
 								Nitec.CriticalExitWithError($"Parameter '{args[i + 1]}' is out of bounds or invalid\nAllowed values: [0...256]");
 						}
 						else
@@ -91,9 +86,4 @@ internal class Parameters
 		return parameters;
 	}
 
-}
-internal static class ArrayExtensions
-{
-	public static bool IsNextAvilable<T>(this T[] array, int index)
-		=> index < array.Length - 1;
 }

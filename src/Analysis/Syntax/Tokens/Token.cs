@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Primitives;
 using NiteCompiler.Analysis.Text;
 
-namespace NiteCompiler.Analysis.Tokens;
+namespace NiteCompiler.Analysis.Syntax.Tokens;
 
 public abstract class Token
 {

@@ -1,4 +1,6 @@
-﻿namespace NiteCompiler.Analysis.Text;
+﻿using System.IO;
+
+namespace NiteCompiler.Analysis.Text;
 
 public sealed class CodeSource
 {
@@ -8,9 +10,13 @@ public sealed class CodeSource
 	public CodeSource(string content, string? file = null)
 	{
 		Content = content;
+		if (file != null)
+		{
+			file = Path.GetFullPath(file);
+		}
 		File = file;
 	}
 
 	public override string ToString()
-		=> $"{{{(File is not null ? File : "unknown file")}}}";
+		=> $"{(File is not null ? File : "unknown file")}";
 }

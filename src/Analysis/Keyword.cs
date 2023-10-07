@@ -1,4 +1,4 @@
-﻿using NiteCompiler.Analysis.Tokens;
+﻿using NiteCompiler.Analysis.Syntax;
 
 namespace NiteCompiler.Analysis;
 

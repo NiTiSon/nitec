@@ -16,21 +16,21 @@ public sealed class DiagnosticBag : IEnumerable<Diagnostic>
 	public bool ContainsError
 		=> diagnostics.Any(t => t.IsError);
 
-	public void ReportWarning(TextAnchor location, string code, string message)
+	public void ReportWarning(CodeSource source, TextAnchor location, string code, string message)
 	{
-		diagnostics.Add(new (false, location, code, message));
+		diagnostics.Add(new (false, source, location, code, message));
 	}
-	public void ReportWarning(TextAnchor location, string message)
+	public void ReportWarning(CodeSource source, TextAnchor location, string message)
 	{
-		diagnostics.Add(new(false, location, message));
+		diagnostics.Add(new(false, source, location, message));
 	}
-	public void ReportError(TextAnchor location, string code, string message)
+	public void ReportError(CodeSource source, TextAnchor location, string code, string message)
 	{
-		diagnostics.Add(new(true, location, code, message));
+		diagnostics.Add(new(true, source, location, code, message));
 	}
-	public void ReportError(TextAnchor location, string message)
+	public void ReportError(CodeSource source, TextAnchor location, string message)
 	{
-		diagnostics.Add(new(true, location, message));
+		diagnostics.Add(new(true, source, location, message));
 	}
 	public void Report(Diagnostic diagnostic)
 	{
