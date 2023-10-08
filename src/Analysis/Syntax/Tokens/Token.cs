@@ -3,15 +3,13 @@ using NiteCompiler.Analysis.Text;
 
 namespace NiteCompiler.Analysis.Syntax.Tokens;
 
-public abstract class Token
+public abstract class Token : SyntaxNode
 {
-	public readonly SyntaxKind Kind;
 	public readonly TextAnchor Location;
 	public readonly StringSegment Content;
 
-	protected Token(SyntaxKind kind, TextAnchor location, StringSegment content)
+	protected Token(SyntaxKind kind, TextAnchor location, StringSegment content) : base(kind)
 	{
-		Kind = kind;
 		Location = location;
 		Content = content;
 	}

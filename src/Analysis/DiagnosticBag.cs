@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using NiteCompiler.Analysis.Text;
@@ -53,5 +54,10 @@ public sealed class DiagnosticBag : IEnumerable<Diagnostic>
 	IEnumerator IEnumerable.GetEnumerator()
 	{
 		return diagnostics.GetEnumerator();
+	}
+
+	internal void ReportError(CodeSource source, TextAnchor location, object expectIdentifier, string v)
+	{
+		throw new NotImplementedException();
 	}
 }

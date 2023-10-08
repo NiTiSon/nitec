@@ -1,6 +1,4 @@
-using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Primitives;
 using NiteCompiler.Analysis.Syntax;
@@ -9,7 +7,7 @@ using NiteCompiler.Analysis.Text;
 
 namespace NiteCompiler.Analysis;
 
-public sealed partial class Lexer
+public sealed partial class Lexer : TokenStream
 {
 	/// <summary>
 	/// The source text file consumed for tokenization.

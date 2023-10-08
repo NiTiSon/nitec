@@ -2,7 +2,7 @@ namespace NiteCompiler.Analysis.Syntax;
 
 public enum SyntaxKind
 {
-	// Tokens:
+	#region Tokens:
 	WrongToken,
 
 	SkippedTextTrivia,
@@ -125,4 +125,8 @@ public enum SyntaxKind
 	KwChar32, // Utf32 (unicode point)
 
 	KwNil, // aka null or zero
+	#endregion
+
+	CompilationUnit,
+	ModuleDeclaration,
 }

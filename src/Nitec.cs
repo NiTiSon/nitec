@@ -25,11 +25,8 @@ internal static class Nitec
 			DiagnosticBag bag = new();
 			Lexer lexer = new(LanguageOptions.StandardV1, new CodeSource(content, file), bag);
 
-			List<Token> tokens = new();
-			while (!lexer.IsEOF)
-			{
-				tokens.Add(lexer.NextToken());
-			}
+			Parser parser = new Parser(lexer);
+			parser.ParseCompilationUnit();
 
 			if (bag.Any())
 			{
@@ -46,11 +43,6 @@ internal static class Nitec
 						Console.ForegroundColor = def;
 					}
 				}
-			}
-
-			foreach (Token token in tokens)
-			{
-				Console.WriteLine($"{token}");
 			}
 		}
 	}

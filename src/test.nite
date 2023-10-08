@@ -1,4 +1,4 @@
-module Std;
+module Std.Nite;
 
 public static void main()
 {
