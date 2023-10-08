@@ -41,6 +41,7 @@ public static class Names
 	public const string TypeOf = "typeof";
 	public const string SelfType = "Self";
 	public const string SelfInst = "self";
+	public const string Bool = "bool";
 	public const string Void = "void";
 
 	public const string I8 = "i8";

@@ -47,11 +47,11 @@ internal static class Nitec
 					}
 				}
 			}
-			else
+
 			foreach (Token token in tokens)
-				{
-					Console.WriteLine($"{token}");
-				}
+			{
+				Console.WriteLine($"{token}");
+			}
 		}
 	}
 

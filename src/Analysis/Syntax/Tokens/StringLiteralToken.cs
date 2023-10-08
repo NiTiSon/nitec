@@ -25,3 +25,11 @@ public sealed class StringLiteralToken : LiteralToken
 		};
 	}
 }
+public sealed class BooleanLiteralToken : LiteralToken
+{
+	public readonly bool Value;
+	public BooleanLiteralToken(bool value, TextAnchor location, StringSegment content) : base(SyntaxKind.BooleanLiteral, location, content)
+	{
+		Value = value;
+	}
+}

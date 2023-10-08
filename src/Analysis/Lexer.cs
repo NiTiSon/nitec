@@ -78,6 +78,15 @@ public sealed partial class Lexer
 				MoveNext();
 			}
 
+			if (TextSegment == Names.True)
+			{
+				return new BooleanLiteralToken(true, beginPos, TextSegment);
+			}
+			else if (TextSegment == Names.False)
+			{
+				return new BooleanLiteralToken(false, beginPos, TextSegment);
+			}
+
 			return new IdentifierOrKeywordToken(GetKind(TextSegment), beginPos, TextSegment);
 		}
 
@@ -92,6 +101,18 @@ public sealed partial class Lexer
 					MoveNext();
 
 				return new TriviaToken(SyntaxKind.SingleLineCommentTrivia, beginPos, TextSegment);
+			}
+			if (c == '*')
+			{
+				char prev = '\0';
+				MoveNext();
+				while (prev != '*' && c != '/' && !IsEOF)
+				{
+					MoveNext();
+				}
+				MoveNext();
+
+				return new TriviaToken(SyntaxKind.MultiLineCommentTrivia, beginPos, TextSegment);
 			}
 			if (c == '=')
 			{
@@ -227,10 +248,15 @@ public sealed partial class Lexer
 		}
 
 		MoveNext();
-		while (!IsSpace(c) || c != '\n')
+		while (true)
 		{
+			if (IsEOF || c is '\n' or '\r' || IsSpace(c))
+				break;
+
 			MoveNext();
 		}
+
+		diagnostics.ReportError(source, beginPos, ErrorCodes.InvalidCharacterSequence, ErrorMessages.InvalidCharacterSequence);
 		return new BadToken(beginPos);
 	}
 
@@ -290,6 +316,8 @@ public sealed partial class Lexer
 			return SyntaxKind.KwF32;
 		else if (segment == Names.F64)
 			return SyntaxKind.KwF64;
+		else if (segment == Names.Bool)
+			return SyntaxKind.KwBool;
 		else if (segment == Names.Void)
 			return SyntaxKind.KwVoid;
 		else if (segment == Names.Nil)

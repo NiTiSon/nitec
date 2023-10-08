@@ -104,7 +104,8 @@ public enum SyntaxKind
 	KwSelfType,
 
 	// Types:
-	KwVoid, // use as default in C# + void type
+	KwBool,
+	KwVoid,
 	KwI8,
 	KwI16,
 	KwI32,
