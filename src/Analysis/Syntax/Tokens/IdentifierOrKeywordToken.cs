@@ -5,15 +5,15 @@ namespace NiteCompiler.Analysis.Syntax.Tokens;
 
 public sealed class IdentifierOrKeywordToken : Token
 {
-    public IdentifierOrKeywordToken(SyntaxKind kind, TextAnchor location, StringSegment content) : base(kind, location, content)
-    {
-    }
+	public IdentifierOrKeywordToken(SyntaxKind kind, TextAnchor location, StringSegment content) : base(kind, location, content)
+	{
+	}
 
-    public override string ToString()
-    {
-        return Kind is SyntaxKind.Identifier
-            ? $"Identifier: '{Content}' @{Location}"
-            : $"Keyword '{Kind.ToString()[2..].ToLower()}' @{Location}"
-            ;
-    }
+	public override string ToString()
+	{
+		return Kind is SyntaxKind.Identifier
+			? $"id: '{Content}' @{Location}"
+			: $"kw: '{Kind.ToString()[2..].ToLower()}' @{Location}"
+			;
+	}
 }

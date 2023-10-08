@@ -9,5 +9,6 @@ public sealed class PunctuationToken : Token
 	{
 	}
 
-
+	public override string ToString()
+		=> $"markup: {Content} @{Location}";
 }

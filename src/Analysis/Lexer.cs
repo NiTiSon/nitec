@@ -220,7 +220,6 @@ public sealed partial class Lexer
 				else if (Consume(Names.U32)) stringKind = StringLiteralKind.U32;
 				else stringKind = StringLiteralKind.Default;
 
-				diagnostics.ReportError(source, beginPos, "NITE0001", "Created new string");
 				return new StringLiteralToken(stringKind, beginPos, TextSegment);
 			}
 
@@ -228,6 +227,10 @@ public sealed partial class Lexer
 		}
 
 		MoveNext();
+		while (!IsSpace(c) || c != '\n')
+		{
+			MoveNext();
+		}
 		return new BadToken(beginPos);
 	}
 
