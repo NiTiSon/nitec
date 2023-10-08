@@ -1,1 +1,1 @@
-*.nite    diff=rust linguist-language=rust linguist-detectable
+*.nite    diff=cpp linguist-language=rust linguist-detectable
