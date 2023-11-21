@@ -19,7 +19,13 @@ public readonly struct Instruction
 		Call,
 		CallVirt,
 		PushI32,
-		PushI64
+		PushI64,
+		Conv8,
+		Conv16,
+		Conv32,
+		Conv64,
+		ConvS,
+		ConvU,
 		// ...
 		;
 
@@ -36,8 +42,8 @@ public readonly struct Instruction
 
 	static Instruction()
 	{
-		Nope		= new("nope",		0x00, Next);
-		LoadThis	= new("load.this",	0x01, Next);
+		Nope		= new("nope",	0x00, Next);
+		LoadThis	= new("load.this",0x01, Next);
 		LoadArg		= new("load.arg",	0x02, Next);
 		LoadLocal	= new("load.loc",	0x03, Next);
 		Return		= new("ret",		0x04, FlowControl.Return);
@@ -45,5 +51,11 @@ public readonly struct Instruction
 		CallVirt	= new("call.virt",	0x06, FlowControl.Call);
 		PushI32		= new("push.int32",	0x07, Next);
 		PushI64		= new("push.int64",	0x08, Next);
+		Conv8		= new("conv.8",	0x09, Next);
+		Conv32		= new("conv.16",	0x0A, Next);
+		Conv64		= new("conv.32",	0x0B, Next);
+		Conv32		= new("conv.64",	0x0C, Next);
+		ConvU		= new("conv.sign",	0x0C, Next);
+		ConvS		= new("conv.unsign",	0x0C, Next);
 	}
 }
