@@ -1,0 +1,4 @@
+public static void main(i32 x)
+{
+	return x + 2;
+}
