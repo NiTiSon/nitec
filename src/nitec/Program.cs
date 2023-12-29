@@ -1,6 +1,4 @@
-﻿
-
-using NiteCode.Compiler.CodeAnalysis.Syntax;
+﻿using NiteCode.Compiler.CodeAnalysis.Syntax;
 using System;
 using System.IO;
 

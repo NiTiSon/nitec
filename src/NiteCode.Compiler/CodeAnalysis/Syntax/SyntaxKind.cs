@@ -5,15 +5,39 @@ public enum SyntaxKind : uint
 	BadToken,
 
 	EndOfFile,
-	NumberLiteral,
-	StringLiteral,
+	Number,
+	String,
 	Identifier,
+
+	CompilationUnit,
+
+	NumberExpression,
+	BinaryExpression,
+	
+	IdentifierName,
+	QualifiedName,
+
+	Using,
 
 	SymbolFlag = 0x0C000000, // For special symbols and keywords
 	NilConst,
 	TrueConst,
 	FalseConst,
-	
+
+	PunctuationFlag = 0x4C000000,
+	Semicolon,
+	Colon,
+	Dot,
+	Comma,
+	OpenParenthesis,
+	ClosedParenthesis,
+	OpenBracket,
+	ClosedBracket,
+	OpenBrace,
+	ClosedBrace,
+	//OpenChevron,
+	//ClosedChevron,
+
 	OperatorFlag = 0x3C000000, // For operators
 	Plus,
 	PlusPlus,
@@ -77,6 +101,9 @@ public enum SyntaxKind : uint
 	
 	NewKeyword,
 	DeleteKeyword,
+
+	UsingKeyword,
+	ModuleKeyword,
 
 	TypeKeyword,
 	EnumKeyword,

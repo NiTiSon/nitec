@@ -1,11 +1,9 @@
 ﻿using Microsoft.Extensions.Primitives;
 using NiteCode.Compiler.CodeAnalysis.Text;
-using System;
-using System.Collections.Frozen;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 
 namespace NiteCode.Compiler.CodeAnalysis.Syntax;
 
@@ -13,6 +11,7 @@ internal sealed partial class Lexer
 {
 	private readonly SyntaxTree tree;
 	private readonly SourceText text;
+	private readonly DiagnosticBag diagnostics;
 	
 	private uint pos;
 
@@ -21,10 +20,15 @@ internal sealed partial class Lexer
 
 	private ImmutableArray<SyntaxTrivia>.Builder triviaBuilder = ImmutableArray.CreateBuilder<SyntaxTrivia>();
 
+	public DiagnosticBag Diagnostics
+		=> diagnostics;
+
 	public Lexer(SyntaxTree syntaxTree)
 	{
 		tree = syntaxTree;
 		text = syntaxTree.Text;
+
+		diagnostics = [];
 	}
 
 	private char Current => Peek(0);
@@ -153,9 +157,10 @@ internal sealed partial class Lexer
 			switch (Current)
 			{
 				case '\0':
-					//TextSpan span = new TextSpan(start, 2);
-					//TextLocation location = new TextLocation(_text, span);
-					//diagnostics.ReportUnterminatedMultiLineComment(location);
+					TextSpan span = new(start, 2);
+					TextLocation location = new(text, span);
+
+					diagnostics.ReportUnterminatedMultiLineComment(location);
 					done = true;
 					break;
 				case '*':
@@ -279,6 +284,118 @@ internal sealed partial class Lexer
 					kind = SyntaxKind.Modulo;
 				}
 				break;
+			case '!':
+				pos++;
+				if (Current == '=')
+				{
+					kind = SyntaxKind.BangEquals;
+					pos++;
+				}
+				else
+				{
+					kind = SyntaxKind.Bang;
+				}
+				break;
+			case '~':
+				pos++;
+				kind = SyntaxKind.Tilde;
+				break;
+			case '^':
+				pos++;
+				if (Current == '=')
+				{
+					kind = SyntaxKind.CircumflexEquals;
+					pos++;
+				}
+				else
+				{
+					kind = SyntaxKind.Circumflex;
+				}
+				break;
+			case '&':
+				pos++;
+				if (Current == '&')
+				{
+					kind = SyntaxKind.AmpersandAmpersand;
+					pos++;
+				}
+				else if (Current == '=')
+				{
+					kind = SyntaxKind.AmpersandEquals;
+					pos++;
+				}
+				else
+				{
+					kind = SyntaxKind.Ampersand;
+				}
+				break;
+			case '|':
+				pos++;
+				if (Current == '|')
+				{
+					kind = SyntaxKind.BarBar;
+					pos++;
+				}
+				else if (Current == '=')
+				{
+					kind = SyntaxKind.BarEquals;
+					pos++;
+				}
+				else
+				{
+					kind = SyntaxKind.Bar;
+				}
+				break;
+			case '<':
+				pos++;
+				if (Current == '<')
+				{
+					pos++;
+					if (Current == '=')
+					{
+						kind = SyntaxKind.LessLessEquals;
+						pos++;
+					}
+					else
+					{
+						kind = SyntaxKind.LessLess;
+					}
+				}
+				else if (Current == '=')
+				{
+					kind = SyntaxKind.LessEquals;
+					pos++;
+				}
+				else
+				{
+					kind = SyntaxKind.Less;
+				}
+				break;
+			case '>':
+				pos++;
+				if (Current == '>')
+				{
+					pos++;
+					if (Current == '=')
+					{
+						kind = SyntaxKind.MoreMoreEquals;
+						pos++;
+					}
+					else
+					{
+						kind = SyntaxKind.MoreMore;
+					}
+				}
+				else if (Current == '=')
+				{
+					kind = SyntaxKind.MoreEquals;
+					pos++;
+				}
+				else
+				{
+					kind = SyntaxKind.More;
+				}
+				break;
 			case '=':
 				pos++;
 				if (Current == '=')
@@ -293,9 +410,19 @@ internal sealed partial class Lexer
 				break;
 			case >= '0' and <= '9':
 				pos++;
-				kind = SyntaxKind.NumberLiteral;
+				kind = SyntaxKind.Number;
 				ReadNumber();
 				break;
+			case '.': ReadOneCharOfKind(SyntaxKind.Dot); break;
+			case ',': ReadOneCharOfKind(SyntaxKind.Comma); break;
+			case ':': ReadOneCharOfKind(SyntaxKind.Colon); break;
+			case ';': ReadOneCharOfKind(SyntaxKind.Semicolon); break;
+			case '(': ReadOneCharOfKind(SyntaxKind.OpenParenthesis); break;
+			case ')': ReadOneCharOfKind(SyntaxKind.ClosedParenthesis); break;
+			case '{': ReadOneCharOfKind(SyntaxKind.OpenBrace); break;
+			case '}': ReadOneCharOfKind(SyntaxKind.ClosedBrace); break;
+			case '[': ReadOneCharOfKind(SyntaxKind.OpenBracket); break;
+			case ']': ReadOneCharOfKind(SyntaxKind.ClosedBracket); break;
 			default:
 				if (IsIdentifierBegin(Current))
 				{
@@ -315,10 +442,18 @@ internal sealed partial class Lexer
 					}
 					break;
 				}
+				diagnostics.ReportInvalidCharacter(new TextLocation(text, TextSpan.FromPoint(pos)), Current);
 				kind = SyntaxKind.BadToken;
 				pos++;
 				break;
 		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void ReadOneCharOfKind(SyntaxKind kind)
+	{
+		pos++;
+		this.kind = kind;
 	}
 
 	private static bool IsIdentifierBegin(char c)

@@ -32,25 +32,16 @@ public sealed class SyntaxTree
 		SourceText source = new(content, file.FullName);
 		SyntaxTree tree = new(source);
 
-		Lexer lexer = new(tree);
-		List<SyntaxToken> tokens = [];
-		while (true)
-		{
-			SyntaxToken token = lexer.NextToken();
+		Parser parser = new(tree);
 
-			if (token.Kind == SyntaxKind.EndOfFile)
-			{
-				foreach (SyntaxToken _token in tokens)
-				{
-					_token.WriteTo(Console.Out);
-				}
-				break;
-			}
-			else
-			{
-				tokens.Add(token);
-			}
+		CompilationUnitSyntax unit = parser.ParseCompilationUnit();
+
+		foreach (Diagnostic diagnostic in parser.Diagnostics)
+		{
+			Console.WriteLine($"{diagnostic.Id}: {diagnostic.Message}");
 		}
+
+		unit.WriteTo(Console.Out);
 
 		return tree;
 	}

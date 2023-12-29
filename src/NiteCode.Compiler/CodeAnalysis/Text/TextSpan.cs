@@ -11,6 +11,10 @@ public readonly struct TextSpan(uint position, uint length)
 		uint length = end - start;
 		return new TextSpan(start, length);
 	}
+	public static TextSpan FromPoint(uint position)
+	{
+		return new TextSpan(position, 1);
+	}
 
 	public bool OverlapsWith(TextSpan span)
 	{

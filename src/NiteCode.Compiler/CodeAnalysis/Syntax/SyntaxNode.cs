@@ -10,10 +10,12 @@ public abstract class SyntaxNode
 {
 	private protected SyntaxNode(SyntaxTree tree)
 	{
-		Tree = tree;
+		SyntaxTree = tree;
 	}
 
-	public SyntaxTree Tree { get; }
+	public SyntaxTree SyntaxTree { get; }
+
+	public TextLocation Location => new TextLocation(SyntaxTree.Text, Span);
 
 	public abstract SyntaxKind Kind { get; }
 	public abstract IEnumerable<SyntaxNode> GetChildren();
@@ -79,11 +81,11 @@ public abstract class SyntaxNode
 
 		writer.Write(node.Kind);
 
-		//if (token != null && token.Value != null)
-		//{
-		//	writer.Write(" ");
-		//	writer.Write(token.Value);
-		//}
+		if (token != null && token.Location.Text.Length != 0)
+		{
+			writer.Write(": ");
+			writer.Write(token.Text.Value);
+		}
 
 		if (isToConsole)
 			Console.ResetColor();
