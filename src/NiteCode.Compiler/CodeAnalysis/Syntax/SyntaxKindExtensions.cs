@@ -60,6 +60,7 @@ public static class SyntaxKindExtensions
 	public static bool IsOperator(this SyntaxKind kind)
 		=> (kind & SyntaxKind.OperatorFlag) == SyntaxKind.OperatorFlag;
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool IsFlag(this SyntaxKind kind)
 		=> ((uint)kind | 0xFF000000) == 0xFF000000;
 
@@ -68,9 +69,10 @@ public static class SyntaxKindExtensions
 		=> (kind & SyntaxKind.KeywordFlag) == SyntaxKind.KeywordFlag;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static bool IsLiteralSymbol(this SyntaxKind kind)
+	public static bool IsSymbol(this SyntaxKind kind)
 		=> (kind & SyntaxKind.SymbolFlag) == SyntaxKind.SymbolFlag;
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool IsBuiltInType(this SyntaxKind kind)
 		=> (kind & SyntaxKind.BuiltInTypeFlag) == SyntaxKind.BuiltInTypeFlag;
 }
