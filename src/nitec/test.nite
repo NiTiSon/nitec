@@ -1,4 +1,8 @@
+/*
+ * Example of basic function in NiteCode
+ * Function has a i32 (32-bit signed integer) parameter
+ */
 public static void main(i32 x)
 {
-	return x + 2;
+	return (x + 2) / 2;
 }
