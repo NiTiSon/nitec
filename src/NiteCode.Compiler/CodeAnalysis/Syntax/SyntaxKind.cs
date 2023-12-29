@@ -25,6 +25,8 @@ public enum SyntaxKind : uint
 	AsteriskEquals,
 	Slash,
 	SlashEquals,
+	Modulo,
+	ModuloEquals,
 	
 	Bang,
 	Equals,
