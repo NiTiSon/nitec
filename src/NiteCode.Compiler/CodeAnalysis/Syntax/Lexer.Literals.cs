@@ -23,11 +23,11 @@ partial class Lexer
 			[SyntaxKind.Comma] = ",",
 
 			[SyntaxKind.OpenBrace] = "{",
-			[SyntaxKind.ClosedBrace] = "}",
+			[SyntaxKind.CloseBrace] = "}",
 			[SyntaxKind.OpenBracket] = "[",
-			[SyntaxKind.ClosedBracket] = "]",
+			[SyntaxKind.CloseBracket] = "]",
 			[SyntaxKind.OpenParenthesis] = "(",
-			[SyntaxKind.ClosedParenthesis] = ")",
+			[SyntaxKind.CloseParenthesis] = ")",
 
 			[SyntaxKind.Plus] = "+",
 			[SyntaxKind.PlusPlus] = "++",

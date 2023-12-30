@@ -30,6 +30,5 @@ internal static class Program
 		}
 
 		SyntaxTree tree = SyntaxTree.Load(filePath);
-
 	}
 }

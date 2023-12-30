@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace NiteCode.Compiler.CodeAnalysis.Syntax;
 
-public sealed class UsingSyntax(SyntaxTree tree, SyntaxToken keyword, NameSyntax usingModule, SyntaxToken semicolon) : SyntaxNode(tree)
+public sealed class UsingSyntax(SyntaxTree tree, SyntaxToken keyword, NameSyntax usingModule, SyntaxToken semicolon) : MemberDeclarationSyntax(tree, [])
 {
 	public override SyntaxKind Kind => SyntaxKind.Using;
 

@@ -35,4 +35,8 @@ public sealed class DiagnosticBag : IEnumerable<Diagnostic>
 		=> Add(Diagnostic.Create(NiteCodeDiagnosticsDescriptors.NC0002, location));
 	public void ReportUnexpectedToken(TextLocation location, SyntaxKind actualKind, SyntaxKind expectedKind)
 		=> Add(Diagnostic.Create(NiteCodeDiagnosticsDescriptors.NC0003, location, actualKind, expectedKind));
+	public void ReportMoreThanOneModuleDeclaration(TextLocation location)
+		=> Add(Diagnostic.Create(NiteCodeDiagnosticsDescriptors.NC0004, location));
+	public void ReportWrongModuleDeclarationLocation(TextLocation location)
+		=> Add(Diagnostic.Create(NiteCodeDiagnosticsDescriptors.NC0005, location));
 }

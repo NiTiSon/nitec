@@ -13,11 +13,21 @@ public enum SyntaxKind : uint
 
 	NumberExpression,
 	BinaryExpression,
+
+	BlockStatement,
 	
 	IdentifierName,
 	QualifiedName,
 
+	PredefinedType,
+
+	Parameter,
+	ParameterList,
+
 	Using,
+	Module,
+
+	Function,
 
 	SymbolFlag = 0x0C000000, // For special symbols and keywords
 	NilConst,
@@ -30,13 +40,11 @@ public enum SyntaxKind : uint
 	Dot,
 	Comma,
 	OpenParenthesis,
-	ClosedParenthesis,
+	CloseParenthesis,
 	OpenBracket,
-	ClosedBracket,
+	CloseBracket,
 	OpenBrace,
-	ClosedBrace,
-	//OpenChevron,
-	//ClosedChevron,
+	CloseBrace,
 
 	OperatorFlag = 0x3C000000, // For operators
 	Plus,

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace NiteCode.Compiler.CodeAnalysis.Syntax;
 
@@ -95,34 +96,154 @@ internal sealed class Parser
 
 	public CompilationUnitSyntax ParseCompilationUnit()
 	{
-		ImmutableArray<UsingSyntax>.Builder usings = ImmutableArray.CreateBuilder<UsingSyntax>();
+		ImmutableArray<MemberDeclarationSyntax>.Builder members = ImmutableArray.CreateBuilder<MemberDeclarationSyntax>();
 		SyntaxToken eof;
 
-		while (Current.Kind == SyntaxKind.UsingKeyword)
-		{
-			UsingSyntax @using = ParseUsingSyntax();
-
-			usings.Add(@using);
-		}
 		while (Current.Kind != SyntaxKind.EndOfFile)
 		{
-			NextToken();
+			switch (Current.Kind)
+			{
+				case SyntaxKind.EndOfFile:
+					break;
+				case SyntaxKind.UsingKeyword:
+					UsingSyntax @using = ParseUsing();
+					members.Add(@using);
+					break;
+				case SyntaxKind.ModuleKeyword:
+					ModuleDeclarationSyntax module = ParseModuleDeclaration();
+					{
+						if (members.Any(x => x.Kind != SyntaxKind.Module && x.Kind != SyntaxKind.Using))
+						{
+							diagnostics.ReportWrongModuleDeclarationLocation(module.Location);
+						}
+						if (members.Any(x => x.Kind == SyntaxKind.Module))
+						{
+							diagnostics.ReportMoreThanOneModuleDeclaration(module.Location);
+						}
+					}
+					members.Add(@module);
+					break;
+				default:
+					MemberDeclarationSyntax member = ParseMemberDeclaration();
+					members.Add(member);
+					break;
+			}
 		}
 		eof = Current;
 
-		return new CompilationUnitSyntax(tree, [], usings.ToImmutable(), eof);
+		return new CompilationUnitSyntax(tree, members.ToImmutable(), eof);
+	}
+	private MemberDeclarationSyntax ParseMemberDeclaration()
+	{
+		ImmutableArray<SyntaxToken>.Builder modifications = ImmutableArray.CreateBuilder<SyntaxToken>();
+
+		while (Current.Kind
+			is SyntaxKind.PublicKeyword
+			or SyntaxKind.PrivateKeyword
+			or SyntaxKind.ProtectedKeyword
+			or SyntaxKind.StaticKeyword
+			)
+		{
+			modifications.Add(NextToken());
+		}
+		switch (Current.Kind)
+		{
+			case SyntaxKind.EnumKeyword:
+			case SyntaxKind.TypeKeyword:
+				throw new NotImplementedException();
+				break;
+			default: // Method / Function / Field
+				TypeSyntax type = ParseType();
+				IdentifierNameSyntax name = ParseIdentifierName();
+				switch (Current.Kind)
+				{
+					case SyntaxKind.OpenParenthesis: // Function / Method
+						ParameterListSyntax parameters = ParseParameters();
+						BlockStatementSyntax block = ParseBlock();
+
+						return new FunctionDeclarationSyntax(tree, modifications.ToImmutable(), type, name, parameters, block);
+						break;
+					case SyntaxKind.Comma:
+					case SyntaxKind.Semicolon:
+						throw new NotImplementedException();
+						break;
+					default:
+						throw new NotSupportedException();
+						break;
+				}
+				break;
+		}
 	}
 
-	private UsingSyntax ParseUsingSyntax()
+	private BlockStatementSyntax ParseBlock()
+	{
+		SyntaxToken open = MatchToken(SyntaxKind.OpenBrace);
+		SyntaxToken close = MatchToken(SyntaxKind.CloseBrace);
+
+		return new BlockStatementSyntax(tree, open, [], close);
+	}
+
+	private ParameterListSyntax ParseParameters()
+	{
+		SyntaxToken open = MatchToken(SyntaxKind.OpenParenthesis);
+		ImmutableArray<ParameterSyntax>.Builder parameters = ImmutableArray.CreateBuilder<ParameterSyntax>();
+
+		while (true)
+		{
+			if (Current.Kind is SyntaxKind.EndOfFile or SyntaxKind.CloseParenthesis)
+				break;
+
+			ParameterSyntax parameter = ParseParameter();
+			parameters.Add(parameter);
+
+			if (Current.Kind != SyntaxKind.Comma)
+			{
+				diagnostics.ReportUnexpectedToken(Current.Location, Current.Kind, SyntaxKind.Comma);
+			}
+			NextToken();
+		}
+
+		SyntaxToken closed = MatchToken(SyntaxKind.CloseParenthesis);
+
+		return new(tree, open, parameters.ToImmutable(), closed);
+	}
+
+	private ParameterSyntax ParseParameter()
+	{
+		TypeSyntax type = ParseType();
+		IdentifierNameSyntax name = ParseIdentifierName();
+		return new ParameterSyntax(tree, type, name);
+	}
+
+	private TypeSyntax ParseType()
+	{
+		if (Current.Kind == SyntaxKind.Identifier)
+			return ParseName();
+		else if (Current.Kind.IsBuiltInType())
+			return new PredefinedTypeSyntax(tree, NextToken());
+		else
+			throw new NotImplementedException();
+	}
+
+	private ModuleDeclarationSyntax ParseModuleDeclaration()
+	{
+		SyntaxToken moduleKeyword = MatchToken(SyntaxKind.ModuleKeyword);
+		NameSyntax name = ParseName();
+		SyntaxToken semicolon = MatchToken(SyntaxKind.Semicolon);
+
+		return new ModuleDeclarationSyntax(tree, moduleKeyword, name, semicolon);
+	}
+	
+	private UsingSyntax ParseUsing()
 	{
 		SyntaxToken usingKeyword = MatchToken(SyntaxKind.UsingKeyword);
-		NameSyntax module = ParseNameSyntax();
+		NameSyntax module = ParseName();
 		SyntaxToken semicolon = MatchToken(SyntaxKind.Semicolon);
 
 		return new UsingSyntax(tree, usingKeyword, module, semicolon);
 	}
 
-	private NameSyntax ParseNameSyntax()
+	private NameSyntax ParseName()
 	{
 		IdentifierNameSyntax firstName = ParseIdentifierName();
 
@@ -130,7 +251,7 @@ internal sealed class Parser
 		{
 			SyntaxToken dot = NextToken();
 
-			NameSyntax rightName = ParseNameSyntax();
+			NameSyntax rightName = ParseName();
 
 			return new QualifiedNameSyntax(tree, firstName, dot, rightName);
 		}

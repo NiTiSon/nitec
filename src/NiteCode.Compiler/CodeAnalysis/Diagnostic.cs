@@ -12,8 +12,6 @@ public sealed partial class Diagnostic : IEquatable<Diagnostic>
 
 	public string Id
 		=> Descriptor.Id;
-	public string Title
-		=> Descriptor.Title;
 	public string Message
 		=> string.Format(Descriptor.Message, arguments);
 	public DiagnosticSeverity Severity

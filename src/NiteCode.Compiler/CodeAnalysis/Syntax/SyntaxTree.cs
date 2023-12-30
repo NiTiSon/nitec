@@ -32,9 +32,15 @@ public sealed class SyntaxTree
 		SourceText source = new(content, file.FullName);
 		SyntaxTree tree = new(source);
 
+		DateTime startMeasure = DateTime.UtcNow;
 		Parser parser = new(tree);
 
 		CompilationUnitSyntax unit = parser.ParseCompilationUnit();
+		DateTime endMeasure = DateTime.UtcNow;
+
+		TimeSpan diff = endMeasure - startMeasure;
+
+		Console.WriteLine($"Lexer+Parser time: {diff:ss\\:ffffff}");
 
 		foreach (Diagnostic diagnostic in parser.Diagnostics)
 		{

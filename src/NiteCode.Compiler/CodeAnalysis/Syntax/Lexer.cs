@@ -418,11 +418,11 @@ internal sealed partial class Lexer
 			case ':': ReadOneCharOfKind(SyntaxKind.Colon); break;
 			case ';': ReadOneCharOfKind(SyntaxKind.Semicolon); break;
 			case '(': ReadOneCharOfKind(SyntaxKind.OpenParenthesis); break;
-			case ')': ReadOneCharOfKind(SyntaxKind.ClosedParenthesis); break;
+			case ')': ReadOneCharOfKind(SyntaxKind.CloseParenthesis); break;
 			case '{': ReadOneCharOfKind(SyntaxKind.OpenBrace); break;
-			case '}': ReadOneCharOfKind(SyntaxKind.ClosedBrace); break;
+			case '}': ReadOneCharOfKind(SyntaxKind.CloseBrace); break;
 			case '[': ReadOneCharOfKind(SyntaxKind.OpenBracket); break;
-			case ']': ReadOneCharOfKind(SyntaxKind.ClosedBracket); break;
+			case ']': ReadOneCharOfKind(SyntaxKind.CloseBracket); break;
 			default:
 				if (IsIdentifierBegin(Current))
 				{

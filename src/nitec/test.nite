@@ -1,2 +1,7 @@
 using Standard;
 
+module Dekoto;
+
+public static void main()
+{
+}

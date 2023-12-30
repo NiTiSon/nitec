@@ -1,15 +1,25 @@
-﻿namespace NiteCode.Compiler.CodeAnalysis.Syntax;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 
-//public sealed class FunctionDeclarationSyntax : MemberSyntax
-//{
-//	public FunctionDeclarationSyntax(SyntaxTree syntaxTree, /*AccessModifierSyntax */ SyntaxNode access, ) : base(syntaxTree)
-//	{
-//	}
+namespace NiteCode.Compiler.CodeAnalysis.Syntax;
 
-//	public override SyntaxKind Kind => SyntaxKind.Function;
+public sealed class FunctionDeclarationSyntax(SyntaxTree tree, ImmutableArray<SyntaxToken> modifications, TypeSyntax returnType, IdentifierNameSyntax name, ParameterListSyntax parameters, BlockStatementSyntax body) : MemberDeclarationSyntax(tree, modifications)
+{
+	public override SyntaxKind Kind => SyntaxKind.Function;
 
-//	public override IEnumerable<SyntaxNode> GetChildren()
-//	{
-//		yield break;
-//	}
-//}
+	public TypeSyntax ReturnType { get; } = returnType;
+	public IdentifierNameSyntax Name { get; } = name;
+	public ParameterListSyntax Parameters { get; } = parameters;
+	public BlockStatementSyntax Body { get; } = body;
+
+	public override IEnumerable<SyntaxNode> GetChildren()
+	{
+		foreach (SyntaxNode node in base.GetChildren())
+			yield return node;
+
+		yield return ReturnType;
+		yield return Name;
+		yield return Parameters;
+		yield return Body;
+	}
+}
