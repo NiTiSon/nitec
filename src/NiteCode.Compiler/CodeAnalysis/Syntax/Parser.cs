@@ -40,18 +40,18 @@ internal sealed class Parser
 			{
 				if (badTokens.Count > 0)
 				{
-					var leadingTrivia = token.LeadingTrivia.ToBuilder();
-					var index = 0;
+					ImmutableArray<SyntaxTrivia>.Builder leadingTrivia = token.LeadingTrivia.ToBuilder();
+					int index = 0;
 
-					foreach (var badToken in badTokens)
+					foreach (SyntaxToken badToken in badTokens)
 					{
-						foreach (var lt in badToken.LeadingTrivia)
+						foreach (SyntaxTrivia lt in badToken.LeadingTrivia)
 							leadingTrivia.Insert(index++, lt);
 
-						var trivia = new SyntaxTrivia(tree, SyntaxKind.SkippedTextTrivia, badToken.Position, badToken.Text);
+						SyntaxTrivia trivia = new SyntaxTrivia(tree, SyntaxKind.SkippedTextTrivia, badToken.Position, badToken.Text);
 						leadingTrivia.Insert(index++, trivia);
 
-						foreach (var tt in badToken.TrailingTrivia)
+						foreach (SyntaxTrivia tt in badToken.TrailingTrivia)
 							leadingTrivia.Insert(index++, tt);
 					}
 
@@ -299,8 +299,7 @@ internal sealed class Parser
 
 			case SyntaxKind.FalseConst:
 			case SyntaxKind.TrueConst:
-				throw new NotImplementedException();
-				//return ParseBooleanLiteral();
+				return new LiteralExpressionSyntax(tree, NextToken());
 
 			case SyntaxKind.Number:
 				return ParseNumberLiteral();
@@ -308,15 +307,12 @@ internal sealed class Parser
 			case SyntaxKind.String:
 				throw new NotImplementedException();
 				//return ParseStringLiteral();
-
-			case SyntaxKind.Identifier:
-				throw new NotImplementedException();
-				//return ParseNameOrCallExpression();
 			default:
 				throw new NotImplementedException();
 		}
 	}
-	private ExpressionSyntax ParseNumberLiteral()
+
+	private LiteralExpressionSyntax ParseNumberLiteral()
 	{
 		SyntaxToken numberToken = MatchToken(SyntaxKind.Number);
 		return new LiteralExpressionSyntax(tree, numberToken);
