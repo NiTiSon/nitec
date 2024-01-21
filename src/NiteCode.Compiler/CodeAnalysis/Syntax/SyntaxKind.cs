@@ -1,147 +1,436 @@
-﻿namespace NiteCode.Compiler.CodeAnalysis.Syntax;
+﻿using System;
+using static NiteCode.Compiler.CodeAnalysis.Syntax.SyntaxKindFlags;
 
-public enum SyntaxKind : uint
+namespace NiteCode.Compiler.CodeAnalysis.Syntax;
+
+public enum SyntaxKind
 {
-	BadToken,
+	None = 0,
 
-	EndOfFile,
-	Number,
-	String,
-	Identifier,
+	// Punctuation tokens
 
-	CompilationUnit,
+	/// <summary>
+	/// Represents <c>.</c> token.
+	/// </summary>
+	DotToken = TokenFlag + 1,
+	/// <summary>
+	/// Represents <c>..</c> token.
+	/// </summary>
+	DotDotToken,
+	/// <summary>
+	/// Represents <c>!</c> token.
+	/// </summary>
+	ExclamationToken,
+	/// <summary>
+	/// Represents <c>?</c> token.
+	/// </summary>
+	QuestionToken,
+	/// <summary>
+	/// Represents <c>%</c> token.
+	/// </summary>
+	PercentToken,
+	/// <summary>
+	/// Represents <c>~</c> token.
+	/// </summary>
+	TildeToken,
+	/// <summary>
+	/// Represents <c>&amp;</c> token.
+	/// </summary>
+	AmpersandToken,
+	/// <summary>
+	/// Represents <c>^</c> token.
+	/// </summary>
+	CaretToken,
+	/// <summary>
+	/// Represents <c>(</c> token.
+	/// </summary>
+	OpenParenToken,
+	/// <summary>
+	/// Represents <c>)</c> token.
+	/// </summary>
+	CloseParenToken,
+	/// <summary>
+	/// Represents <c>[</c> token.
+	/// </summary>
+	OpenBracketToken,
+	/// <summary>
+	/// Represents <c>]</c> token.
+	/// </summary>
+	CloseBracketToken,
+	/// <summary>
+	/// Represents <c>{</c> token.
+	/// </summary>
+	OpenBraceToken,
+	/// <summary>
+	/// Represents <c>}</c> token.
+	/// </summary>
+	CloseBraceToken,
+	/// <summary>
+	/// Represents <c>+</c> token.
+	/// </summary>
+	PlusToken,
+	/// <summary>
+	/// Represents <c>-</c> token.
+	/// </summary>
+	MinusToken,
+	/// <summary>
+	/// Represents <c>*</c> token.
+	/// </summary>
+	AsteriskToken,
+	/// <summary>
+	/// Represents <c>/</c> token.
+	/// </summary>
+	SlashToken,
+	/// <summary>
+	/// Represents <c>\</c> token.
+	/// </summary>
+	BackslashToken,
+	/// <summary>
+	/// Represents <c>=</c> token.
+	/// </summary>
+	EqualsToken,
+	/// <summary>
+	/// Represents <c>|</c> token.
+	/// </summary>
+	BarToken,
+	/// <summary>
+	/// Represents <c>:</c> token.
+	/// </summary>
+	ColonToken,
+	/// <summary>
+	/// Represents <c>;</c> token.
+	/// </summary>
+	SemicolonToken,
 
-	NumberExpression,
-	BinaryExpression,
+	// Compound punctuation tokens
 
-	BlockStatement,
-	
-	IdentifierName,
-	QualifiedName,
+	/// <summary>
+	/// Represents <c>||</c> token.
+	/// </summary>
+	BarBarToken,
+	/// <summary>
+	/// Represents <c>&amp;&amp;</c> token.
+	/// </summary>
+	AmpersandAmpersandToken,
+	/// <summary>
+	/// Represents <c>--</c> token.
+	/// </summary>
+	MinusMinusToken,
+	/// <summary>
+	/// Represents <c>++</c> token.
+	/// </summary>
+	PlusPlusToken,
+	/// <summary>
+	/// Represents <c>::</c> token.
+	/// </summary>
+	ColonColonToken,
+	/// <summary>
+	/// Represents <c>!=</c> token.
+	/// </summary>
+	ExclamationEqualsToken,
+	/// <summary>
+	/// Represents <c>==</c> token.
+	/// </summary>
+	EqualsEqualsToken,
 
-	PredefinedType,
-
-	Parameter,
-	ParameterList,
-
-	Using,
-	Module,
-
-	Function,
-
-	SymbolFlag = 0x0C000000, // For special symbols and keywords
-	NilConst,
-	TrueConst,
-	FalseConst,
-
-	PunctuationFlag = 0x4C000000,
-	Semicolon,
-	Colon,
-	Dot,
-	Comma,
-	OpenParenthesis,
-	CloseParenthesis,
-	OpenBracket,
-	CloseBracket,
-	OpenBrace,
-	CloseBrace,
-
-	OperatorFlag = 0x3C000000, // For operators
-	Plus,
-	PlusPlus,
-	PlusEquals,
-	Minus,
-	MinusMinus,
-	MinusEquals,
-	Asterisk,
-	AsteriskEquals,
-	Slash,
-	SlashEquals,
-	Modulo,
-	ModuloEquals,
-	
-	Bang,
-	Equals,
-	EqualsEquals,
-	BangEquals,
-	Tilde,
-	Circumflex, // a.k.a. Hat ^_^
-	CircumflexEquals,
-	Ampersand,
-	AmpersandAmpersand,
-	AmpersandEquals,
-	Bar,
-	BarBar,
-	BarEquals,
-
-	Less,
-	LessLess,
-	LessEquals,
-	LessLessEquals,
-	More,
-	MoreMore,
-	MoreEquals,
-	MoreMoreEquals,
-
-	
-	BuiltInTypeFlag = 0x2C000000,
-	I8,
-	I16,
-	I32,
-	I64,
-	I128,
-	U8,
-	U16,
-	U32,
-	U64,
-	U128,
-	F16,
-	F32,
-	F64,
-	F128,
-	Bool,
-	Void,
-
-	KeywordFlag = 0x1C000000,
-	PublicKeyword,
-	PrivateKeyword,
-	ProtectedKeyword,
-	
-	NewKeyword,
-	DeleteKeyword,
-
-	UsingKeyword,
-	ModuleKeyword,
-
-	TypeKeyword,
-	EnumKeyword,
-	
-	RefKeyword,
-	ObjectKeyword,
-	LocalKeyword,
-	
-	ConstKeyword,
-	LiteralKeyword,
-	StaticKeyword,
-	
+	// Keywords
+	/// <summary>
+	/// Represents <see langword="bool"/>.
+	/// </summary>
+	BoolKeyword = KeywordFlag + 1,
+	/// <summary>
+	/// Represents <see langword="i8"/>.
+	/// </summary>
+	I8Keyword,
+	/// <summary>
+	/// Represents <see langword="i16"/>.
+	/// </summary>
+	I16Keyword,
+	/// <summary>
+	/// Represents <see langword="i32"/>.
+	/// </summary>
+	I32Keyword,
+	/// <summary>
+	/// Represents <see langword="i64"/>.
+	/// </summary>
+	I64Keyword,
+	/// <summary>
+	/// Represents <see langword="u8"/>.
+	/// </summary>
+	U8Keyword,
+	/// <summary>
+	/// Represents <see langword="u16"/>.
+	/// </summary>
+	U16Keyword,
+	/// <summary>
+	/// Represents <see langword="u32"/>.
+	/// </summary>
+	U32Keyword,
+	/// <summary>
+	/// Represents <see langword="u64"/>.
+	/// </summary>
+	U64Keyword,
+	/// <summary>
+	/// Represents <see langword="f16"/>.
+	/// </summary>
+	F16Keyword,
+	/// <summary>
+	/// Represents <see langword="f32"/>.
+	/// </summary>
+	F32Keyword,
+	/// <summary>
+	/// Represents <see langword="f64"/>.
+	/// </summary>
+	F64Keyword,
+	/// <summary>
+	/// Represents <see langword="void"/>.
+	/// </summary>
+	VoidKeyword,
+	/// <summary>
+	/// Represents <see langword="sizeof"/>.
+	/// </summary>
 	SizeofKeyword,
+	/// <summary>
+	/// Represents <see langword="typeof"/>.
+	/// </summary>
 	TypeofKeyword,
-	DefaultKeyword,
-
+	/// <summary>
+	/// Represents <see langword="nil"/>.
+	/// </summary>
+	NilKeyword,
+	/// <summary>
+	/// Represents <see langword="true"/>.
+	/// </summary>
+	TrueKeyword,
+	/// <summary>
+	/// Represents <see langword="false"/>.
+	/// </summary>
+	FalseKeyword,
+	/// <summary>
+	/// Represents <see langword="ref"/>.
+	/// </summary>
+	RefKeyword,
+	/// <summary>
+	/// Represents <see langword="public"/>.
+	/// </summary>
+	PublicKeyword,
+	/// <summary>
+	/// Represents <see langword="private"/>.
+	/// </summary>
+	PrivateKeyword,
+	/// <summary>
+	/// Represents <see langword="protected"/>.
+	/// </summary>
+	ProtectedKeyword,
+	/// <summary>
+	/// Represents <see langword="internal"/>.
+	/// </summary>
+	InternalKeyword,
+	/// <summary>
+	/// Represents <see langword="family"/>.
+	/// </summary>
+	FamilyKeyword,
+	/// <summary>
+	/// Represents <see langword="friend"/>.
+	/// </summary>
+	FriendKeyword,
+	/// <summary>
+	/// Represents <see langword="static"/>.
+	/// </summary>
+	StaticKeyword,
+	/// <summary>
+	/// Represents <see langword="virtual"/>.
+	/// </summary>
+	VirtualKeyword,
+	/// <summary>
+	/// Represents <see langword="abstract"/>.
+	/// </summary>
+	AbstractKeyword,
+	/// <summary>
+	/// Represents <see langword="override"/>.
+	/// </summary>
+	OverrideKeyword,
+	/// <summary>
+	/// Represents <see langword="sealed"/>.
+	/// </summary>
+	SealedKeyword,
+	/// <summary>
+	/// Represents <see langword="extern"/>.
+	/// </summary>
+	ExternKeyword,
+	/// <summary>
+	/// Represents <see langword="operator"/>.
+	/// </summary>
 	OperatorKeyword,
-	ExternalKeyword,
-	ImplicitKeyword,
+	/// <summary>
+	/// Represents <see langword="new"/>.
+	/// </summary>
+	NewKeyword,
+	/// <summary>
+	/// Represents <see langword="delete"/>.
+	/// </summary>
+	DeleteKeyword,
+	/// <summary>
+	/// Represents <see langword="self"/>.
+	/// </summary>
+	SelfKeyword,
+	/// <summary>
+	/// Represents <see langword="base"/>.
+	/// </summary>
+	BaseKeyword,
+	/// <summary>
+	/// Represents <see langword="module"/>.
+	/// </summary>
+	ModuleKeyword,
+	/// <summary>
+	/// Represents <see langword="using"/>.
+	/// </summary>
+	UsingKeyword,
+	/// <summary>
+	/// Represents <see langword="type"/>.
+	/// </summary>
+	TypeKeyword,
 
-	IfKeyword,
-	ElseKeyword,
-	WhileKeyword,
-	DoKeyword,
-	ReturnKeyword,
+	// Contextual keywords tokens (current no one...)
 
-	TriviaFlag = 0x2A000000,
-	SkippedTextTrivia,
-	LineBreakTrivia,
+	// Other
+
+	EndOfFileToken,
+
+	// Text tokens
+
+	IdentifierToken,
+	NumericLiteralToken,
+	CharacterLiteralToken,
+	StringLiteralToken,
+
+	// Trivia
+
+	EndOfLineTrivia,
 	WhitespaceTrivia,
 	SingleLineCommentTrivia,
-	MultiLineCommentTrivia,
+	MultilineCommentTrivia,
+	DisabledTextTrivia,
+
+	// Names and Type names
+
+	/// <summary>
+	/// Represents Identifier.
+	/// </summary>
+	IdentifierName,
+	/// <summary>
+	/// Represents <c>Identifier.Identifier</c> or <c>Identifier.Identifier<![CDATA[<T>]]></c>.
+	/// </summary>
+	QualifiedName,
+	/// <summary>
+	/// Represents Identifier<![CDATA[<T>]]></c>
+	/// </summary>
+	GenericName,
+	/// <summary>
+	/// Represents &lt;Type, Literal, ...&gt; 
+	/// </summary>
+	TypeArgumentList,
+	PredefinedType,
+	/// <summary>
+	/// Represents <c>[TYPE]</c>.
+	/// </summary>
+	ArrayType,
+	/// <summary>
+	/// Represents <c>[TYPE; SIZE]</c>.
+	/// </summary>
+	SliceArrayType,
+	[Obsolete("Nullable type are not supported yet; otherwise remove this annotation.")]
+	/// <remarks>
+	/// Not supported yet.
+	/// </remarks>
+	NullableType,
+
+	// Expressions
+
+	ParenthesizedExpression = ExpressionFlag + 1,
+	ElementAccessExpression,
+	InvocationExpression,
+
+	// Binary expressions
+	
+	AddExpression,
+	SubstractExpression,
+	MultiplyExpression,
+	DivideExpression,
+	ModuloExpression,
+	// TODO: shifts
+	// TODO: logical ops
+	// TODO: comp ops
+	SimpleMemberAccessExpression,
+	SimpleMethodAccessExpression,
+	ConditionalMemberAccessExpression,
+	ConditionalMethodAccessExpression,
+
+	// Binary assignment expressions
+
+	SimpleAssignmentExpression,
+
+	// Primary expressions
+
+	SelfExpression,
+	BaseExpression,
+	NumericLiteralExpression,
+	CharacterLiteralExpression,
+	StringLiteralExpression,
+	TrueLiteralExpression,
+	FalseLiteralExpression,
+	NilLiteralExpression,
+	DefaultLiteralExpression,
+
+	// Primary function expression
+
+	TypeofExpression,
+	TypeofGenericExpression,
+	SizeofExpression,
+	SizeofGenericExpression,
+
+	// Statements
+	
+	BlockStatement,
+	LocalDeclarationStatement,
+	VariableDeclaration,
+	VariableDeclarator,
+	EqualsValueClause,
+	ExpressionStatement,
+	EmptyStatement,
+	LabeledStatement,
+
+	// Jump statements
+
+	GotoStatement,
+	BreakStatement,
+	ContinueStatement,
+	ReturnStatement,
+	ThrowStatement,
+
+	WhileStatement,
+	DoStatement,
+	ForStatement,
+	LoopStatement,
+
+	// Declarations
+	CompilationUnit,
+	ModuleDeclaration,
+	UsingDirective,
+
+	// Type declarations
+	TypeDeclaration,
+
+	// TODO: base list
+	FieldDeclaration,
+	ConstructorDeclaration,
+	DestructorDeclaration,
+	FunctionOrMethodDeclaration,
+}
+
+internal static class SyntaxKindFlags
+{
+	public const int TokenFlag = 2048;
+	public const int KeywordFlag = 4096;
+	public const int ExpressionFlag = 8192;
 }

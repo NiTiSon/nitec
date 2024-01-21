@@ -1,0 +1,17 @@
+TypeX + TypeZ
+
+01. TypeX.op_addition(local ref TypeX, TypeZ)
+02. TypeX.op_addition(local ref TypeX, local ref TypeZ)
+
+03. TypeZ.op_addition(local ref TypeZ, TypeX)
+04. TypeZ.op_addition(local ref TypeZ, local ref TypeX)
+
+05. static TypeX.op_addition(TypeX, TypeZ)
+06. static TypeX.op_addition(local ref TypeX, TypeZ)
+07. static TypeX.op_addition(TypeX, local ref TypeZ)
+08. static TypeX.op_addition(local ref TypeX, local ref TypeZ)
+
+09. static TypeZ.op_addition(TypeZ, TypeX)
+10. static TypeZ.op_addition(local ref TypeZ, TypeX)
+11. static TypeZ.op_addition(TypeZ, local ref TypeX)
+12. static TypeZ.op_addition(local ref TypeZ, local ref TypeX)

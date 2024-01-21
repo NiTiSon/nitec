@@ -2,13 +2,6 @@
 using System;
 using System.IO;
 
-/*
- * nitec
- *	--runtime | -r: dotnet | nlr
- *		default: nlr
- *	
- */
-
 internal static class Program
 {
 	public static void Main(string[] args)
@@ -25,7 +18,7 @@ internal static class Program
 
 		if (!File.Exists(filePath))
 		{
-			Console.Error.WriteLine("File doesn't exists.");
+			Console.Error.WriteLine("Filename doesn't exists.");
 			Environment.Exit(1);
 		}
 
