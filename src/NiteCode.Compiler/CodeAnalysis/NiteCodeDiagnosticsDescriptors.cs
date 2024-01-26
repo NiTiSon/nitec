@@ -5,11 +5,11 @@ internal static class NiteCodeDiagnosticsDescriptors
 	public const string Compiler = "Compiler";
 
 	public static DiagnosticDescriptor
-		NC0001,
-		NC0002,
-		NC0003,
-		NC0004,
-		NC0005;
+		NC0001, // Symbol not allowed
+		NC0002, // Multi-line comment not closed
+		NC0003, // Unexpected token
+		NC0004, // More than one module declaration
+		NC0005; // Module declaration wrong location
 
 	static NiteCodeDiagnosticsDescriptors()
 	{

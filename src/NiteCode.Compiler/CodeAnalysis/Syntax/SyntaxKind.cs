@@ -40,7 +40,7 @@ public enum SyntaxKind
 	/// <summary>
 	/// Represents <c>^</c> token.
 	/// </summary>
-	CaretToken,
+	CircumflexToken,
 	/// <summary>
 	/// Represents <c>(</c> token.
 	/// </summary>
@@ -299,6 +299,7 @@ public enum SyntaxKind
 
 	// Text tokens
 
+	BadToken,
 	IdentifierToken,
 	NumericLiteralToken,
 	CharacterLiteralToken,
@@ -309,7 +310,8 @@ public enum SyntaxKind
 	EndOfLineTrivia,
 	WhitespaceTrivia,
 	SingleLineCommentTrivia,
-	MultilineCommentTrivia,
+	MultiLineCommentTrivia,
+	SkippedTokensTrivia,
 	DisabledTextTrivia,
 
 	// Names and Type names
@@ -330,7 +332,18 @@ public enum SyntaxKind
 	/// Represents &lt;Type, Literal, ...&gt; 
 	/// </summary>
 	TypeArgumentList,
+	/// <summary>
+	/// Represent any predefined type, like <c>u32</c> etc.
+	/// </summary>
 	PredefinedType,
+	/// <summary>
+	/// Represents pointer to other type.
+	/// </summary>
+	PointerType,
+	/// <summary>
+	/// Represents reference to other type.
+	/// </summary>
+	ReferenceType,
 	/// <summary>
 	/// Represents <c>[TYPE]</c>.
 	/// </summary>
@@ -350,6 +363,14 @@ public enum SyntaxKind
 	ParenthesizedExpression = ExpressionFlag + 1,
 	ElementAccessExpression,
 	InvocationExpression,
+
+	// Unary expressions
+	BitwiseNotExpression,
+	LogicalNotExpression,
+	PrefixDecrementExpression,
+	PrefixIncrementExpression,
+	PostfixDecrementExpression,
+	PostfixIncrementExpression,
 
 	// Binary expressions
 	
@@ -425,7 +446,13 @@ public enum SyntaxKind
 	FieldDeclaration,
 	ConstructorDeclaration,
 	DestructorDeclaration,
-	FunctionOrMethodDeclaration,
+	MethodDeclaration,
+	ParameterList,
+	BracketedParameterList,
+	Parameter,
+	GenericParameterList,
+	GenericParameter,
+	IncompleteMember,
 }
 
 internal static class SyntaxKindFlags

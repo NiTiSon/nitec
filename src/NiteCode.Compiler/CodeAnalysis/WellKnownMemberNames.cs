@@ -20,4 +20,6 @@ public static class WellKnownMemberNames
 	public const string TypeConstructorName = "type_init";
 
 	public const string DisposeMethodName = "dispose";
+
+	public const string EnumValueName = "<value>";
 }
