@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace NiteCode.Compiler.CodeAnalysis.Syntax;
 
-public class SyntaxToken : SyntaxNode
+public sealed class SyntaxToken : SyntaxNode
 {
 	public SyntaxToken(SyntaxTree tree, SyntaxKind kind, uint position, StringSegment text, ImmutableArray<SyntaxTrivia> leadingTrivia, ImmutableArray<SyntaxTrivia> trailingTrivia) : base(tree)
 	{
@@ -17,6 +17,14 @@ public class SyntaxToken : SyntaxNode
 		LeadingTrivia = leadingTrivia;
 		TrailingTrivia = trailingTrivia;
 		IsMissing = false;
+	}
+
+	/// <summary>
+	/// Interprets this token as an identifier.
+	/// </summary>
+	public SyntaxToken ToIdentifier()
+	{
+		return new SyntaxToken(SyntaxTree, SyntaxKind.IdentifierToken, Position, Text, LeadingTrivia, TrailingTrivia);
 	}
 
 	public override SyntaxKind Kind { get; }

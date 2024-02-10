@@ -39,4 +39,6 @@ public sealed class DiagnosticBag : IEnumerable<Diagnostic>
 		=> Add(Diagnostic.Create(NiteCodeDiagnosticsDescriptors.NC0004, location));
 	public void ReportWrongModuleDeclarationLocation(TextLocation location)
 		=> Add(Diagnostic.Create(NiteCodeDiagnosticsDescriptors.NC0005, location));
+	public void ReportZeroByte(TextLocation location)
+		=> Add(Diagnostic.Create(NiteCodeDiagnosticsDescriptors.NC0006, location));
 }

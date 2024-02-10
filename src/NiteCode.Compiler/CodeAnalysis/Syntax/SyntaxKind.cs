@@ -132,6 +132,34 @@ public enum SyntaxKind
 	/// Represents <c>==</c> token.
 	/// </summary>
 	EqualsEqualsToken,
+	/// <summary>
+	/// Represents <c>%=</c> token.
+	/// </summary>
+	PercentEqualsToken,
+	/// <summary>
+	/// Represents <c>+=</c> token.
+	/// </summary>
+	PlusEqualsToken,
+	/// <summary>
+	/// Represents <c>-=</c> token.
+	/// </summary>
+	MinusEqualsToken,
+	/// <summary>
+	/// Represents <c>*=</c> token.
+	/// </summary>
+	AsteriskEqualsToken,
+	/// <summary>
+	/// Represents <c>/=</c> token.
+	/// </summary>
+	SlashEqualsToken,
+	/// <summary>
+	/// Represents <c>|=</c> token.
+	/// </summary>
+	BarEqualsToken,
+	/// <summary>
+	/// Represents <c>&=</c> token.
+	/// </summary>
+	AmpersandEqualsToken,
 
 	// Keywords
 	/// <summary>
@@ -186,6 +214,10 @@ public enum SyntaxKind
 	/// Represents <see langword="void"/>.
 	/// </summary>
 	VoidKeyword,
+	/// <summary>
+	/// Represents <see langword="auto"/>.
+	/// </summary>
+	AutoKeyword,
 	/// <summary>
 	/// Represents <see langword="sizeof"/>.
 	/// </summary>
@@ -283,9 +315,9 @@ public enum SyntaxKind
 	/// </summary>
 	ModuleKeyword,
 	/// <summary>
-	/// Represents <see langword="using"/>.
+	/// Represents <see langword="use"/>.
 	/// </summary>
-	UsingKeyword,
+	UseKeyword,
 	/// <summary>
 	/// Represents <see langword="type"/>.
 	/// </summary>
@@ -333,7 +365,7 @@ public enum SyntaxKind
 	/// </summary>
 	TypeArgumentList,
 	/// <summary>
-	/// Represent any predefined type, like <c>u32</c> etc.
+	/// Represent any predefined type, like <see langword="u32"/> etc.
 	/// </summary>
 	PredefinedType,
 	/// <summary>
@@ -365,26 +397,66 @@ public enum SyntaxKind
 	InvocationExpression,
 
 	// Unary expressions
+	/// <summary>
+	/// Represents <c>~exp</c> expression.
+	/// </summary>
 	BitwiseNotExpression,
+	/// <summary>
+	/// Represents <c>-exp</c> expression.
+	/// </summary>
+	NegationExpression,
+	/// <summary>
+	/// Represents <c>!exp</c> expression.
+	/// </summary>
 	LogicalNotExpression,
+	/// <summary>
+	/// Represents <c>--exp</c> expression.
+	/// </summary>
 	PrefixDecrementExpression,
+	/// <summary>
+	/// Represents <c>++exp</c> expression.
+	/// </summary>
 	PrefixIncrementExpression,
+	/// <summary>
+	/// Represents <c>exp--</c> expression.
+	/// </summary>
 	PostfixDecrementExpression,
+	/// <summary>
+	/// Represents <c>exp++</c> expression.
+	/// </summary>
 	PostfixIncrementExpression,
 
 	// Binary expressions
-	
+
+	/// <summary>
+	/// Represents <c>exp + exp</c> expression.
+	/// </summary>
 	AddExpression,
+	/// <summary>
+	/// Represents <c>exp - exp</c> expression.
+	/// </summary>
 	SubstractExpression,
+	/// <summary>
+	/// Represents <c>exp * exp</c> expression.
+	/// </summary>
 	MultiplyExpression,
+	/// <summary>
+	/// Represents <c>exp / exp</c> expression.
+	/// </summary>
 	DivideExpression,
+	/// <summary>
+	/// Represents <c>exp % exp</c> expression.
+	/// </summary>
 	ModuloExpression,
 	// TODO: shifts
 	// TODO: logical ops
 	// TODO: comp ops
 	SimpleMemberAccessExpression,
 	SimpleMethodAccessExpression,
+
+	[Obsolete("Nullable type are not supported yet; otherwise remove this annotation.")]
 	ConditionalMemberAccessExpression,
+	[Obsolete("Nullable type are not supported yet; otherwise remove this annotation.")]
 	ConditionalMethodAccessExpression,
 
 	// Binary assignment expressions
@@ -413,6 +485,7 @@ public enum SyntaxKind
 	// Statements
 	
 	BlockStatement,
+	GlobalStatement,
 	LocalDeclarationStatement,
 	VariableDeclaration,
 	VariableDeclarator,

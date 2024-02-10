@@ -1,0 +1,25 @@
+Reference: &a
+Dereference: *a
+Invertion: !a
+Negation: -a
+Sizeof: sizeof(a) | sizeof<B>
+Nameof: nameof(a) | nameof<B>
+Addition: a + b
+Substraction: a - b
+Multiplication: a * b
+Remainder: a % b
+BitwiseAnd: &
+BitwiseOr: |
+BitwiseXor: ^
+LeftShift: <<
+RightShift: >>
+Equals: ==
+NotEquals: !=
+GreatThan: >
+GreatThanOrEquals: >=
+LessThan: <
+LessThanOrEquals: <=
+LazyBooleanOr: ||
+LazyBooleanAnd: &&
+ExplicitCast: a as B
+Assignment: a = b

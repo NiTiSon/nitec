@@ -1,1 +1,3 @@
-32 - 32 + 32 * 32 - 32
+1 + 2 + 3 + 5
+// &?u32? - NullableReference of NullableType of BuiltinType(u32)
+// &u32? and &?u32 are not same things

@@ -4,23 +4,26 @@ namespace NiteCode.Compiler.CodeAnalysis.Syntax;
 
 public sealed class ParenthesizedExpressionSyntax : ExpressionSyntax
 {
-	public ParenthesizedExpressionSyntax(SyntaxTree tree, SyntaxToken left, ExpressionSyntax expression, SyntaxToken right) : base(tree)
+	public ParenthesizedExpressionSyntax(SyntaxTree tree, SyntaxToken openParen, ExpressionSyntax expression, SyntaxToken closeParen) : base(tree)
 	{
-		Left = left;
+		Debug.Ensure(openParen, SyntaxKind.OpenParenToken);
+		Debug.Ensure(closeParen, SyntaxKind.CloseParenToken);
+
+		OpenParen = openParen;
 		Expression = expression;
-		Right = right;
+		CloseParen = closeParen;
 	}
 	public override SyntaxKind Kind => SyntaxKind.ParenthesizedExpression;
 
-	public SyntaxToken Left { get; }
+	public SyntaxToken OpenParen { get; }
 	public ExpressionSyntax Expression { get; }
-	public SyntaxToken Right { get; }
+	public SyntaxToken CloseParen { get; }
 
 
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
-		yield return Left;
+		yield return OpenParen;
 		yield return Expression;
-		yield return Right;
+		yield return CloseParen;
 	}
 }

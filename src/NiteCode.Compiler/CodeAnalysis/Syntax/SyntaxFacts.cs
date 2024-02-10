@@ -2,6 +2,8 @@
 
 internal static class SyntaxFacts
 {
+	public const uint UnaryPrecedence = 12;
+
 	public static uint GetUnaryOperatorPrecedence(this SyntaxNode node)
 		=> GetUnaryOperatorPrecedence(node.Kind);
 
@@ -12,8 +14,10 @@ internal static class SyntaxFacts
 			case SyntaxKind.PlusToken:
 			case SyntaxKind.MinusToken:
 			case SyntaxKind.TildeToken:
+			case SyntaxKind.AmpersandToken:
+			case SyntaxKind.AsteriskToken:
 			case SyntaxKind.ExclamationToken:
-				return 12;
+				return UnaryPrecedence;
 
 			default: return 0;
 		}

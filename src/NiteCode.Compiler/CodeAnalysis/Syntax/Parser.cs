@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Primitives;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq.Expressions;
@@ -42,7 +43,7 @@ internal sealed class Parser
 			return NextToken();
 
 		diagnostics.ReportUnexpectedToken(Current.Location, Current.Kind, kind);
-		return new SyntaxToken(tree, kind, Current.Position, StringSegment.Empty, ImmutableArray<SyntaxTrivia>.Empty, ImmutableArray<SyntaxTrivia>.Empty);
+		return new SyntaxToken(tree, kind, Current.Position, StringSegment.Empty, [], []);
 	}
 
 	public Parser(SyntaxTree tree)
@@ -108,7 +109,15 @@ internal sealed class Parser
 		{
 			SyntaxToken operatorToken = NextToken();
 			ExpressionSyntax operand = ParseExpression(unaryOperatorPrecedence);
-			left = new UnaryExpressionSyntax(tree, TokenKindToUnaryExpressionKind(operatorToken.Kind), operatorToken, operand);
+			SyntaxKind kind = TokenKindToUnaryExpressionKind(operatorToken.Kind);
+
+			if (kind is 0)
+			{
+				// NOT UNARY OPERATION
+				throw new Exception("Not an unary expression");
+			}
+
+			left = new UnaryExpressionSyntax(tree, kind, operatorToken, operand);
 		}
 		else
 		{
@@ -177,7 +186,8 @@ internal sealed class Parser
 		return kind switch
 		{
 			SyntaxKind.TildeToken => SyntaxKind.BitwiseNotExpression,
-			_ => throw new NotImplementYetException()
+			SyntaxKind.MinusToken => SyntaxKind.NegationExpression,
+			_ => 0
 		};
 	}
 }
