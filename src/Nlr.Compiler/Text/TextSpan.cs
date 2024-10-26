@@ -13,4 +13,14 @@ public readonly record struct TextSpan
 		Begin = begin;
 		Length = length;
 	}
+
+	public static TextSpan FromBounds(uint start, uint end)
+	{
+		return new TextSpan(start, end - start);
+	}
+
+	public override string? ToString()
+	{
+		return $"{{{Begin}..{End}, Length: {Length}}}";
+	}
 }

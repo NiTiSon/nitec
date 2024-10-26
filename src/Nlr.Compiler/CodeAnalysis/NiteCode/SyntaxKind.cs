@@ -2,6 +2,10 @@
 
 public enum SyntaxKind : ushort
 {
+	None = 0,
+
+	EndOfFile = 1,
+
 	// === Punctuation ===
 	/// <summary>Represents <c>~</c> token.</summary>
 	TildeToken = 1001,
@@ -80,6 +84,9 @@ public enum SyntaxKind : ushort
 
 	/// <summary>Represents <c>/</c> token.</summary>
 	SlashToken = 1026,
+
+	/// <summary>Represents <c>::</c> token.</summary>
+	ColonColonToken = 1051,
 
 	// === Keywords ===
 	/// <summary>Represents <see langword="bool"/>.</summary>

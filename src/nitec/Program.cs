@@ -72,17 +72,28 @@ internal static class Program
 	
 	private static void Process(FileInfo[]? inputFiles, FileInfo[]? includeFiles, FileInfo? outputFile)
 	{
-		Debug.Assert(inputFiles?.All(x => x.Exists) ?? false);
+		NiteCodeSyntaxTree[] trees = new NiteCodeSyntaxTree[inputFiles?.Length ?? 0];
 
-		NiteCodeSyntaxTree[] tree = new NiteCodeSyntaxTree[inputFiles.Length];
+		if (trees.Length == 0)
+		{
+			// Diagnostic: no input
+			return;
+		}
 
 		for (int i = 0; i < inputFiles.Length; i++)
 		{
 			FileInfo file = inputFiles[i];
+			
+			if (!file.Exists)
+			{
+				// Diagnostic: file doesn't exists
+				continue;
+			}
+			
 			using FileStream fs = file.OpenRead();
 			using TextReader reader = new StreamReader(fs);
 
-			tree[i] = NiteCodeSyntaxTree.ParseText(reader.ReadToEnd(), file.FullName, new NiteCodeOptions(LanguageVersion.Latest));
+			trees[i] = NiteCodeSyntaxTree.ParseText(reader.ReadToEnd(), file.FullName, new NiteCodeOptions(LanguageVersion.Latest));
 		}
 	}
 

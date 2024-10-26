@@ -14,22 +14,22 @@ public sealed class TextWindow : IDisposable
 	private readonly uint sourceEnd;
 
 	private uint basis;
-	private uint offset;
+	private uint currentOffset;
 	private uint windowLength;
 
 	private uint lexemeStart;
 
-	public uint Position => basis + offset;
+	public uint Position => basis + currentOffset;
 
 	public uint LexemeStartPosition => basis + lexemeStart;
 
-	public uint LexemeLength => lexemeStart - offset;
+	public uint LexemeLength => currentOffset - lexemeStart;
 
 	public TextWindow(SourceText source)
 	{
 		this.source = source;
 		basis = 0;
-		offset = 0;
+		currentOffset = 0;
 		sourceEnd = source.Length;
 		lexemeStart = 0;
 	}
@@ -40,7 +40,7 @@ public sealed class TextWindow : IDisposable
 
 	public void Start()
 	{
-		lexemeStart = offset;
+		lexemeStart = currentOffset;
 	}
 
 	public bool IsAtTheEnd()
@@ -49,6 +49,11 @@ public sealed class TextWindow : IDisposable
 	}
 
 	public bool IsAtTheEnd(uint offset)
+	{
+		return (Position + offset) >= sourceEnd;
+	}
+
+	public bool IsAtTheEnd(int offset)
 	{
 		return (Position + offset) >= sourceEnd;
 	}
@@ -65,12 +70,12 @@ public sealed class TextWindow : IDisposable
 
 	public void Advance()
 	{
-		offset++;
+		currentOffset++;
 	}
 
 	public void Advance(uint offset)
 	{
-		this.offset += offset;
+		this.currentOffset += offset;
 	}
 
 	public bool TryAdvance(char required)
@@ -99,7 +104,7 @@ public sealed class TextWindow : IDisposable
 			return InvalidCharacter;
 		}
 
-		return source[offset];
+		return source[currentOffset];
 	}
 
 	public char Peek(uint offset)
@@ -109,11 +114,26 @@ public sealed class TextWindow : IDisposable
 			return InvalidCharacter;
 		}
 
-		return source[offset];
+		return source[currentOffset + offset];
+	}
+
+	public char Peek(int offset)
+	{
+		if (IsAtTheEnd((uint)(currentOffset + offset)))
+		{
+			return InvalidCharacter;
+		}
+
+		return source[(uint)(currentOffset + offset)];
 	}
 
 	public StringSegment GetText()
 	{
 		return source.Substring(lexemeStart, LexemeLength);
+	}
+
+	public TextSpan GetSpan()
+	{
+		return new(lexemeStart, LexemeLength);
 	}
 }
