@@ -160,7 +160,7 @@ public enum SyntaxKind : ushort
 	NumericLiteralToken = 2002,
 	BadToken = 2003,
 	CharacterLiteralToken = 2004,
-	//StringLiteralToken = 2005,
+	StringLiteralToken = 2005,
 	//VerbatimStringLiteralToken = 2006,
 
 	// === Trivia ===

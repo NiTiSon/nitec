@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Nlr.Compiler.CodeAnalysis.NiteCode;
 
-public readonly struct SyntaxToken
+public class SyntaxToken
 {
 	private readonly SyntaxKind kind;
 	private readonly StringSegment text;

@@ -91,11 +91,49 @@ internal class NiteCodeLexer : Lexer
 					goto default;
 				}
 				break;
+			//case (>= '0' and <= '9'):
+			//	ScanNumericLiteral(ref tokenInfo);
+			//	break;
+			case '"':
+				ScanStringLiteral(ref tokenInfo);
+				break;
+			//case '\'':
+			//	ScanCharacterLiteral(ref tokenInfo);
+			//	break;
 			default:
 				tokenInfo.Kind = SyntaxKind.BadToken;
 				window.Advance();
 				tokenInfo.Text = StringSegment.Empty;
 				break;
+		}
+	}
+
+	private void ScanStringLiteral(ref TokenInfo tokenInfo)
+	{
+		window.Advance();
+
+		if (window.Peek() == '"' && window.Peek(1) == '"')
+		{
+			tokenInfo.Kind = SyntaxKind.CharacterLiteralToken;
+			tokenInfo.StringValue = string.Empty;
+			return;
+		}
+
+		while (true)
+		{
+			char ch = window.Peek();
+
+			if (ch == '"' && window.Peek(-1) != '\\')
+			{
+				tokenInfo.Kind = SyntaxKind.StringLiteralToken;
+				tokenInfo.StringValue = window.GetText().Substring(1);
+				window.Advance();
+				break;
+			}
+			else
+			{
+				window.Advance();
+			}
 		}
 	}
 
@@ -234,6 +272,12 @@ internal class NiteCodeLexer : Lexer
 		{
 			case SyntaxKind.IdentifierToken:
 				token = new(info.Kind, info.Text, span, leadingTrivia, trailingTrivia);
+				break;
+			case SyntaxKind.StringLiteralToken:
+				token = new SyntaxTokenWithValue<string>(info.Kind, info.Text, span, info.StringValue, leadingTrivia, trailingTrivia);
+				break;
+			case SyntaxKind.CharacterLiteralToken:
+				token = new SyntaxTokenWithValue<byte>(info.Kind, info.Text, span, info.CharValue, leadingTrivia, trailingTrivia);
 				break;
 			default:
 				token = new(info.Kind, StringSegment.Empty, span, leadingTrivia, trailingTrivia);
