@@ -34,6 +34,21 @@ public static class SyntaxFacts
 		};
 	}
 
+	public static char GetEscaped(char ch)
+	{
+		return ch switch
+		{
+			'n' => '\n',
+			'0' => '\0',
+			'r' => '\r',
+			'\\' => '\\',
+			't' => '\t',
+			'\'' => '\'',
+			'\"' => '\"',
+			_ => '\uFFFD', // Invalid character symbol
+		};
+	}
+
 	public static bool IsContextualKeyword(SyntaxKind kind)
 	{
 		return false;
@@ -108,5 +123,10 @@ public static class SyntaxFacts
 	{
 		return (ch == ' ' || ch == '\t')
 			|| CharUnicodeInfo.GetUnicodeCategory(ch) == UnicodeCategory.SpaceSeparator;
+	}
+
+	public static bool IsNewLineCharacter(char ch)
+	{
+		return ch == '\n' || ch == '\r';
 	}
 }

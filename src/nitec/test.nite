@@ -6,4 +6,4 @@ void main(): i32 {
 	writeLine("Hello World");
 
 	return 0;
-}
+}"\

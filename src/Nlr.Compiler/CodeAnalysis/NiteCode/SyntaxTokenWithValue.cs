@@ -17,7 +17,11 @@ public sealed class SyntaxTokenWithValue<T> : SyntaxToken
 
 	public override string ToString()
 	{
-		if (value is IFormattable valueF)
+		if (value is string valueStr)
+		{
+			return $"{{{Kind}, {Span}, \"{valueStr}\"}}";
+		}
+		else if (value is IFormattable valueF)
 		{
 			return $"{{{Kind}, {Span}, {valueF.ToString(null, CultureInfo.InvariantCulture)}}}";
 		}

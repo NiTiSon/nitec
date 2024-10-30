@@ -2,6 +2,7 @@
 using Nlr.Compiler.Text;
 using System;
 using System.Collections.Immutable;
+using System.Text;
 
 namespace Nlr.Compiler.CodeAnalysis.NiteCode;
 
@@ -112,28 +113,45 @@ internal class NiteCodeLexer : Lexer
 	{
 		window.Advance();
 
-		if (window.Peek() == '"' && window.Peek(1) == '"')
+		if (window.Peek() == '"' && window.Peek(1) == '"') // Empty string fast exit
 		{
 			tokenInfo.Kind = SyntaxKind.CharacterLiteralToken;
 			tokenInfo.StringValue = string.Empty;
 			return;
 		}
 
+		StringBuilder sb = new(); // TODO: optimize
 		while (true)
 		{
 			char ch = window.Peek();
 
-			if (ch == '"' && window.Peek(-1) != '\\')
+			tokenInfo.Kind = SyntaxKind.StringLiteralToken;
+			if (ch == '\\')
 			{
-				tokenInfo.Kind = SyntaxKind.StringLiteralToken;
-				tokenInfo.StringValue = window.GetText().Substring(1);
+				sb.Append(SyntaxFacts.GetEscaped(window.Peek(1)));
+				window.Advance();
+				continue;
+			}
+			else if (ch == '"' && window.Peek(-1) != '\\')
+			{
+				tokenInfo.StringValue = sb.ToString();
 				window.Advance();
 				break;
 			}
-			else
+			else if (SyntaxFacts.IsNewLineCharacter(ch))
 			{
-				window.Advance();
+				// GOTO: Diagnostic: not terminated string literal
+				break;
 			}
+			else if (ch == TextWindow.InvalidCharacter) // End of file
+			{
+				// GOTO: Diagnostic: not terminated string literal
+				tokenInfo.StringValue = sb.ToString();
+				break;
+			}
+
+			sb.Append(ch);
+			window.Advance();
 		}
 	}
 
