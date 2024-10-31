@@ -4,7 +4,6 @@ using System;
 using System.CommandLine;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 
 internal static class Program
 {
@@ -13,6 +12,7 @@ internal static class Program
 	public static int Main(string[] args)
 	{
 #if DEBUG
+		Console.OutputEncoding = System.Text.Encoding.UTF8;
 		Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
 #endif
 		RootCommand rootCommand = new("Compilation tool for NLR languages.");

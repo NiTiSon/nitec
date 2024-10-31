@@ -44,7 +44,8 @@ internal class NiteCodeLexer : Lexer
 
 	private void ScanSyntaxToken(ref TokenInfo tokenInfo)
 	{
-		switch (window.Peek())
+		char ch = window.Peek();
+		switch (ch)
 		{
 			case '.':
 				window.Advance();
@@ -102,6 +103,12 @@ internal class NiteCodeLexer : Lexer
 			//	ScanCharacterLiteral(ref tokenInfo);
 			//	break;
 			default:
+				if (SyntaxFacts.IsIdentifierBeginCharacter(ch))
+				{
+					ScanIdentifierOrKeyword(ref tokenInfo);
+					break;
+				}
+
 				tokenInfo.Kind = SyntaxKind.BadToken;
 				window.Advance();
 				tokenInfo.Text = StringSegment.Empty;
