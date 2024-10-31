@@ -54,6 +54,24 @@ public static class SyntaxFacts
 		return false;
 	}
 
+	public static bool IsDecimalDigit(char ch)
+	{
+		return ch >= '0' && ch <= '9';
+	}
+
+	public static bool IsBinaryDigit(char ch)
+	{
+		return ch == '0'
+			|| ch == '1';
+	}
+
+	public static bool IsHexDigit(char ch)
+	{
+		return ch >= '0' && ch <= '9'
+			|| ch >= 'a' && ch <= 'f'
+			|| ch >= 'A' && ch <= 'F';
+	}
+
 	public static bool IsIdentifierBeginCharacter(char ch)
 	{
 		if (ch >= 'a' && ch <= 'z')

@@ -119,7 +119,7 @@ public sealed class TextWindow : IDisposable
 
 	public char Peek(int offset)
 	{
-		if (IsAtTheEnd((uint)(currentOffset + offset)))
+		if (IsAtTheEnd(offset))
 		{
 			return InvalidCharacter;
 		}

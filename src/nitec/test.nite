@@ -5,8 +5,6 @@ package test;
 void main(): i32 {
 	writeLine("Hello World");
 
-	фывфыв
-	ёфывяс
-
+	0x20
 	return 0;
 }

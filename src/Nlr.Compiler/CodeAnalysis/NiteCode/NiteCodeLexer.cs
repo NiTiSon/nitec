@@ -93,9 +93,9 @@ internal class NiteCodeLexer : Lexer
 					goto default;
 				}
 				break;
-			//case (>= '0' and <= '9'):
-			//	ScanNumericLiteral(ref tokenInfo);
-			//	break;
+			case (>= '0' and <= '9'):
+				ScanNumericLiteral(ref tokenInfo);
+				break;
 			case '"':
 				ScanStringLiteral(ref tokenInfo);
 				break;
@@ -114,6 +114,39 @@ internal class NiteCodeLexer : Lexer
 				tokenInfo.Text = StringSegment.Empty;
 				break;
 		}
+	}
+
+	private void ScanNumericLiteral(ref TokenInfo tokenInfo)
+	{
+		tokenInfo.Kind = SyntaxKind.NumericLiteralToken;
+
+		if (window.Peek() == '0' && window.Peek(1) == 'x')
+		{
+			window.Advance(2);
+			// Hex encoding
+			while (SyntaxFacts.IsHexDigit(window.Peek()))
+			{
+				window.Advance();
+			}
+		}
+		else if (window.Peek() == '0' && window.Peek(1) == 'b')
+		{
+			window.Advance(2);
+			// Binary encoding
+			while (SyntaxFacts.IsHexDigit(window.Peek()))
+			{
+				window.Advance();
+			}
+		}
+		else
+		{
+			while (SyntaxFacts.IsDecimalDigit(window.Peek()))
+			{
+				window.Advance();
+			}
+		}
+
+		// TODO: Read suffix (u32, i8, f32, etc.)
 	}
 
 	private void ScanStringLiteral(ref TokenInfo tokenInfo)
@@ -304,8 +337,9 @@ internal class NiteCodeLexer : Lexer
 			case SyntaxKind.CharacterLiteralToken:
 				token = new SyntaxTokenWithValue<byte>(info.Kind, info.Text, span, info.CharValue, leadingTrivia, trailingTrivia);
 				break;
+			case SyntaxKind.NumericLiteralToken:
 			default:
-				token = new(info.Kind, StringSegment.Empty, span, leadingTrivia, trailingTrivia);
+				token = new SyntaxTokenWithValue<ulong>(info.Kind, StringSegment.Empty, span, 0, leadingTrivia, trailingTrivia);
 				break;
 		}
 
