@@ -4,6 +4,8 @@ using System;
 using System.CommandLine;
 using System.Diagnostics;
 using System.IO;
+using Microsoft.Extensions.Primitives;
+using Nlr.Compiler.Text;
 
 internal static class Program
 {
@@ -72,17 +74,18 @@ internal static class Program
 	
 	private static void Process(FileInfo[]? inputFiles, FileInfo[]? includeFiles, FileInfo? outputFile)
 	{
+		DiagnosticBag globalDiagnostics = new();
 		NiteCodeSyntaxTree[] trees = new NiteCodeSyntaxTree[inputFiles?.Length ?? 0];
 
 		if (trees.Length == 0)
 		{
-			// Diagnostic: no input
+			globalDiagnostics.Report(NiteCodeDiagnostics.NoInputFiles);
 			return;
 		}
 
-		for (int i = 0; i < inputFiles.Length; i++)
+		for (int i = 0; i < trees.Length; i++)
 		{
-			FileInfo file = inputFiles[i];
+			FileInfo file = inputFiles![i];
 			
 			if (!file.Exists)
 			{
@@ -90,16 +93,59 @@ internal static class Program
 				continue;
 			}
 			
-			using FileStream fs = file.OpenRead();
-			using TextReader reader = new StreamReader(fs);
+			trees[i] = NiteCodeSyntaxTree.Parse(file, new NiteCodeOptions(LanguageVersion.Latest));
+		}
 
-			trees[i] = NiteCodeSyntaxTree.ParseText(reader.ReadToEnd(), file.FullName, new NiteCodeOptions(LanguageVersion.Latest));
+		foreach (Diagnostic diagnostic in globalDiagnostics)
+		{
+			PrintDiagnostic(diagnostic);
+		}
+
+		foreach (NiteCodeSyntaxTree tree in trees)
+		{
+			foreach (Diagnostic diagnostic in tree.Diagnostics)
+			{
+				PrintDiagnostic(diagnostic);
+			}
 		}
 	}
 
 	private static void PrintDiagnostic(Diagnostic diagnostic)
 	{
+		switch (diagnostic.Severity)
+		{
+			case Severity.Error:
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.Write($"error[{diagnostic.Descriptor.Id}] ");
+				Console.ResetColor();
+				Console.WriteLine(diagnostic.Descriptor.Message);
+				break;
+		}
 
+		if (diagnostic.Location != null)
+		{
+			LineList lines = new(diagnostic.Location.Content);
+			LinePositionSpan span = lines.GetLinePositionSpan(diagnostic.Span);
+			Console.WriteLine($"  --> {diagnostic.Location.Path}:{span.Begin}");
+
+			if (span.IsMultiline)
+			{
+				
+			}
+			else
+			{
+				(Line line, uint index) = lines.GetLine(diagnostic.Span.Begin);
+				String lineContent = diagnostic.Location.Substring(line.Begin, line.Length).ToString();
+				lineContent = lineContent.ReplaceLineEndings(string.Empty);
+				Console.WriteLine("   |");
+				Console.Write($"{index + 1,-3}| {lineContent[..(int)(diagnostic.Span.Begin - line.Begin)]}");
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.Write(lineContent[(int)(diagnostic.Span.Begin - line.Begin)..(int)(diagnostic.Span.End - line.Begin)]);
+				Console.ResetColor();
+				Console.WriteLine(lineContent[(int)(diagnostic.Span.End - line.Begin)..]);
+				Console.WriteLine($"   |");
+			}
+		}
 	}
 
 	/* === ERROR DISPLAY ===

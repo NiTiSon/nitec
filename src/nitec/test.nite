@@ -2,9 +2,11 @@
 
 package test;
 
-void main(): i32 {
-	writeLine("Hello World");
-
-	0x20
+void main() -> i32 {
+	print_line("Hello World");
 	return 0;
+
+	for i: i32 in 0..=12 {
+		print_line("Hello №" + i);
+    }
 }

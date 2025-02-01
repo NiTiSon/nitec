@@ -10,12 +10,14 @@ public readonly record struct Line
 	public uint Begin { get; }
 
 	public uint Length { get; }
+	public uint DisplayLength { get; }
 
 	public uint End => Begin + Length;
 
-	public Line(uint begin, uint lengthWithLineBreaks)
+	public Line(uint begin, uint lengthWithLineBreaks, uint displayLength)
 	{
 		Begin = begin;
+		DisplayLength = displayLength;
 		Length = lengthWithLineBreaks;
 	}
 
@@ -24,10 +26,5 @@ public readonly record struct Line
 	{
 		return Begin <= characterIndex
 			&& End > characterIndex;
-	}
-
-	public static Line FromSpan(TextSpan span)
-	{
-		return new(span.Begin, span.Length);
 	}
 }

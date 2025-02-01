@@ -30,6 +30,7 @@ public static class SyntaxFacts
 			"false" => SyntaxKind.FalseKeyword,
 			"use" => SyntaxKind.UseKeyword,
 			"module" => SyntaxKind.ModuleKeyword,
+			//"for" => SyntaxKind.ForKeyword
 			_ => SyntaxKind.None,
 		};
 	}

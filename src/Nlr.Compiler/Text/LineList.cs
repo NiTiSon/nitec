@@ -16,6 +16,51 @@ public sealed class LineList
 		this.lines = new(64);
 	}
 
+	public LineList(string text) : this()
+	{
+		int index = 0;
+		uint displayLength = 0;
+
+		uint begin = 0;
+		while (index < text.Length)
+		{
+			switch (text[index])
+			{
+				case '\n':
+				{
+					index++;
+					if (text[index] == '\r')
+					{
+						index++;
+					}
+
+					break;
+				}
+				case '\r':
+				{
+					index++;
+					if (text[index] == '\n')
+					{
+						index++;
+					}
+
+					break;
+				}
+				case '\t':
+					displayLength += 4;
+					index++;
+					continue;
+				default:
+					displayLength++;
+					index++;
+					continue;
+			}
+
+			Add(new Line(begin, (uint)index - begin, displayLength));
+			begin = (uint)index;
+		}
+	}
+
 	public void Add(Line line)
 	{
 		if (lines.Count > 0)
@@ -31,6 +76,20 @@ public sealed class LineList
 		lines.Add(line);
 	}
 
+	public LinePositionSpan GetLinePositionSpan(TextSpan span)
+	{
+		return new(
+			GetLinePosition(span.Begin),
+			GetLinePosition(span.End)
+		);
+	}
+
+	public LinePosition GetLinePosition(uint characterIndex)
+	{
+		(Line line, uint index) = GetLine(characterIndex);
+		return new LinePosition(index, characterIndex - line.Begin);
+	}
+	
 	public (Line line, uint index) GetLine(uint characterIndex)
 	{
 		Span<Line> lines = CollectionsMarshal.AsSpan(this.lines); // Direct access to list data
@@ -48,7 +107,8 @@ public sealed class LineList
 			{
 				return (middleLine, middle);
 			}
-			else if (middleLine.Begin > characterIndex) // If in previous lines
+
+			if (middleLine.Begin > characterIndex) // If in previous lines
 			{
 				high = middle - 1;
 			}

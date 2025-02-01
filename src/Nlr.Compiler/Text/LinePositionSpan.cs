@@ -12,7 +12,7 @@ public readonly record struct LinePositionSpan
 	
 	public LinePositionSpan(LinePosition begin, LinePosition end)
 	{
-		ArgumentOutOfRangeException.ThrowIfGreaterThan(end, begin);
+		ArgumentOutOfRangeException.ThrowIfGreaterThan(begin, end);
 
 		Begin = begin;
 		End = end;

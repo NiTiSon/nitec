@@ -65,4 +65,9 @@ public readonly record struct LinePosition : IComparable<LinePosition>
 	{
 		return left.CompareTo(right) >= 0;
 	}
+
+	public static implicit operator LinePositionSpan(LinePosition linePosition)
+	{
+		return new (linePosition, linePosition);
+	}
 }

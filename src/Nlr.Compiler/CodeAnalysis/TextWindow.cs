@@ -3,6 +3,7 @@ using Nlr.Compiler.Text;
 using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Nlr.Compiler.CodeAnalysis;
 
@@ -15,7 +16,6 @@ public sealed class TextWindow : IDisposable
 
 	private uint basis;
 	private uint currentOffset;
-	private uint windowLength;
 
 	private uint lexemeStart;
 

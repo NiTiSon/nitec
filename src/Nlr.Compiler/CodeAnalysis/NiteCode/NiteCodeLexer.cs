@@ -3,6 +3,7 @@ using Nlr.Compiler.Text;
 using System;
 using System.Collections.Immutable;
 using System.Text;
+using Nlr.Compiler.Diagnostics;
 
 namespace Nlr.Compiler.CodeAnalysis.NiteCode;
 
@@ -10,7 +11,7 @@ internal class NiteCodeLexer : Lexer
 {
 	private readonly ImmutableArray<SyntaxTrivia>.Builder triviaBuilder;
 
-	public NiteCodeLexer(SourceText source) : base(source)
+	public NiteCodeLexer(SourceText source, DiagnosticBag diagnostics) : base(source, diagnostics)
 	{
 		triviaBuilder = ImmutableArray.CreateBuilder<SyntaxTrivia>();
 	}
@@ -110,6 +111,7 @@ internal class NiteCodeLexer : Lexer
 				}
 
 				tokenInfo.Kind = SyntaxKind.BadToken;
+				Report(UnknownSymbol, new(window.Position, 1));
 				window.Advance();
 				tokenInfo.Text = StringSegment.Empty;
 				break;

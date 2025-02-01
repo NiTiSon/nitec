@@ -17,15 +17,11 @@ public sealed class SyntaxTokenWithValue<T> : SyntaxToken
 
 	public override string ToString()
 	{
-		if (value is string valueStr)
+		return value switch
 		{
-			return $"{{{Kind}, {Span}, \"{valueStr}\"}}";
-		}
-		else if (value is IFormattable valueF)
-		{
-			return $"{{{Kind}, {Span}, {valueF.ToString(null, CultureInfo.InvariantCulture)}}}";
-		}
-
-		return $"{{{Kind}, {Span}, {value}}}";
+			string valueStr => $"{{{Kind}, {Span}, \"{valueStr}\"}}",
+			IFormattable valueF => $"{{{Kind}, {Span}, {valueF.ToString(null, CultureInfo.InvariantCulture)}}}",
+			_ => $"{{{Kind}, {Span}, {value}}}"
+		};
 	}
 }

@@ -1,14 +1,24 @@
 ﻿using Nlr.Compiler.Text;
 using System;
 using System.Collections.Immutable;
+using System.IO;
+using Nlr.Compiler.Diagnostics;
 
 namespace Nlr.Compiler.CodeAnalysis.NiteCode;
 
 public sealed class NiteCodeSyntaxTree
 {
-	public static NiteCodeSyntaxTree ParseText(string text, string path, NiteCodeOptions options)
+	public DiagnosticBag Diagnostics { get; }
+	
+	private NiteCodeSyntaxTree(DiagnosticBag diagnostics)
 	{
-		NiteCodeLexer lexer = new(new SourceText(text));
+		Diagnostics = diagnostics;
+	}
+
+	public static NiteCodeSyntaxTree Parse(FileInfo file, NiteCodeOptions options)
+	{
+		DiagnosticBag diagnostics = new DiagnosticBag();
+		NiteCodeLexer lexer = new(new SourceText(file), diagnostics);
 
 		ImmutableArray<SyntaxToken>.Builder tokens = ImmutableArray.CreateBuilder<SyntaxToken>();
 		
@@ -25,6 +35,6 @@ public sealed class NiteCodeSyntaxTree
 			Console.WriteLine(tokens[i].ToString());
 		}
 
-		return new NiteCodeSyntaxTree();
+		return new NiteCodeSyntaxTree(diagnostics);
 	}
 }
