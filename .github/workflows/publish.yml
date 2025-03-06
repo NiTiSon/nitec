@@ -1,0 +1,26 @@
+name: Publish
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+    - name: Generate package
+      run: dotnet pack -c Release
+    - name: Configure
+      run: |
+        dotnet nuget add source --username NiTiSon --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/NiTiSon/index.json"
+    - name: Github publish
+      run: |
+        dotnet nuget push nupkg/*.nupkg --source github --skip-duplicate
+    - name: NuGet publish
+      run: |
+        dotnet nuget push nupkg/*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} --source https://api.nuget.org/v3/index.json --skip-duplicate

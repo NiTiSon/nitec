@@ -5,7 +5,7 @@
 
 		<PackAsTool>true</PackAsTool>
 		<ToolCommandName>nitec</ToolCommandName>
-		<PackageOutputPath>./nupkg</PackageOutputPath>
+		<PackageOutputPath>../../nupkg</PackageOutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
