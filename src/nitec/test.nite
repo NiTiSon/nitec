@@ -1,4 +1,4 @@
-﻿use std::console;
+use std::console;
 
 package test;
 
@@ -8,5 +8,5 @@ void main() -> i32 {
 
 	for i: i32 in 0..=12 {
 		print_line("Hello №" + i);
-    }
+	}
 }

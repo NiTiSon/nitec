@@ -2,9 +2,10 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net9.0</TargetFramework>
-		<Nullable>enable</Nullable>
-		<PublishAot>true</PublishAot>
+
+		<PackAsTool>true</PackAsTool>
+		<ToolCommandName>nitec</ToolCommandName>
+		<PackageOutputPath>./nupkg</PackageOutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>

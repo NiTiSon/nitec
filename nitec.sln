@@ -6,6 +6,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nlr.Compiler", "src\Nlr.Com
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "nitec", "src\nitec\nitec.csproj", "{954D5F6F-5FD5-4C79-B459-C7558BE06A03}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

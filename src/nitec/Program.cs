@@ -1,23 +1,26 @@
-﻿using Nlr.Compiler.CodeAnalysis.NiteCode;
-using Nlr.Compiler.Diagnostics;
+using Nlr.Compiler;
 using System;
 using System.CommandLine;
 using System.Diagnostics;
 using System.IO;
-using Microsoft.Extensions.Primitives;
-using Nlr.Compiler.Text;
+using System.Linq;
+using System.Reflection;
 
 internal static class Program
 {
-	public const string DefaultCacheDirectory = "./~nitec_cache/";
-
 	public static int Main(string[] args)
 	{
 #if DEBUG
 		Console.OutputEncoding = System.Text.Encoding.UTF8;
 		Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
 #endif
-		RootCommand rootCommand = new("Compilation tool for NLR languages.");
+		string version = typeof(Compilation).Assembly.GetCustomAttributes<AssemblyInformationalVersionAttribute>().First().InformationalVersion;
+		RootCommand rootCommand = new($"Compilation tool for NLR languages.");
+
+		Console.WriteLine($"""
+			NiTiSon (R) NiteCode & Nibc Compiler version {version}
+			Copyright (C) NiTiSon Hentaiev. All rights reserved.
+			""");
 
 		Argument<FileInfo[]?> inputArgument = new("input", "Input source code files")
 		{
@@ -26,12 +29,19 @@ internal static class Program
 
 		Option<FileInfo?> outOption = new(["--out", "-o"], "Path to resulting file")
 		{
-			Arity = ArgumentArity.ExactlyOne
+			ArgumentHelpName = "output",
+			Arity = ArgumentArity.ExactlyOne,
 		};
 
-		Option<FileInfo[]?> includeOption = new(["-l"], "Path to included libraries")
+		Option<FileInfo[]?> includeOption = new(["-l", "--libs"], "Path to included runtime-time dependencies")
 		{
 			ArgumentHelpName = "libraries",
+			Arity = ArgumentArity.ZeroOrMore,
+		};
+
+		Option<FileInfo[]?> developerIncludeOption = new(["-L", "--devlibs"], "Path to included compile-time dependencies")
+		{
+			ArgumentHelpName = "development libraries",
 			Arity = ArgumentArity.ZeroOrMore,
 		};
 
@@ -62,6 +72,7 @@ internal static class Program
 
 		rootCommand.Add(outOption);
 		rootCommand.Add(includeOption);
+		rootCommand.Add(developerIncludeOption);
 		rootCommand.Add(threadWarningsAsErrorsFlag);
 		rootCommand.Add(disabledWarningsOption);
 		//rootCommand.Add(architectureOption);
@@ -74,79 +85,59 @@ internal static class Program
 	
 	private static void Process(FileInfo[]? inputFiles, FileInfo[]? includeFiles, FileInfo? outputFile)
 	{
-		DiagnosticBag globalDiagnostics = new();
-		NiteCodeSyntaxTree[] trees = new NiteCodeSyntaxTree[inputFiles?.Length ?? 0];
+		
 
-		if (trees.Length == 0)
-		{
-			globalDiagnostics.Report(NiteCodeDiagnostics.NoInputFiles);
-			return;
-		}
+		//foreach (Diagnostic diagnostic in globalDiagnostics)
+		//{
+		//	PrintDiagnostic(diagnostic);
+		//}
 
-		for (int i = 0; i < trees.Length; i++)
-		{
-			FileInfo file = inputFiles![i];
-			
-			if (!file.Exists)
-			{
-				// Diagnostic: file doesn't exists
-				continue;
-			}
-			
-			trees[i] = NiteCodeSyntaxTree.Parse(file, new NiteCodeOptions(LanguageVersion.Latest));
-		}
-
-		foreach (Diagnostic diagnostic in globalDiagnostics)
-		{
-			PrintDiagnostic(diagnostic);
-		}
-
-		foreach (NiteCodeSyntaxTree tree in trees)
-		{
-			foreach (Diagnostic diagnostic in tree.Diagnostics)
-			{
-				PrintDiagnostic(diagnostic);
-			}
-		}
+		//foreach (NiteCodeSyntaxTree tree in trees)
+		//{
+		//	foreach (Diagnostic diagnostic in tree.Diagnostics)
+		//	{
+		//		PrintDiagnostic(diagnostic);
+		//	}
+		//}
 	}
 
-	private static void PrintDiagnostic(Diagnostic diagnostic)
-	{
-		switch (diagnostic.Severity)
-		{
-			case Severity.Error:
-				Console.ForegroundColor = ConsoleColor.Red;
-				Console.Write($"error[{diagnostic.Descriptor.Id}] ");
-				Console.ResetColor();
-				Console.WriteLine(diagnostic.Descriptor.Message);
-				break;
-		}
+	//private static void PrintDiagnostic(Diagnostic diagnostic)
+	//{
+	//	switch (diagnostic.Severity)
+	//	{
+	//		case Severity.Error:
+	//			Console.ForegroundColor = ConsoleColor.Red;
+	//			Console.Write($"error[{diagnostic.Descriptor.Id}] ");
+	//			Console.ResetColor();
+	//			Console.WriteLine(diagnostic.Descriptor.FormatMessage);
+	//			break;
+	//	}
 
-		if (diagnostic.Location != null)
-		{
-			LineList lines = new(diagnostic.Location.Content);
-			LinePositionSpan span = lines.GetLinePositionSpan(diagnostic.Span);
-			Console.WriteLine($"  --> {diagnostic.Location.Path}:{span.Begin}");
+	//	if (diagnostic.Location != null)
+	//	{
+	//		LineList lines = new(diagnostic.Location.Content);
+	//		LinePositionSpan span = lines.GetLinePositionSpan(diagnostic.Span);
+	//		Console.WriteLine($"  --> {diagnostic.Location.Path}:{span.Begin}");
 
-			if (span.IsMultiline)
-			{
+	//		if (span.IsMultiline)
+	//		{
 				
-			}
-			else
-			{
-				(Line line, uint index) = lines.GetLine(diagnostic.Span.Begin);
-				String lineContent = diagnostic.Location.Substring(line.Begin, line.Length).ToString();
-				lineContent = lineContent.ReplaceLineEndings(string.Empty);
-				Console.WriteLine("   |");
-				Console.Write($"{index + 1,-3}| {lineContent[..(int)(diagnostic.Span.Begin - line.Begin)]}");
-				Console.ForegroundColor = ConsoleColor.Red;
-				Console.Write(lineContent[(int)(diagnostic.Span.Begin - line.Begin)..(int)(diagnostic.Span.End - line.Begin)]);
-				Console.ResetColor();
-				Console.WriteLine(lineContent[(int)(diagnostic.Span.End - line.Begin)..]);
-				Console.WriteLine($"   |");
-			}
-		}
-	}
+	//		}
+	//		else
+	//		{
+	//			(Line line, uint index) = lines.GetLine(diagnostic.Span.Begin);
+	//			String lineContent = diagnostic.Location.Substring(line.Begin, line.Length).ToString();
+	//			lineContent = lineContent.ReplaceLineEndings(string.Empty);
+	//			Console.WriteLine("   |");
+	//			Console.Write($"{index + 1,-3}| {lineContent[..(int)(diagnostic.Span.Begin - line.Begin)]}");
+	//			Console.ForegroundColor = ConsoleColor.Red;
+	//			Console.Write(lineContent[(int)(diagnostic.Span.Begin - line.Begin)..(int)(diagnostic.Span.End - line.Begin)]);
+	//			Console.ResetColor();
+	//			Console.WriteLine(lineContent[(int)(diagnostic.Span.End - line.Begin)..]);
+	//			Console.WriteLine($"   |");
+	//		}
+	//	}
+	//}
 
 	/* === ERROR DISPLAY ===
 	 * warning: unused variable

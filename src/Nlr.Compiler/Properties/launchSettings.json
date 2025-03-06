@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "nitec": {
-      "commandName": "Project",
-      "commandLineArgs": "-o \"C:/Desktop/test_lib.ndl\" test.nibc"
-    }
-  }
-}
