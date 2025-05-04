@@ -1,0 +1,399 @@
+using System;
+using System.Collections.Immutable;
+using Microsoft.Extensions.Primitives;
+using Nlr.Compiler.CodeAnalysis.Syntax;
+using Nlr.Compiler.CodeAnalysis.Text;
+
+namespace Nlr.Compiler.NiteCode.CodeAnalysis.Syntax;
+
+public sealed class NiteCodeLexer : Lexer
+{
+	private SyntaxKind _kind;
+
+	public NiteCodeLexer(Source source) : base(source)
+	{
+	}
+
+	public override Token Lex()
+	{
+		ReadTrivia(leading: true);
+		ImmutableArray<Trivia> leadingTrivia = _triviaBuilder.ToImmutable();
+
+		_window.Start();
+		ReadToken();
+		SyntaxKind kind = _kind;
+		
+		string? text = SyntaxFacts.GetText(_kind);
+		
+		text ??= _window.GetText();
+
+		if (kind == SyntaxKind.IdentifierToken)
+		{
+			kind = SyntaxFacts.GetKind(text) ?? kind;
+		}
+		
+		ReadTrivia(leading: false);
+		ImmutableArray<Trivia> trailingTrivia = _triviaBuilder.ToImmutable();
+		
+		return new(kind, text, leadingTrivia, trailingTrivia);
+	}
+
+	private void ReadToken()
+	{
+		if (_window.IsAtTheEnd)
+		{
+			_kind = SyntaxKind.EndOfFile;
+			return;
+		}
+
+		switch (_window.Current)
+		{
+			case '+':
+				switch (_window.Next)
+				{
+					case '=':
+						_kind = SyntaxKind.PlusEqualsToken;
+						_window.Advance(2);
+						break;
+					case '+':
+						_kind = SyntaxKind.PlusPlusToken;
+						_window.Advance(2);
+						break;
+					default:
+						_kind = SyntaxKind.PlusToken;
+						_window.Advance();
+						break;
+				}
+				break;
+			case '-':
+				switch (_window.Next)
+				{
+					case '=':
+						_kind = SyntaxKind.MinusEqualsToken;
+						_window.Advance(2);
+						break;
+					case '-':
+						_kind = SyntaxKind.MinusMinusToken;
+						_window.Advance(2);
+						break;
+					case '>':
+						_kind = SyntaxKind.MinusGreaterThanToken;
+						_window.Advance(2);
+						break;
+					default:
+						_kind = SyntaxKind.MinusToken;
+						_window.Advance();
+						break;
+				}
+				break;
+			case '*':
+				if (_window.Next == '=')
+				{
+					_kind = SyntaxKind.AsteriskEqualsToken;
+					_window.Advance(2);
+				}
+				else
+				{
+					_kind = SyntaxKind.AsteriskToken;
+					_window.Advance();
+				}
+				break;
+			case '/':
+				if (_window.Next == '=')
+				{
+					_kind = SyntaxKind.SlashEqualsToken;
+					_window.Advance(2);
+				}
+				else
+				{
+					_kind = SyntaxKind.SlashToken;
+					_window.Advance();
+				}
+				break;
+			case '%':
+				if (_window.Next == '=')
+				{
+					_kind = SyntaxKind.PercentEqualsToken;
+					_window.Advance(2);
+				}
+				else
+				{
+					_kind = SyntaxKind.PercentToken;
+					_window.Advance();
+				}
+				break;
+			case ':':
+				if (_window.Next == ':')
+				{
+					_kind = SyntaxKind.ColonColonToken;
+					_window.Advance(2);
+				}
+				else
+				{
+					_kind = SyntaxKind.ColonToken;
+					_window.Advance();
+				}
+				break;
+			case ';':
+				_kind = SyntaxKind.SemicolonToken;
+				_window.Advance();
+				break;
+			case '{':
+				_kind = SyntaxKind.OpenBraceToken;
+				_window.Advance();
+				break;
+			case '}':
+				_kind = SyntaxKind.CloseBraceToken;
+				_window.Advance();
+				break;
+			case '(':
+				_kind = SyntaxKind.OpenParenToken;
+				_window.Advance();
+				break;
+			case ')':
+				_kind = SyntaxKind.CloseParenToken;
+				_window.Advance();
+				break;
+			case '[':
+				_kind = SyntaxKind.OpenBracketToken;
+				_window.Advance();
+				break;
+			case ']':
+				_kind = SyntaxKind.CloseBracketToken;
+				_window.Advance();
+				break;
+			case >= '0' and <= '9':
+				ReadNumber();
+				break;
+			default:
+				if (char.IsLetter(_window.Current) || _window.Current == '_')
+				{
+					ReadIdentifierOrKeyword();
+					return;
+				}
+				
+				_kind = SyntaxKind.UnknownOrWrong;
+				_window.Advance();
+				return;
+		}
+	}
+
+	private void ReadNumber()
+	{
+		_kind = SyntaxKind.NumberToken;
+		if (_window.Current == '0')
+		{
+			switch (_window.Next)
+			{
+				case 'x':
+					_window.Advance(2);
+					ReadNumberX16();
+					ReadIntegerPostfix();
+					return;
+				case 'b':
+					_window.Advance(2);
+					ReadNumberX2();
+					ReadIntegerPostfix();
+					return;
+			}
+		}
+
+		while (char.IsAsciiDigit(_window.Current))
+		{
+			_window.Advance();
+		}
+
+		ReadIntegerPostfix();
+	}
+
+	private bool ReadIntegerPostfix()
+	{
+		return _window.AdvanceIfPresented("i8")
+		|| _window.AdvanceIfPresented("i16")
+		|| _window.AdvanceIfPresented("i32")
+		|| _window.AdvanceIfPresented("i64")
+		|| _window.AdvanceIfPresented("u8")
+		|| _window.AdvanceIfPresented("u16")
+		|| _window.AdvanceIfPresented("u32")
+		|| _window.AdvanceIfPresented("u64")
+		|| _window.AdvanceIfPresented('u')
+		|| _window.AdvanceIfPresented('i')
+		;
+	}
+
+	private void ReadNumberX16()
+	{
+		while (_window.Current is >= '0' and <= '9' or >= 'a' and <= 'f' or >= 'A' and <= 'F')
+		{
+			_window.Advance();
+		}
+	}
+	
+	private void ReadNumberX8()
+	{
+		while (_window.Current is >= '0' and <= '7')
+		{
+			_window.Advance();
+		}
+	}
+
+	private void ReadNumberX2()
+	{
+		while (_window.Current is '0' or '1')
+		{
+			_window.Advance();
+		}
+	}
+
+	private void ReadIdentifierOrKeyword()
+	{
+		while (char.IsLetterOrDigit(_window.Current) || _window.Current == '_')
+		{
+			_window.Advance();
+		}
+		
+		_kind = SyntaxKind.IdentifierToken;
+	}
+
+	private void ReadTrivia(bool leading)
+	{
+		_triviaBuilder.Clear();
+
+		bool done = false;
+
+		while (!done)
+		{
+			_window.Start();
+			_kind = SyntaxKind.UnknownOrWrong;
+
+			switch (_window.Current)
+			{
+				case '\0':
+					done = true;
+					break;
+				case '/':
+					switch (_window.Next)
+					{
+						case '/':
+							ReadSingleLineComment();
+							break;
+						case '*':
+							ReadMultiLineComment();
+							break;
+						default:
+							done = true;
+							break;
+					}
+					break;
+				case '\n':
+				case '\r':
+					if (!leading)
+						done = true;
+					ReadLineBreak();
+					break;
+				case ' ':
+				case '\t':
+					ReadWhiteSpace();
+					break;
+				default:
+					if (char.IsWhiteSpace(_window.Current))
+						ReadWhiteSpace();
+					else
+						done = true;
+					break;
+			}
+
+			if (_window.Width <= 0) continue;
+			
+			string text = _window.GetText();
+			Trivia trivia = new Trivia(_kind, _window.LexemeStart, text);
+			_triviaBuilder.Add(trivia);
+		}
+	}
+
+	private void ReadLineBreak()
+	{
+		_window.AdvancePastNewLine();
+	}
+	
+	private void ReadWhiteSpace()
+	{
+		bool done = false;
+
+		while (!done)
+		{
+			switch (_window.Current)
+			{
+				case Window.InvalidCharacter:
+				case '\r':
+				case '\n':
+					done = true;
+					break;
+				default:
+					if (!char.IsWhiteSpace(_window.Current))
+						done = true;
+					else
+						_window.Advance();
+					break;
+			}
+		}
+
+		_kind = SyntaxKind.WhitespaceTrivia;
+	}
+	
+	private void ReadSingleLineComment()
+	{
+		_window.Advance(2);
+		bool done = false;
+
+		while (!done)
+		{
+			switch (_window.Current)
+			{
+				case '\0':
+				case '\r':
+				case '\n':
+					done = true;
+					break;
+				default:
+					_window.Advance();
+					break;
+			}
+		}
+
+		_kind = SyntaxKind.SingleLineCommentTrivia;
+	}
+	
+	private void ReadMultiLineComment()
+	{
+		_window.Advance(2);
+		bool done = false;
+
+		while (!done)
+		{
+			switch (_window.Current)
+			{
+				case Window.InvalidCharacter:
+					throw new NotImplementedException();
+					// var span = new TextSpan(_start, 2);
+					// var location = new TextLocation(_text, span);
+					// _diagnostics.ReportUnterminatedMultiLineComment(location);
+					// done = true;
+					break;
+				case '*':
+					if (_window.Next == '/')
+					{
+						_window.Advance();
+						done = true;
+					}
+					_window.Advance();
+					break;
+				default:
+					_window.Advance();
+					break;
+			}
+		}
+
+		_kind = SyntaxKind.MultiLineCommentTrivia;
+	}
+}

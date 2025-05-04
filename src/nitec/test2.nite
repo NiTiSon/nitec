@@ -1,0 +1,5 @@
+module test;
+
+public x2() -> i32 {
+	return 2;
+}

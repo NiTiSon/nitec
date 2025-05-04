@@ -1,12 +1,7 @@
 use std::console;
 
-package test;
+module test;
 
-void main() -> i32 {
-	print_line("Hello World");
-	return 0;
-
-	for i: i32 in 0..=12 {
-		print_line("Hello №" + i);
-	}
+public main() -> i32 {
+	return 1 + 1i32;
 }
