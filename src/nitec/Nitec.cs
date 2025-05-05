@@ -9,7 +9,7 @@ using Nlr.Compiler.NiteCode;
 
 public sealed class Nitec : NiteCodeCompiler
 {
-	public Nitec(BuildPaths buildPaths) : base(buildPaths) {}
+	private Nitec(BuildPaths buildPaths) : base(buildPaths) {}
 
 	public static int Main(string[] args)
 	{

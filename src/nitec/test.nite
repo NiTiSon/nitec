@@ -4,4 +4,15 @@ module test;
 
 public main() -> i32 {
 	return 1 + 1i32;
+	?
+	??
+	??=
+	?.
+	..
+	..=
+	. .
+	
+	!=
+	! =
+	!. 
 }
