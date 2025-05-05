@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Immutable;
+using System.Net;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Primitives;
 using Nlr.Compiler.CodeAnalysis.Syntax;
 using Nlr.Compiler.CodeAnalysis.Text;
@@ -35,7 +37,7 @@ public sealed class NiteCodeLexer : Lexer
 		ReadTrivia(leading: false);
 		ImmutableArray<Trivia> trailingTrivia = _triviaBuilder.ToImmutable();
 		
-		return new(kind, text, leadingTrivia, trailingTrivia);
+		return new Token(kind, text, leadingTrivia, trailingTrivia);
 	}
 
 	private void ReadToken()
@@ -62,6 +64,91 @@ public sealed class NiteCodeLexer : Lexer
 					default:
 						_kind = SyntaxKind.PlusToken;
 						_window.Advance();
+						break;
+				}
+				break;
+			case '.':
+				if (_window.Next == '.')
+				{
+					if (_window.Peek(2) == '=')
+					{
+						_window.Advance(3);
+						_kind = SyntaxKind.DotDotEqualsToken;
+					}
+					else
+					{
+						_window.Advance(2);
+						_kind = SyntaxKind.DotDotToken;
+					}
+				}
+				else
+				{
+					_window.Advance();
+					_kind = SyntaxKind.DotToken;
+				}
+				break;
+			case '~':
+				if (_window.Next == '=')
+				{
+					_kind = SyntaxKind.TildaEqualsToken;
+					_window.Advance(2);
+				}
+				else
+				{
+					_kind = SyntaxKind.TildaToken;
+					_window.Advance();
+				}
+				break;
+			case '!':
+				switch (_window.Next)
+				{
+					case '.':
+						_kind = SyntaxKind.ExclamationMarkDotToken;
+						_window.Advance(2);
+						break;
+					case '=':
+						_kind = SyntaxKind.ExclamationMarkEqualsToken;
+						_window.Advance(2);
+						break;
+					default:
+						_kind = SyntaxKind.ExclamationMarkToken;
+						_window.Advance();
+						break;
+				}
+				break;
+			case '?':
+				switch (_window.Next)
+				{
+					case '?':
+						if (_window.Peek(2) == '=')
+						{
+							_window.Advance(3);
+							
+							_kind = SyntaxKind.QuestionMarkQuestionMarkEqualsToken;
+							break;
+						}
+						_window.Advance(2);
+						_kind = SyntaxKind.QuestionMarkQuestionMarkToken;
+						break;
+					case '.':
+						_window.Advance(2);
+						_kind = SyntaxKind.QuestionMarkDotToken;
+						break;
+					case '*':
+						if (_window.Next == '=')
+						{
+							_window.Advance(2);
+							_kind = SyntaxKind.AsteriskEqualsToken;
+						}
+						else
+						{
+							_window.Advance();
+							_kind = SyntaxKind.AsteriskToken;
+						}
+						break;
+					default:
+						_window.Advance();
+						_kind = SyntaxKind.QuestionMarkToken;
 						break;
 				}
 				break;
@@ -268,7 +355,7 @@ public sealed class NiteCodeLexer : Lexer
 
 			switch (_window.Current)
 			{
-				case '\0':
+				case Window.InvalidCharacter:
 					done = true;
 					break;
 				case '/':
@@ -313,6 +400,7 @@ public sealed class NiteCodeLexer : Lexer
 
 	private void ReadLineBreak()
 	{
+		_kind = SyntaxKind.LineBreakTrivia;
 		_window.AdvancePastNewLine();
 	}
 	

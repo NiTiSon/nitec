@@ -97,7 +97,7 @@ public enum SyntaxKind : uint
 	/// <summary>Represents <c>==</c> token.</summary>
 	EqualsEqualsToken = 2081,
 	/// <summary>Represents <c>!=</c> token.</summary>
-	ExclamationEqualsToken = 2082,
+	ExclamationMarkEqualsToken = 2082,
 	/// <summary>Represents <c>-&gt;</c> token.</summary>
 	MinusGreaterThanToken = 2083,
 	/// <summary>Represents <c>||</c> token.</summary>
@@ -109,7 +109,7 @@ public enum SyntaxKind : uint
 	/// <summary>Represents <c>?.</c> token.</summary>
 	QuestionMarkDotToken = 2087,
 	/// <summary>Represents <c>!.</c> token.</summary>
-	ExclamationDotToken = 2088,
+	ExclamationMarkDotToken = 2088,
 	/// <summary>Represents <c>??</c> token.</summary>
 	QuestionMarkQuestionMarkToken = 2089,
 	/// <summary>Represents <c>~=</c> token.</summary>
@@ -138,13 +138,13 @@ public enum SyntaxKind : uint
 	DotDotEqualsToken = 2101,
 	
 	/// <summary>Represents <c>??=</c> token.</summary>
-	QuestionMarkQuestionMarkEqualsToken = 2101,
+	QuestionMarkQuestionMarkEqualsToken = 2102,
 	/// <summary>Represents <c>&lt;&lt;=</c> token.</summary>
-	LessThanLessThanEqualsToken = 2102,
+	LessThanLessThanEqualsToken = 2103,
 	/// <summary>Represents <c>&gt;&gt;&gt;</c> token.</summary>
-	GreaterThanGreaterThanGreaterThanToken = 2103,
+	GreaterThanGreaterThanGreaterThanToken = 2104,
 	/// <summary>Represents <c>&gt;&gt;&gt;=</c> token.</summary>
-	GreaterThanGreaterThanGreaterThanEqualsToken = 2104,
+	GreaterThanGreaterThanGreaterThanEqualsToken = 2105,
 
 	// === Keywords [8192..32768] ===
 
