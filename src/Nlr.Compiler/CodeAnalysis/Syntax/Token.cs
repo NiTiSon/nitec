@@ -22,4 +22,6 @@ public readonly struct Token : ISyntaxNode
 	{
 		return $"{Kind}: {(Value is null ? string.Empty : $"'{Value}'")} lead: {LeadingTrivia.Length} trail: {TrailingTrivia.Length}";
 	}
+
+	SyntaxKind ISyntaxNode.Kind => Kind;
 }

@@ -13,6 +13,8 @@ public class NiteCodeSyntaxTree : SyntaxTree
 		NiteCodeLexer lexer = new(source);
 		NiteCodeParser parser = new(lexer);
 
+		parser.ParseCompilationUnit();
+
 		CompilationUnit = null;
 	}
 	

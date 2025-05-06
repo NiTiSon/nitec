@@ -11,6 +11,8 @@ public sealed class NiteCodeParser
 	private readonly ImmutableArray<Token> _rawTokens;
 
 	private int _position;
+
+	private ModuleSyntax? _currentModule;
 	
 	public NiteCodeParser(NiteCodeLexer lexer)
 	{
@@ -18,6 +20,7 @@ public sealed class NiteCodeParser
 		Token token;
 		do
 		{
+			// TODO: Remove bad tokens from parsing: any UnknownOrWrong token should produce diagnostic error
 			token = lexer.Lex();
 			tokens.Add(token);
 		}
@@ -55,8 +58,29 @@ public sealed class NiteCodeParser
 		return new Token(kind, "", [], []);
 	}
 
-	private bool IfPresentedAny(params ReadOnlySpan<SyntaxKind> kinds)
+	private bool IsPresentedAny(params ReadOnlySpan<SyntaxKind> kinds)
 	{
 		return kinds.Contains(Current.Kind);
+	}
+
+	public NiteCodeCompilationUnit ParseCompilationUnit()
+	{
+		if (Current.Kind == UseKeyword)
+		{
+			ParseModuleDeclaration();
+		}
+		return new NiteCodeCompilationUnit();
+	}
+
+	private ModuleSyntax ParseModuleDeclaration()
+	{
+		Token useKeyword = MatchToken(UseKeyword);
+		ModuleNameSyntax moduleName = ParseModuleName();
+		return new ModuleSyntax(useKeyword, moduleName);
+	}
+
+	private ModuleNameSyntax ParseModuleName()
+	{
+		return new ModuleNameSyntax(identifiers: []); // TODO: Impl
 	}
 }

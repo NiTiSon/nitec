@@ -196,4 +196,27 @@ public enum SyntaxKind : uint
 	F64Keyword = 8235,
 	VoidKeyword = 8236,
 	BoolKeyword = 8237,
+	
+	// === Nodes [32768..65536] ===
+	
+	CompilationUnit = 32768,
+	
+	IdentifierName, // identifier
+	ModuleName, // x || x::y || x::y::z ...
+	FullyQualifiedName,
+	PredefinedType,
+	
+	// Expressions
+	ParenthesizedExpression,
+	
+	// Statements
+	BlockStatement,
+	
+	// Branch statements
+	ReturnStatement,
+	ContinueStatement,
+	BreakStatement,
+	
+	// Declarations
+	ModuleDeclaration,
 }
