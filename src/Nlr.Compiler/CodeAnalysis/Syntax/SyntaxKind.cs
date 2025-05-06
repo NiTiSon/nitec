@@ -145,6 +145,8 @@ public enum SyntaxKind : uint
 	GreaterThanGreaterThanGreaterThanToken = 2104,
 	/// <summary>Represents <c>&gt;&gt;&gt;=</c> token.</summary>
 	GreaterThanGreaterThanGreaterThanEqualsToken = 2105,
+	/// <summary>Represents <c>&gt;&gt;=</c> token.</summary>
+	GreaterThanGreaterThanEqualsToken = 2106,
 
 	// === Keywords [8192..32768] ===
 

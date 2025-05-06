@@ -11,16 +11,9 @@ public class NiteCodeSyntaxTree : SyntaxTree
 	public NiteCodeSyntaxTree(Source source)
 	{
 		NiteCodeLexer lexer = new(source);
-
-		Token token;
-		do
-		{
-			token = lexer.Lex();
-			
-			Console.WriteLine($"{token}");
-		}
-		while (token.Kind != SyntaxKind.EndOfFile);
+		NiteCodeParser parser = new(lexer);
 
 		CompilationUnit = null;
 	}
+	
 }

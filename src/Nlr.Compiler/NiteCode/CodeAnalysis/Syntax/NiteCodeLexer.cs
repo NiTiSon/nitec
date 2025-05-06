@@ -16,6 +16,11 @@ public sealed class NiteCodeLexer : Lexer
 	{
 	}
 
+	private int _previousTrailingTokens;
+	private int _currentLeadingTokens;
+	
+	private int BeforeTriviaCount => _currentLeadingTokens + _previousTrailingTokens;
+	
 	public override Token Lex()
 	{
 		ReadTrivia(leading: true);
@@ -249,6 +254,69 @@ public sealed class NiteCodeLexer : Lexer
 				_kind = SyntaxKind.CloseBracketToken;
 				_window.Advance();
 				break;
+			case '>':
+				switch (_window.Next)
+				{
+					case '>' when BeforeTriviaCount != 0: // TODO: Fix >>= is required to be space before 
+						if (_window.Peek(2) == '>')
+						{
+							if (_window.Peek(3) == '=')
+							{
+								_kind = SyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken;
+								_window.Advance(4);
+							}
+							else
+							{
+								_kind = SyntaxKind.GreaterThanGreaterThanGreaterThanToken;
+								_window.Advance(3);
+							}
+						}
+						else if (_window.Peek(2) == '=')
+						{
+							_kind = SyntaxKind.GreaterThanGreaterThanEqualsToken;
+							_window.Advance(3);
+						}
+						else
+						{
+							_kind = SyntaxKind.GreaterThanGreaterThanToken;
+							_window.Advance(2);
+						}
+						break;
+					case '=':
+						_kind = SyntaxKind.GreaterThanEqualsToken;
+						_window.Advance(2);
+						break;
+					default:
+						_kind = SyntaxKind.GreaterThanToken;
+						_window.Advance();
+						break;
+				}
+				break;
+			case '<':
+				switch (_window.Next)
+				{
+					case '<':
+						if (_window.Peek(2) == '=')
+						{
+							_kind = SyntaxKind.LessThanLessThanEqualsToken;
+							_window.Advance(3);
+						}
+						else
+						{
+							_kind = SyntaxKind.LessThanLessThanToken;
+							_window.Advance(2);
+						}
+						break;
+					case '=':
+						_kind = SyntaxKind.LessThanEqualsToken;
+						_window.Advance(2);
+						break;
+					default:
+						_kind = SyntaxKind.LessThanToken;
+						_window.Advance();
+						break;
+				}
+				break;
 			case >= '0' and <= '9':
 				ReadNumber();
 				break;
@@ -395,6 +463,15 @@ public sealed class NiteCodeLexer : Lexer
 			string text = _window.GetText();
 			Trivia trivia = new Trivia(_kind, _window.LexemeStart, text);
 			_triviaBuilder.Add(trivia);
+		}
+
+		if (!leading)
+		{
+			_previousTrailingTokens = _triviaBuilder.Count;
+		}
+		else
+		{
+			_currentLeadingTokens = _triviaBuilder.Count;
 		}
 	}
 
