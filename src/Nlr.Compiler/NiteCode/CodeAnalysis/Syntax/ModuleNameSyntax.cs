@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using Nlr.Compiler.CodeAnalysis.Syntax;
 
@@ -13,4 +14,11 @@ public sealed class ModuleNameSyntax : NameSyntax
 	}
 
 	public override SyntaxKind Kind => SyntaxKind.ModuleName;
+	public override IEnumerable<ISyntaxNode> GetChildren()
+	{
+		foreach (Token namePart in Identifiers)
+		{
+			yield return namePart;
+		}
+	}
 }

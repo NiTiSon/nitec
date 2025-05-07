@@ -80,6 +80,7 @@ public sealed class Nitec : NiteCodeCompiler
 		}
 
 		return rootCommand.Invoke(args);
+		
 	}
 
 	public static void Process(FileInfo[] inputFiles, FileInfo[] includedFiles, FileInfo outFile)

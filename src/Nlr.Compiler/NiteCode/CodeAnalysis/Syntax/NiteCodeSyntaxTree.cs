@@ -13,9 +13,33 @@ public class NiteCodeSyntaxTree : SyntaxTree
 		NiteCodeLexer lexer = new(source);
 		NiteCodeParser parser = new(lexer);
 
-		parser.ParseCompilationUnit();
+		CompilationUnit = parser.ParseCompilationUnit();
+		DebugPrint(CompilationUnit);
+	}
 
-		CompilationUnit = null;
+	private static void DebugPrint(CompilationUnit compilationUnit)
+	{
+		DebugPrintNode(compilationUnit, 0);
 	}
 	
+	private static void DebugPrintNode(ISyntaxNode node, int depth)
+	{
+		string padding = new(' ', depth * 4);
+    
+		if (node is Token token)
+		{
+			Console.ForegroundColor = ConsoleColor.Gray;
+			Console.WriteLine($"{padding}{node.Kind} '{token.Value}'");
+			Console.ResetColor();
+		}
+		else
+		{
+			Console.WriteLine($"{padding}{node.Kind}");
+		}
+    
+		foreach (ISyntaxNode child in node.GetChildren())
+		{
+			DebugPrintNode(child, depth + 1);
+		}
+	}
 }

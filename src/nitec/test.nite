@@ -1,4 +1,11 @@
+use penis::x;
+use penis;
+
+module here::there;
+
+public x: i32;
+
 public main() -> i32 {
 	return 1i32;
-	::std::X.v = 1;
+	::std.X.v = 1;
 }

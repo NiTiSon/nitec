@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.Extensions.Primitives;
 using System.Collections.Immutable;
 
@@ -24,4 +25,6 @@ public readonly struct Token : ISyntaxNode
 	}
 
 	SyntaxKind ISyntaxNode.Kind => Kind;
+
+	public IEnumerable<ISyntaxNode> GetChildren() => [];
 }

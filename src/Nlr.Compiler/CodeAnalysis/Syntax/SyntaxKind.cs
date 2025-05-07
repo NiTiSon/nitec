@@ -196,6 +196,8 @@ public enum SyntaxKind : uint
 	F64Keyword = 8235,
 	VoidKeyword = 8236,
 	BoolKeyword = 8237,
+	ModuleKeyword = 8238,
+	TypeKeyword = 8239,
 	
 	// === Nodes [32768..65536] ===
 	
@@ -219,4 +221,8 @@ public enum SyntaxKind : uint
 	
 	// Declarations
 	ModuleDeclaration,
+	TypeDeclaration,
+	
+	// Directives
+	UseDirective,
 }

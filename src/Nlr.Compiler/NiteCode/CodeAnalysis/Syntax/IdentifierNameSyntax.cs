@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Nlr.Compiler.CodeAnalysis.Syntax;
 
 namespace Nlr.Compiler.NiteCode.CodeAnalysis.Syntax;
@@ -12,4 +13,9 @@ public sealed class IdentifierNameSyntax : SimpleMemberNameSyntax
 	}
 
 	public override SyntaxKind Kind => SyntaxKind.IdentifierName;
+
+	public override IEnumerable<ISyntaxNode> GetChildren()
+	{
+		yield return Identifier;
+	}
 }
