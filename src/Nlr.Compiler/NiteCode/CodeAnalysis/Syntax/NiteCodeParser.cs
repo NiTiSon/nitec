@@ -141,13 +141,28 @@ public sealed class NiteCodeParser
 			modifiers.Add(NextToken());
 		}
 
-		if (Current.Kind == TypeKeyword)
+		if (Current.Kind == TypeKeyword) // type
 		{
 			Token typeKeyword = MatchToken(TypeKeyword);
 			Token identifier = MatchToken(IdentifierToken);
 			return new TypeSyntax(accessLevelToken, modifiers.ToImmutable(), typeKeyword, identifier);
 		}
-		
+		else
+		{
+			Token identifier = MatchToken(IdentifierToken);
+			if (Current.Kind == OpenParenToken) // function
+			{
+				
+			}
+			else if (Current.Kind == ColonToken) // field
+			{
+				
+			}
+			else
+			{
+				
+			}
+		}
 		// [access_token] [modifiers] TypeKeyword Identifier
 
 		// [access_token] [modifiers] Identifier ( parameter_list )
