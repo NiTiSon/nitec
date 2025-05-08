@@ -7,7 +7,7 @@ public sealed class Diagnostic
 
 	public DiagnosticSeverity Severity => DefaultSeverity;
 
-	public DiagnosticSeverity DefaultSeverity => _descriptor.DefaultSevevity;
+	public DiagnosticSeverity DefaultSeverity => _descriptor.DefaultSeverity;
 
 	private Diagnostic(DiagnosticDescriptor descriptor, params object?[]? args)
 	{
