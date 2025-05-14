@@ -188,7 +188,10 @@ public sealed class NiteCodeParser
 					// {
 					// 	Token retusa = MatchToken(MinusGreaterThanToken);
 					// }
-					break;
+
+					BlockSyntax body = ParseBlock();
+					
+					return Function
 				// field
 				case ColonToken:
 					break;
@@ -208,7 +211,14 @@ public sealed class NiteCodeParser
 		{
 			case OpenBraceToken: // Block statement
 				return ParseBlock();
-			case ForKeyword: // for statement
+			case ReturnKeyword: // return
+				Token returnKeyword = NextToken();
+				if (Current.Kind == SemicolonToken)
+				{
+					return new ReturnStatement(returnKeyword);
+				}
+				
+				return new ReturnStatement(returnKeyword, ParseExpression());
 			default:
 				throw null!;
 		}
@@ -226,5 +236,21 @@ public sealed class NiteCodeParser
 		Token closeBraceToken = MatchToken(CloseBraceToken);
 		
 		return new BlockSyntax(openBraceToken, statements.ToImmutable(), closeBraceToken);
+	}
+
+	private ExpressionSyntax ParseExpression()
+	{
+		return ParseRValueExpression();
+	}
+	
+	private ExpressionSyntax ParseRValueExpression()
+	{
+		switch (Current.Kind)
+		{
+			case NumberToken:
+				return new LiteralExpression(Current);
+		}
+
+		throw null!;
 	}
 }

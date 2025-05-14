@@ -19,6 +19,8 @@ public sealed class BinaryExpressionToken : ExpressionSyntax
 	public override SyntaxKind Kind => SyntaxKind.BinaryExpression;
 	public override IEnumerable<ISyntaxNode> GetChildren()
 	{
-		throw new System.NotImplementedException();
+		yield return Left;
+		yield return OperatorToken;
+		yield return Right;
 	}
 }

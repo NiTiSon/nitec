@@ -213,6 +213,7 @@ public enum SyntaxKind : uint
 	UnaryExpression,
 	BinaryExpression,
 	NameExpression,
+	LiteralExpression,
 	
 	// Statements
 	BlockStatement,
