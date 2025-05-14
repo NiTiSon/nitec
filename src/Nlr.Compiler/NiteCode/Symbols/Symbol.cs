@@ -1,4 +1,4 @@
-namespace Nlr.Compiler.Symbols;
+namespace Nlr.Compiler.NiteCode.Symbols;
 
 public abstract class Symbol
 {

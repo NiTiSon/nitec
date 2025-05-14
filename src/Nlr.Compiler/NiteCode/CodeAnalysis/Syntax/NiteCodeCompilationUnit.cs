@@ -6,10 +6,12 @@ namespace Nlr.Compiler.NiteCode.CodeAnalysis.Syntax;
 
 public sealed class NiteCodeCompilationUnit : CompilationUnit
 {
-	public readonly ImmutableArray<UseDirectiveSyntax> Usings;
+	public ImmutableArray<MemberSyntax> Members { get; }
+	public ImmutableArray<UseDirectiveSyntax> Usings { get; }
 	
-	public NiteCodeCompilationUnit(ImmutableArray<UseDirectiveSyntax> usings)
+	public NiteCodeCompilationUnit(ImmutableArray<UseDirectiveSyntax> usings, ImmutableArray<MemberSyntax> members)
 	{
+		Members = members;
 		Usings = usings;
 	}
 	
@@ -18,6 +20,11 @@ public sealed class NiteCodeCompilationUnit : CompilationUnit
 		foreach (UseDirectiveSyntax @using in Usings)
 		{
 			yield return @using;
+		}
+		
+		foreach (MemberSyntax member in Members)
+		{
+			yield return member;
 		}
 	}
 }

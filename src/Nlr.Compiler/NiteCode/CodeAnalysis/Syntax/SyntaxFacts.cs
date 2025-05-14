@@ -79,6 +79,8 @@ public static class SyntaxFacts
 			"f64",
 			"void",
 			"bool",
+			"module",
+			"type",
 		];
 
 		SyntaxKind kind = (SyntaxKind)8191;

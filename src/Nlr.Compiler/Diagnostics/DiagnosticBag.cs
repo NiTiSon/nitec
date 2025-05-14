@@ -1,9 +1,13 @@
+using System;
+using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.JavaScript;
 
 namespace Nlr.Compiler.Diagnostics;
 
-public class DiagnosticBag
+public class DiagnosticBag : IEnumerable<Diagnostic>
 {
 	private readonly ConcurrentQueue<Diagnostic> _diagnostics;
 
@@ -19,5 +23,20 @@ public class DiagnosticBag
 	public void Add(Diagnostic diagnostic)
 	{
 		_diagnostics.Enqueue(diagnostic);
+	}
+
+	public void Add(DiagnosticDescriptor diagnosticDescriptor, params object?[]? args)
+	{
+		_diagnostics.Enqueue(Diagnostic.Create(diagnosticDescriptor, args));
+	}
+
+	public IEnumerator<Diagnostic> GetEnumerator()
+	{
+		return _diagnostics.GetEnumerator();
+	}
+
+	IEnumerator IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
 	}
 }

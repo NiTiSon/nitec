@@ -216,13 +216,19 @@ public enum SyntaxKind : uint
 	
 	// Branch statements
 	ReturnStatement,
+	ForStatement,
 	ContinueStatement,
 	BreakStatement,
 	
 	// Declarations
 	ModuleDeclaration,
 	TypeDeclaration,
+	IncompleteMemberDeclaration,
 	
 	// Directives
 	UseDirective,
+	
+	// Lists
+	ReturnParameterList,
+	ParameterList,
 }

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using Nlr.Compiler.CodeAnalysis.Syntax;
+using Nlr.Compiler.Diagnostics;
 using Nlr.Compiler.Extensions;
 using static Nlr.Compiler.CodeAnalysis.Syntax.SyntaxKind;
 
@@ -8,23 +10,40 @@ namespace Nlr.Compiler.NiteCode.CodeAnalysis.Syntax;
 
 public sealed class NiteCodeParser
 {
+	private readonly DiagnosticBag _diagnostics;
 	private readonly ImmutableArray<Token> _rawTokens;
 
 	private int _position;
 
 	private ModuleDeclarationSyntax? _currentModule;
-	
-	public NiteCodeParser(NiteCodeLexer lexer)
+	private ImmutableArray<MemberSyntax>.Builder _members;
+
+	public NiteCodeParser(DiagnosticBag diagnostics, NiteCodeLexer lexer)
 	{
+		_members = ImmutableArray.CreateBuilder<MemberSyntax>();
+		_diagnostics = diagnostics;
 		ImmutableArray<Token>.Builder tokens = ImmutableArray.CreateBuilder<Token>();
+		ImmutableArray<Token>.Builder badTokens = ImmutableArray.CreateBuilder<Token>();
 		Token token;
 		do
 		{
-			// TODO: Remove bad tokens from parsing: any UnknownOrWrong token should produce diagnostic error
 			token = lexer.Lex();
-			tokens.Add(token);
+
+			if (token.Kind is UnknownOrWrong)
+			{
+				badTokens.Add(token);
+			}
+			else if (token.Kind is EndOfFile)
+			{
+				tokens.Add(token);
+				break;
+			}
+			else
+			{
+				tokens.Add(token);
+			}
 		}
-		while (token.Kind != EndOfFile);
+		while (true);
 		
 		_rawTokens = tokens.ToImmutable();
 
@@ -54,8 +73,8 @@ public sealed class NiteCodeParser
 		if (Current.Kind == kind)
 			return NextToken();
 
-		// _diagnostics.ReportUnexpectedToken(Current.Location, Current.Kind, kind);
-		return new Token(kind, "", [], []);
+		_diagnostics.ReportUnexpectedToken(Current, kind);
+		return new Token(kind, Current.Span, string.Empty, [], []);
 	}
 
 	private Token MatchAnyToken(params ReadOnlySpan<SyntaxKind> kinds)
@@ -63,8 +82,8 @@ public sealed class NiteCodeParser
 		if (kinds.Contains(Current.Kind))
 			return NextToken();
 
-		// _diagnostics.ReportUnexpectedToken(Current.Location, Current.Kind, kind);
-		return new Token(kinds[0], "", [], []);
+		_diagnostics.ReportUnexpectedToken(Current, kinds.ToArray());
+		return new Token(kinds[0], Current.Span, string.Empty, [], []);
 	}
 
 	private bool IsPresentedAny(params ReadOnlySpan<SyntaxKind> kinds)
@@ -87,7 +106,7 @@ public sealed class NiteCodeParser
 					usings.Add(ParseUsingDirective());
 					break;
 				case ModuleKeyword:
-					ParseModuleDeclaration();
+					_currentModule = ParseModuleDeclaration();
 					break;
 				case PublicKeyword
 					or PrivateKeyword
@@ -95,14 +114,15 @@ public sealed class NiteCodeParser
 					or InternalKeyword
 					or FamilyKeyword
 					or FriendKeyword:
-					ParseMember();
+					_members.Add(ParseMember());
 					break;
 				default:
 					NextToken();
 					break;
 			}
 		}
-		return new NiteCodeCompilationUnit(usings.ToImmutable());
+		
+		return new NiteCodeCompilationUnit(usings.ToImmutable(), _members.ToImmutableArray());
 	}
 
 	private ModuleDeclarationSyntax ParseModuleDeclaration()
@@ -150,17 +170,24 @@ public sealed class NiteCodeParser
 		else
 		{
 			Token identifier = MatchToken(IdentifierToken);
-			if (Current.Kind == OpenParenToken) // function
+			switch (Current.Kind)
 			{
-				
-			}
-			else if (Current.Kind == ColonToken) // field
-			{
-				
-			}
-			else
-			{
-				
+				// function
+				case OpenParenToken:
+					Token openParenToken = MatchToken(OpenParenToken);
+					Token closeParenToken = MatchToken(CloseParenToken);
+					
+					
+					// if (Current.Kind == MinusGreaterThanToken) // Return type
+					// {
+					// 	Token retusa = MatchToken(MinusGreaterThanToken);
+					// }
+					break;
+				// field
+				case ColonToken:
+					break;
+				default:
+					break;
 			}
 		}
 		// [access_token] [modifiers] TypeKeyword Identifier
@@ -168,6 +195,6 @@ public sealed class NiteCodeParser
 		// [access_token] [modifiers] Identifier ( parameter_list )
 
 		// [access_token] [modifiers] Identifier ColonToken NameSyntax
-		return null!;
+		return new IncompleteMemberSyntax(accessLevelToken, modifiers.ToImmutable());
 	}
 }

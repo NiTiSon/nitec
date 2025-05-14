@@ -1,10 +1,9 @@
-use penis::x;
-use penis;
-
 module here::there;
 
 public x: i32;
 
-public main() -> i32 {
-	let x = 1;
+public main() {
+	for i in 0..10 {
+    		return i;
+	}
 }

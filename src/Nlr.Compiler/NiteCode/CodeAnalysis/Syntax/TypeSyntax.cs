@@ -24,5 +24,6 @@ public sealed class TypeSyntax : MemberSyntax
 			yield return modifier;
 		}
 		yield return TypeKeyword;
+		yield return Name;
 	}
 }

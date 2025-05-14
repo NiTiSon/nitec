@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Primitives;
 using Nlr.Compiler.CodeAnalysis.Syntax;
 using Nlr.Compiler.CodeAnalysis.Text;
+using Nlr.Compiler.Diagnostics;
 
 namespace Nlr.Compiler.NiteCode.CodeAnalysis.Syntax;
 
@@ -12,7 +13,7 @@ public sealed class NiteCodeLexer : Lexer
 {
 	private SyntaxKind _kind;
 
-	public NiteCodeLexer(Source source) : base(source)
+	public NiteCodeLexer(DiagnosticBag diagnostics, Source source) : base(diagnostics, source)
 	{
 	}
 
@@ -30,6 +31,7 @@ public sealed class NiteCodeLexer : Lexer
 		ReadToken();
 		SyntaxKind kind = _kind;
 		
+		TextSpan span = new(_window.Position, _window.Width);
 		string? text = SyntaxFacts.GetText(_kind);
 		
 		text ??= _window.GetText();
@@ -42,7 +44,7 @@ public sealed class NiteCodeLexer : Lexer
 		ReadTrivia(leading: false);
 		ImmutableArray<Trivia> trailingTrivia = _triviaBuilder.ToImmutable();
 		
-		return new Token(kind, text, leadingTrivia, trailingTrivia);
+		return new Token(kind, span, text, leadingTrivia, trailingTrivia);
 	}
 
 	private void ReadToken()
@@ -329,6 +331,8 @@ public sealed class NiteCodeLexer : Lexer
 				
 				_kind = SyntaxKind.UnknownOrWrong;
 				_window.Advance();
+				TextSpan span = new(_window.Position, 1);
+				Diagnostics.ReportBadToken(span);
 				return;
 		}
 	}
@@ -539,11 +543,9 @@ public sealed class NiteCodeLexer : Lexer
 			switch (_window.Current)
 			{
 				case Window.InvalidCharacter:
-					throw new NotImplementedException();
-					// var span = new TextSpan(_start, 2);
-					// var location = new TextLocation(_text, span);
-					// _diagnostics.ReportUnterminatedMultiLineComment(location);
-					// done = true;
+					TextSpan span = new(_window.Position, 2);
+					Diagnostics.ReportNotTerminatedMultiLineComment(span);
+					done = true;
 					break;
 				case '*':
 					if (_window.Next == '/')

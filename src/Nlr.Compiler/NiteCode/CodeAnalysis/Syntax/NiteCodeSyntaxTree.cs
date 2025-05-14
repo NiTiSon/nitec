@@ -1,20 +1,27 @@
 using System;
 using Nlr.Compiler.CodeAnalysis.Syntax;
 using Nlr.Compiler.CodeAnalysis.Text;
+using Nlr.Compiler.Diagnostics;
 
 namespace Nlr.Compiler.NiteCode.CodeAnalysis.Syntax;
 
 public class NiteCodeSyntaxTree : SyntaxTree
 {
-	public override CompilationUnit CompilationUnit { get; }
+	public sealed override CompilationUnit CompilationUnit { get; }
 
 	public NiteCodeSyntaxTree(Source source)
 	{
-		NiteCodeLexer lexer = new(source);
-		NiteCodeParser parser = new(lexer);
+		DiagnosticBag diagnostics = new();
+		
+		NiteCodeLexer lexer = new(diagnostics, source);
+		NiteCodeParser parser = new(diagnostics, lexer);
 
 		CompilationUnit = parser.ParseCompilationUnit();
 		DebugPrint(CompilationUnit);
+		foreach (Diagnostic diagnostic in diagnostics)
+		{
+			Console.WriteLine(diagnostic.ToString());
+		}
 	}
 
 	private static void DebugPrint(CompilationUnit compilationUnit)
