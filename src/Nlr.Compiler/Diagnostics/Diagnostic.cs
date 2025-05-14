@@ -1,3 +1,5 @@
+using System;
+
 namespace Nlr.Compiler.Diagnostics;
 
 public sealed class Diagnostic
@@ -20,5 +22,17 @@ public sealed class Diagnostic
 		params object?[]? messageArgs)
 	{
 		return new(descriptor, messageArgs);
+	}
+
+	public override string ToString()
+	{
+		try
+		{
+			return string.Format(_descriptor.FormatMessage, _args ?? []);
+		}
+		catch (Exception)
+		{
+			return string.Empty;
+		}
 	}
 }

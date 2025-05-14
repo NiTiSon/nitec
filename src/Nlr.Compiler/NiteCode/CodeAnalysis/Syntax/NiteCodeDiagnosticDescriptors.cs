@@ -10,7 +10,9 @@ public static class NiteCodeDiagnosticDescriptors
 		BadToken,
 		NotTerminatedMultiLineComment,
 		UnexpectedToken,
-		UnexpectedTokenAny
+		UnexpectedTokenAny,
+		IncompleteMember
+		
 		;
 
 	public static void ReportBadToken(this DiagnosticBag diagnostics, TextSpan span)
@@ -30,7 +32,12 @@ public static class NiteCodeDiagnosticDescriptors
 	
 	public static void ReportUnexpectedToken(this DiagnosticBag diagnostics, Token providedToken, SyntaxKind[] expectedKind)
 	{
-		diagnostics.Add(UnexpectedToken, providedToken, expectedKind);
+		diagnostics.Add(UnexpectedTokenAny, providedToken, expectedKind);
+	}
+
+	public static void ReportIncompleteMember(this DiagnosticBag diagnostics, IncompleteMemberSyntax member)
+	{
+		diagnostics.Add(IncompleteMember, member);
 	}
 
 	// ReSharper disable FormatStringProblem
@@ -40,5 +47,6 @@ public static class NiteCodeDiagnosticDescriptors
 		NotTerminatedMultiLineComment = new("not_terminated_multiline_comment", "Not terminated multiline comment.");
 		UnexpectedToken = new("unexpected_token", "Required '{1}' token, but unexpected token '{0}' is presented.");
 		UnexpectedTokenAny = new("unexpected_token", "Required any of {1} token, but unexpected token '{0}' is presented.");
+		IncompleteMember = new("incomplete_member", "Member is not complete.");
 	}
 }

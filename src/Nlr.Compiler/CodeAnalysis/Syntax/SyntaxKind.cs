@@ -210,6 +210,9 @@ public enum SyntaxKind : uint
 	
 	// Expressions
 	ParenthesizedExpression,
+	UnaryExpression,
+	BinaryExpression,
+	NameExpression,
 	
 	// Statements
 	BlockStatement,

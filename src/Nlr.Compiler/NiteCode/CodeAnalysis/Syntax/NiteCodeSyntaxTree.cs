@@ -18,10 +18,13 @@ public class NiteCodeSyntaxTree : SyntaxTree
 
 		CompilationUnit = parser.ParseCompilationUnit();
 		DebugPrint(CompilationUnit);
+		
+		Console.WriteLine("=== DIAGNOSTICS ===");
 		foreach (Diagnostic diagnostic in diagnostics)
 		{
 			Console.WriteLine(diagnostic.ToString());
 		}
+		Console.WriteLine("=== END OF DIAGNOSTICS ===");
 	}
 
 	private static void DebugPrint(CompilationUnit compilationUnit)

@@ -3,7 +3,5 @@ module here::there;
 public x: i32;
 
 public main() {
-	for i in 0..10 {
-    		return i;
-	}
+	return 1;
 }

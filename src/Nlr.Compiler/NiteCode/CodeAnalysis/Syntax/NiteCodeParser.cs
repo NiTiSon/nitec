@@ -153,6 +153,12 @@ public sealed class NiteCodeParser
 
 	private MemberSyntax ParseMember()
 	{
+		// [access_token] [modifiers] TypeKeyword Identifier
+
+		// [access_token] [modifiers] Identifier ( parameter_list )
+
+		// [access_token] [modifiers] Identifier ColonToken NameSyntax
+		
 		Token accessLevelToken = MatchAnyToken(PublicKeyword, ProtectedKeyword, InternalKeyword, FamilyKeyword, FriendKeyword, PrivateKeyword);
 		ImmutableArray<Token>.Builder modifiers = ImmutableArray.CreateBuilder<Token>();
 
@@ -190,11 +196,35 @@ public sealed class NiteCodeParser
 					break;
 			}
 		}
-		// [access_token] [modifiers] TypeKeyword Identifier
+		
+		IncompleteMemberSyntax incompleteMember = new(accessLevelToken, modifiers.ToImmutable());
+		_diagnostics.ReportIncompleteMember(incompleteMember);
+		return incompleteMember;
+	}
 
-		// [access_token] [modifiers] Identifier ( parameter_list )
+	private StatementSyntax ParseStatement()
+	{
+		switch (Current.Kind)
+		{
+			case OpenBraceToken: // Block statement
+				return ParseBlock();
+			case ForKeyword: // for statement
+			default:
+				throw null!;
+		}
+	}
 
-		// [access_token] [modifiers] Identifier ColonToken NameSyntax
-		return new IncompleteMemberSyntax(accessLevelToken, modifiers.ToImmutable());
+	private BlockSyntax ParseBlock()
+	{
+		Token openBraceToken = MatchToken(OpenBraceToken);
+
+		ImmutableArray<StatementSyntax>.Builder statements = ImmutableArray.CreateBuilder<StatementSyntax>();
+		while (Current.Kind != EndOfFile && Current.Kind != CloseBraceToken)
+		{
+			statements.Add(ParseStatement());
+		}
+		Token closeBraceToken = MatchToken(CloseBraceToken);
+		
+		return new BlockSyntax(openBraceToken, statements.ToImmutable(), closeBraceToken);
 	}
 }
