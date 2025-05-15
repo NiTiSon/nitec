@@ -190,8 +190,8 @@ public sealed class NiteCodeParser
 					// }
 
 					BlockSyntax body = ParseBlock();
-					
-					return Function
+
+					return new FunctionSyntax(accessLevelToken, modifiers.ToImmutable(), identifier, body);
 				// field
 				case ColonToken:
 					break;

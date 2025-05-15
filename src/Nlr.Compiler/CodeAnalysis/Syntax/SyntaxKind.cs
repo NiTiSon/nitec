@@ -227,6 +227,8 @@ public enum SyntaxKind : uint
 	// Declarations
 	ModuleDeclaration,
 	TypeDeclaration,
+	FunctionDeclaration,
+	FieldDeclaration,
 	IncompleteMemberDeclaration,
 	
 	// Directives
