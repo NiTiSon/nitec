@@ -28,4 +28,9 @@ public sealed class FileSource : Source
 	{
 		_content.CopyTo(sourceIndex, destination, destinationIndex, count);
 	}
+
+	public override string ToString()
+	{
+		return _file.FullName;
+	}
 }

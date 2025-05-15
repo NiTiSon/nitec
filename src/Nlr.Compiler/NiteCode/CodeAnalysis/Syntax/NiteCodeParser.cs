@@ -229,11 +229,24 @@ public sealed class NiteCodeParser
 		Token openBraceToken = MatchToken(OpenBraceToken);
 
 		ImmutableArray<StatementSyntax>.Builder statements = ImmutableArray.CreateBuilder<StatementSyntax>();
-		while (Current.Kind != EndOfFile && Current.Kind != CloseBraceToken)
+		while (true)
 		{
+			if (Current.Kind == CloseBraceToken)
+			{
+				break;
+			}
+
+			if (Current.Kind is EndOfFile)
+			{
+				// _diagnostics.ReportSomething
+				break;
+			}
+
 			statements.Add(ParseStatement());
+
+			MatchToken(SemicolonToken);
 		}
-		Token closeBraceToken = MatchToken(CloseBraceToken);
+		Token closeBraceToken = NextToken();
 		
 		return new BlockSyntax(openBraceToken, statements.ToImmutable(), closeBraceToken);
 	}
@@ -248,7 +261,9 @@ public sealed class NiteCodeParser
 		switch (Current.Kind)
 		{
 			case NumberToken:
-				return new LiteralExpression(Current);
+				Token numberToken = NextToken();
+				
+				return new LiteralExpressionSyntax(numberToken);
 		}
 
 		throw null!;
