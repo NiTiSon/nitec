@@ -24,6 +24,11 @@ public readonly struct Token : ISyntaxNode
 
 	public override string ToString()
 	{
+		return Value ?? string.Empty;
+	}
+
+	public string ToDebugString()
+	{
 		return $"{Kind}: {(Value is null ? string.Empty : $"'{Value}'")} lead: {LeadingTrivia.Length} trail: {TrailingTrivia.Length}";
 	}
 
