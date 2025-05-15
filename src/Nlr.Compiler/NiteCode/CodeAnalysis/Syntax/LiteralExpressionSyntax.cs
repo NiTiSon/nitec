@@ -3,11 +3,11 @@ using Nlr.Compiler.CodeAnalysis.Syntax;
 
 namespace Nlr.Compiler.NiteCode.CodeAnalysis.Syntax;
 
-public sealed class LiteralExpression : ExpressionSyntax
+public sealed class LiteralExpressionSyntax : ExpressionSyntax
 {
 	public Token Literal { get; }
 
-	public LiteralExpression(Token token)
+	public LiteralExpressionSyntax(Token token)
 	{
 		Literal = token;
 	}

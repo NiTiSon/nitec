@@ -3,13 +3,13 @@ using Nlr.Compiler.CodeAnalysis.Syntax;
 
 namespace Nlr.Compiler.NiteCode.CodeAnalysis.Syntax;
 
-public sealed class BinaryExpressionToken : ExpressionSyntax
+public sealed class BinaryExpressionSyntax : ExpressionSyntax
 {
 	public ExpressionSyntax Left { get; }
 	public Token OperatorToken { get; }
 	public ExpressionSyntax Right { get; }
 
-	public BinaryExpressionToken(ExpressionSyntax left, Token operatorToken, ExpressionSyntax right)
+	public BinaryExpressionSyntax(ExpressionSyntax left, Token operatorToken, ExpressionSyntax right)
 	{
 		Left = left;
 		OperatorToken = operatorToken;
