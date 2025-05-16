@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 using Nlr.Compiler.CodeAnalysis.Syntax;
 using Nlr.Compiler.CodeAnalysis.Text;
 using Nlr.Compiler.Diagnostics;
@@ -34,29 +35,49 @@ public class NiteCodeSyntaxTree : SyntaxTree
 
 	private static void DebugPrint(CompilationUnit compilationUnit)
 	{
-		DebugPrintNode(compilationUnit, 0);
-	}
-	
-	private static void DebugPrintNode(ISyntaxNode node, int depth)
-	{
-		string padding = new(' ', depth * 4);
+		// Print the root node separately
+		Console.ForegroundColor = ConsoleColor.DarkBlue;
+		Console.WriteLine($"{compilationUnit.Kind}");
+		Console.ResetColor();
 
+		var children = compilationUnit.GetChildren().ToList();
+		for (int i = 0; i < children.Count; i++)
+		{
+			bool isLast = i == children.Count - 1;
+			DebugPrintNode(children[i], "", isLast);
+		}
+	}
+
+	private static void DebugPrintNode(ISyntaxNode node, string indent, bool isLast)
+	{
+		// Draw tree connectors
+		string connector = isLast ? "└── " : "├── ";
+		Console.Write(indent);
+		Console.Write(connector);
+
+		// Print node content
 		if (node is Token token)
 		{
 			Console.ForegroundColor = ConsoleColor.Yellow;
-			Console.WriteLine($"{padding}{node.Kind} '{token.Value}'");
+			Console.WriteLine($"{node.Kind} '{token.Value}'");
 			Console.ResetColor();
 		}
 		else
 		{
 			Console.ForegroundColor = ConsoleColor.DarkBlue;
-			Console.WriteLine($"{padding}{node.Kind}");
+			Console.WriteLine($"{node.Kind}");
 			Console.ResetColor();
 		}
-    
-		foreach (ISyntaxNode child in node.GetChildren())
+
+		// Build indentation for children
+		string childIndent = indent + (isLast ? "    " : "│   ");
+
+		// Recursively print children
+		var children = node.GetChildren().ToList();
+		for (int i = 0; i < children.Count; i++)
 		{
-			DebugPrintNode(child, depth + 1);
+			bool childIsLast = i == children.Count - 1;
+			DebugPrintNode(children[i], childIndent, childIsLast);
 		}
 	}
 }
