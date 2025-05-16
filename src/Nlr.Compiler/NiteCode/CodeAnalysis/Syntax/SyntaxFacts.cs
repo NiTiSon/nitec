@@ -19,6 +19,40 @@ public static class SyntaxFacts
 		return null;
 	}
 
+	public static int GetPrecedence(SyntaxKind kind)
+	{
+		switch (kind)
+		{
+			case SyntaxKind.AsteriskToken:
+			case SyntaxKind.SlashToken:
+				return 5;
+
+			case SyntaxKind.PlusToken:
+			case SyntaxKind.MinusToken:
+				return 4;
+
+			case SyntaxKind.EqualsEqualsToken:
+			case SyntaxKind.ExclamationMarkEqualsToken:
+			case SyntaxKind.LessThanToken:
+			case SyntaxKind.LessThanEqualsToken:
+			case SyntaxKind.GreaterThanToken:
+			case SyntaxKind.GreaterThanEqualsToken:
+				return 3;
+
+			case SyntaxKind.AmpersandToken:
+			case SyntaxKind.AmpersandAmpersandToken:
+				return 2;
+
+			case SyntaxKind.PipeToken:
+			case SyntaxKind.PipePipeToken:
+			case SyntaxKind.CircumflexToken:
+				return 1;
+
+			default:
+				return 0;
+		}
+	}
+
 	public static SyntaxKind? GetKind(string text)
 	{
 		if (KeywordFrozen.TryGetValue(text, out SyntaxKind kind))

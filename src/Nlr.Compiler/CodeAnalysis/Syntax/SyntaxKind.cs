@@ -53,7 +53,7 @@ public enum SyntaxKind : uint
 	/// <summary>Represents <c>&amp;</c> token.</summary>
 	AmpersandToken = 2059,
 	/// <summary>Represents <c>^</c> token.</summary>
-	CaretToken = 2060,
+	CircumflexToken = 2060,
 	/// <summary>Represents <c>|</c> token.</summary>
 	PipeToken = 2061,
 	/// <summary>Represents <c>=</c> token.</summary>
@@ -214,13 +214,20 @@ public enum SyntaxKind : uint
 	BinaryExpression,
 	NameExpression,
 	LiteralExpression,
+	WrongExpression,
 	
 	// Statements
 	BlockStatement,
-	
+	ExpressionStatement,
+	EmptyStatement,
+	IfStatement,
+	LoopStatement,
+	ForStatement,
+	DoStatement,
+	WhileStatement,
+
 	// Branch statements
 	ReturnStatement,
-	ForStatement,
 	ContinueStatement,
 	BreakStatement,
 	

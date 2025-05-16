@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using Nlr.Compiler.CodeAnalysis.Syntax;
 using Nlr.Compiler.Diagnostics;
 using Nlr.Compiler.Extensions;
@@ -219,8 +219,10 @@ public sealed class NiteCodeParser
 				}
 				
 				return new ReturnStatement(returnKeyword, ParseExpression());
+			case SemicolonToken:
+				return new EmptyStatementSyntax();
 			default:
-				throw null!;
+				return new ExpressionStatementSyntax(ParseExpression());
 		}
 	}
 
@@ -260,12 +262,24 @@ public sealed class NiteCodeParser
 	{
 		switch (Current.Kind)
 		{
+			case FalseKeyword:
+			case TrueKeyword:
 			case NumberToken:
-				Token numberToken = NextToken();
+				Token literal = NextToken();
 				
-				return new LiteralExpressionSyntax(numberToken);
+				return new LiteralExpressionSyntax(literal);
+			case OpenParenToken:
+				Token openParenToken = NextToken();
+
+				ExpressionSyntax expression = ParseExpression();
+
+				Token closeParenToken = MatchToken(CloseParenToken);
+
+				return new ParenthesizeExpressionSyntax(openParenToken, expression, closeParenToken);
 		}
 
-		throw null!;
+		_diagnostics.ReportExceptedExpression();
+		_ = NextToken();
+		return new WrongExpressionSyntax();
 	}
 }

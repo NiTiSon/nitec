@@ -3,5 +3,7 @@ module here::there;
 public x: i32;
 
 public main() {
-	return 1;
+	;
+	;
+	;
 }
