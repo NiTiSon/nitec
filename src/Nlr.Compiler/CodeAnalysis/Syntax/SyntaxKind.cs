@@ -147,6 +147,8 @@ public enum SyntaxKind : uint
 	GreaterThanGreaterThanGreaterThanEqualsToken = 2105,
 	/// <summary>Represents <c>&gt;&gt;=</c> token.</summary>
 	GreaterThanGreaterThanEqualsToken = 2106,
+	/// <summary>Represents <c>,</c> token.</summary>
+	CommaToken = 2107,
 
 	// === Keywords [8192..32768] ===
 
@@ -195,7 +197,7 @@ public enum SyntaxKind : uint
 	F32Keyword = 8234,
 	F64Keyword = 8235,
 	VoidKeyword = 8236,
-	BoolKeyword = 8237,
+	BoolKeyword = 8237, // If adding new type keywords, modify SyntaxFacts.IsTypeKeyword
 	ModuleKeyword = 8238,
 	TypeKeyword = 8239,
 	
@@ -204,7 +206,8 @@ public enum SyntaxKind : uint
 	CompilationUnit = 32768,
 	
 	IdentifierName, // identifier
-	ModuleName, // x || x::y || x::y::z ...
+	ModuleName, // x || x::y || x::y::z ... (only in `use` and `module`)
+	QualifiedName,
 	FullyQualifiedName,
 	PredefinedType,
 	
@@ -236,6 +239,7 @@ public enum SyntaxKind : uint
 	TypeDeclaration,
 	FunctionDeclaration,
 	FieldDeclaration,
+	ParameterDeclaration,
 	IncompleteMemberDeclaration,
 	
 	// Directives

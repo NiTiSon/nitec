@@ -94,6 +94,10 @@ public sealed class NiteCodeLexer : Lexer
 					_kind = SyntaxKind.DotToken;
 				}
 				break;
+			case ',':
+				_kind = SyntaxKind.CommaToken;
+				_window.Advance();
+				break;
 			case '~':
 				if (_window.Next == '=')
 				{

@@ -151,6 +151,49 @@ public sealed class NiteCodeParser
 		return new ModuleNameSyntax(tokens.ToImmutable()); // TODO: Impl
 	}
 
+	private NameSyntax ParseName()
+	{
+		// i32 - PredefinedTypeNameSyntax
+		
+		// ::module::name.Type.SubType - QualifiedTypeNameSyntax
+		// ::module::name - module part
+		// Type.SubType
+		
+		if (SyntaxFacts.IsTypeKeyword(Current.Kind))
+		{
+			return new PredefinedTypeNameSyntax(NextToken());
+		}
+
+		ModuleNameSyntax? moduleName = null;
+		if (Current.Kind == ColonColonToken) // ::module::name
+		{
+			NextToken(); // Skip `::`
+			moduleName = ParseModuleName();
+			MatchToken(DotToken);
+		}
+
+		NameSyntax left = ParseSimpleName();
+		while (Current.Kind == DotToken)
+		{
+			Token dot = NextToken();
+
+			var right = ParseSimpleName();
+			left = new QualifiedTypeNameSyntax(left, dot, right);
+		}
+
+		if (moduleName != null)
+		{
+			left = new FullyQualifiedTypeNameSyntax(moduleName, left);
+		}
+
+		return left;
+	}
+
+	private SimpleNameSyntax ParseSimpleName()
+	{
+		return new IdentifierNameSyntax(MatchToken(IdentifierToken));
+	}
+
 	private MemberSyntax ParseMember()
 	{
 		// [access_token] [modifiers] TypeKeyword Identifier
@@ -175,23 +218,26 @@ public sealed class NiteCodeParser
 		}
 		else
 		{
-			Token identifier = MatchToken(IdentifierToken);
+			SimpleNameSyntax identifier = ParseSimpleName();
 			switch (Current.Kind)
 			{
 				// function
 				case OpenParenToken:
 					Token openParenToken = MatchToken(OpenParenToken);
+					ParameterListSyntax parameters = ParseParameters(aPosterioriEmpty: Current.Kind == CloseParenToken);
 					Token closeParenToken = MatchToken(CloseParenToken);
-					
-					
-					// if (Current.Kind == MinusGreaterThanToken) // Return type
-					// {
-					// 	Token retusa = MatchToken(MinusGreaterThanToken);
-					// }
+
+					ReturnParameterSyntax? returnParameter = null;
+					if (Current.Kind == MinusGreaterThanToken) // Return type
+					{
+						Token retusa = NextToken();
+						NameSyntax returnType = ParseName();
+						returnParameter = new(retusa, returnType);
+					}
 
 					BlockSyntax body = ParseBlock();
 
-					return new FunctionSyntax(accessLevelToken, modifiers.ToImmutable(), identifier, body);
+					return new FunctionSyntax(accessLevelToken, modifiers.ToImmutable(), identifier, parameters, body, returnParameter);
 				// field
 				case ColonToken:
 					break;
@@ -203,6 +249,37 @@ public sealed class NiteCodeParser
 		IncompleteMemberSyntax incompleteMember = new(accessLevelToken, modifiers.ToImmutable());
 		_diagnostics.ReportIncompleteMember(incompleteMember);
 		return incompleteMember;
+	}
+
+	private ParameterListSyntax ParseParameters(bool aPosterioriEmpty = false)
+	{
+		if (aPosterioriEmpty) return new ParameterListSyntax([]);
+		
+		ImmutableArray<ParameterSyntax>.Builder parameters = ImmutableArray.CreateBuilder<ParameterSyntax>();
+		do
+		{
+			parameters.Add(ParseParameter());
+
+			if (Current.Kind == CommaToken)
+			{
+				NextToken();
+			}
+			else
+			{
+				break;
+			}
+		}
+		while (true);
+		
+		return new ParameterListSyntax(parameters.ToImmutable());
+	}
+
+	private ParameterSyntax ParseParameter()
+	{
+		SimpleNameSyntax name = ParseSimpleName();
+		MatchToken(ColonToken);
+		NameSyntax type = ParseName();
+		return new ParameterSyntax(name, type);
 	}
 
 	private StatementSyntax ParseStatement()
@@ -255,10 +332,40 @@ public sealed class NiteCodeParser
 
 	private ExpressionSyntax ParseExpression()
 	{
-		return ParseRValueExpression();
+		return ParseBinaryExpression();
 	}
 	
-	private ExpressionSyntax ParseRValueExpression()
+	private ExpressionSyntax ParseBinaryExpression(int parentPrecedence = 0)
+	{
+		ExpressionSyntax left;
+		int unaryOperatorPrecedence = SyntaxFacts.GetUnaryPrecedence(Current.Kind);
+
+		if (unaryOperatorPrecedence != 0 && unaryOperatorPrecedence >= parentPrecedence)
+		{
+			Token operatorToken = NextToken();
+			ExpressionSyntax operand = ParseBinaryExpression(unaryOperatorPrecedence);
+			left = new UnaryExpressionSyntax(operatorToken, operand);
+		}
+		else
+		{
+			left = ParsePrimaryExpression();
+		}
+
+		while (true)
+		{
+			int precedence = SyntaxFacts.GetPrecedence(Current.Kind);
+			if (precedence == 0 || precedence <= parentPrecedence)
+				break;
+
+			Token operatorToken = NextToken();
+			ExpressionSyntax right = ParseBinaryExpression(precedence);
+			left = new BinaryExpressionSyntax(left, operatorToken, right);
+		}
+
+		return left;
+	}
+
+	private ExpressionSyntax ParsePrimaryExpression()
 	{
 		switch (Current.Kind)
 		{

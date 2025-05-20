@@ -19,34 +19,69 @@ public static class SyntaxFacts
 		return null;
 	}
 
+	public static int GetUnaryPrecedence(SyntaxKind kind)
+	{
+		switch (kind)
+		{
+			case SyntaxKind.PlusToken:
+			case SyntaxKind.MinusToken:
+				return 21;
+
+			default:
+				return 0;
+		}
+	}
+
+	public static bool IsTypeKeyword(SyntaxKind kind)
+	{
+		return kind is >= SyntaxKind.I8Keyword and <= SyntaxKind.BoolKeyword;
+	}
+
 	public static int GetPrecedence(SyntaxKind kind)
 	{
 		switch (kind)
 		{
-			case SyntaxKind.AsteriskToken:
-			case SyntaxKind.SlashToken:
-				return 5;
+			case SyntaxKind.AsteriskToken: // *
+			case SyntaxKind.SlashToken: // / (divide)
+			case SyntaxKind.PercentToken: // % (modulo)
+				return 20;
 
-			case SyntaxKind.PlusToken:
-			case SyntaxKind.MinusToken:
-				return 4;
+			case SyntaxKind.PlusToken: // +
+			case SyntaxKind.MinusToken: // -
+				return 19;
+			
+			case SyntaxKind.LessThanLessThanToken: // <<
+			case SyntaxKind.GreaterThanGreaterThanToken: // >>
+			case SyntaxKind.GreaterThanGreaterThanGreaterThanToken: // >>>
+				return 18;
 
-			case SyntaxKind.EqualsEqualsToken:
-			case SyntaxKind.ExclamationMarkEqualsToken:
-			case SyntaxKind.LessThanToken:
-			case SyntaxKind.LessThanEqualsToken:
-			case SyntaxKind.GreaterThanToken:
-			case SyntaxKind.GreaterThanEqualsToken:
-				return 3;
+			case SyntaxKind.DotDotToken: // ..
+			case SyntaxKind.DotDotEqualsToken: // ..=
+				return 15;
+
+			case SyntaxKind.LessThanToken: // <=
+			case SyntaxKind.LessThanEqualsToken: // <
+			case SyntaxKind.GreaterThanToken: // >
+			case SyntaxKind.GreaterThanEqualsToken: // >=
+			case SyntaxKind.AsKeyword: // as
+			case SyntaxKind.IsKeyword: // is
+				return 10;
+
+			case SyntaxKind.EqualsEqualsToken: // ==
+			case SyntaxKind.ExclamationMarkEqualsToken: // !=
+				return 9;
 
 			case SyntaxKind.AmpersandToken:
-			case SyntaxKind.AmpersandAmpersandToken:
-				return 2;
-
-			case SyntaxKind.PipeToken:
-			case SyntaxKind.PipePipeToken:
+				return 7;
 			case SyntaxKind.CircumflexToken:
-				return 1;
+				return 6;
+			case SyntaxKind.PipeToken:
+				return 5;
+
+			case SyntaxKind.AmpersandAmpersandToken:
+				return 4;
+			case SyntaxKind.PipePipeToken:
+				return 3;
 
 			default:
 				return 0;

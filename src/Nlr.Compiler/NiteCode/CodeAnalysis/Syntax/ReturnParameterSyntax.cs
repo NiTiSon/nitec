@@ -4,18 +4,20 @@ using Nlr.Compiler.CodeAnalysis.Syntax;
 
 namespace Nlr.Compiler.NiteCode.CodeAnalysis.Syntax;
 
-public sealed class ReturnParameterListSyntax : ISyntaxNode
+public sealed class ReturnParameterSyntax : ISyntaxNode
 {
-	public ImmutableArray<NameSyntax> ReturnParameters { get; }
+	public Token Retusa { get; }
+	public NameSyntax ReturnParameter { get; }
 
-	public ReturnParameterListSyntax(ImmutableArray<NameSyntax> returnParameters)
+	public ReturnParameterSyntax(Token retusa, NameSyntax returnParameter)
 	{
-		ReturnParameters = returnParameters;
+		Retusa = retusa;
+		ReturnParameter = returnParameter;
 	}
 	
 	public SyntaxKind Kind => SyntaxKind.ReturnParameterList;
 	public IEnumerable<ISyntaxNode> GetChildren()
 	{
-		return ReturnParameters;
+		yield return ReturnParameter;
 	}
 }

@@ -3,7 +3,7 @@ using Nlr.Compiler.CodeAnalysis.Syntax;
 
 namespace Nlr.Compiler.NiteCode.CodeAnalysis.Syntax;
 
-public sealed class IdentifierNameSyntax : SimpleMemberNameSyntax
+public sealed class IdentifierNameSyntax : SimpleNameSyntax
 {
 	public Token Identifier { get; }
 
