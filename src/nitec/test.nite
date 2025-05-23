@@ -1,6 +1,5 @@
 module here::there;
 
-public x: i32;
-
-public main() -> i32 {}
-public main(x: i32, x: ::x.y) {}
+public main(x: i32, x: ::x.y) {
+	return ::x.y;
+}

@@ -220,6 +220,53 @@ public sealed class NiteCodeLexer : Lexer
 					_window.Advance();
 				}
 				break;
+			case '|':
+				switch (_window.Next)
+				{
+					case '|':
+						_kind = SyntaxKind.PipePipeToken;
+						_window.Advance(2);
+						break;
+					case '=':
+						_kind = SyntaxKind.PipeEqualsToken;
+						_window.Advance(2);
+						break;
+					default:
+						_kind = SyntaxKind.PipeToken;
+						_window.Advance();
+						break;
+				}
+				break;
+			case '&':
+				switch (_window.Next)
+				{
+					case '&':
+						_kind = SyntaxKind.AmpersandAmpersandToken;
+						_window.Advance(2);
+						break;
+					case '=':
+						_kind = SyntaxKind.AmpersandEqualsToken;
+						_window.Advance(2);
+						break;
+					default:
+						_kind = SyntaxKind.AmpersandToken;
+						_window.Advance();
+						break;
+				}
+				break;
+			case '=':
+				switch (_window.Next)
+				{
+					case '=':
+						_kind = SyntaxKind.EqualsEqualsToken;
+						_window.Advance(2);
+						break;
+					default:
+						_kind = SyntaxKind.EqualsToken;
+						_window.Advance();
+						break;
+				}
+				break;
 			case ':':
 				if (_window.Next == ':')
 				{

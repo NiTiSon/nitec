@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Diagnostics;
 using Nlr.Compiler.CodeAnalysis.Syntax;
 using Nlr.Compiler.Diagnostics;
 using Nlr.Compiler.Extensions;
@@ -49,9 +50,14 @@ public sealed class NiteCodeParser
 
 		_position = 0;
 	}
+
+	private Token Current
+	{
+		[DebuggerStepperBoundary]
+		get => Peek(0);
+	}
 	
-	private Token Current => Peek(0);
-	
+	[DebuggerStepperBoundary]
 	private Token Peek(int offset)
 	{
 		int index = _position + offset;
@@ -369,6 +375,9 @@ public sealed class NiteCodeParser
 	{
 		switch (Current.Kind)
 		{
+			case IdentifierToken:
+				SimpleNameSyntax name = ParseSimpleName();
+				return name;
 			case FalseKeyword:
 			case TrueKeyword:
 			case NumberToken:

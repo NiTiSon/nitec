@@ -78,9 +78,9 @@ public static class SyntaxFacts
 			case SyntaxKind.PipeToken:
 				return 5;
 
-			case SyntaxKind.AmpersandAmpersandToken:
+			case SyntaxKind.AmpersandAmpersandToken: // &&
 				return 4;
-			case SyntaxKind.PipePipeToken:
+			case SyntaxKind.PipePipeToken: // ||
 				return 3;
 
 			default:

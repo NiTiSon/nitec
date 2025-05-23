@@ -2,11 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
 
 namespace Nlr.Compiler.Diagnostics;
 
+[DebuggerStepThrough]
 public class DiagnosticBag : IEnumerable<Diagnostic>
 {
 	private readonly ConcurrentQueue<Diagnostic> _diagnostics;
