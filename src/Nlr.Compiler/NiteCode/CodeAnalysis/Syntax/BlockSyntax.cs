@@ -4,7 +4,7 @@ using Nlr.Compiler.CodeAnalysis.Syntax;
 
 namespace Nlr.Compiler.NiteCode.CodeAnalysis.Syntax;
 
-public class BlockSyntax : StatementSyntax
+public class BlockSyntax : StatementSyntax, IScopeDefyingStatement
 {
 	public readonly Token OpenBraceToken;
 	public readonly Token CloseBraceToken;

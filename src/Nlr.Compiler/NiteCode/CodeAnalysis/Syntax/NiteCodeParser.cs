@@ -16,12 +16,11 @@ public sealed class NiteCodeParser
 
 	private int _position;
 
-	private ModuleDeclarationSyntax? _currentModule;
-	private ImmutableArray<MemberSyntax>.Builder _members;
+	private readonly ImmutableArray<ISyntaxNode>.Builder _members;
 
 	public NiteCodeParser(DiagnosticBag diagnostics, NiteCodeLexer lexer)
 	{
-		_members = ImmutableArray.CreateBuilder<MemberSyntax>();
+		_members = ImmutableArray.CreateBuilder<ISyntaxNode>();
 		_diagnostics = diagnostics;
 		ImmutableArray<Token>.Builder tokens = ImmutableArray.CreateBuilder<Token>();
 		ImmutableArray<Token>.Builder badTokens = ImmutableArray.CreateBuilder<Token>();
@@ -112,7 +111,7 @@ public sealed class NiteCodeParser
 					usings.Add(ParseUsingDirective());
 					break;
 				case ModuleKeyword:
-					_currentModule = ParseModuleDeclaration();
+					_members.Add(ParseModuleDeclaration());
 					break;
 				case PublicKeyword
 					or PrivateKeyword
@@ -154,7 +153,7 @@ public sealed class NiteCodeParser
 			NextToken();
 			tokens.Add(NextToken());
 		}
-		return new ModuleNameSyntax(tokens.ToImmutable()); // TODO: Impl
+		return new ModuleNameSyntax(tokens.ToImmutable());
 	}
 
 	private NameSyntax ParseName()
@@ -189,7 +188,7 @@ public sealed class NiteCodeParser
 
 		if (moduleName != null)
 		{
-			left = new FullyQualifiedTypeNameSyntax(moduleName, left);
+			left = new FullyQualifiedNameSyntax(moduleName, left);
 		}
 
 		return left;
@@ -229,16 +228,16 @@ public sealed class NiteCodeParser
 			{
 				// function
 				case OpenParenToken:
-					Token openParenToken = MatchToken(OpenParenToken);
+					MatchToken(OpenParenToken);
 					ParameterListSyntax parameters = ParseParameters(aPosterioriEmpty: Current.Kind == CloseParenToken);
-					Token closeParenToken = MatchToken(CloseParenToken);
+					MatchToken(CloseParenToken);
 
 					ReturnParameterSyntax? returnParameter = null;
 					if (Current.Kind == MinusGreaterThanToken) // Return type
 					{
 						Token retusa = NextToken();
 						NameSyntax returnType = ParseName();
-						returnParameter = new(retusa, returnType);
+						returnParameter = new ReturnParameterSyntax(retusa, returnType);
 					}
 
 					BlockSyntax body = ParseBlock();
@@ -302,6 +301,10 @@ public sealed class NiteCodeParser
 				}
 				
 				return new ReturnStatement(returnKeyword, ParseExpression());
+			case LoopKeyword:
+				Token loopKeyword = NextToken();
+				StatementSyntax body = ParseStatement();
+				return new LoopStatementSyntax(loopKeyword, body);
 			case SemicolonToken:
 				return new EmptyStatementSyntax();
 			default:
@@ -327,9 +330,13 @@ public sealed class NiteCodeParser
 				break;
 			}
 
-			statements.Add(ParseStatement());
+			StatementSyntax statement = ParseStatement();
+			statements.Add(statement);
 
-			MatchToken(SemicolonToken);
+			if (statement is not IScopeDefyingStatement)
+			{
+				MatchToken(SemicolonToken);
+			}
 		}
 		Token closeBraceToken = NextToken();
 		
@@ -375,9 +382,9 @@ public sealed class NiteCodeParser
 	{
 		switch (Current.Kind)
 		{
+			case ColonColonToken:
 			case IdentifierToken:
-				SimpleNameSyntax name = ParseSimpleName();
-				return name;
+				return ParseName();
 			case FalseKeyword:
 			case TrueKeyword:
 			case NumberToken:

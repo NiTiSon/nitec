@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Frozen;
+using System.Diagnostics;
 using System.Linq;
 using Nlr.Compiler.CodeAnalysis.Syntax;
 

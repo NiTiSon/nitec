@@ -3,12 +3,12 @@ using Nlr.Compiler.CodeAnalysis.Syntax;
 
 namespace Nlr.Compiler.NiteCode.CodeAnalysis.Syntax;
 
-public sealed class FullyQualifiedTypeNameSyntax : NameSyntax
+public sealed class FullyQualifiedNameSyntax : NameSyntax
 {
 	public ModuleNameSyntax ModuleName { get; }
 	public NameSyntax Name { get; }
 
-	public FullyQualifiedTypeNameSyntax(ModuleNameSyntax moduleName, NameSyntax name)
+	public FullyQualifiedNameSyntax(ModuleNameSyntax moduleName, NameSyntax name)
 	{
 		ModuleName = moduleName;
 		Name = name;
