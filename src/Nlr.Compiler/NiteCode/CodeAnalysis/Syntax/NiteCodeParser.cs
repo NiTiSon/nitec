@@ -291,6 +291,8 @@ public sealed class NiteCodeParser
 	{
 		switch (Current.Kind)
 		{
+			case LetKeyword:
+				return ParseLocalVariableSyntax();
 			case OpenBraceToken: // Block statement
 				return ParseBlock();
 			case ReturnKeyword: // return
@@ -310,6 +312,21 @@ public sealed class NiteCodeParser
 			default:
 				return new ExpressionStatementSyntax(ParseExpression());
 		}
+	}
+
+	private LocalVariableDeclarationSyntax ParseLocalVariableSyntax()
+	{
+		Token letKeword = MatchToken(LetKeyword);
+		SimpleNameSyntax name = ParseSimpleName();
+		if (Current.Kind != ColonToken)
+			return new LocalVariableDeclarationSyntax(letKeword, name);
+		
+		NextToken();
+	
+		NameSyntax type = ParseName();
+
+		return new LocalVariableDeclarationSyntax(letKeword, name, type);
+
 	}
 
 	private BlockSyntax ParseBlock()

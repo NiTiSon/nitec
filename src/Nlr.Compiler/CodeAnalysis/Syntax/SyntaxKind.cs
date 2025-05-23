@@ -200,6 +200,7 @@ public enum SyntaxKind : uint
 	BoolKeyword = 8237, // If adding new type keywords, modify SyntaxFacts.IsTypeKeyword
 	ModuleKeyword = 8238,
 	TypeKeyword = 8239,
+	LetKeyword = 8240,
 	
 	// === Nodes [32768..65536] ===
 	
@@ -239,6 +240,7 @@ public enum SyntaxKind : uint
 	TypeDeclaration,
 	FunctionDeclaration,
 	FieldDeclaration,
+	LocalVariableDeclaration,
 	ParameterDeclaration,
 	IncompleteMemberDeclaration,
 	

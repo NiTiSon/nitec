@@ -152,6 +152,7 @@ public static class SyntaxFacts
 			"bool",
 			"module",
 			"type",
+			"let"
 		];
 
 		SyntaxKind kind = (SyntaxKind)8191;

@@ -1,5 +1,5 @@
 module here::there;
 
 public main(x: i32, x: ::x.y) {
-	{}
+	let x: i32 = 1;
 }
