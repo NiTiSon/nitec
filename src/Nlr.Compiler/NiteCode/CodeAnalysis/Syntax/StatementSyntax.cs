@@ -7,4 +7,5 @@ public abstract class StatementSyntax : ISyntaxNode
 {
 	public abstract SyntaxKind Kind { get; }
 	public abstract IEnumerable<ISyntaxNode> GetChildren();
+	public virtual bool IsRequireSemicolon => true;
 }

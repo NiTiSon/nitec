@@ -318,15 +318,30 @@ public sealed class NiteCodeParser
 	{
 		Token letKeword = MatchToken(LetKeyword);
 		SimpleNameSyntax name = ParseSimpleName();
-		if (Current.Kind != ColonToken)
-			return new LocalVariableDeclarationSyntax(letKeword, name);
+		NameSyntax? type = null;
+		EqualsValueClause? equalsValueClause = null;
+
+		if (Current.Kind == ColonToken)
+		{
+			NextToken();
+			type = ParseName();
+		}
+
+		if (Current.Kind == EqualsToken)
+		{
+			equalsValueClause = ParseEqualsValueClause();
+		}
+
+		return new LocalVariableDeclarationSyntax(letKeword, name, type, equalsValueClause);
+	}
+
+	private EqualsValueClause ParseEqualsValueClause()
+	{
+		Token equalsToken = MatchToken(EqualsToken);
 		
-		NextToken();
-	
-		NameSyntax type = ParseName();
-
-		return new LocalVariableDeclarationSyntax(letKeword, name, type);
-
+		ExpressionSyntax expression = ParseExpression();
+		
+		return new EqualsValueClause(equalsToken, expression);
 	}
 
 	private BlockSyntax ParseBlock()
@@ -350,7 +365,7 @@ public sealed class NiteCodeParser
 			StatementSyntax statement = ParseStatement();
 			statements.Add(statement);
 
-			if (statement is not IScopeDefyingStatement)
+			if (statement.IsRequireSemicolon)
 			{
 				MatchToken(SemicolonToken);
 			}

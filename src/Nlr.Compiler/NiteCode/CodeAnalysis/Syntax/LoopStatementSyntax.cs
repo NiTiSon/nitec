@@ -3,7 +3,7 @@ using Nlr.Compiler.CodeAnalysis.Syntax;
 
 namespace Nlr.Compiler.NiteCode.CodeAnalysis.Syntax;
 
-public sealed class LoopStatementSyntax : StatementSyntax, IScopeDefyingStatement
+public sealed class LoopStatementSyntax : StatementSyntax
 {
 	public Token LoopKeyword { get; }
 	
@@ -21,4 +21,6 @@ public sealed class LoopStatementSyntax : StatementSyntax, IScopeDefyingStatemen
 		yield return LoopKeyword;
 		yield return Body;
 	}
+
+	public override bool IsRequireSemicolon => false;
 }
