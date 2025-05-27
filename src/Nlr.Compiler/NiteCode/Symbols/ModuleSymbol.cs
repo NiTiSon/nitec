@@ -1,6 +1,6 @@
 namespace Nlr.Compiler.NiteCode.Symbols;
 
-public sealed class ModuleSymbol : Symbol
+public sealed class ModuleSymbol : ISymbol
 {
 	public override string Name { get; }
 	public override ModuleSymbol ModuleContainer { get; }
