@@ -2,9 +2,32 @@ namespace Nlr.Compiler.NiteCode.Symbols;
 
 public interface ISymbol
 {
+	/// <summary>
+	/// Symbol name. Can be empty.
+	/// </summary>
 	string Name { get; }
-
-	ModuleSymbol ModuleContainer { get; }
 	
 	SymbolKind Kind { get; }
+	
+	ISymbol? ContainingSymbol { get; }
+	
+	IModuleSymbol? ContainingModule { get; }
+	
+	bool IsDefinition { get; }
+	
+	bool IsStatic { get; }
+	
+	bool IsVirtual { get; }
+	
+	bool IsAbstract { get; }
+	
+	bool IsOverride { get; }
+	
+	bool IsSealed { get; }
+	
+	bool Isnogeneric { get; }
+	
+	bool CanBeReferencedByName { get; }
+	
+	
 }
