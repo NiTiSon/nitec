@@ -1,5 +1,5 @@
 module here::there;
 
-public main(x: i32, x: ::x.y) {
-	let x: ::std::numerics.SInt32 = 12i32;
+public test_addition(x: i32, y: i32) -> i32 {
+	return x + y;
 }

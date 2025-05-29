@@ -83,11 +83,11 @@ public sealed class Nitec : NiteCodeCompiler
 		
 	}
 
-	public static void Process(FileInfo[] inputFiles, FileInfo[] includedFiles, FileInfo outFile)
+	public static void Process(FileInfo[]? inputFiles, FileInfo[]? includedFiles, FileInfo outFile)
 	{
 		Nitec nitec = new(new BuildPaths(Environment.CurrentDirectory));
 
-		Compilation? compilation = nitec.CreateCompilation(sourceFiles: inputFiles.Select(t => t.FullName).ToArray());
+		Compilation? compilation = nitec.CreateCompilation(sourceFiles: inputFiles?.Select(t => t.FullName).ToArray() ?? []);
 	}
 
 	/* === ERROR DISPLAY ===
