@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Nlr.Compiler.CodeAnalysis.Text;
 using Nlr.Compiler.NiteCode;
 
 public sealed class Nitec : NiteCodeCompiler
@@ -87,7 +88,7 @@ public sealed class Nitec : NiteCodeCompiler
 	{
 		Nitec nitec = new(new BuildPaths(Environment.CurrentDirectory));
 
-		NiteCodeCompilation? compilation = nitec.CreateCompilationFromFilePaths(inputFiles?.Select(t => t.FullName).ToArray() ?? []);
+		NiteCodeCompilation? compilation = nitec.CreateCompilation("__notimpl", inputFiles?.Select(t => new FileSource(t)).ToArray() ?? []);
 	}
 
 	/* === ERROR DISPLAY ===
