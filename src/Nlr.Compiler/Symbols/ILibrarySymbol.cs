@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 
-namespace Nlr.Compiler.NiteCode.Symbols;
+namespace Nlr.Compiler.Symbols;
 
 public interface ILibrarySymbol : ISymbol
 {

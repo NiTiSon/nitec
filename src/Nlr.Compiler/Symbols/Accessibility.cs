@@ -1,4 +1,4 @@
-namespace Nlr.Compiler.NiteCode.Symbols;
+namespace Nlr.Compiler.Symbols;
 
 /// <summary>
 /// Defines the accessibility levels for symbols in the code.

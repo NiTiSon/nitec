@@ -1,6 +1,6 @@
 using Nlr.Compiler.CodeAnalysis.Syntax;
 using Nlr.Compiler.NiteCode.CodeAnalysis;
-using Nlr.Compiler.NiteCode.Symbols;
+using Nlr.Compiler.Symbols;
 
 namespace Nlr.Compiler;
 

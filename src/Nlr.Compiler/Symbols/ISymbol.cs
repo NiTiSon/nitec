@@ -1,4 +1,4 @@
-namespace Nlr.Compiler.NiteCode.Symbols;
+namespace Nlr.Compiler.Symbols;
 
 public interface ISymbol
 {

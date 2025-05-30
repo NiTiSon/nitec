@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.AccessControl;
 
-namespace Nlr.Compiler.NiteCode;
+namespace Nlr.Compiler;
 
 public sealed class LibraryIdentity : IEquatable<LibraryIdentity>
 {
