@@ -11,7 +11,7 @@ public class SemVerTests
 		"10.20.30",
 		"1.1.2-prerelease+meta",
 		"1.1.2+meta",
-		// "1.1.2+meta-valid", is not valid
+		"1.1.2+meta-valid",
 		"1.0.0-alpha",
 		"1.0.0-beta",
 		"1.0.0-alpha.beta",
