@@ -13,7 +13,6 @@ public readonly struct SemVer :
 	IEquatable<SemVer>,
 	IComparable<SemVer>,
 	IComparisonOperators<SemVer, SemVer, bool>,
-	IParsable<SemVer>,
 	ISpanParsable<SemVer>
 {
 	private readonly uint _major, _minor, _patch;
@@ -30,7 +29,7 @@ public readonly struct SemVer :
 	public bool IsContainsMeta
 		=> _metaPosition >= 0;
 
-	public ICollection<string> PrereleaseIdentifiers
+	public IList<string> PrereleaseIdentifiers
 	{
 		get
 		{
@@ -71,7 +70,7 @@ public readonly struct SemVer :
 		}
 	}
 	
-	public ICollection<string> MetaIdentifiers
+	public IList<string> MetaIdentifiers
 	{
 		get
 		{
@@ -142,14 +141,21 @@ public readonly struct SemVer :
 		if (_minor != other._minor) return _minor.CompareTo(other._minor);
 		if (_patch != other._patch) return _patch.CompareTo(other._patch);
 
-		if (_tail == null)
+		IList<string> left = PrereleaseIdentifiers;
+		IList<string> right = other.PrereleaseIdentifiers;
+
+		int lesserPrereleaseIdentifiers = int.Min(left.Count, right.Count);
+
+		for (int i = 0; i < lesserPrereleaseIdentifiers; i++)
 		{
-			// if other tail is not null -> Always greater
-			return other._tail == null ? 0 : 1;
+			int diff = string.Compare(left[i], right[i], StringComparison.Ordinal);
+			
+			if (diff == 0) continue;
+			
+			return diff;
 		}
 
-		// If tail is null and other is not null -> Always lesser
-		return other._tail == null ? -1 : CompareToOnlyTail(GetPrereleasePart(), other.GetPrereleasePart());
+		return -left.Count.CompareTo(right.Count);
 	}
 
 	private static int CompareToOnlyTail(ReadOnlySpan<char> left, ReadOnlySpan<char> right)

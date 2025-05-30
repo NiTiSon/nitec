@@ -168,4 +168,21 @@ public class SemVerTests
 		    }
 	    }
     }
+
+    [Test]
+    public async Task SemVer_Equals()
+    {
+	    SemVer v1_0_0 = new(1, 0, 0);
+	    SemVer v1_0_1 = new(1, 0, 1);
+	    SemVer v1_0_0withMeta = SemVer.Parse("1.0.0+meta");
+	    SemVer v1_0_0withPrerelease = SemVer.Parse("1.0.0-prerelease");
+
+	    using (Assert.Multiple())
+	    {
+		    await Assert.That(v1_0_0).IsNotEqualTo(v1_0_1);
+		    await Assert.That(v1_0_0).IsEqualTo(v1_0_0withMeta);
+		    await Assert.That(v1_0_0).IsGreaterThan(v1_0_0withPrerelease);
+		    await Assert.That(v1_0_0).IsLessThan(v1_0_1);
+	    }
+    }
 }
