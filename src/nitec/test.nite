@@ -1,3 +1,5 @@
+use example::module;
+
 module here::there;
 
 public test_addition(x: i32, y: i32) -> i32 {

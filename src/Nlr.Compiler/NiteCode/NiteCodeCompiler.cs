@@ -10,12 +10,12 @@ public class NiteCodeCompiler : CommonCompiler
 	{
 	}
 
-	public override NiteCodeCompilation? CreateCompilationFromFilePaths(params ReadOnlySpan<string> filePaths)
+	public override NiteCodeCompilation? CreateCompilationFromFilePaths(string compilationName, params ReadOnlySpan<string> filePaths)
 	{
-		return base.CreateCompilationFromFilePaths(filePaths) as NiteCodeCompilation;
+		return base.CreateCompilationFromFilePaths(compilationName, filePaths) as NiteCodeCompilation;
 	}
 
-	public override NiteCodeCompilation? CreateCompilation(params ReadOnlySpan<Source> sourceFiles)
+	public override NiteCodeCompilation? CreateCompilation(string compilationName, params ReadOnlySpan<Source> sourceFiles)
 	{
 		NiteCodeSyntaxTree[] syntaxTrees = new NiteCodeSyntaxTree[sourceFiles.Length];
 
@@ -24,6 +24,6 @@ public class NiteCodeCompiler : CommonCompiler
 			syntaxTrees[i] = new NiteCodeSyntaxTree(sourceFiles[i]);
 		}
 		
-		return new NiteCodeCompilation(syntaxTrees);
+		return new NiteCodeCompilation(compilationName, syntaxTrees);
 	}
 }

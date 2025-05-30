@@ -12,7 +12,7 @@ public abstract class CommonCompiler
 		_buildPaths = buildPaths;
 	}
 
-	public virtual Compilation? CreateCompilationFromFilePaths(params ReadOnlySpan<string> filePaths)
+	public virtual Compilation? CreateCompilationFromFilePaths(string compilationName, params ReadOnlySpan<string> filePaths)
 	{
 		FileSource[] fileSources = new FileSource[filePaths.Length];
 
@@ -21,8 +21,8 @@ public abstract class CommonCompiler
 			fileSources[i] = new FileSource(filePaths[i]);
 		}
 		
-		return CreateCompilation(fileSources);
+		return CreateCompilation(compilationName, fileSources);
 	}
 
-	public abstract Compilation? CreateCompilation(params ReadOnlySpan<Source> sourceFiles);
+	public abstract Compilation? CreateCompilation(string compilationName, params ReadOnlySpan<Source> sourceFiles);
 }
