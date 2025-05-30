@@ -1,7 +1,4 @@
 using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Nlr.Compiler.CodeAnalysis.Syntax;
 using Nlr.Compiler.CodeAnalysis.Text;
 using Nlr.Compiler.NiteCode.CodeAnalysis.Syntax;
 
@@ -13,20 +10,20 @@ public class NiteCodeCompiler : CommonCompiler
 	{
 	}
 
-	public override Compilation? CreateCompilation(string[] sourceFiles)
+	public override NiteCodeCompilation? CreateCompilationFromFilePaths(params ReadOnlySpan<string> filePaths)
 	{
-		SyntaxTree[] syntaxTrees = new SyntaxTree[sourceFiles.Length];
-		
-		Parallel.For(0L, sourceFiles.Length, i =>
-		{
-			syntaxTrees[i] = ParseFile(sourceFiles[i]);
-		});
-
-		return null;
+		return base.CreateCompilationFromFilePaths(filePaths) as NiteCodeCompilation;
 	}
 
-	private static SyntaxTree ParseFile(string sourceFile)
+	public override NiteCodeCompilation? CreateCompilation(params ReadOnlySpan<Source> sourceFiles)
 	{
-		return new NiteCodeSyntaxTree(new FileSource(sourceFile));
+		NiteCodeSyntaxTree[] syntaxTrees = new NiteCodeSyntaxTree[sourceFiles.Length];
+
+		for (int i = sourceFiles.Length - 1; i >= 0; i--)
+		{
+			syntaxTrees[i] = new NiteCodeSyntaxTree(sourceFiles[i]);
+		}
+		
+		return new NiteCodeCompilation(syntaxTrees);
 	}
 }

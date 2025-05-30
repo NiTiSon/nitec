@@ -87,7 +87,7 @@ public sealed class Nitec : NiteCodeCompiler
 	{
 		Nitec nitec = new(new BuildPaths(Environment.CurrentDirectory));
 
-		Compilation? compilation = nitec.CreateCompilation(sourceFiles: inputFiles?.Select(t => t.FullName).ToArray() ?? []);
+		NiteCodeCompilation? compilation = nitec.CreateCompilationFromFilePaths(inputFiles?.Select(t => t.FullName).ToArray() ?? []);
 	}
 
 	/* === ERROR DISPLAY ===

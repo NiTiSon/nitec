@@ -1,3 +1,6 @@
+using System;
+using Nlr.Compiler.CodeAnalysis.Text;
+
 namespace Nlr.Compiler;
 
 public abstract class CommonCompiler
@@ -9,5 +12,17 @@ public abstract class CommonCompiler
 		_buildPaths = buildPaths;
 	}
 
-	public abstract Compilation? CreateCompilation(string[] sourceFiles);
+	public virtual Compilation? CreateCompilationFromFilePaths(params ReadOnlySpan<string> filePaths)
+	{
+		FileSource[] fileSources = new FileSource[filePaths.Length];
+
+		for (int i = filePaths.Length - 1; i >= 0; i--)
+		{
+			fileSources[i] = new FileSource(filePaths[i]);
+		}
+		
+		return CreateCompilation(fileSources);
+	}
+
+	public abstract Compilation? CreateCompilation(params ReadOnlySpan<Source> sourceFiles);
 }

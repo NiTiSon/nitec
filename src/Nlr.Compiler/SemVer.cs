@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Diagnostics;
+using Microsoft.Extensions.Primitives;
 
 namespace Nlr.Compiler;
 
@@ -16,16 +19,98 @@ public readonly struct SemVer :
 	private readonly uint _major, _minor, _patch;
 	private readonly string? _tail;
 	private readonly int _prereleasePosition, _metaPosition;
-
-	private bool IsTailContainsPrerelease
-		=> _prereleasePosition >= 0;
-
+	
 	public uint Major => _major;
 	public uint Minor => _minor;
 	public uint Patch => _patch;
 	
-	public bool IsPrerelease => IsTailContainsPrerelease;
-	public bool IsContainsMeta => _metaPosition >= 0;
+	public bool IsContainsPrerelease
+		=> _prereleasePosition >= 0;
+	
+	public bool IsContainsMeta
+		=> _metaPosition >= 0;
+
+	public ICollection<string> PrereleaseIdentifiers
+	{
+		get
+		{
+			if (!IsContainsPrerelease) return Array.Empty<string>();
+        
+			ReadOnlySpan<char> identifiersSpan = GetPrereleasePart()[1..];
+        
+			if (identifiersSpan.IsEmpty)
+				return Array.Empty<string>();
+            
+			int dotCount = identifiersSpan.Count('.');
+			string[] identifiers = new string[dotCount + 1];
+        
+			if (dotCount == 0)
+			{
+				identifiers[0] = identifiersSpan.ToString();
+				return identifiers;
+			}
+        
+			int previousStart = 0;
+			int currentIndex = 0;
+        
+			for (int i = 0; i < dotCount; i++)
+			{
+				int nextDot = identifiersSpan[previousStart..].IndexOf('.');
+				if (nextDot == -1) break;
+            
+				identifiers[currentIndex++] = identifiersSpan.Slice(previousStart, nextDot).ToString();
+				previousStart += nextDot + 1;
+			}
+			
+			if (previousStart < identifiersSpan.Length)
+			{
+				identifiers[currentIndex] = identifiersSpan[previousStart..].ToString();
+			}
+        
+			return identifiers;
+		}
+	}
+	
+	public ICollection<string> MetaIdentifiers
+	{
+		get
+		{
+			if (!IsContainsMeta) return Array.Empty<string>();
+        
+			ReadOnlySpan<char> identifiersSpan = GetMetaPart()[1..];
+        
+			if (identifiersSpan.IsEmpty) 
+				return Array.Empty<string>();
+            
+			int dotCount = identifiersSpan.Count('.');
+			string[] identifiers = new string[dotCount + 1];
+        
+			if (dotCount == 0)
+			{
+				identifiers[0] = identifiersSpan.ToString();
+				return identifiers;
+			}
+        
+			int previousStart = 0;
+			int currentIndex = 0;
+        
+			for (int i = 0; i < dotCount; i++)
+			{
+				int nextDot = identifiersSpan[previousStart..].IndexOf('.');
+				if (nextDot == -1) break;
+            
+				identifiers[currentIndex++] = identifiersSpan.Slice(previousStart, nextDot).ToString();
+				previousStart += nextDot + 1;
+			}
+			
+			if (previousStart < identifiersSpan.Length)
+			{
+				identifiers[currentIndex] = identifiersSpan[previousStart..].ToString();
+			}
+        
+			return identifiers;
+		}
+	}
 	
 	public SemVer(uint major, uint minor, uint patch)
 	{
@@ -64,7 +149,7 @@ public readonly struct SemVer :
 		}
 
 		// If tail is null and other is not null -> Always lesser
-		return other._tail == null ? -1 : CompareToOnlyTail(GetSortableTailPart(), other.GetSortableTailPart());
+		return other._tail == null ? -1 : CompareToOnlyTail(GetPrereleasePart(), other.GetPrereleasePart());
 	}
 
 	private static int CompareToOnlyTail(ReadOnlySpan<char> left, ReadOnlySpan<char> right)
@@ -87,16 +172,21 @@ public readonly struct SemVer :
 		return $"{_major}.{_minor}.{_patch}{_tail}";
 	}
 
-	private ReadOnlySpan<char> GetSortableTailPart()
+	private ReadOnlySpan<char> GetPrereleasePart()
 	{
 		if (_metaPosition >= 0)
 		{
-			return _tail.AsSpan(_prereleasePosition, _metaPosition - _prereleasePosition - 1);
+			return _tail.AsSpan(_prereleasePosition, _metaPosition - _prereleasePosition);
 		}
 		else
 		{
 			return _tail.AsSpan(_prereleasePosition);
 		}
+	}
+	
+	private ReadOnlySpan<char> GetMetaPart()
+	{
+		return _tail.AsSpan(_metaPosition);
 	}
 
 	public static bool operator ==(SemVer left, SemVer right)
@@ -128,11 +218,17 @@ public readonly struct SemVer :
 	{
 		return left.CompareTo(right) <= 0;
 	}
-
+	
+	public static SemVer Parse(string s)
+		=> Parse(s, null);
+	
     public static SemVer Parse(string s, IFormatProvider? provider)
     {
         return Parse(s.AsSpan(), provider);
     }
+
+    public static bool TryParse([NotNullWhen(true)] string? s, out SemVer result)
+	    => TryParse(s, null, out result);
 
     public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, out SemVer result)
     {
@@ -144,6 +240,9 @@ public readonly struct SemVer :
         return TryParse(s.AsSpan(), provider, out result);
     }
 
+    public static SemVer Parse(ReadOnlySpan<char> s)
+	    => Parse(s, null);
+
     public static SemVer Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
     {
         if (TryParse(s, provider, out SemVer result))
@@ -153,6 +252,9 @@ public readonly struct SemVer :
         ThrowHelper.ThrowFormatException("Invalid SemVer format");
         return default;
     }
+    
+    public static bool TryParse(ReadOnlySpan<char> s, out SemVer result)
+		=> TryParse(s, null, out result);
 
     public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out SemVer result)
     {
@@ -194,7 +296,7 @@ public readonly struct SemVer :
                 {
                     metaPosition = plusIndex + 1;
                 }
-                tail = s.Slice(index).ToString();
+                tail = s[index..].ToString();
             }
             else if (c == '+')
             {
@@ -211,7 +313,8 @@ public readonly struct SemVer :
         }
 
         result = new SemVer(major, minor, patch, tail, prereleasePosition, metaPosition);
-        return true;
+
+        return result.PrereleaseIdentifiers.All(CheckIdentifier) && result.MetaIdentifiers.All(CheckIdentifier);
     }
 	
 	private static bool TryParseNumber(ReadOnlySpan<char> s, ref int index, out uint value)
@@ -242,6 +345,26 @@ public readonly struct SemVer :
 			value = value * 10 + digit;
 			index++;
 		}
+		return true;
+	}
+
+	private static bool CheckIdentifier(string identifier)
+	{
+		if (identifier.Length == 0) return false;
+
+		int i = 0;
+		if (identifier.Length > 1 && identifier[0] == '0')
+		{
+			if (char.IsAsciiDigit(identifier[1])) return false;
+			i = 1;
+		}
+
+		for (; i < identifier.Length; i++)
+		{
+			char c = identifier[i];
+			if (!char.IsDigit(c) && !char.IsAsciiLetter(c) && c != '-') return false;
+		}
+
 		return true;
 	}
 }
