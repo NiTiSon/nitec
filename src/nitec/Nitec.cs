@@ -76,7 +76,7 @@ public sealed class Nitec : NiteCodeCompiler
 		{
 			Console.WriteLine($"""
 			NiTiSon (R) NiteCode & Nibc Compiler version {version}
-			Copyright (C) NiTiSon Hentaiev. All rights reserved.
+			Copyright (C) NiTiSon. All rights reserved.
 			""");
 		}
 

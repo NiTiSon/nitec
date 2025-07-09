@@ -5,3 +5,7 @@ module here::there;
 public test_addition(x: i32, y: i32) -> i32 {
 	return x + y;
 }
+
+public main() {
+	test_addition(2, ::test.x2());
+}
