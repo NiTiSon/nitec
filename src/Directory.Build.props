@@ -2,8 +2,9 @@
 	<PropertyGroup>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Authors>NiTiSon and contributors</Authors>
-		<Description>NiteCode &amp; Nibc compiler</Description>
-		<TargetFramework>net9.0</TargetFramework>
+		<Description>NiteCode &amp;amp; Nibc compiler</Description>
+		<TargetFramework>net10.0</TargetFramework>
+        <LangVersion>preview</LangVersion>
 
 		<LangVersion>latest</LangVersion>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
