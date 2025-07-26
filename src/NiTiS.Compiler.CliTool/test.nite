@@ -1,4 +1,4 @@
-use example::module;
+use std::console;
 
 module here::there;
 
@@ -7,5 +7,5 @@ public test_addition(x: i32, y: i32) -> i32 {
 }
 
 public main() {
-	test_addition(2, ::test.x2());
+	let x = test_addition(7, 1);
 }

@@ -75,7 +75,7 @@ public static class SyntaxKindFacts
 			SyntaxKind.IsKeyword => "is",
 			SyntaxKind.AsKeyword => "as",
 			SyntaxKind.OperatorKeyword => "operator",
-			SyntaxKind.CommutativeKeyword => "commutative",
+			SyntaxKind.CommutativeKeyword => "commutative", // Honestly, NiteCode must be the only language with this keyword
 			SyntaxKind.PublicKeyword => "public",
 			SyntaxKind.FriendKeyword => "friend",
 			SyntaxKind.ProtectedKeyword => "protected",
@@ -96,9 +96,145 @@ public static class SyntaxKindFacts
 			SyntaxKind.F64Keyword => "f64",
 			SyntaxKind.VoidKeyword => "void",
 			SyntaxKind.BoolKeyword => "bool",
-			SyntaxKind.Invalid => "<invalid/>",
-			SyntaxKind.EndOfFile => "<eof/>",
 			_ => null
 		};
+	}
+
+	public static SyntaxKind GetKind(string text)
+	{
+		// Probably changing == with other comparison will improve performance
+		// Compared are always same size, same first letter (not always), not null
+		if (text.Length is < 2 or > 11)
+		{
+			return SyntaxKind.Identifier;
+		}
+
+		switch (text.Length)
+		{
+			case 2 when text == "i8":
+				return SyntaxKind.I8Keyword;
+			case 2 when text == "u8":
+				return SyntaxKind.U8Keyword;
+			case 2 when text == "is":
+				return SyntaxKind.IsKeyword;
+			case 2 when text == "if":
+				return SyntaxKind.IfKeyword;
+			case 2 when text == "as":
+				return SyntaxKind.AsKeyword;
+			case 2 when text == "do":
+				return SyntaxKind.DoKeyword;
+			case 3:
+				switch (text[0])
+				{
+					case 'g' when text == "get":
+						return SyntaxKind.GetKeyword;
+					case 's' when text == "set":
+						return SyntaxKind.SetKeyword;
+					case 'f':
+						switch (text)
+						{
+							case "for":
+								return SyntaxKind.ForKeyword;
+							case "f32":
+								return SyntaxKind.F32Keyword;
+							case "f64":
+								return SyntaxKind.F64Keyword;
+							case "f16":
+								return SyntaxKind.F16Keyword;
+						}
+						break;
+					case 'i':
+						switch (text)
+						{
+							case "i32": return SyntaxKind.I32Keyword;
+							case "i64": return SyntaxKind.I64Keyword;
+							case "i16": return SyntaxKind.I16Keyword;
+						}
+						break;
+					case 'u':
+						switch (text)
+						{
+							case "u32": return SyntaxKind.U32Keyword;
+							case "use": return SyntaxKind.UseKeyword;
+							case "u64": return SyntaxKind.U64Keyword;
+							case "u16": return SyntaxKind.U16Keyword;
+						}
+						break;
+				}
+				break;
+			case 4:
+				switch (text[0])
+				{
+					case 't' when text == "true":
+						return SyntaxKind.TrueKeyword;
+					case 'e' when text == "else":
+						return SyntaxKind.ElseKeyword;
+					case 'l' when text == "loop":
+						return SyntaxKind.LoopKeyword;
+					case 'w' when text == "when":
+						return SyntaxKind.WhenKeyword;
+					case 'v' when text == "void":
+						return SyntaxKind.VoidKeyword;
+					case 'b' when text == "bool":
+						return SyntaxKind.BoolKeyword;
+				}
+				break;
+			case 5:
+				switch (text[0])
+				{
+					case 'f' when text == "false":
+						return SyntaxKind.FalseKeyword;
+					case 'w':
+						switch (text)
+						{
+							case "where": return SyntaxKind.WhereKeyword;
+							case "while": return SyntaxKind.WhileKeyword;
+						}
+						break;
+					case 'b' when text == "break":
+						return SyntaxKind.BreakKeyword;
+				}
+				break;
+			case 6:
+				switch (text[0])
+				{
+					case 'r' when text == "return":
+						return SyntaxKind.ReturnKeyword;
+					case 'p' when text == "public":
+						return SyntaxKind.PublicKeyword;
+					case 'f':
+						switch (text)
+						{
+							case "friend": return SyntaxKind.FriendKeyword;
+							case "family": return SyntaxKind.FamilyKeyword;
+						}
+						break;
+				}
+				break;
+			case 7 when text == "private":
+				return  SyntaxKind.PrivateKeyword;
+			case 8:
+				switch (text[0])
+				{
+					case 'c' when text == "continue":
+						return SyntaxKind.ContinueKeyword;
+					case 'o' when text == "operator":
+						return SyntaxKind.OperatorKeyword;
+					case 'i' when text == "internal":
+						return SyntaxKind.InternalKeyword;
+				}
+				break;
+			case 9:
+				switch (text[0])
+				{
+					case 'p' when text == "protected":
+						return SyntaxKind.ProtectedKeyword;
+				}
+				break;
+			case 11 when text == "commutative":
+				return SyntaxKind.CommutativeKeyword;
+		}
+
+		return SyntaxKind.Identifier;
 	}
 }

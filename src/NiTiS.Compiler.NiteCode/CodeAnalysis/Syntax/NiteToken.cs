@@ -9,4 +9,14 @@ public class NiteToken : Token
 	public NiteToken(SyntaxKind kind, TextSpan span, ImmutableArray<Trivia> leadingTrivia, ImmutableArray<Trivia> trailingTrivia) : base((uint)kind, span, leadingTrivia, trailingTrivia) {}
 
 	public NiteToken(SyntaxKind kind, SyntaxKind contextualKind, TextSpan span, ImmutableArray<Trivia> leadingTrivia, ImmutableArray<Trivia> trailingTrivia) : base((uint)kind, (uint)contextualKind, span, leadingTrivia, trailingTrivia) {}
+
+	public override string ToString()
+	{
+		if (this.Kind == SyntaxKind.Identifier)
+		{
+			return $"Token {this.Kind}/{this.ContextualKind} {Span}";
+		}
+
+		return $"Token {this.Kind} {Span}";
+	}
 }

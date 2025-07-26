@@ -7,6 +7,7 @@ public partial class NiteLexer
 {
 	private void ReadTrivia(bool leading)
 	{
+		SyntaxKind kind;
 		TriviaBuilder.Clear();
 
 		bool done = false;
@@ -14,7 +15,7 @@ public partial class NiteLexer
 		while (!done)
 		{
 			Window.Start();
-			_kind = SyntaxKind.Invalid;
+			kind = SyntaxKind.Invalid;
 
 			switch (Window.Current)
 			{
@@ -25,10 +26,10 @@ public partial class NiteLexer
 					switch (Window.Next)
 					{
 						case '/':
-							ReadSingleLineComment();
+							ReadSingleLineComment(out kind);
 							break;
 						case '*':
-							ReadMultiLineComment();
+							ReadMultiLineComment(out kind);
 							break;
 						default:
 							done = true;
@@ -39,15 +40,15 @@ public partial class NiteLexer
 				case '\r':
 					if (!leading)
 						done = true;
-					ReadLineBreak();
+					ReadLineBreak(out kind);
 					break;
 				case ' ':
 				case '\t':
-					ReadWhiteSpace();
+					ReadWhiteSpace(out kind);
 					break;
 				default:
 					if (char.IsWhiteSpace(Window.Current))
-						ReadWhiteSpace();
+						ReadWhiteSpace(out kind);
 					else
 						done = true;
 					break;
@@ -55,18 +56,18 @@ public partial class NiteLexer
 
 			if (Window.Width <= 0) continue;
 
-			Trivia trivia = Trivia.Create(_kind, Window.LexemeSpan);
+			Trivia trivia = Trivia.Create(kind, Window.LexemeSpan);
 			TriviaBuilder.Add(trivia);
 		}
 	}
 
-	private void ReadLineBreak()
+	private void ReadLineBreak(out SyntaxKind kind)
 	{
-		_kind = SyntaxKind.LineBreakTrivia;
+		kind = SyntaxKind.LineBreakTrivia;
 		Window.AdvancePastNewLine();
 	}
 
-	private void ReadWhiteSpace()
+	private void ReadWhiteSpace(out SyntaxKind kind)
 	{
 		bool done = false;
 
@@ -88,10 +89,10 @@ public partial class NiteLexer
 			}
 		}
 
-		_kind = SyntaxKind.WhitespaceTrivia;
+		kind = SyntaxKind.WhitespaceTrivia;
 	}
 
-	private void ReadSingleLineComment()
+	private void ReadSingleLineComment(out SyntaxKind kind)
 	{
 		Window.Advance(2);
 		bool done = false;
@@ -111,10 +112,10 @@ public partial class NiteLexer
 			}
 		}
 
-		_kind = SyntaxKind.SingleLineCommentTrivia;
+		kind = SyntaxKind.SingleLineCommentTrivia;
 	}
 
-	private void ReadMultiLineComment()
+	private void ReadMultiLineComment(out SyntaxKind kind)
 	{
 		Window.Advance(2);
 		bool done = false;
@@ -142,6 +143,6 @@ public partial class NiteLexer
 			}
 		}
 
-		_kind = SyntaxKind.MultiLineCommentTrivia;
+		kind = SyntaxKind.MultiLineCommentTrivia;
 	}
 }

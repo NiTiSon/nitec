@@ -16,12 +16,12 @@ public sealed partial class NiteLexer : Lexer
 		public SyntaxKind Kind;
 		public SyntaxKind ContextualKind;
 		public TextSpan Span;
-		public string Value;
+		public string? Value;
 		public PackedNumeric Number;
 		public NumericLiteralType NumberType;
 	}
 
-	public override Token Lex()
+	public override NiteToken Lex()
 	{
 		ReadTrivia(leading: true);
 		ImmutableArray<Trivia> leading = TriviaBuilder.ToImmutable();
@@ -33,14 +33,25 @@ public sealed partial class NiteLexer : Lexer
 		ReadTrivia(leading: false);
 		ImmutableArray<Trivia> trailing = TriviaBuilder.ToImmutable();
 
-		if (info.ContextualKind.IsContextual)
+		bool isContextual = false;
+		if (info.Kind == SyntaxKind.Identifier)
+		{
+			info.Kind = SyntaxKindFacts.GetKind(info.Value!);
+
+			if (info.Kind.IsContextual)
+			{
+				isContextual = true;
+				info.ContextualKind = info.Kind;
+				info.Kind = SyntaxKind.Identifier;
+			}
+		}
+
+		if (isContextual)
 		{
 			return new NiteToken(info.Kind, info.ContextualKind, info.Span, leading, trailing);
 		}
-		else
-		{
-			return new NiteToken(info.Kind, info.Span, leading, trailing);
-		}
+
+		return new NiteToken(info.Kind, info.Span, leading, trailing);
 	}
 
 	private void ReadToken(ref TokenInfo info)
@@ -55,6 +66,7 @@ public sealed partial class NiteLexer : Lexer
 
 		if (char.IsAsciiLetter(c))
 		{
+
 			// Read identifier
 		}
 
