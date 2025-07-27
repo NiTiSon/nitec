@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Intrinsics.Arm;
@@ -53,6 +54,7 @@ public static class Program
 
 		Parallel.ForEachAsync(files, static async (file, token) =>
 		{
+			Stopwatch stopwatch =  new();
 			await using FileStream stream = file.OpenRead();
 			DiagnosticBag diagnostics = new();
 
@@ -64,12 +66,14 @@ public static class Program
 				new StringText(await File.ReadAllTextAsync(file.FullName, token))
 			);
 
+			stopwatch.Start();
 			NiteToken lexeme = fileLexer.Lex();
 			while (lexeme.Kind != SyntaxKind.EndOfFile)
 			{
 				Console.WriteLine(lexeme);
 				lexeme = fileLexer.Lex();
 			}
+			stopwatch.Stop();
 
 			foreach (Diagnostic diagnostic in diagnostics)
 			{
@@ -77,6 +81,7 @@ public static class Program
 				Console.Error.WriteLine(diagnostic);
 				Console.ResetColor();
 			}
+			Console.WriteLine("Lexer: " + stopwatch.Elapsed);
 		}).Wait();
 	}
 

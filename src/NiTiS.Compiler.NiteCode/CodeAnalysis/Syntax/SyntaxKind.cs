@@ -127,6 +127,13 @@ public enum SyntaxKind : uint
 	/// <summary>Represents <c>&gt;&gt;&gt;=</c> token.</summary>
 	UnsignedRightShiftEqualsToken = OperatorFlag + 194,
 
+	/// <summary>Represents <c>::</c> token.</summary>
+	ColonColonToken = 250,
+	/// <summary>Represents <c>..</c> token.</summary>
+	DotDotToken = 251,
+	/// <summary>Represents <c>..=</c> token.</summary>
+	DotDotEqualsToken = 252,
+
 	// === Keywords ===
 	TrueKeyword = KeywordFlag + 301,
 	FalseKeyword = KeywordFlag + 302,

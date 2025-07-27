@@ -41,7 +41,7 @@ public static class SyntaxKindExtensions
 	{
 		public uint Ordinal => (uint)kind & 0x0000FFFFu;
 
-		public bool DoesItKeyword => kind.HasFlag((SyntaxKind)KeywordFlag);
+		public bool IsItKeyword => kind.HasFlag((SyntaxKind)KeywordFlag);
 		public bool IsContextual => kind.HasFlag((SyntaxKind)ContextualFlag);
 		public bool IsTrivia => kind.HasFlag((SyntaxKind)TriviaFlag);
 		public bool IsValuable => kind.HasFlag((SyntaxKind)ValuableFlag);

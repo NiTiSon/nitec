@@ -12,11 +12,8 @@ public class NiteToken : Token
 
 	public override string ToString()
 	{
-		if (this.Kind == SyntaxKind.Identifier)
-		{
-			return $"Token {this.Kind}/{this.ContextualKind} {Span}";
-		}
+		string? value = SyntaxKindFacts.GetText(this.Kind);
 
-		return $"Token {this.Kind} {Span}";
+		return $"Token {this.Kind} {Span} {(value is not null ? ("= " + value) : string.Empty)}";
 	}
 }

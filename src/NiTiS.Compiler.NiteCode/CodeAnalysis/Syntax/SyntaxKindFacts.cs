@@ -54,6 +54,9 @@ public static class SyntaxKindFacts
 			SyntaxKind.LeftShiftEqualsToken => "<<=",
 			SyntaxKind.RightShiftEqualsToken => ">>=",
 			SyntaxKind.UnsignedRightShiftEqualsToken => ">>>=",
+			SyntaxKind.ColonColonToken => "::",
+			SyntaxKind.DotDotToken => "..",
+			SyntaxKind.DotDotEqualsToken => "..=",
 
 			// Keywords
 			SyntaxKind.TrueKeyword => "true",

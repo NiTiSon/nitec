@@ -78,5 +78,5 @@ public readonly struct TextSpan
         return new(start, end - start);
 	}
 
-	public override string ToString() => $"{Start}..{End}";
+	public override string ToString() => $"[{Start}..{End})";
 }
