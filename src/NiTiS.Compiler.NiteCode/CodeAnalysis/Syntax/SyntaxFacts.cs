@@ -1,7 +1,25 @@
+using System.Runtime.CompilerServices;
+
 namespace NiTiS.Compiler.NiteCode.CodeAnalysis.Syntax;
 
-public static class SyntaxKindFacts
+public static class SyntaxFacts
 {
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static bool IsIdentifierBeginCharacter(char c, ref bool notAKeyword)
+	{
+		return char.IsAsciiLetter(c) // Fast path
+		       || (notAKeyword = c == '_') // If c is '_' -> identifier isn't a keyword
+		       || char.IsLetter(c); // Slower path
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static bool IsIdentifierContinueCharacter(char c)
+	{
+		return char.IsAsciiLetterOrDigit(c)
+		       || c == '_'
+		       || char.IsLetterOrDigit(c);
+	}
+
 	public static string? GetText(SyntaxKind kind)
 	{
 		return kind switch
@@ -33,7 +51,7 @@ public static class SyntaxKindFacts
 			SyntaxKind.CloseBracketToken => "]",
 			SyntaxKind.CircumflexToken => "^",
 			SyntaxKind.UnderscoreToken => "_",
-			SyntaxKind.BacktickToken => "`",
+			//SyntaxKind.BacktickToken => "`",
 			SyntaxKind.OpenBraceToken => "{",
 			SyntaxKind.PipeToken => "|",
 			SyntaxKind.CloseBraceToken => "}",
@@ -54,6 +72,8 @@ public static class SyntaxKindFacts
 			SyntaxKind.LeftShiftEqualsToken => "<<=",
 			SyntaxKind.RightShiftEqualsToken => ">>=",
 			SyntaxKind.UnsignedRightShiftEqualsToken => ">>>=",
+			SyntaxKind.EqualsEqualsToken => "==",
+			SyntaxKind.RetusaToken => "->",
 			SyntaxKind.ColonColonToken => "::",
 			SyntaxKind.DotDotToken => "..",
 			SyntaxKind.DotDotEqualsToken => "..=",

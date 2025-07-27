@@ -23,6 +23,10 @@ public sealed class NiteIdentifierToken : NiteToken
 
 	public override string ToString()
 	{
-		return $"Token {this.Kind}/{this.ContextualKind} {Identifier} {Span}";
+		if (this.ContextualKind.IsContextual)
+		{
+			return $"Token {this.Kind}/{this.ContextualKind} {Span} = {Identifier}";
+		}
+		return $"Token {this.Kind} {Span} = {Identifier}";
 	}
 }

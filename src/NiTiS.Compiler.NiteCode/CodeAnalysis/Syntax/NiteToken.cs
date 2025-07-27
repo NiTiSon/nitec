@@ -12,7 +12,7 @@ public class NiteToken : Token
 
 	public override string ToString()
 	{
-		string? value = SyntaxKindFacts.GetText(this.Kind);
+		string? value = SyntaxFacts.GetText(this.Kind);
 
 		return $"Token {this.Kind} {Span} {(value is not null ? ("= " + value) : string.Empty)}";
 	}

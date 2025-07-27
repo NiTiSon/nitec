@@ -16,6 +16,7 @@ public sealed partial class NiteLexer : Lexer
 	{
 		public SyntaxKind Kind;
 		public SyntaxKind ContextualKind;
+		public bool DefinitelyNotKeyword;
 		public TextSpan Span;
 		public string? Value;
 		public PackedNumeric Number;
@@ -37,7 +38,7 @@ public sealed partial class NiteLexer : Lexer
 		bool isContextual = false;
 		if (info.Kind == SyntaxKind.Identifier)
 		{
-			info.Kind = SyntaxKindFacts.GetKind(info.Value!);
+			info.Kind = SyntaxFacts.GetKind(info.Value!);
 
 			if (info.Kind.IsContextual)
 			{
@@ -77,16 +78,88 @@ public sealed partial class NiteLexer : Lexer
 
 		if (char.IsAsciiLetter(c))
 		{
-			ReadIdentifier(skipFirst: true, ref info);
+			ReadIdentifier(ref info);
 			info.Kind = SyntaxKind.Identifier;
 			return;
 		}
 
 		switch (c)
 		{
-			case '+':
-				info.Kind = SyntaxKind.PlusToken;
+			case '*':
 				Window.Advance();
+				switch (Window.Current)
+				{
+					case '=':
+						info.Kind = SyntaxKind.AsteriskEqualsToken;
+						Window.Advance();
+						break;
+					default:
+						info.Kind = SyntaxKind.AsteriskToken;
+						break;
+				}
+				break;
+			case '/':
+				Window.Advance();
+				switch (Window.Current)
+				{
+					case '=':
+						info.Kind = SyntaxKind.SlashEqualsToken;
+						Window.Advance();
+						break;
+					default:
+						info.Kind = SyntaxKind.SlashToken;
+						break;
+				}
+				break;
+			case '+':
+				Window.Advance();
+				switch (Window.Current)
+				{
+					case '+':
+						info.Kind = SyntaxKind.PlusPlusToken;
+						Window.Advance();
+						break;
+					case '=':
+						info.Kind = SyntaxKind.PlusEqualsToken;
+						Window.Advance();
+						break;
+					default:
+						info.Kind = SyntaxKind.PlusToken;
+						break;
+				}
+				break;
+			case '-':
+				Window.Advance();
+				switch (Window.Current)
+				{
+					case '>':
+						info.Kind = SyntaxKind.RetusaToken;
+						Window.Advance();
+						break;
+					case '-':
+						info.Kind = SyntaxKind.MinusMinusToken;
+						Window.Advance();
+						break;
+					case '=':
+						info.Kind = SyntaxKind.MinusEqualsToken;
+						Window.Advance();
+						break;
+					default:
+						info.Kind = SyntaxKind.MinusToken;
+						break;
+				}
+				break;
+			case '=':
+				if (Window.Peek(1) == '=')
+				{
+					info.Kind = SyntaxKind.EqualsEqualsToken;
+					Window.Advance(2);
+				}
+				else
+				{
+					info.Kind = SyntaxKind.EqualsToken;
+					Window.Advance();
+				}
 				break;
 			case '.':
 				Window.Advance();
@@ -146,10 +219,18 @@ public sealed partial class NiteLexer : Lexer
 				Window.Advance();
 				info.Kind = SyntaxKind.HashToken;
 				break;
-			default:
-				if (char.IsLetter(c))
+			case >= '0' and <= '9':
+				Window.Advance();
+				while (char.IsAsciiDigit(Window.Current))
 				{
-					ReadIdentifier(skipFirst: true, ref info);
+					Window.Advance();
+				}
+				info.Kind = SyntaxKind.NumberToken;
+				break;
+			default:
+				if (SyntaxFacts.IsIdentifierBeginCharacter(c, ref info.DefinitelyNotKeyword))
+				{
+					ReadIdentifier(ref info);
 					info.Kind = SyntaxKind.Identifier;
 					return;
 				}
@@ -159,13 +240,13 @@ public sealed partial class NiteLexer : Lexer
 		}
 	}
 
-	private void ReadIdentifier(bool skipFirst, ref TokenInfo info)
+	private void ReadIdentifier(ref TokenInfo info)
 	{
 		int length = 0;
-		if (skipFirst || char.IsLetter(Window.Current))
+		if (SyntaxFacts.IsIdentifierBeginCharacter(Window.Current, ref info.DefinitelyNotKeyword))
 		{
 			length++;
-			while (char.IsLetterOrDigit(Window.Peek(length)))
+			while (SyntaxFacts.IsIdentifierContinueCharacter(Window.Peek(length)))
 			{
 				length++;
 			}
@@ -178,9 +259,22 @@ public sealed partial class NiteLexer : Lexer
 
 	private void ReadEscapedIdentifier(ref TokenInfo info)
 	{
+		// `i'm a valid escaped identifier`
 		if (Window.Current == '`')
 		{
+			info.Kind = SyntaxKind.Identifier;
+			while (Window.Current is not ('\r' or '\n') && !Window.IsAtTheEnd)
+			{
+				if (Window.Current != '\\' && Window.Peek(1) == '`') // not escaped identifier end
+				{
+					Window.Advance(2);
+					break;
+				}
 
+				Window.Advance();
+			}
+
+			// Diagnostics.ReportUnterminatedEscapedIdentifier()
 		}
 		throw new NotImplementedException();
 	}

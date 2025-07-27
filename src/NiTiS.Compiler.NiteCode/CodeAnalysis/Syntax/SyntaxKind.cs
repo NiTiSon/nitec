@@ -81,8 +81,7 @@ public enum SyntaxKind : uint
 	CircumflexToken = CaretToken,
 	/// <summary>Represents <c>_</c> token.</summary>
 	UnderscoreToken = 140,
-	/// <summary>Represents <c>`</c> token.</summary>
-	BacktickToken = 141,
+	// BacktickToken REMOVED: NOT USED
 	// SKIPPED ASCII LOWERCASE LETTERS
 	/// <summary>Represents <c>{</c> token.</summary>
 	OpenBraceToken = 175,
@@ -126,6 +125,10 @@ public enum SyntaxKind : uint
 	RightShiftEqualsToken = OperatorFlag + 193,
 	/// <summary>Represents <c>&gt;&gt;&gt;=</c> token.</summary>
 	UnsignedRightShiftEqualsToken = OperatorFlag + 194,
+	/// <summary>Represents <c>==</c> token.</summary>
+	EqualsEqualsToken = OperatorFlag + 195,
+	/// <summary>Represents <c>-&gt;</c> token.</summary>
+	RetusaToken = 196,
 
 	/// <summary>Represents <c>::</c> token.</summary>
 	ColonColonToken = 250,
