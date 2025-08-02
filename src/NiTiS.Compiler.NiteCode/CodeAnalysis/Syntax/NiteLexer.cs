@@ -12,6 +12,8 @@ public sealed partial class NiteLexer : Lexer
 {
 	public NiteLexer(DiagnosticBag diagnostics, SourceText sourceText) : base(diagnostics, sourceText) {}
 
+	private LexerRightArrowStatus _rightArrowStatus = LexerRightArrowStatus.Any;
+
 	private struct TokenInfo
 	{
 		public SyntaxKind Kind;

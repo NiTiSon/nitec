@@ -20,6 +20,25 @@ public static class SyntaxFacts
 		       || char.IsLetterOrDigit(c);
 	}
 
+	public static int GetOperatorPrecedence(SyntaxKind kind)
+	{
+		return kind switch
+		{
+			SyntaxKind.DotDotToken => 1, // Ranges
+			SyntaxKind.DotDotEqualsToken => 1,
+			SyntaxKind.PlusToken => 10, // Addition
+			SyntaxKind.MinusToken => 10,
+			SyntaxKind.AsteriskToken => 11, // Multiplication
+			SyntaxKind.SlashToken => 11,
+			SyntaxKind.PercentToken => 11,
+
+			SyntaxKind.PlusPlusToken => 19, // Postfix inc/dec
+			SyntaxKind.MinusMinusToken => 19,
+			SyntaxKind.DotToken => 20, // Member access
+			_ => 0,
+		};
+	}
+
 	public static string? GetText(SyntaxKind kind)
 	{
 		return kind switch
