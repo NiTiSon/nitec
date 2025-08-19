@@ -8,7 +8,7 @@ namespace NiteCompiler.CodeAnalysis.Text;
 [DebuggerStepThrough]
 public sealed class SlidingWindow
 {
-	public const int BufferLength = 2048;
+	private const int BufferLength = 2048;
 	public const char InvalidCharacter = '\xffff';
 
 	private readonly SourceText _sourceText;
@@ -30,6 +30,8 @@ public sealed class SlidingWindow
 	public int Width => _offset - _lexemeStart;
 
 	public TextSpan LexemeSpan => new(LexemeStart, Width);
+	
+	public string Lexeme => new(_window, _lexemeStart, Width);
 
 	public SlidingWindow(SourceText sourceText)
 	{

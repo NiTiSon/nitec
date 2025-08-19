@@ -15,7 +15,7 @@ public enum SyntaxKind : uint
 	/// <summary>
 	/// Identifier token.
 	/// </summary>
-	Identifier = 101,
+	IdentifierToken = 101,
 	/// <summary>
 	/// Number token.
 	/// </summary>
@@ -154,14 +154,16 @@ public enum SyntaxKind : uint
 	WhenKeyword = 316,
 	IsKeyword = 317,
 	AsKeyword = 318,
-	OperatorKeyword = 318,
-	CommutativeKeyword = 319,
-	PublicKeyword = 320,
-	FriendKeyword = 321,
-	ProtectedKeyword = 322,
-	InternalKeyword = 323,
-	FamilyKeyword = 324,
-	PrivateKeyword = 325,
+	OperatorKeyword = 319,
+	CommutativeKeyword = 320,
+	PublicKeyword = 321,
+	FriendKeyword = 322,
+	ProtectedKeyword = 323,
+	InternalKeyword = 324,
+	FamilyKeyword = 325,
+	PrivateKeyword = 326,
+	ModuleKeyword = 327,
+	LetKeyword = 328,
 
 	// === TYPE KEYWORDS ===
 	I8Keyword = 401,

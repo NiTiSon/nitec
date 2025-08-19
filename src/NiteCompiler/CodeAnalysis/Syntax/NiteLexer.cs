@@ -11,7 +11,7 @@ public sealed partial class NiteLexer
         _window = new SlidingWindow(source);
     }
 
-    private ref struct TokenInfo
+    internal ref struct TokenInfo
     {
         public SyntaxKind Kind;
         public SyntaxKind ContextualKind;
@@ -26,10 +26,23 @@ public sealed partial class NiteLexer
         _window.Start();
         ReadToken(ref info);
         TextSpan span = _window.LexemeSpan;
+        string? text = info.Kind
+            is SyntaxKind.IdentifierToken
+            or SyntaxKind.NumberToken
+                ? _window.Lexeme
+                : null;
         
         ReadTrivia(leading: false);
 
-        return new Token(info.Kind, span);
+        switch (info.Kind)
+        {
+            case SyntaxKind.IdentifierToken:
+                return new IdentifierToken(info.Kind, info.ContextualKind, _window.LexemeSpan, text!);
+            case SyntaxKind.NumberToken:
+                return null!;
+            default:
+                return new Token(info.Kind, span);
+        }
     }
 
     private void ReadToken(ref TokenInfo info)
@@ -44,11 +57,79 @@ public sealed partial class NiteLexer
         {
             case >= 'a' and <= 'z':
             case >= 'A' and <= 'Z':
+                _window.Advance();
+                ReadIdentifierSkipFirst(ref info);
+                break;
+            case ':':
+                _window.Advance();
+                if (_window.Current == ':')
+                {
+                    info.Kind = SyntaxKind.ColonColonToken;
+                    _window.Advance();
+                }
+                else
+                {
+                    info.Kind = SyntaxKind.ColonToken;
+                }
+                break;
+            case '-':
+                _window.Advance();
+                if (_window.Current == '>')
+                {
+                    _window.Advance();
+                    info.Kind = SyntaxKind.RetusaToken;
+                }
+                else
+                {
+                    info.Kind = SyntaxKind.MinusToken;
+                }
+                break;
+            case '=':
+                _window.Advance();
+                info.Kind = SyntaxKind.EqualsToken;
+                break;
+            case ';':
+                _window.Advance();
+                info.Kind = SyntaxKind.SemicolonToken;
+                break;
+            case '{':
+                _window.Advance();
+                info.Kind = SyntaxKind.OpenBraceToken;
+                break;
+            case '}':
+                _window.Advance();
+                info.Kind = SyntaxKind.CloseBraceToken;
+                break;
+            case '(':
+                _window.Advance();
+                info.Kind = SyntaxKind.OpenParenToken;
+                break;
+            case ')':
+                _window.Advance();
+                info.Kind = SyntaxKind.CloseParenToken;
+                break;
+            case >= '0' and <= '9':
+                info.Kind = SyntaxKind.NumberToken;
+                _window.Advance();
+                while (char.IsAsciiDigit(_window.Current))
+                {
+                    _window.Advance();
+                }
+                break;
+            default:
                 ReadIdentifier(ref info);
-                return;
+
+                if (_window.Width == 0)
+                {
+                    _window.Advance();
+                    info.Kind = SyntaxKind.Invalid;
+                }
+                break;
         }
-        
-        info.Kind = SyntaxKind.Invalid;
-        _window.Advance();
+
+        if (info.Kind == SyntaxKind.IdentifierToken && SyntaxFacts.IsPossibleKeyword(_window.Width))
+        {
+            SyntaxFacts.DefineKeywordOrIdentifier(_window.Lexeme, ref info);
+        }
     }
 }

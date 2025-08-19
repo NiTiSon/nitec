@@ -41,11 +41,20 @@ public partial class NiteLexer
             or UnicodeCategory.ConnectorPunctuation;
     }
 
+    private void ReadIdentifierSkipFirst(ref TokenInfo info)
+    {
+        info.Kind = SyntaxKind.IdentifierToken;
+        while (IsContinueIdentifier(_window.Current))
+        {
+            _window.Advance();
+        }
+    }
+
     private void ReadIdentifier(ref TokenInfo info)
     {
         if (IsBeginIdentifier(_window.Current))
         {
-            info.Kind = SyntaxKind.Identifier;
+            info.Kind = SyntaxKind.IdentifierToken;
             _window.Advance();
 
             while (IsContinueIdentifier(_window.Current))
