@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "nitec": {
-      "commandName": "Project",
-      "commandLineArgs": "test.nite"
-    }
-  }
-}

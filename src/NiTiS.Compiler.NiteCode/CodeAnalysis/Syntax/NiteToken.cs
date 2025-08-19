@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
+using NiteCompiler.CodeAnalysis.Syntax;
+using NiteCompiler.CodeAnalysis.Text;
 using NiTiS.Compiler.CodeAnalysis.Syntax;
-using NiTiS.Compiler.CodeAnalysis.Text;
 
 namespace NiTiS.Compiler.NiteCode.CodeAnalysis.Syntax;
 

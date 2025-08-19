@@ -2,8 +2,8 @@ using System;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics.Wasm;
+using NiteCompiler.CodeAnalysis.Text;
 using NiTiS.Compiler.CodeAnalysis.Syntax;
-using NiTiS.Compiler.CodeAnalysis.Text;
 using NiTiS.Compiler.Diagnostics;
 
 namespace NiTiS.Compiler.NiteCode.CodeAnalysis.Syntax;

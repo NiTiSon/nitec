@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\NiTiS.Compiler\NiTiS.Compiler.csproj" />
+      <ProjectReference Include="..\NiteCompiler\NiteCompiler.csproj" />
     </ItemGroup>
 
 </Project>

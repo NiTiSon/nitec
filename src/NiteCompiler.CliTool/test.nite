@@ -1,0 +1,8 @@
+use std::cum;
+
+module third_party;
+
+public main() -> i32 {
+	let x = 3;
+	return x;
+}

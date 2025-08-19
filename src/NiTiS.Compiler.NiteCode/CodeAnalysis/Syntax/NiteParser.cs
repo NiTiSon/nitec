@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using NiteCompiler.CodeAnalysis.Text;
 using NiTiS.Compiler.CodeAnalysis.Syntax;
-using NiTiS.Compiler.CodeAnalysis.Text;
 using NiTiS.Compiler.Diagnostics;
 using NiTiS.Compiler.NiteCode.CodeAnalysis.Syntax.Expressions;
 
