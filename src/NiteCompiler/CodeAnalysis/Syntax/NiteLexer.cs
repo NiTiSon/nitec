@@ -1,13 +1,16 @@
 using NiteCompiler.CodeAnalysis.Text;
+using NiTiS.Compiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
 public sealed partial class NiteLexer
 {
+    private readonly DiagnosticBag _diagnostics;
     private readonly SlidingWindow _window;
 
-    public NiteLexer(SourceText source)
+    public NiteLexer(SourceText source, DiagnosticBag diagnostics)
     {
+        _diagnostics = diagnostics;
         _window = new SlidingWindow(source);
     }
 
@@ -22,7 +25,7 @@ public sealed partial class NiteLexer
         TokenInfo info = default;
 
         ReadTrivia(leading: true);
-        
+
         _window.Start();
         ReadToken(ref info);
         TextSpan span = _window.LexemeSpan;
@@ -31,7 +34,7 @@ public sealed partial class NiteLexer
             or SyntaxKind.NumberToken
                 ? _window.Lexeme
                 : null;
-        
+
         ReadTrivia(leading: false);
 
         switch (info.Kind)
@@ -39,7 +42,7 @@ public sealed partial class NiteLexer
             case SyntaxKind.IdentifierToken:
                 return new IdentifierToken(info.Kind, info.ContextualKind, _window.LexemeSpan, text!);
             case SyntaxKind.NumberToken:
-                return null!;
+                return NumericParser.Parse(ref info, text, span, _diagnostics);
             default:
                 return new Token(info.Kind, span);
         }
@@ -83,6 +86,10 @@ public sealed partial class NiteLexer
                 {
                     info.Kind = SyntaxKind.MinusToken;
                 }
+                break;
+            case '+':
+                _window.Advance();
+                info.Kind = SyntaxKind.PlusToken;
                 break;
             case '=':
                 _window.Advance();

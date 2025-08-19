@@ -31,7 +31,7 @@ public class Compiler
                 foreach (var file in files)
                 {
                     Console.WriteLine($"Compiling {file.FullName}");
-                    NiteLexer lexer = new(new StringText(File.ReadAllText(file.FullName)));
+                    NiteLexer lexer = new(new StringText(File.ReadAllText(file.FullName)), diagnostics);
 
                     Token token;
                     do

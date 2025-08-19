@@ -179,4 +179,20 @@ public enum SyntaxKind : uint
 	F64Keyword = 411,
 	VoidKeyword = 412,
 	BoolKeyword = 413,
+
+	// === STATEMENTS ===
+	BlockStatement = 2001,
+
+	// === EXPRESSIONS ===
+	BinaryExpression = 3001,
+	UnaryExpression = 3002,
+	LiteralExpression = 3003,
+
+	// === NAME EXPRESSIONS ===
+	IdentifierName = 3501,
+
+	// === DECLARATIONS ===
+	FunctionDeclaration = 4001,
+	TypeDeclaration = 4002,
+	VariableDeclaration = 4003,
 }

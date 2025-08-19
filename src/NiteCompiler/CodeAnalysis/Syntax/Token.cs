@@ -2,10 +2,10 @@ using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public class Token
+public class Token : SyntaxNode
 {
-    public SyntaxKind Kind { get; }
-    public TextSpan Span { get; }
+    public override SyntaxKind Kind { get; }
+    public override TextSpan Span { get; }
 
     public Token(SyntaxKind kind, TextSpan span)
     {

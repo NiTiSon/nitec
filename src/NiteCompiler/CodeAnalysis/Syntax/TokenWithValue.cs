@@ -13,6 +13,6 @@ public sealed class TokenWithValue<T> : Token
 
     public override string ToString()
     {
-        return Value.ToString();
+        return $"{Kind}<{typeof(T).Name}> := {Value} @{Span}";
     }
 }
