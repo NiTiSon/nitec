@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax.Expressions.Names;
@@ -13,4 +14,8 @@ public sealed class IdentifierNameSyntax : NameSyntax
 
 	public override TextSpan Span => Identifier.Span;
 	public override SyntaxKind Kind => SyntaxKind.IdentifierName;
+	public override IEnumerable<SyntaxNode> GetChildren()
+	{
+		yield return Identifier;
+	}
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
@@ -11,6 +12,11 @@ public class Token : SyntaxNode
     {
         Kind = kind;
         Span = span;
+    }
+
+    public override IEnumerable<SyntaxNode> GetChildren()
+    {
+        return [];
     }
 
     public override string ToString()
