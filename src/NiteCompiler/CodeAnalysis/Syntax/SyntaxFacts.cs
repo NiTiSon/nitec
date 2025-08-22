@@ -1,7 +1,17 @@
+using System;
+
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
 internal static class SyntaxFacts
 {
+	public static ReadOnlySpan<SyntaxKind> AccessKeywords => [
+		SyntaxKind.PublicKeyword,
+		SyntaxKind.ProtectedKeyword,
+		SyntaxKind.InternalKeyword,
+		SyntaxKind.PrivateKeyword,
+		SyntaxKind.FamilyKeyword,
+		SyntaxKind.FriendKeyword,
+	];
     public static bool IsPossibleKeyword(int lexemeWidth)
     {
         return lexemeWidth is >= 2 and <= 11;

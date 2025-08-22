@@ -189,7 +189,8 @@ public enum SyntaxKind : uint
 	LiteralExpression = 3003,
 
 	// === NAME EXPRESSIONS ===
-	IdentifierName = 3501,
+	IdentifierName = 3501, // id
+	ModuleName = 3502, // id::id::id
 
 	// === DECLARATIONS ===
 	FunctionDeclaration = 4001,
