@@ -5,12 +5,6 @@ public enum SyntaxKind : uint
 	Invalid = 0,
 	EndOfFile = 0xFFFFFFFFu,
 
-	// === TRIVIA ===
-	WhitespaceTrivia = 1,
-	LineBreakTrivia = 2,
-	SingleLineCommentTrivia = 3,
-	MultiLineCommentTrivia = 4,
-
 	// === Tokens ===
 	/// <summary>
 	/// Identifier token.
@@ -196,4 +190,10 @@ public enum SyntaxKind : uint
 	FunctionDeclaration = 4001,
 	TypeDeclaration = 4002,
 	VariableDeclaration = 4003,
+
+	// === DIRECTIVE ===
+	UseDirective = 5001,
+	// UseAsDirective // use std::Type as OtherName;
+	WhenDirective = 5002,
+	WhereDirective = 5003,
 }

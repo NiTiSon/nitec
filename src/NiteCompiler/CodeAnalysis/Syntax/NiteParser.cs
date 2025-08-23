@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using NiteCompiler.CodeAnalysis.Syntax.Directives;
+using NiteCompiler.CodeAnalysis.Syntax.Expressions.Names;
 using NiTiS.Compiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
@@ -51,15 +54,34 @@ public sealed class NiteParser
 
 	public SyntaxTree Parse()
 	{
+		var usagesBuilder = ImmutableArray.CreateBuilder<UseDirectiveSyntax>();
 		while (Current.Kind != SyntaxKind.EndOfFile)
 		{
 			switch (Current.Kind)
 			{
+				case SyntaxKind.UseKeyword:
+					usagesBuilder.Add(ParseUseDirective());
+					break;
 				default:
 					_position++;
 					break;
 			}
 		}
-		return new SyntaxTree();
+
+		return new SyntaxTree(usagesBuilder.DrainToImmutable());
+	}
+
+	private UseDirectiveSyntax ParseUseDirective()
+	{
+		Token useKeyword = MatchToken(SyntaxKind.UseKeyword);
+		ModuleNameSyntax moduleName = ParseModuleName();
+	}
+
+	private ModuleNameSyntax ParseModuleName()
+	{
+		if (Current.Kind == SyntaxKind.IdentifierToken)
+		{
+
+		}
 	}
 }

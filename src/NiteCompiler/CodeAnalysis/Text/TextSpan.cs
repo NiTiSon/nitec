@@ -78,5 +78,10 @@ public readonly struct TextSpan
         return new(start, end - start);
 	}
 
+	public static TextSpan FromBounds(TextSpan startFrom, TextSpan endFrom)
+	{
+		return new(startFrom.Start, endFrom.End - startFrom.Start);
+	}
+
 	public override string ToString() => $"[{Start}..{End})";
 }

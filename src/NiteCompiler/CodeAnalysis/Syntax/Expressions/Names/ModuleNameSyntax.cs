@@ -5,10 +5,18 @@ namespace NiteCompiler.CodeAnalysis.Syntax.Expressions.Names;
 
 public sealed class ModuleNameSyntax : NameSyntax
 {
-	public override TextSpan Span { get; }
-	public override SyntaxKind Kind { get; }
+	public SyntaxList<IdentifierNameSyntax> Parts { get; }
+
+	public ModuleNameSyntax(SyntaxList<IdentifierNameSyntax> parts)
+	{
+		Parts = parts;
+	}
+
+	public override TextSpan Span => Parts.Span;
+	public override SyntaxKind Kind => SyntaxKind.ModuleName;
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
-		throw new System.NotImplementedException();
+		return Parts.GetChildren();
 	}
 }
