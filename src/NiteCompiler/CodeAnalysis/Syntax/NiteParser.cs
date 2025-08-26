@@ -16,13 +16,13 @@ public sealed class NiteParser
 	public NiteParser(NiteLexer lexer, DiagnosticBag diagnostics)
 	{
 		_diagnostics = diagnostics;
-		Token token = lexer.Lex();
 		_tokens = new(capacity: 64);
 
+		Token token;
 		do
 		{
-			_tokens.Add(token);
 			token = lexer.Lex();
+			_tokens.Add(token);
 		} while (token.Kind != SyntaxKind.EndOfFile);
 	}
 
@@ -37,6 +37,11 @@ public sealed class NiteParser
 		Token current = Current;
 		_position++;
 		return current;
+	}
+
+	private void Advance()
+	{
+		_position++;
 	}
 
 	private Token MatchToken(SyntaxKind kind)
@@ -75,13 +80,35 @@ public sealed class NiteParser
 	{
 		Token useKeyword = MatchToken(SyntaxKind.UseKeyword);
 		ModuleNameSyntax moduleName = ParseModuleName();
+
+		return new(useKeyword, moduleName);
 	}
 
 	private ModuleNameSyntax ParseModuleName()
 	{
-		if (Current.Kind == SyntaxKind.IdentifierToken)
-		{
+		SyntaxList<IdentifierNameSyntax>.Builder parts = new(SyntaxKind.IdentifierList);
 
+		parts.Add(ParseIdentifierName());
+
+		while (Current.Kind == SyntaxKind.ColonColonToken)
+		{
+			Advance();
+			if (Current.Kind == SyntaxKind.IdentifierToken)
+			{
+				parts.Add(ParseIdentifierName());
+			}
+			else
+			{
+				// _diagnostics.Report
+				break;
+			}
 		}
+
+		return new ModuleNameSyntax(parts.Build());
+	}
+
+	private IdentifierNameSyntax ParseIdentifierName()
+	{
+		return new((MatchToken(SyntaxKind.IdentifierToken) as IdentifierToken)!);
 	}
 }

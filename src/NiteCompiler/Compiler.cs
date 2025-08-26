@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
+using NiteCompiler.CodeAnalysis.Syntax.Directives;
 using NiteCompiler.CodeAnalysis.Text;
 using NiTiS.Compiler.Diagnostics;
 
@@ -32,13 +33,14 @@ public class Compiler
                 {
                     Console.WriteLine($"Compiling {file.FullName}");
                     NiteLexer lexer = new(new StringText(File.ReadAllText(file.FullName)), diagnostics);
+                    NiteParser parser = new(lexer, diagnostics);
 
-                    Token token;
-                    do
+                    SyntaxTree tree = parser.Parse();
+
+                    foreach (UseDirectiveSyntax directive in tree.Usages)
                     {
-                        token = lexer.Lex();
-                        Console.WriteLine(token.ToString());
-                    } while (token.Kind != SyntaxKind.EndOfFile);
+	                    SyntaxTree.PrintTree(directive, "", true);
+                    }
                 }
             }
             catch (Exception ex)

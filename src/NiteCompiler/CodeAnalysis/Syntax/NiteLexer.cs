@@ -40,7 +40,7 @@ public sealed partial class NiteLexer
         switch (info.Kind)
         {
             case SyntaxKind.IdentifierToken:
-                return new IdentifierToken(info.Kind, info.ContextualKind, _window.LexemeSpan, text!);
+                return new IdentifierToken(info.Kind, info.ContextualKind, span, text!);
             case SyntaxKind.NumberToken:
                 return NumericParser.Parse(ref info, text, span, _diagnostics);
             default:

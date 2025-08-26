@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using NiteCompiler.CodeAnalysis.Text;
@@ -22,10 +23,16 @@ public sealed class SyntaxList<TNode> : SyntaxNode
 		return _nodes;
 	}
 
-	internal struct Builder
+	internal readonly struct Builder
 	{
 		private readonly SyntaxKind _listKind;
-		private ImmutableArray<TNode>.Builder _builder;
+		private readonly ImmutableArray<TNode>.Builder _builder;
+
+		[Obsolete("Use Builder(SyntaxKind) constructor instead.")]
+		public Builder()
+		{
+			throw new("Use Builder(SyntaxKind) constructor instead.");
+		}
 
 		public Builder(SyntaxKind listKind)
 		{

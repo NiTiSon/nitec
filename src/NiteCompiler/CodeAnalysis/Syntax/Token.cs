@@ -18,9 +18,4 @@ public class Token : SyntaxNode
     {
         return [];
     }
-
-    public override string ToString()
-    {
-        return $"{Kind} @{Span}";
-    }
 }
