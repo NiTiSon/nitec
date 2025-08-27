@@ -59,13 +59,13 @@ public sealed class NiteParser
 
 	public SyntaxTree Parse()
 	{
-		var usagesBuilder = ImmutableArray.CreateBuilder<UseDirectiveSyntax>();
+		ImmutableArray<ISyntaxTreeTopLevelMember>.Builder membersBuilder = ImmutableArray.CreateBuilder<ISyntaxTreeTopLevelMember>();
 		while (Current.Kind != SyntaxKind.EndOfFile)
 		{
 			switch (Current.Kind)
 			{
 				case SyntaxKind.UseKeyword:
-					usagesBuilder.Add(ParseUseDirective());
+					membersBuilder.Add(ParseUseDirective());
 					break;
 				default:
 					_position++;
@@ -73,7 +73,7 @@ public sealed class NiteParser
 			}
 		}
 
-		return new SyntaxTree(usagesBuilder.DrainToImmutable());
+		return new SyntaxTree(membersBuilder.DrainToImmutable());
 	}
 
 	private UseDirectiveSyntax ParseUseDirective()

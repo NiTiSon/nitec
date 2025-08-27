@@ -5,7 +5,7 @@ using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax.Directives;
 
-public sealed class UseDirectiveSyntax : SyntaxNode
+public sealed class UseDirectiveSyntax : SyntaxNode, ISyntaxTreeTopLevelMember
 {
 	public Token UseKeyword { get; }
 	public ModuleNameSyntax ModuleName { get; }

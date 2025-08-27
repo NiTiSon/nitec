@@ -37,9 +37,13 @@ public class Compiler
 
                     SyntaxTree tree = parser.Parse();
 
-                    foreach (UseDirectiveSyntax directive in tree.Usages)
+                    var members = tree.Members;
+
+                    Console.WriteLine($"[{file.FullName}]");
+                    for (int i = 0; i < members.Length; i++)
                     {
-	                    SyntaxTree.PrintTree(directive, "", true);
+	                    SyntaxNode member = (members[i] as SyntaxNode)!;
+	                    SyntaxTree.PrintTree(member, "", i == members.Length - 1);
                     }
                 }
             }
