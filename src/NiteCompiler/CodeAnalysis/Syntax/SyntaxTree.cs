@@ -1,35 +1,37 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
-using NiteCompiler.CodeAnalysis.Syntax.Directives;
+using NiteCompiler.CodeAnalysis.Text;
+using NiTiS.Compiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
 public sealed class SyntaxTree
 {
-	public readonly ImmutableArray<ISyntaxTreeTopLevelMember> Members;
+	public SourceText Text { get; }
+	public CompilationUnitSyntax Root { get; }
+	public ImmutableArray<Diagnostic> Diagnostics { get; }
 
-	internal SyntaxTree(ImmutableArray<ISyntaxTreeTopLevelMember> members)
+	private SyntaxTree(SourceText text, CompilationUnitSyntax root, ImmutableArray<Diagnostic> diagnostics)
 	{
-		Members = members;
+		Text = text;
+		Root = root;
+		Diagnostics = diagnostics;
 	}
 
-	internal static void PrintTree(SyntaxNode node, string indent, bool isLast)
+	public static SyntaxTree Load(FileInfo file)
 	{
-		Console.Write(indent);
-		Console.Write(isLast ? "└─" : "├─");
+		DiagnosticBag diagnostics = new();
+		string text = File.ReadAllText(file.FullName);
+		StringText sourceText = new(text, file.FullName);
 
-		Console.ForegroundColor = node is Token ? ConsoleColor.Green : ConsoleColor.Blue;
-		Console.WriteLine(node);
-		Console.ResetColor();
+		NiteLexer lexer = new(sourceText, diagnostics);
+		NiteParser parser = new(lexer, sourceText, diagnostics);
 
-		indent += isLast ? "  " : "│ ";
-
-		var children = node.GetChildren().ToArray();
-		for (int i = 0; i < children.Length; i++)
-		{
-			PrintTree(children[i], indent, i == children.Length - 1);
-		}
+		CompilationUnitSyntax unit = parser.Parse();
+		return new SyntaxTree(sourceText, unit, [..diagnostics]);
 	}
 }

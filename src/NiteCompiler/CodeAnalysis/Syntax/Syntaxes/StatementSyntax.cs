@@ -1,4 +1,4 @@
-namespace NiteCompiler.CodeAnalysis.Syntax.Statements;
+namespace NiteCompiler.CodeAnalysis.Syntax;
 
 public abstract class StatementSyntax : SyntaxNode
 {

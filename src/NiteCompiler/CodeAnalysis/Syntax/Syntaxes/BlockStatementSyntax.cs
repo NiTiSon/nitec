@@ -1,15 +1,16 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using NiteCompiler.CodeAnalysis.Text;
 
-namespace NiteCompiler.CodeAnalysis.Syntax.Statements;
+namespace NiteCompiler.CodeAnalysis.Syntax;
 
 public sealed class BlockStatementSyntax : StatementSyntax
 {
 	public Token LeftParen { get; }
-	public StatementSyntax[] Statements { get; }
+	public ImmutableArray<StatementSyntax> Statements { get; }
 	public Token RightParen { get; }
 
-	public BlockStatementSyntax(Token leftParen, StatementSyntax[] statements, Token rightParen)
+	public BlockStatementSyntax(Token leftParen, ImmutableArray<StatementSyntax> statements, Token rightParen)
 	{
 		LeftParen = leftParen;
 		Statements = statements;

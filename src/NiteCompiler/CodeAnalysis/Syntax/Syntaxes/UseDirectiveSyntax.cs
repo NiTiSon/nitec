@@ -1,11 +1,10 @@
-using System;
 using System.Collections.Generic;
 using NiteCompiler.CodeAnalysis.Syntax.Expressions.Names;
 using NiteCompiler.CodeAnalysis.Text;
 
-namespace NiteCompiler.CodeAnalysis.Syntax.Directives;
+namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public sealed class UseDirectiveSyntax : SyntaxNode, ISyntaxTreeTopLevelMember
+public sealed class UseDirectiveSyntax : SyntaxNode
 {
 	public Token UseKeyword { get; }
 	public ModuleNameSyntax ModuleName { get; }

@@ -1,7 +1,8 @@
 using System.Collections.Generic;
+using NiteCompiler.CodeAnalysis.Syntax.Expressions.Names;
 using NiteCompiler.CodeAnalysis.Text;
 
-namespace NiteCompiler.CodeAnalysis.Syntax.Expressions.Names;
+namespace NiteCompiler.CodeAnalysis.Syntax;
 
 public sealed class ModuleNameSyntax : NameSyntax
 {

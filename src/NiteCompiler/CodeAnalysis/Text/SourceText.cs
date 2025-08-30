@@ -4,6 +4,13 @@ namespace NiteCompiler.CodeAnalysis.Text;
 
 public abstract class SourceText : IDisposable
 {
+	public string? FileName { get; }
+
+	protected SourceText(string? fileName)
+	{
+		FileName = fileName;
+	}
+
 	/// <summary>
 	/// Copy a range of characters from this SourceText to a destination array.
 	/// </summary>
@@ -14,4 +21,6 @@ public abstract class SourceText : IDisposable
 	public abstract string GetText(TextSpan span);
 
 	public abstract int Length { get; }
+
+	public TextSpan Span =>  new(0, Length);
 }

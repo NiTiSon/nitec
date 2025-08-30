@@ -1,23 +1,21 @@
 using System.Collections.Generic;
-using NiteCompiler.CodeAnalysis.Syntax.Expressions.Names;
-using NiteCompiler.CodeAnalysis.Syntax.Statements;
+using System.Collections.Immutable;
 using NiteCompiler.CodeAnalysis.Text;
 
-namespace NiteCompiler.CodeAnalysis.Syntax.Definitions;
+namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public class FunctionDefinitionSyntax : DefinitionSyntax
+public class FunctionDeclarationSyntax : MemberSyntax
 {
-	public Token AccessibilityToken { get; }
 	public NameSyntax Name { get; }
 	public BlockStatementSyntax Block { get; }
 
-	public FunctionDefinitionSyntax(Token accessibilityToken, NameSyntax name, object todoParamList,
-		BlockStatementSyntax block)
+	public FunctionDeclarationSyntax(Token accessibilityToken, ImmutableArray<Token> modifiers, NameSyntax name, object todoParamList,
+		BlockStatementSyntax block) : base(accessibilityToken, modifiers)
 	{
 		Name = name;
-		AccessibilityToken = accessibilityToken;
 		Block = block;
 	}
+
 	public override TextSpan Span => TextSpan.FromBounds(AccessibilityToken.Span.Start, Block.Span.End);
 
 	public override SyntaxKind Kind => SyntaxKind.FunctionDeclaration;

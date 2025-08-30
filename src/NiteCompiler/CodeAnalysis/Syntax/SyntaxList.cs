@@ -49,5 +49,10 @@ public sealed class SyntaxList<TNode> : SyntaxNode
 		{
 			return new(_builder, _listKind);
 		}
+
+		public void RemoveLast()
+		{
+			_builder.RemoveAt(_builder.Count - 1);
+		}
 	}
 }

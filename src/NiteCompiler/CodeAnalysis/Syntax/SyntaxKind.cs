@@ -4,6 +4,7 @@ public enum SyntaxKind : uint
 {
 	Invalid = 0,
 	EndOfFile = 0xFFFFFFFFu,
+	CompilationUnit = 1,
 
 	// === Tokens ===
 	/// <summary>
@@ -176,6 +177,7 @@ public enum SyntaxKind : uint
 
 	// === STATEMENTS ===
 	BlockStatement = 2001,
+	ReturnStatement = 2002,
 
 	// === EXPRESSIONS ===
 	BinaryExpression = 3001,
@@ -185,11 +187,13 @@ public enum SyntaxKind : uint
 	// === NAME EXPRESSIONS ===
 	IdentifierName = 3501, // id
 	ModuleName = 3502, // id::id::id
+	QualifiedName = 3503, // id::id::Member
 
 	// === DECLARATIONS ===
 	FunctionDeclaration = 4001,
 	TypeDeclaration = 4002,
 	VariableDeclaration = 4003,
+	ModuleDeclaration = 4004,
 
 	// === DIRECTIVE ===
 	UseDirective = 5001,

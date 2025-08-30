@@ -8,4 +8,7 @@ public sealed class PackageSymbol : Symbol, INamedSymbol
     {
         Name = name;
     }
+
+    public override Symbol? ContainingSymbol => null;
+    public override SymbolKind Kind => SymbolKind.Package;
 }

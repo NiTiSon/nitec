@@ -6,7 +6,7 @@ public sealed class StringText : SourceText
 {
 	private readonly string _text;
 
-	public StringText(string text)
+	public StringText(string text, string? fileName = null) : base(fileName)
 	{
 		ArgumentNullException.ThrowIfNull(text);
 

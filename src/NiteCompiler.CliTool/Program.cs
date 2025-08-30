@@ -22,7 +22,7 @@ public static class Program
 		#if DEBUG
 		Console.WriteLine("[" + string.Join(", ", args) + "]");
 		#endif
-		
+
 		Argument<FileInfo[]> inputArgument = new("files")
 		{
 			Description = "Source files",
@@ -43,8 +43,7 @@ public static class Program
 
 	private static void Compile(FileInfo[]? files, string packageName)
 	{
-		Compiler compiler = new(packageName);
-		if (files is null)
+		if (files is null || files.Length == 0)
 		{
 			Console.ForegroundColor = ConsoleColor.Red;
 			Console.Error.WriteLine("No input files.");
@@ -56,8 +55,19 @@ public static class Program
 		{
 			// _diagnosticBag.Add();
 		}
-		
-		compiler.Compile(files, _diagnosticBag, Stream.Null);
+
+		SyntaxTree[] trees = new SyntaxTree[files.Length];
+		Parallel.For(0, files.Length, i =>
+		{
+			FileInfo file = files[i];
+			trees[i] = SyntaxTree.Load(file);
+		});
+
+		Compilation compilation = Compilation.Create(trees);
+		foreach (SyntaxTree tree in compilation.SyntaxTrees)
+		{
+			Console.WriteLine(tree);
+		}
 	}
 
 	private static bool RemoveDuplicates(ref FileInfo[] files)

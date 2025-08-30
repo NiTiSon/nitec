@@ -1,7 +1,8 @@
 using System.Collections.Generic;
+using NiteCompiler.CodeAnalysis.Syntax.Expressions;
 using NiteCompiler.CodeAnalysis.Text;
 
-namespace NiteCompiler.CodeAnalysis.Syntax.Expressions;
+namespace NiteCompiler.CodeAnalysis.Syntax;
 
 public sealed class BinaryExpressionSyntax : ExpressionSyntax
 {

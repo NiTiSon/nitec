@@ -4,7 +4,6 @@ use exaxt;
 module third_party;
 
 public main() -> i32 {
-	let x = 87;
-	x = x + 1;
 	return x;
 }
+
