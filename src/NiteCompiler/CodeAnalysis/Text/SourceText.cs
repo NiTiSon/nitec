@@ -20,7 +20,11 @@ public abstract class SourceText : IDisposable
 
 	public abstract string GetText(TextSpan span);
 
+	public abstract string GetText(TextLine line);
+
 	public abstract int Length { get; }
 
 	public TextSpan Span =>  new(0, Length);
+
+	public virtual char this[int i] => GetText(new TextSpan(i, 1))[0];
 }

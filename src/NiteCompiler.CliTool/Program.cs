@@ -33,6 +33,7 @@ public static class Program
 		rootCommand.SetAction(result => Compile(result.GetValue(inputArgument), "test123"));
 
 		ParseResult parseResult = rootCommand.Parse(args);
+		parseResult.Configuration.EnableDefaultExceptionHandler = false;
 		parseResult.Invoke();
 
 		foreach (ParseError parseError in parseResult.Errors)
@@ -66,7 +67,11 @@ public static class Program
 		Compilation compilation = Compilation.Create(trees);
 		foreach (SyntaxTree tree in compilation.SyntaxTrees)
 		{
-			Console.WriteLine(tree);
+			Console.WriteLine(tree.Text.FileName);
+			foreach (SyntaxNode node in tree.Root.TopLevelNodes)
+			{
+				Console.WriteLine(node);
+			}
 		}
 	}
 

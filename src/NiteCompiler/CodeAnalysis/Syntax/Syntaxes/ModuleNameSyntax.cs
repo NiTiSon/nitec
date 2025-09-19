@@ -1,14 +1,13 @@
 using System.Collections.Generic;
-using NiteCompiler.CodeAnalysis.Syntax.Expressions.Names;
 using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public sealed class ModuleNameSyntax : NameSyntax
+public sealed class ModuleNameSyntax : SyntaxNode
 {
-	public SyntaxList<IdentifierNameSyntax> Parts { get; }
+	public SyntaxList<SimpleNameSyntax> Parts { get; }
 
-	public ModuleNameSyntax(SyntaxList<IdentifierNameSyntax> parts)
+	public ModuleNameSyntax(SyntaxList<SimpleNameSyntax> parts)
 	{
 		Parts = parts;
 	}

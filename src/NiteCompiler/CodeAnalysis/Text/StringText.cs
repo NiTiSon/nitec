@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace NiteCompiler.CodeAnalysis.Text;
 
@@ -31,4 +32,11 @@ public sealed class StringText : SourceText
 
 		throw new ArgumentException(null, nameof(span));
 	}
+
+	public override string GetText(TextLine line)
+	{
+		return line.IsEmpty ? string.Empty : GetText(new TextSpan(line.Position, line.LengthIncludingLineBreak));
+	}
+
+	public override char this[int i] => _text[i];
 }

@@ -6,10 +6,8 @@ namespace NiteCompiler.CodeAnalysis.Text;
 [DataContract]
 public readonly struct TextSpan
 {
-	[DataMember(Order = 0)]
-	public readonly int Start;
-	[DataMember(Order = 1)]
-	public readonly int Length;
+	[DataMember(Order = 0)] public readonly int Start;
+	[DataMember(Order = 1)] public readonly int Length;
 	public int End => Start + Length;
 	public bool IsEmpty => this.Length == 0;
 

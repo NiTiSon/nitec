@@ -182,12 +182,18 @@ public enum SyntaxKind : uint
 	// === EXPRESSIONS ===
 	BinaryExpression = 3001,
 	UnaryExpression = 3002,
-	LiteralExpression = 3003,
-
-	// === NAME EXPRESSIONS ===
-	IdentifierName = 3501, // id
-	ModuleName = 3502, // id::id::id
-	QualifiedName = 3503, // id::id::Member
+	SimpleName = 3003, // id
+	ModuleName = 3004, // id::id::id
+	ComplexName = 3005, // Member.Member2
+	NameWithExplicitModule = 3006, // id::id::Member || id::id::Member.Member2
+	PredefinedType = 3007,
+	SliceType = 3008,
+	ArrayType = 3009,
+	PointerType = 3010,
+	ReferenceType = 3011,
+	BoxedReferenceType = 3012,
+	// TupleType = 3013,
+	NumericLiteralExpression = 3014,
 
 	// === DECLARATIONS ===
 	FunctionDeclaration = 4001,
@@ -203,4 +209,5 @@ public enum SyntaxKind : uint
 
 	IdentifierList = 6001,
 	ParameterList = 6002,
+	Retusa = 6003,
 }

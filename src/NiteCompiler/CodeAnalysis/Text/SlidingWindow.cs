@@ -2,6 +2,8 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.Serialization;
+using System.Threading;
+using LLVMSharp;
 
 namespace NiteCompiler.CodeAnalysis.Text;
 
@@ -30,7 +32,7 @@ public sealed class SlidingWindow
 	public int Width => _offset - _lexemeStart;
 
 	public TextSpan LexemeSpan => new(LexemeStart, Width);
-	
+
 	public string Lexeme => new(_window, _lexemeStart, Width);
 
 	public SlidingWindow(SourceText sourceText)
@@ -42,18 +44,63 @@ public sealed class SlidingWindow
 		_offset = 0;
 		_lexemeStart = 0;
 		_window = new char[BufferLength];
+
+#if DEBUG
+		AppDomain.CurrentDomain.UnhandledException += ExceptionHandler;
+#endif
 	}
+
+#if DEBUG
+	~SlidingWindow()
+	{
+		AppDomain.CurrentDomain.UnhandledException -= ExceptionHandler;
+	}
+
+	private static Semaphore _debugSemaphore = new Semaphore(1, 1);
+	private void ExceptionHandler(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
+	{
+		if (_debugSemaphore.WaitOne())
+		{
+			try
+			{
+				Console.ForegroundColor = ConsoleColor.Yellow;
+				SourceLines lines = new(_sourceText);
+				Console.WriteLine($"Sliding window: {_sourceText.FileName ?? "<script>"} {_sourceText.Span}");
+				TextLine? problemLine = lines.GetLineByCharacterPosition(Position);
+				try
+				{
+					if (problemLine is not null)
+					{
+						Console.Write($"#{(problemLine.Value.Index + 1):0000}| {_sourceText.GetText(problemLine.Value)}");
+					}
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine(e);
+					throw;
+				}
+				Console.WriteLine();
+				Console.WriteLine($"Thrown when window cursor was at {Position}");
+				Console.ResetColor();
+			}
+			finally
+			{
+				_debugSemaphore.Release();
+			}
+		}
+	}
+#endif
 
 	public char Current => Peek(0);
 	public char Next => Peek(1);
 
 	public bool IsAtTheEnd => Position >= _textEnd;
-	
+
 	public void Start()
 	{
 		_lexemeStart = _offset;
 	}
-	
+
 	public void Advance()
 	{
 		_offset++;
@@ -170,7 +217,7 @@ public sealed class SlidingWindow
 				return false;
 			}
 
-			// if lexeme scanning is sufficiently into the char buffer, 
+			// if lexeme scanning is sufficiently into the char buffer,
 			// then refocus the window onto the lexeme
 			if (_lexemeStart > (_windowLength / 4))
 			{

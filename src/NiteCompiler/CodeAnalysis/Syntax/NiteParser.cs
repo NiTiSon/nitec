@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using NiteCompiler.CodeAnalysis.Syntax.Expressions.Names;
+using System.Diagnostics;
+using NiteCompiler.CodeAnalysis.Syntax.Expressions;
 using NiteCompiler.CodeAnalysis.Text;
 using NiTiS.Compiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public sealed class NiteParser
+public sealed partial class NiteParser
 {
 	private readonly DiagnosticBag _diagnostics;
 	private readonly List<Token> _tokens;
@@ -32,7 +33,7 @@ public sealed class NiteParser
 
 	private Token Peek(int offset)
 	{
-		return _tokens[int.Min(offset + _position, _tokens.Count)];
+		return _tokens[int.Min(offset + _position, _tokens.Count - 1)];
 	}
 	private Token PeekAndAdvance()
 	{
@@ -93,23 +94,27 @@ public sealed class NiteParser
 
 	private SyntaxNode ParseMember()
 	{
-		MatchAnyToken(SyntaxFacts.AccessKeywords);
+		Token accessibilityToken = MatchAnyToken(SyntaxFacts.AccessKeywords);
 
-		IdentifierNameSyntax name = ParseIdentifierName();
+		SimpleNameSyntax name = ParseSimpleName();
 
 		if (Current.Kind == SyntaxKind.OpenParenToken) // Method
 		{
 			Token openParen = MatchToken(SyntaxKind.OpenParenToken);
 			Token closeParen = MatchToken(SyntaxKind.CloseParenToken);
 
+			RetusaSyntax? retusa = null;
 			if (Current.Kind == SyntaxKind.RetusaToken)
 			{
-				Token retusa = MatchToken(SyntaxKind.RetusaToken);
+				Token retusaArrow = MatchToken(SyntaxKind.RetusaToken);
 
-				NameSyntax returnParameter = ParseName();
+				TypeSyntax returnParameter = ParseType();
+				retusa = new(retusaArrow, returnParameter);
 			}
 
 			BlockStatementSyntax block = ParseBlockStatement();
+
+			return new FunctionDeclarationSyntax(accessibilityToken, [], name, null, retusa, block);
 		}
 		// else // field
 		// {
@@ -121,121 +126,11 @@ public sealed class NiteParser
 		return name;
 	}
 
-	private BlockStatementSyntax ParseBlockStatement()
-	{
-		Token openBrace = MatchToken(SyntaxKind.OpenBraceToken);
-
-		ImmutableArray<StatementSyntax>.Builder statements = ImmutableArray.CreateBuilder<StatementSyntax>();
-		while (Current.Kind != SyntaxKind.CloseBraceToken)
-		{
-			if (Current.Kind == SyntaxKind.EndOfFile)
-			{
-				// report
-				return new BlockStatementSyntax(openBrace, [], Current);
-			}
-
-			statements.Add(ParseStatement());
-		}
-		Token closeBrace = MatchToken(SyntaxKind.CloseBraceToken);
-
-		return new BlockStatementSyntax(openBrace, statements.ToImmutable(), Current);
-	}
-
-	private StatementSyntax ParseStatement()
-	{
-		if (Current.Kind == SyntaxKind.OpenBraceToken)
-		{
-			return ParseBlockStatement();
-		}
-		else
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	private NameSyntax ParseName()
-	{
-		Token next = Peek(1);
-		ModuleNameSyntax? moduleName = null;
-		if (next.Kind == SyntaxKind.ColonColonToken) // Qualified name
-		{
-			 moduleName = ParseModuleName();
-		}
-
-		if (Current.Kind == SyntaxKind.ColonColonToken)
-		{
-			Token colonColonToken = PeekAndAdvance();
-
-			NameSyntax nameSyntax = ParseIdentifierName(); // Replace with simple name for generics support.
-
-			return new QualifiedNameSyntax(moduleName!, colonColonToken, nameSyntax);
-		}
-		else
-		{
-			return ParseIdentifierName();
-		}
-	}
-
 	private UseDirectiveSyntax ParseUseDirective()
 	{
 		Token useKeyword = MatchToken(SyntaxKind.UseKeyword);
 		ModuleNameSyntax moduleName = ParseModuleNameInUseDirective();
 
 		return new(useKeyword, moduleName);
-	}
-
-	private ModuleNameSyntax ParseModuleName()
-	{
-		SyntaxList<IdentifierNameSyntax>.Builder parts = new(SyntaxKind.IdentifierList);
-
-		parts.Add(ParseIdentifierName());
-
-		while (Current.Kind == SyntaxKind.ColonColonToken)
-		{
-			Token next = Peek(1);
-			if (next.Kind == SyntaxKind.IdentifierToken && Peek(2).Kind == SyntaxKind.ColonColonToken)
-			{
-				Advance(); // ::
-				parts.Add(ParseIdentifierName());
-			}
-			else
-			{
-				// The rest is ModuleMemberAccessExpression
-				break;
-			}
-		}
-
-		return new ModuleNameSyntax(parts.Build());
-	}
-
-	/// <summary>
-	/// In use directives only module names appears without any members. This method reads whole path as module name.
-	/// </summary>
-	private ModuleNameSyntax ParseModuleNameInUseDirective()
-	{
-		SyntaxList<IdentifierNameSyntax>.Builder parts = new(SyntaxKind.IdentifierList);
-
-		parts.Add(ParseIdentifierName());
-
-		while (Current.Kind == SyntaxKind.ColonColonToken)
-		{
-			Advance();
-			if (Current.Kind == SyntaxKind.IdentifierToken)
-			{
-				parts.Add(ParseIdentifierName());
-			}
-			else
-			{
-				// _diagnostics.Report
-				break;
-			}
-		}
-
-		return new ModuleNameSyntax(parts.Build());
-	}
-
-	private IdentifierNameSyntax ParseIdentifierName()
-	{
-		return new((MatchToken(SyntaxKind.IdentifierToken) as IdentifierToken)!);
 	}
 }

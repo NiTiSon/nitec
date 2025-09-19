@@ -4,15 +4,17 @@ using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public class FunctionDeclarationSyntax : MemberSyntax
+public sealed class FunctionDeclarationSyntax : MemberSyntax
 {
 	public NameSyntax Name { get; }
+	public RetusaSyntax? Retusa { get; }
 	public BlockStatementSyntax Block { get; }
 
 	public FunctionDeclarationSyntax(Token accessibilityToken, ImmutableArray<Token> modifiers, NameSyntax name, object todoParamList,
-		BlockStatementSyntax block) : base(accessibilityToken, modifiers)
+		RetusaSyntax? retusa, BlockStatementSyntax block) : base(accessibilityToken, modifiers)
 	{
 		Name = name;
+		Retusa = retusa;
 		Block = block;
 	}
 
