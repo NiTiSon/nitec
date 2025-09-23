@@ -126,4 +126,104 @@ internal static class SyntaxFacts
 			_ => false
 		};
 	}
+
+	public static bool IsLiteralExpression(SyntaxKind token)
+	{
+		return GetLiteralExpression(token) != SyntaxKind.Invalid;
+	}
+
+	public static SyntaxKind GetLiteralExpression(SyntaxKind token)
+	{
+		return token switch
+		{
+			SyntaxKind.NumberToken => SyntaxKind.NumericLiteralExpression,
+			SyntaxKind.TrueKeyword => SyntaxKind.TrueLiteralExpression,
+			SyntaxKind.FalseKeyword => SyntaxKind.FalseLiteralExpression,
+			_ => SyntaxKind.Invalid,
+		};
+	}
+
+	public static bool IsBinaryExpressionOperatorToken(SyntaxKind kind)
+	{
+		return GetBinaryExpression(kind) != SyntaxKind.Invalid;
+	}
+
+	public static SyntaxKind GetBinaryExpression(SyntaxKind kind)
+	{
+		return kind switch
+		{
+			SyntaxKind.PlusToken => SyntaxKind.AddExpression,
+			SyntaxKind.MinusToken => SyntaxKind.SubtractExpression,
+			SyntaxKind.AsteriskToken => SyntaxKind.MultiplyExpression,
+			SyntaxKind.SlashToken => SyntaxKind.DivideExpression,
+			SyntaxKind.PercentToken => SyntaxKind.ModuloExpression,
+			_ => SyntaxKind.Invalid,
+		};
+	}
+
+	public static bool IsAssignmentExpressionOperatorToken(SyntaxKind kind)
+	{
+		return GetAssignmentExpression(kind) != SyntaxKind.Invalid;
+	}
+
+	public static SyntaxKind GetAssignmentExpression(SyntaxKind kind)
+	{
+		return kind switch
+		{
+			SyntaxKind.EqualsToken => SyntaxKind.AssignmentExpression,
+			SyntaxKind.PlusEqualsToken => SyntaxKind.AddAssignmentExpression,
+			SyntaxKind.MinusEqualsToken => SyntaxKind.SubtractAssignmentExpression,
+			SyntaxKind.AsteriskEqualsToken => SyntaxKind.MultiplyAssignmentExpression,
+			SyntaxKind.SlashEqualsToken => SyntaxKind.DivideAssignmentExpression,
+			SyntaxKind.PercentEqualsToken => SyntaxKind.ModuloAssignmentExpression,
+			SyntaxKind.AmpersandEqualsToken => SyntaxKind.AndAssignmentExpression,
+			SyntaxKind.CaretEqualsToken => SyntaxKind.ExclusiveOrAssignmentExpression,
+			SyntaxKind.PipeEqualsToken =>  SyntaxKind.ExclusiveOrAssignmentExpression,
+			_ =>  SyntaxKind.Invalid,
+		};
+	}
+
+	public static bool IsRightAssociativeExpression(SyntaxKind kind)
+	{
+		return IsAssignmentExpressionOperatorToken(kind)
+		       || kind == SyntaxKind.CoalesceExpression;
+	}
+
+	public static bool IsUnaryExpression(SyntaxKind kind)
+	{
+		return GetUnaryExpression(kind) != SyntaxKind.Invalid;
+	}
+
+	public static SyntaxKind GetUnaryExpression(SyntaxKind kind)
+	{
+		return kind switch
+		{
+			SyntaxKind.PlusToken => SyntaxKind.UnaryAddExpression,
+			SyntaxKind.MinusToken => SyntaxKind.UnarySubtractExpression,
+			SyntaxKind.ExclamationToken => SyntaxKind.UnaryLogicalNotExpression,
+			SyntaxKind.TildeToken => SyntaxKind.UnaryBitwiseNotExpression,
+			SyntaxKind.AmpersandToken => SyntaxKind.UnaryAddressOfExpression,
+			SyntaxKind.AsteriskToken => SyntaxKind.UnaryPointerIndirectionExpression,
+			_ => SyntaxKind.Invalid
+		};
+	}
+
+	public static Precedence GetPrecedence(SyntaxKind opKind)
+	{
+		switch (opKind)
+		{
+			case SyntaxKind.AssignmentExpression:
+			case SyntaxKind.AddAssignmentExpression:
+				return Precedence.Assignment;
+			case SyntaxKind.AddExpression:
+			case SyntaxKind.SubtractExpression:
+				return Precedence.Additive;
+			case SyntaxKind.NumericLiteralExpression:
+			case SyntaxKind.FalseLiteralExpression:
+			case SyntaxKind.TrueLiteralExpression:
+				return Precedence.Primary;
+			default:
+				throw new NotImplementedException($"{opKind} have undefined precedence");
+		}
+	}
 }

@@ -14,6 +14,16 @@ public class Token : SyntaxNode
         Span = span;
     }
 
+    public bool IsConnectedAfter(Token token)
+    {
+	    return Span.End == token.Span.Start;
+    }
+
+    public bool IsConnectedBefore(Token token)
+    {
+	    return token.IsConnectedAfter(this);
+    }
+
     public override IEnumerable<SyntaxNode> GetChildren()
     {
         return [];

@@ -70,11 +70,8 @@ public enum SyntaxKind : uint
 	CloseBracketToken = 171,
 	/// <summary>Represents <c>^</c> token.</summary>
 	CaretToken = 139,
-	/// <inheritdoc cref="CaretToken"/>
-	CircumflexToken = CaretToken,
 	/// <summary>Represents <c>_</c> token.</summary>
 	UnderscoreToken = 140,
-	// BacktickToken REMOVED: NOT USED
 	// SKIPPED ASCII LOWERCASE LETTERS
 	/// <summary>Represents <c>{</c> token.</summary>
 	OpenBraceToken = 175,
@@ -92,36 +89,36 @@ public enum SyntaxKind : uint
 	PlusEqualsToken = 181,
 	/// <summary>Represents <c>-=</c> token.</summary>
 	MinusEqualsToken = 182,
+	/// <summary>Represents <c>!=</c> token.</summary>
+	ExclamationEqualsToken = 183,
 	/// <summary>Represents <c>*=</c> token.</summary>
-	AsteriskEqualsToken = 183,
+	AsteriskEqualsToken = 184,
 	/// <summary>Represents <c>/=</c> token.</summary>
-	SlashEqualsToken = 184,
+	SlashEqualsToken = 185,
 	/// <summary>Represents <c>%=</c> token.</summary>
-	PercentEqualsToken = 185,
+	PercentEqualsToken = 186,
 	/// <summary>Represents <c>&=</c> token.</summary>
-	AmpersandEqualsToken = 186,
+	AmpersandEqualsToken = 187,
 	/// <summary>Represents <c>|=</c> token.</summary>
-	PipeEqualsToken = 187,
+	PipeEqualsToken = 188,
 	/// <summary>Represents <c>^=</c> token.</summary>
-	CaretEqualsToken = 188,
-	/// <inheritdoc cref="CaretEqualsToken"/>
-	CircumflexEqualsToken = CaretEqualsToken,
+	CaretEqualsToken = 189,
 	/// <summary>Represents <c>&lt;&lt;</c> token.</summary>
-	LeftShiftToken = 189,
+	LeftShiftToken = 190,
 	/// <summary>Represents <c>&gt;&gt;</c> token.</summary>
-	RightShiftToken = 190,
+	RightShiftToken = 191,
 	/// <summary>Represents <c>&gt;&gt;&gt;</c> token.</summary>
-	UnsignedRightShiftToken = 191,
+	UnsignedRightShiftToken = 192,
 	/// <summary>Represents <c>&lt;&lt;=</c> token.</summary>
-	LeftShiftEqualsToken = 192,
+	LeftShiftEqualsToken = 193,
 	/// <summary>Represents <c>&gt;&gt;=</c> token.</summary>
-	RightShiftEqualsToken = 193,
+	RightShiftEqualsToken = 194,
 	/// <summary>Represents <c>&gt;&gt;&gt;=</c> token.</summary>
-	UnsignedRightShiftEqualsToken = 194,
+	UnsignedRightShiftEqualsToken = 195,
 	/// <summary>Represents <c>==</c> token.</summary>
-	EqualsEqualsToken = 195,
+	EqualsEqualsToken = 196,
 	/// <summary>Represents <c>-&gt;</c> token.</summary>
-	RetusaToken = 196,
+	RetusaToken = 197,
 
 	/// <summary>Represents <c>::</c> token.</summary>
 	ColonColonToken = 250,
@@ -178,22 +175,67 @@ public enum SyntaxKind : uint
 	// === STATEMENTS ===
 	BlockStatement = 2001,
 	ReturnStatement = 2002,
+	ExpressionStatement = 2003,
 
 	// === EXPRESSIONS ===
-	BinaryExpression = 3001,
-	UnaryExpression = 3002,
-	SimpleName = 3003, // id
-	ModuleName = 3004, // id::id::id
-	ComplexName = 3005, // Member.Member2
-	NameWithExplicitModule = 3006, // id::id::Member || id::id::Member.Member2
-	PredefinedType = 3007,
-	SliceType = 3008,
-	ArrayType = 3009,
-	PointerType = 3010,
-	ReferenceType = 3011,
-	BoxedReferenceType = 3012,
-	// TupleType = 3013,
-	NumericLiteralExpression = 3014,
+	ParenthesizedExpression = 3001,
+	AddExpression = 3002,
+	SubtractExpression = 3003,
+	MultiplyExpression = 3004,
+	DivideExpression = 3005,
+	ModuloExpression = 3006,
+	LeftShiftExpression = 3007,
+	RightShiftExpression = 3008,
+	UnsignedRightShiftExpression = 3009,
+	LogicalOrExpression = 3010,
+	LogicalAndExpression = 3011,
+	BitwiseOrExpression = 3012,
+	BitwiseAndExpression = 3013,
+	ExclusiveOrExpression = 3014,
+	EqualsExpression = 3015,
+	NotEqualsExpression = 3016,
+	LessThanExpression = 3017,
+	LessThanOrEqualExpression = 3018,
+	GreaterThanExpression = 3019,
+	GreaterThanOrEqualExpression = 3020,
+	IsExpression = 3021,
+	AsExpression = 3022,
+	CoalesceExpression = 3023,
+	UnaryAddExpression = 3024,
+	UnarySubtractExpression = 3025,
+	UnaryLogicalNotExpression = 3026,
+	UnaryBitwiseNotExpression = 3027,
+	UnaryPointerIndirectionExpression = 3028,
+	UnaryAddressOfExpression = 3029,
+	AssignmentExpression = 3030,
+	AddAssignmentExpression = 3031,
+	SubtractAssignmentExpression = 3032,
+	MultiplyAssignmentExpression = 3033,
+	DivideAssignmentExpression = 3034,
+	ModuloAssignmentExpression = 3035,
+	AndAssignmentExpression = 3036,
+	ExclusiveOrAssignmentExpression = 3037,
+	OrAssignmentExpression = 3038,
+	LeftShiftAssignmentExpression = 3039,
+	RightShiftAssignmentExpression = 3040,
+	UnsignedRightShiftAssignmentExpression = 3041,
+	CoalesceAssignmentExpression = 3042,
+
+	SimpleName = 3101, // id
+	ModuleName = 3102, // id::id::id
+	ComplexName = 3103, // Member.Member2
+	NameWithExplicitModule = 3104, // id::id::Member || id::id::Member.Member2
+	PredefinedType = 3105,
+	SliceType = 3106,
+	ArrayType = 3107,
+	PointerType = 3108,
+	ReferenceType = 3109,
+	BoxedReferenceType = 3110,
+	// TupleType = 3111,
+
+	NumericLiteralExpression = 3201,
+	FalseLiteralExpression = 3202,
+	TrueLiteralExpression = 3203,
 
 	// === DECLARATIONS ===
 	FunctionDeclaration = 4001,

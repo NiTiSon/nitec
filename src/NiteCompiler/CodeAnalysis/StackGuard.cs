@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace NiTiS.Compiler.NiteCode.CodeAnalysis;
+namespace NiteCompiler.CodeAnalysis;
 
 public static class StackGuard
 {

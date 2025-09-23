@@ -4,5 +4,5 @@ use exaxt;
 module third_party;
 
 public main() -> i32 {
-	return 1;
+	1 = 2;
 }

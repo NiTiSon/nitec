@@ -68,11 +68,29 @@ public static class Program
 		foreach (SyntaxTree tree in compilation.SyntaxTrees)
 		{
 			Console.WriteLine(tree.Text.FileName);
-			foreach (SyntaxNode node in tree.Root.TopLevelNodes)
+			for (int index = 0; index < tree.Root.TopLevelNodes.Length; index++)
 			{
-				Console.WriteLine(node);
+				SyntaxNode node = tree.Root.TopLevelNodes[index];
+				PrintNode(node, "", index + 1 == tree.Root.TopLevelNodes.Length);
 			}
 		}
+	}
+
+	private static void PrintNode(SyntaxNode node, string indent = "", bool isLast = true)
+	{
+
+		string tokenMarker = isLast ? "└──" : "├──";
+
+		Console.Write(indent);
+		Console.Write(tokenMarker);
+		Console.WriteLine(node);
+
+		indent += isLast ? "   " : "│  ";
+
+		SyntaxNode? lastChild = node.GetChildren().LastOrDefault();
+
+		foreach (SyntaxNode child in node.GetChildren())
+			PrintNode(child, indent, child == lastChild);
 	}
 
 	private static bool RemoveDuplicates(ref FileInfo[] files)

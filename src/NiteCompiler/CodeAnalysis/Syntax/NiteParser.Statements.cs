@@ -42,15 +42,20 @@ public sealed partial class NiteParser
 		}
 		else
 		{
-			throw new NotImplementedException();
+			return ParseExpressionStatement();
 		}
+	}
+
+	private ExpressionStatementSyntax ParseExpressionStatement()
+	{
+		return new(ParseExpression());
 	}
 
 	private ReturnStatementSyntax ParseReturnStatement()
 	{
 		Token returnKeyword = MatchToken(SyntaxKind.ReturnKeyword);
 		return Current.Kind == SyntaxKind.SemicolonToken
-			? new ReturnStatementSyntax(returnKeyword, null)
-			: new ReturnStatementSyntax(returnKeyword, ParseExpression());
+			? new(returnKeyword, null)
+			: new(returnKeyword, ParseExpression());
 	}
 }

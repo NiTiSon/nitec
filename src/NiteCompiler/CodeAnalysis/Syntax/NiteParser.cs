@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using CommunityToolkit.Diagnostics;
 using NiteCompiler.CodeAnalysis.Syntax.Expressions;
 using NiteCompiler.CodeAnalysis.Text;
 using NiTiS.Compiler.Diagnostics;
@@ -78,6 +79,9 @@ public sealed partial class NiteParser
 				case SyntaxKind.UseKeyword:
 					membersBuilder.Add(ParseUseDirective());
 					break;
+				case SyntaxKind.ModuleKeyword:
+					membersBuilder.Add(ParseModuleDeclaration());
+					break;
 				default:
 					if (IsPresentedAny(SyntaxFacts.AccessKeywords))
 					{
@@ -126,10 +130,29 @@ public sealed partial class NiteParser
 		return name;
 	}
 
+	private (SyntaxKind operatorTokenKind, SyntaxKind operatorExpressionKind) GetExpressionOperatorTokenKindAndExpressionKind()
+	{
+		if (SyntaxFacts.IsBinaryExpressionOperatorToken(Current.Kind))
+			return (Current.Kind, SyntaxFacts.GetBinaryExpression(Current.Kind));
+
+		if (SyntaxFacts.IsAssignmentExpressionOperatorToken(Current.Kind))
+			return (Current.Kind, SyntaxFacts.GetAssignmentExpression(Current.Kind));
+
+		return (SyntaxKind.Invalid, SyntaxKind.Invalid);
+	}
+
+	private ModuleDeclarationSyntax ParseModuleDeclaration()
+	{
+		Token moduleKeyword = MatchToken(SyntaxKind.ModuleKeyword);
+		ModuleNameSyntax moduleName = ParseModuleNameAlone();
+
+		return new(moduleKeyword, moduleName);
+	}
+
 	private UseDirectiveSyntax ParseUseDirective()
 	{
 		Token useKeyword = MatchToken(SyntaxKind.UseKeyword);
-		ModuleNameSyntax moduleName = ParseModuleNameInUseDirective();
+		ModuleNameSyntax moduleName = ParseModuleNameAlone();
 
 		return new(useKeyword, moduleName);
 	}
