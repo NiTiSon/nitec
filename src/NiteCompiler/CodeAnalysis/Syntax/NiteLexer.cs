@@ -146,6 +146,11 @@ public sealed partial class NiteLexer
 					_window.Advance(2);
 					info.Kind = SyntaxKind.AmpersandEqualsToken;
 				}
+				else if (_window.Next == '&')
+				{
+					_window.Advance(2);
+					info.Kind = SyntaxKind.AmpersandAmpersandToken;
+				}
 				else
 				{
 					_window.Advance();
@@ -179,6 +184,25 @@ public sealed partial class NiteLexer
 				}
 
 				break;
+			case '|':
+				if (_window.Next == '=')
+				{
+					_window.Advance(2);
+					info.Kind = SyntaxKind.PipeEqualsToken;
+				}
+				else if (_window.Next == '|')
+				{
+
+					_window.Advance(2);
+					info.Kind = SyntaxKind.PipePipeToken;
+				}
+				else
+				{
+					_window.Advance();
+					info.Kind = SyntaxKind.PipeToken;
+				}
+
+				break;
 			case '^':
 				if (_window.Next == '=')
 				{
@@ -204,6 +228,47 @@ public sealed partial class NiteLexer
 					info.Kind = SyntaxKind.EqualsToken;
 				}
 
+				break;
+			case '<':
+				if (_window.Next == '<')
+				{
+					if (_window.Peek(2) == '=') // <<=
+					{
+						_window.Advance(3);
+						info.Kind = SyntaxKind.LeftShiftEqualsToken;
+					}
+					else
+					{
+						_window.Advance(2);
+						info.Kind = SyntaxKind.LeftShiftToken;
+					}
+				}
+				else if (_window.Next == '=')
+				{
+					_window.Advance(2);
+					info.Kind = SyntaxKind.LessThanEqualsToken;
+				}
+				else
+				{
+					_window.Advance();
+					info.Kind = SyntaxKind.LessThanToken;
+				}
+
+				break;
+			case '>':
+				// Lexer can't distinct >> (right shift) and >> (two generic list terminators) out of context
+				// so we do it on Parser 🤣
+
+				if (_window.Next == '=')
+				{
+					_window.Advance(2);
+					info.Kind =  SyntaxKind.GreaterThanEqualsToken;
+				}
+				else
+				{
+					_window.Advance(1);
+					info.Kind = SyntaxKind.GreaterThanToken;
+				}
 				break;
 			case ';':
 				_window.Advance();

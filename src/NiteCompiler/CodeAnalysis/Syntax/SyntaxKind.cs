@@ -121,8 +121,16 @@ public enum SyntaxKind : uint
 	QuestionQuestionToken = 197,
 	/// <summary>Represents <c>??=</c> token.</summary>
 	QuestionQuestionEqualsToken = 198,
+	/// <summary>Represents <c>&lt;=</c> token.</summary>
+	LessThanEqualsToken = 199,
+	/// <summary>Represents <c>&gt;=</c> token.</summary>
+	GreaterThanEqualsToken = 200,
 	/// <summary>Represents <c>-&gt;</c> token.</summary>
-	RetusaToken = 199,
+	RetusaToken = 201,
+	/// <summary>Represents <c>&amp;&amp;</c> token.</summary>
+	AmpersandAmpersandToken = 202,
+	/// <summary>Represents <c>||</c> token.</summary>
+	PipePipeToken = 203,
 
 	/// <summary>Represents <c>::</c> token.</summary>
 	ColonColonToken = 250,
