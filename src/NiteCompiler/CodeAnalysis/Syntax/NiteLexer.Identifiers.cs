@@ -12,7 +12,7 @@ public partial class NiteLexer
         }
 
         UnicodeCategory category = char.GetUnicodeCategory(c);
-        
+
         return category is UnicodeCategory.UppercaseLetter
             or UnicodeCategory.LowercaseLetter
             or UnicodeCategory.TitlecaseLetter
@@ -61,6 +61,11 @@ public partial class NiteLexer
             {
                 _window.Advance();
             }
+        }
+
+        if (_window.Width == 1 && _window.Peek(-1) == '_')
+        {
+	        info.ContextualKind =  SyntaxKind.UnderscoreToken;
         }
     }
 }

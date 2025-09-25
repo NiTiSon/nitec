@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using CommunityToolkit.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Text;
 
@@ -27,4 +29,26 @@ public abstract class SourceText : IDisposable
 	public TextSpan Span =>  new(0, Length);
 
 	public virtual char this[int i] => GetText(new TextSpan(i, 1))[0];
+
+	public static SourceText From(string text)
+	{
+		return new StringText(text);
+	}
+
+	public SourceText FromFile(string fileName)
+	{
+		return FromFile(new FileInfo(fileName));
+	}
+
+	public SourceText FromFile(FileInfo file)
+	{
+		if (!file.Exists)
+		{
+			throw new FileNotFoundException();
+		}
+
+		string text =File.ReadAllText(file.FullName);
+
+		return new StringText(text, file.FullName);
+	}
 }

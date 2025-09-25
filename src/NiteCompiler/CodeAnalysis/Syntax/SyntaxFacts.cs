@@ -157,6 +157,8 @@ internal static class SyntaxFacts
 			SyntaxKind.AsteriskToken => SyntaxKind.MultiplyExpression,
 			SyntaxKind.SlashToken => SyntaxKind.DivideExpression,
 			SyntaxKind.PercentToken => SyntaxKind.ModuloExpression,
+			SyntaxKind.EqualsEqualsToken => SyntaxKind.EqualsExpression,
+			SyntaxKind.ExclamationEqualsToken => SyntaxKind.NotEqualsExpression,
 			_ => SyntaxKind.Invalid,
 		};
 	}
@@ -177,16 +179,25 @@ internal static class SyntaxFacts
 			SyntaxKind.SlashEqualsToken => SyntaxKind.DivideAssignmentExpression,
 			SyntaxKind.PercentEqualsToken => SyntaxKind.ModuloAssignmentExpression,
 			SyntaxKind.AmpersandEqualsToken => SyntaxKind.AndAssignmentExpression,
-			SyntaxKind.CaretEqualsToken => SyntaxKind.ExclusiveOrAssignmentExpression,
-			SyntaxKind.PipeEqualsToken =>  SyntaxKind.ExclusiveOrAssignmentExpression,
+			SyntaxKind.CaretEqualsToken => SyntaxKind.XorAssignmentExpression,
+			SyntaxKind.PipeEqualsToken =>  SyntaxKind.XorAssignmentExpression,
 			_ =>  SyntaxKind.Invalid,
 		};
 	}
 
 	public static bool IsRightAssociativeExpression(SyntaxKind kind)
 	{
-		return IsAssignmentExpressionOperatorToken(kind)
-		       || kind == SyntaxKind.CoalesceExpression;
+		return kind
+			is SyntaxKind.AssignmentExpression
+			or SyntaxKind.AddAssignmentExpression
+			or SyntaxKind.SubtractAssignmentExpression
+			or SyntaxKind.MultiplyAssignmentExpression
+			or SyntaxKind.DivideAssignmentExpression
+			or SyntaxKind.ModuloAssignmentExpression
+			or SyntaxKind.AndAssignmentExpression
+			or SyntaxKind.XorAssignmentExpression
+			or SyntaxKind.OrAssignmentExpression
+			or SyntaxKind.CoalesceExpression;
 	}
 
 	public static bool IsUnaryExpression(SyntaxKind kind)
@@ -215,9 +226,19 @@ internal static class SyntaxFacts
 			case SyntaxKind.AssignmentExpression:
 			case SyntaxKind.AddAssignmentExpression:
 				return Precedence.Assignment;
+			case SyntaxKind.MultiplyExpression:
+			case SyntaxKind.DivideExpression:
+				return Precedence.Multiplicative;
 			case SyntaxKind.AddExpression:
 			case SyntaxKind.SubtractExpression:
 				return Precedence.Additive;
+			case SyntaxKind.EqualsExpression:
+				return Precedence.Equality;
+			case SyntaxKind.GreaterThanExpression:
+			case SyntaxKind.GreaterThanOrEqualExpression:
+			case SyntaxKind.LessThanExpression:
+			case SyntaxKind.LessThanOrEqualExpression:
+				return Precedence.Relational;
 			case SyntaxKind.NumericLiteralExpression:
 			case SyntaxKind.FalseLiteralExpression:
 			case SyntaxKind.TrueLiteralExpression:

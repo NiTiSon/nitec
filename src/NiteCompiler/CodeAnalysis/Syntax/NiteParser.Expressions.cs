@@ -26,36 +26,11 @@ public sealed partial class NiteParser
 		}
 	}
 
-	private ExpressionSyntax ParsePrimaryOrUnaryExpression()
-	{
-		if (SyntaxFacts.IsUnaryExpression(Current.Kind))
-		{
-			Token operatorToken = Current;
-			SyntaxKind opKind = SyntaxFacts.GetUnaryExpression(Current.Kind);
-			ExpressionSyntax expression = ParseSubExpression(SyntaxFacts.GetPrecedence(opKind));
-
-			return new UnaryExpressionSyntax(operatorToken, expression, opKind);
-		}
-
-		return ParsePrimaryExpression();
-	}
-
-	private ParenthesizedExpressionSyntax ParseParenthesizedExpression()
-	{
-		Token openParen = MatchToken(SyntaxKind.OpenParenToken);
-
-		ExpressionSyntax expression = ParseExpression();
-
-		Token closeParen = MatchToken(SyntaxKind.CloseParenToken);
-
-		return new(openParen, expression, closeParen);
-	}
-
 	private ExpressionSyntax ParseExpressionContinued(ExpressionSyntax unaryOrPrimaryExpression, Precedence precedence)
 	{
 		ExpressionSyntax currentExpression = unaryOrPrimaryExpression;
 
-		while (TryExpandExpression(currentExpression, precedence) is { } expandedExpression)
+		while (TryExpandExpression(currentExpression, precedence) is ExpressionSyntax expandedExpression)
 			currentExpression = expandedExpression;
 
 		return currentExpression;
@@ -72,12 +47,13 @@ public sealed partial class NiteParser
 
 		Precedence newPrecedence = SyntaxFacts.GetPrecedence(operatorExpressionKind);
 
+		// Console.WriteLine($"opKind={operatorExpressionKind} newPrec={(int)newPrecedence} prec={(int)precedence} isRight={SyntaxFacts.IsRightAssociativeExpression(operatorExpressionKind)}");
+
 		if (newPrecedence < precedence)
 			return null;
 
-		// What tha fuck Microsoft? Why you cancel equals then check for it???
-		// if ((newPrecedence == precedence) && !SyntaxFacts.IsRightAssociativeExpression(operatorExpressionKind))
-		// 	return null;
+		if ((newPrecedence == precedence) && !SyntaxFacts.IsRightAssociativeExpression(operatorExpressionKind))
+			return null;
 
 		// TODO: Add support for >>, >>>, >>>=
 		Token operatorToken = PeekAndAdvance();
@@ -122,6 +98,32 @@ public sealed partial class NiteParser
 
 		throw new NotImplementedException();
 	}
+
+	private ExpressionSyntax ParsePrimaryOrUnaryExpression()
+	{
+		if (SyntaxFacts.IsUnaryExpression(Current.Kind))
+		{
+			Token operatorToken = Current;
+			SyntaxKind opKind = SyntaxFacts.GetUnaryExpression(Current.Kind);
+			ExpressionSyntax expression = ParseSubExpression(SyntaxFacts.GetPrecedence(opKind));
+
+			return new UnaryExpressionSyntax(operatorToken, expression, opKind);
+		}
+
+		return ParsePrimaryExpression();
+	}
+
+	private ParenthesizedExpressionSyntax ParseParenthesizedExpression()
+	{
+		Token openParen = MatchToken(SyntaxKind.OpenParenToken);
+
+		ExpressionSyntax expression = ParseExpression();
+
+		Token closeParen = MatchToken(SyntaxKind.CloseParenToken);
+
+		return new(openParen, expression, closeParen);
+	}
+
 
 	private TypeSyntax ParseType()
 	{

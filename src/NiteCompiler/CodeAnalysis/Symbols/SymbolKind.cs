@@ -18,7 +18,12 @@ public enum SymbolKind : ushort
 	Module = 2,
 
 	/// <summary>
-	/// Symbol is function.
+	/// Symbol is a function.
 	/// </summary>
 	Function = 3,
+
+	/// <summary>
+	/// Symbol is a type.
+	/// </summary>
+	Type = 4,
 }

@@ -97,7 +97,7 @@ public enum SyntaxKind : uint
 	SlashEqualsToken = 185,
 	/// <summary>Represents <c>%=</c> token.</summary>
 	PercentEqualsToken = 186,
-	/// <summary>Represents <c>&=</c> token.</summary>
+	/// <summary>Represents <c>&amp;=</c> token.</summary>
 	AmpersandEqualsToken = 187,
 	/// <summary>Represents <c>|=</c> token.</summary>
 	PipeEqualsToken = 188,
@@ -117,8 +117,12 @@ public enum SyntaxKind : uint
 	UnsignedRightShiftEqualsToken = 195,
 	/// <summary>Represents <c>==</c> token.</summary>
 	EqualsEqualsToken = 196,
+	/// <summary>Represents <c>??</c> token.</summary>
+	QuestionQuestionToken = 197,
+	/// <summary>Represents <c>??=</c> token.</summary>
+	QuestionQuestionEqualsToken = 198,
 	/// <summary>Represents <c>-&gt;</c> token.</summary>
-	RetusaToken = 197,
+	RetusaToken = 199,
 
 	/// <summary>Represents <c>::</c> token.</summary>
 	ColonColonToken = 250,
@@ -191,7 +195,7 @@ public enum SyntaxKind : uint
 	LogicalAndExpression = 3011,
 	BitwiseOrExpression = 3012,
 	BitwiseAndExpression = 3013,
-	ExclusiveOrExpression = 3014,
+	XorExpression = 3014,
 	EqualsExpression = 3015,
 	NotEqualsExpression = 3016,
 	LessThanExpression = 3017,
@@ -214,7 +218,7 @@ public enum SyntaxKind : uint
 	DivideAssignmentExpression = 3034,
 	ModuloAssignmentExpression = 3035,
 	AndAssignmentExpression = 3036,
-	ExclusiveOrAssignmentExpression = 3037,
+	XorAssignmentExpression = 3037,
 	OrAssignmentExpression = 3038,
 	LeftShiftAssignmentExpression = 3039,
 	RightShiftAssignmentExpression = 3040,
