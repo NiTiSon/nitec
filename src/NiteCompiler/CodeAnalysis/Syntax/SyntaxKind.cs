@@ -2,8 +2,8 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 
 public enum SyntaxKind : uint
 {
-	Invalid = 0,
-	EndOfFile = 0xFFFFFFFFu,
+	None = 0,
+	EofToken = 0xFFFFFFFFu,
 	CompilationUnit = 1,
 
 	// === Tokens ===

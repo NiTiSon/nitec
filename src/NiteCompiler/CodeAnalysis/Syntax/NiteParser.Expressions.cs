@@ -1,5 +1,4 @@
 using System;
-using NiteCompiler.CodeAnalysis.Syntax.Expressions;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
@@ -42,7 +41,7 @@ public sealed partial class NiteParser
 
 		(SyntaxKind operatorTokenKind, SyntaxKind operatorExpressionKind) = GetExpressionOperatorTokenKindAndExpressionKind();
 
-		if (operatorTokenKind == SyntaxKind.Invalid)
+		if (operatorTokenKind == SyntaxKind.None)
 			return null;
 
 		Precedence newPrecedence = SyntaxFacts.GetPrecedence(operatorExpressionKind);
@@ -86,7 +85,7 @@ public sealed partial class NiteParser
 	private ExpressionSyntax ParsePrimaryExpression()
 	{
 		SyntaxKind literalType;
-		if ((literalType = SyntaxFacts.GetLiteralExpression(Current.Kind)) != SyntaxKind.Invalid)
+		if ((literalType = SyntaxFacts.GetLiteralExpression(Current.Kind)) != SyntaxKind.None)
 		{
 			return new LiteralExpressionSyntax(PeekAndAdvance(), literalType);
 		}

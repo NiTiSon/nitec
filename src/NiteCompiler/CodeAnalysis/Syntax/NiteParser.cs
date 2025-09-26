@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using CommunityToolkit.Diagnostics;
-using NiteCompiler.CodeAnalysis.Syntax.Expressions;
 using NiteCompiler.CodeAnalysis.Text;
-using NiTiS.Compiler.Diagnostics;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
@@ -27,7 +26,7 @@ public sealed partial class NiteParser
 		{
 			token = lexer.Lex();
 			_tokens.Add(token);
-		} while (token.Kind != SyntaxKind.EndOfFile);
+		} while (token.Kind != SyntaxKind.EofToken);
 	}
 
 	public Token Current => Peek(0);
@@ -66,13 +65,13 @@ public sealed partial class NiteParser
 		if (IsPresentedAny(kinds))
 			return PeekAndAdvance();
 
-		return new Token(SyntaxKind.Invalid, Current.Span);
+		return new Token(SyntaxKind.None, Current.Span);
 	}
 
 	public CompilationUnitSyntax Parse()
 	{
 		ImmutableArray<SyntaxNode>.Builder membersBuilder = ImmutableArray.CreateBuilder<SyntaxNode>();
-		while (Current.Kind != SyntaxKind.EndOfFile)
+		while (Current.Kind != SyntaxKind.EofToken)
 		{
 			switch (Current.Kind)
 			{
@@ -91,7 +90,7 @@ public sealed partial class NiteParser
 					break;
 			}
 		}
-		Token endOfFileToken = MatchToken(SyntaxKind.EndOfFile);
+		Token endOfFileToken = MatchToken(SyntaxKind.EofToken);
 
 		return new CompilationUnitSyntax(_source, membersBuilder.ToImmutable(), endOfFileToken);
 	}
@@ -138,7 +137,7 @@ public sealed partial class NiteParser
 		if (SyntaxFacts.IsAssignmentExpressionOperatorToken(Current.Kind))
 			return (Current.Kind, SyntaxFacts.GetAssignmentExpression(Current.Kind));
 
-		return (SyntaxKind.Invalid, SyntaxKind.Invalid);
+		return (SyntaxKind.None, SyntaxKind.None);
 	}
 
 	private ModuleDeclarationSyntax ParseModuleDeclaration()

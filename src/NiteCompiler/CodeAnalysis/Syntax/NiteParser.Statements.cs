@@ -12,7 +12,7 @@ public sealed partial class NiteParser
 		ImmutableArray<StatementSyntax>.Builder statements = ImmutableArray.CreateBuilder<StatementSyntax>();
 		while (Current.Kind != SyntaxKind.CloseBraceToken)
 		{
-			if (Current.Kind == SyntaxKind.EndOfFile)
+			if (Current.Kind == SyntaxKind.EofToken)
 			{
 				// report
 				return new BlockStatementSyntax(openBrace, [], Current);

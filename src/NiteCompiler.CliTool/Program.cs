@@ -9,8 +9,8 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.CodeAnalysis.Text;
+using NiteCompiler.Diagnostics;
 using NiTiS.Compiler.CliTool;
-using NiTiS.Compiler.Diagnostics;
 
 namespace NiteCompiler.CliTool;
 

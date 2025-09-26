@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.CodeAnalysis.Text;
-using NiTiS.Compiler.Diagnostics;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.Tests;
 
@@ -82,7 +82,7 @@ public class NiteLexerTests
 	public void Lex_InvalidCharacter_ReportsInvalidToken()
 	{
 		Token token = LexSingle("@");
-		Assert.That(token.Kind, Is.EqualTo(SyntaxKind.Invalid));
+		Assert.That(token.Kind, Is.EqualTo(SyntaxKind.None));
 	}
 
 	[Test]
@@ -93,6 +93,6 @@ public class NiteLexerTests
 		NiteLexer lexer = new(source, diagnostics);
 		Token token = lexer.Lex();
 
-		Assert.That(token.Kind, Is.EqualTo(SyntaxKind.EndOfFile));
+		Assert.That(token.Kind, Is.EqualTo(SyntaxKind.EofToken));
 	}
 }

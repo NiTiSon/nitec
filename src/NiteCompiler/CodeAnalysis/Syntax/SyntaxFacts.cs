@@ -129,7 +129,7 @@ internal static class SyntaxFacts
 
 	public static bool IsLiteralExpression(SyntaxKind token)
 	{
-		return GetLiteralExpression(token) != SyntaxKind.Invalid;
+		return GetLiteralExpression(token) != SyntaxKind.None;
 	}
 
 	public static SyntaxKind GetLiteralExpression(SyntaxKind token)
@@ -139,13 +139,13 @@ internal static class SyntaxFacts
 			SyntaxKind.NumberToken => SyntaxKind.NumericLiteralExpression,
 			SyntaxKind.TrueKeyword => SyntaxKind.TrueLiteralExpression,
 			SyntaxKind.FalseKeyword => SyntaxKind.FalseLiteralExpression,
-			_ => SyntaxKind.Invalid,
+			_ => SyntaxKind.None,
 		};
 	}
 
 	public static bool IsBinaryExpressionOperatorToken(SyntaxKind kind)
 	{
-		return GetBinaryExpression(kind) != SyntaxKind.Invalid;
+		return GetBinaryExpression(kind) != SyntaxKind.None;
 	}
 
 	public static SyntaxKind GetBinaryExpression(SyntaxKind kind)
@@ -159,13 +159,13 @@ internal static class SyntaxFacts
 			SyntaxKind.PercentToken => SyntaxKind.ModuloExpression,
 			SyntaxKind.EqualsEqualsToken => SyntaxKind.EqualsExpression,
 			SyntaxKind.ExclamationEqualsToken => SyntaxKind.NotEqualsExpression,
-			_ => SyntaxKind.Invalid,
+			_ => SyntaxKind.None,
 		};
 	}
 
 	public static bool IsAssignmentExpressionOperatorToken(SyntaxKind kind)
 	{
-		return GetAssignmentExpression(kind) != SyntaxKind.Invalid;
+		return GetAssignmentExpression(kind) != SyntaxKind.None;
 	}
 
 	public static SyntaxKind GetAssignmentExpression(SyntaxKind kind)
@@ -181,7 +181,7 @@ internal static class SyntaxFacts
 			SyntaxKind.AmpersandEqualsToken => SyntaxKind.AndAssignmentExpression,
 			SyntaxKind.CaretEqualsToken => SyntaxKind.XorAssignmentExpression,
 			SyntaxKind.PipeEqualsToken =>  SyntaxKind.XorAssignmentExpression,
-			_ =>  SyntaxKind.Invalid,
+			_ =>  SyntaxKind.None,
 		};
 	}
 
@@ -202,7 +202,7 @@ internal static class SyntaxFacts
 
 	public static bool IsUnaryExpression(SyntaxKind kind)
 	{
-		return GetUnaryExpression(kind) != SyntaxKind.Invalid;
+		return GetUnaryExpression(kind) != SyntaxKind.None;
 	}
 
 	public static SyntaxKind GetUnaryExpression(SyntaxKind kind)
@@ -215,7 +215,7 @@ internal static class SyntaxFacts
 			SyntaxKind.TildeToken => SyntaxKind.UnaryBitwiseNotExpression,
 			SyntaxKind.AmpersandToken => SyntaxKind.UnaryAddressOfExpression,
 			SyntaxKind.AsteriskToken => SyntaxKind.UnaryPointerIndirectionExpression,
-			_ => SyntaxKind.Invalid
+			_ => SyntaxKind.None
 		};
 	}
 

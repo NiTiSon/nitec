@@ -1,6 +1,6 @@
 using System;
 using NiteCompiler.CodeAnalysis.Text;
-using NiTiS.Compiler.Diagnostics;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 

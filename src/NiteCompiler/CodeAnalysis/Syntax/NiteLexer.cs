@@ -1,5 +1,5 @@
 using NiteCompiler.CodeAnalysis.Text;
-using NiTiS.Compiler.Diagnostics;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
@@ -52,7 +52,7 @@ public sealed partial class NiteLexer
 	{
 		if (_window.IsAtTheEnd)
 		{
-			info.Kind = SyntaxKind.EndOfFile;
+			info.Kind = SyntaxKind.EofToken;
 			return;
 		}
 
@@ -326,7 +326,7 @@ public sealed partial class NiteLexer
 				if (_window.Width == 0)
 				{
 					_window.Advance();
-					info.Kind = SyntaxKind.Invalid;
+					info.Kind = SyntaxKind.None;
 				}
 
 				break;
