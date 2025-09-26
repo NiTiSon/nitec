@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace NiTiS.Compiler.Diagnostics;
+namespace NiteCompiler.Diagnostics;
 
 public sealed class DiagnosticDescriptor
 {

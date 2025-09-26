@@ -1,6 +1,6 @@
 using System;
 
-namespace NiTiS.Compiler.Diagnostics;
+namespace NiteCompiler.Diagnostics;
 
 public sealed class Diagnostic
 {

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace NiTiS.Compiler.Diagnostics;
+namespace NiteCompiler.Diagnostics;
 
 [DebuggerStepThrough]
 public class DiagnosticBag : IEnumerable<Diagnostic>

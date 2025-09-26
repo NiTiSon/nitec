@@ -1,4 +1,4 @@
-namespace NiTiS.Compiler.Diagnostics;
+namespace NiteCompiler.Diagnostics;
 
 public enum DiagnosticSeverity
 {
