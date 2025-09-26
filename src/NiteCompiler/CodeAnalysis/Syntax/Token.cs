@@ -7,7 +7,7 @@ public class Token : SyntaxNode
 {
     public override SyntaxKind Kind { get; }
 
-    public SyntaxKind ContextualKind => this is IdentifierToken identifier ? identifier.ContextualKind : SyntaxKind.Invalid;
+    public SyntaxKind ContextualKind => this is IdentifierToken identifier ? identifier.ContextualKind : SyntaxKind.None;
     public override TextSpan Span { get; }
 
     public Token(SyntaxKind kind, TextSpan span)
