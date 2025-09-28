@@ -68,6 +68,11 @@ public readonly struct TextSpan
 			: (TextSpan?)null;
 	}
 
+	public SourceSpan Contextualize(SourceText source)
+	{
+		return new(source, this);
+	}
+
 	public static TextSpan FromBounds(int start, int end)
 	{
         ArgumentOutOfRangeException.ThrowIfNegative(start);

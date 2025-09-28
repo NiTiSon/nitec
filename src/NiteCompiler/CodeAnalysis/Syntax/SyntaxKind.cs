@@ -15,6 +15,10 @@ public enum SyntaxKind : uint
 	/// Number token.
 	/// </summary>
 	NumberToken = 102,
+	/// <summary>
+	/// String token.
+	/// </summary>
+	StringToken = 99,
 
 	/// <summary>Represents <c>+</c> token.</summary>
 	PlusToken = 103,

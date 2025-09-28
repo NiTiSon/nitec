@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace NiteCompiler.Diagnostics;
 
-public sealed class DiagnosticDescriptor
+public sealed partial class DiagnosticDescriptor
 {
 	/// <summary>
 	/// Unique identifier for each error type.

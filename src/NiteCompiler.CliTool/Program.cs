@@ -16,7 +16,6 @@ namespace NiteCompiler.CliTool;
 
 public static class Program
 {
-	private static readonly DiagnosticBag _diagnosticBag = new();
 	public static void Main(string[] args)
 	{
 		#if DEBUG
@@ -51,10 +50,11 @@ public static class Program
 			Console.ResetColor();
 			Environment.Exit(1);
 		}
+		DiagnosticBag diagnostics = [];
 
-		if (!RemoveDuplicates(ref files))
+		if (RemoveDuplicates(ref files))
 		{
-			// _diagnosticBag.Add();
+			diagnostics.ReportDuplicateSourceFiles();
 		}
 
 		SyntaxTree[] trees = new SyntaxTree[files.Length];
@@ -67,11 +67,21 @@ public static class Program
 		Compilation compilation = Compilation.Create(trees);
 		foreach (SyntaxTree tree in compilation.SyntaxTrees)
 		{
+			diagnostics.AddRange(tree.Diagnostics);
 			Console.WriteLine(tree.Text.FileName);
 			for (int index = 0; index < tree.Root.TopLevelNodes.Length; index++)
 			{
 				SyntaxNode node = tree.Root.TopLevelNodes[index];
 				PrintNode(node, "", index + 1 == tree.Root.TopLevelNodes.Length);
+			}
+		}
+
+		if (!diagnostics.IsEmpty)
+		{
+			Console.WriteLine("=== DIAGNOSTICS ===");
+			foreach (Diagnostic diagnostic in diagnostics)
+			{
+				Console.WriteLine(diagnostic);
 			}
 		}
 	}

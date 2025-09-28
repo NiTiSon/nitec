@@ -7,11 +7,13 @@ public sealed partial class NiteLexer
 {
 	private readonly DiagnosticBag _diagnostics;
 	private readonly SlidingWindow _window;
+	private readonly SourceText _source;
 
 	public NiteLexer(SourceText source, DiagnosticBag diagnostics)
 	{
 		_diagnostics = diagnostics;
 		_window = new(source);
+		_source = source;
 	}
 
 	internal ref struct TokenInfo
@@ -270,6 +272,9 @@ public sealed partial class NiteLexer
 					info.Kind = SyntaxKind.GreaterThanToken;
 				}
 				break;
+			case '\"':
+				ReadString(ref info);
+				break;
 			case ';':
 				_window.Advance();
 				info.Kind = SyntaxKind.SemicolonToken;
@@ -316,6 +321,7 @@ public sealed partial class NiteLexer
 
 				break;
 			case >= '0' and <= '9':
+				// TODO: Replace with advanced number parsing
 				info.Kind = SyntaxKind.NumberToken;
 				_window.Advance();
 				while (char.IsAsciiDigit(_window.Current)) _window.Advance();

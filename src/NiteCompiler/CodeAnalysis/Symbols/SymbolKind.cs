@@ -10,7 +10,7 @@ public enum SymbolKind : ushort
 	/// <summary>
 	/// Symbol is a library.
 	/// </summary>
-	Package = 1,
+	Library = 1,
 
 	/// <summary>
 	/// Symbol is a module.

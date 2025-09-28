@@ -110,8 +110,8 @@ public partial class NiteLexer
 			switch (_window.Current)
 			{
 				case SlidingWindow.InvalidCharacter:
-					// TextSpan span = new(_window.Position, 2);
-					//TODO: Diagnostics.ReportNotTerminatedMultiLineComment(span);
+					TextSpan span = new(_window.Position, 2);
+					_diagnostics.ReportNotTerminatedMultiLineComment(span.Contextualize(_source));
 					done = true;
 					break;
 				case '*':
