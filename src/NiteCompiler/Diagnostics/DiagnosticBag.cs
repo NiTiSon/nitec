@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -35,9 +36,17 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		_diagnostics.Add(new Diagnostic(diagnosticDescriptor, source, args));
 	}
 
-	public void AddRange(ImmutableArray<Diagnostic> treeDiagnostics)
+	public void AddRange(ImmutableArray<Diagnostic> diagnostics)
 	{
-		foreach (var diagnostic in treeDiagnostics)
+		foreach (var diagnostic in diagnostics)
+		{
+			Add(diagnostic);
+		}
+	}
+
+	public void AddRange(ReadOnlySpan<Diagnostic> diagnostics)
+	{
+		foreach (var diagnostic in diagnostics)
 		{
 			Add(diagnostic);
 		}
@@ -67,5 +76,11 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 	public void ReportNotTerminatedStringLiteral(SourceSpan source)
 	{
 		Add(DiagnosticDescriptor.NotTerminatedStringLiteral, source);
+	}
+
+	public void DrainInto(DiagnosticBag diagnostics)
+	{
+		diagnostics.AddRange(_diagnostics.ToArray());
+		_diagnostics.Clear();
 	}
 }

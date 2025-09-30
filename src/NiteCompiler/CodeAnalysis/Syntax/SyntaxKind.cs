@@ -262,8 +262,6 @@ public enum SyntaxKind : uint
 	// === DIRECTIVE ===
 	UseDirective = 5001,
 	// UseAsDirective // use std::Type as OtherName;
-	WhenDirective = 5002,
-	WhereDirective = 5003,
 
 	IdentifierList = 6001,
 	ParameterList = 6002,

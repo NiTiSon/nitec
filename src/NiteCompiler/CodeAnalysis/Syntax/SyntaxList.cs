@@ -1,11 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public sealed class SyntaxList<TNode> : SyntaxNode
+public sealed class SyntaxList<TNode> : SyntaxNode, IEnumerable<TNode>
 	where TNode : SyntaxNode
 {
 	private readonly ImmutableArray<TNode> _nodes;
@@ -21,6 +22,16 @@ public sealed class SyntaxList<TNode> : SyntaxNode
 	public override IEnumerable<TNode> GetChildren()
 	{
 		return _nodes;
+	}
+
+	public IEnumerator<TNode> GetEnumerator()
+	{
+		return GetChildren().GetEnumerator();
+	}
+
+	IEnumerator IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
 	}
 
 	internal readonly struct Builder

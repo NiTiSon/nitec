@@ -5,11 +5,12 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 
 public abstract class SyntaxNode
 {
+	public SyntaxTree SyntaxTree { get; internal set; } = null!;
 	public abstract TextSpan Span { get; }
 	public abstract SyntaxKind Kind { get; }
 	public abstract IEnumerable<SyntaxNode> GetChildren();
 
-	public IEnumerable<SyntaxNode> GetTokens(bool includeThisToken = false)
+	public IEnumerable<Token> GetTokens(bool includeThisToken = false)
 	{
 		if (includeThisToken && this is Token token)
 			yield return token;
@@ -22,7 +23,28 @@ public abstract class SyntaxNode
 			}
 			else
 			{
-				foreach (SyntaxNode child in node.GetTokens(true))
+				foreach (Token child in node.GetTokens(true))
+				{
+					yield return child;
+				}
+			}
+		}
+	}
+
+	public IEnumerable<SyntaxNode> GetNodes(bool includeThisToken = false)
+	{
+		if (includeThisToken)
+			yield return this;
+
+		foreach (SyntaxNode node in GetChildren())
+		{
+			if (node is Token)
+			{
+				yield return node;
+			}
+			else
+			{
+				foreach (SyntaxNode child in node.GetNodes(true))
 				{
 					yield return child;
 				}

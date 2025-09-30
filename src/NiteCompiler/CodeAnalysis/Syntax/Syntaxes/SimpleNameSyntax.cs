@@ -14,6 +14,7 @@ public sealed class SimpleNameSyntax : NameSyntax
 
 	public override TextSpan Span => Identifier.Span;
 	public override SyntaxKind Kind => SyntaxKind.SimpleName;
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return Identifier;

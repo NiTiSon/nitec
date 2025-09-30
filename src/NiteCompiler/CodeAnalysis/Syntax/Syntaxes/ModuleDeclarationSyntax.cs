@@ -6,20 +6,20 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 public sealed class ModuleDeclarationSyntax : SyntaxNode
 {
 	public Token ModuleKeyword { get; }
-	public ModuleNameSyntax ModuleName { get; }
+	public ModuleNameSyntax Name { get; }
 
 	public ModuleDeclarationSyntax(Token moduleKeyword,  ModuleNameSyntax name)
 	{
 		ModuleKeyword = moduleKeyword;
-		ModuleName = name;
+		Name = name;
 	}
 
-	public override TextSpan Span => TextSpan.FromBounds(ModuleKeyword.Span, ModuleName.Span);
+	public override TextSpan Span => TextSpan.FromBounds(ModuleKeyword.Span, Name.Span);
 	public override SyntaxKind Kind => SyntaxKind.ModuleDeclaration;
 
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return ModuleKeyword;
-		yield return ModuleName;
+		yield return Name;
 	}
 }

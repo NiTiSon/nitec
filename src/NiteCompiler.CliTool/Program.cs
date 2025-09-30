@@ -64,17 +64,8 @@ public static class Program
 			trees[i] = SyntaxTree.Load(file);
 		});
 
-		Compilation compilation = Compilation.Create(trees);
-		foreach (SyntaxTree tree in compilation.SyntaxTrees)
-		{
-			diagnostics.AddRange(tree.Diagnostics);
-			Console.WriteLine(tree.Text.FileName);
-			for (int index = 0; index < tree.Root.TopLevelNodes.Length; index++)
-			{
-				SyntaxNode node = tree.Root.TopLevelNodes[index];
-				PrintNode(node, "", index + 1 == tree.Root.TopLevelNodes.Length);
-			}
-		}
+		Compilation compilation = new("libname", trees);
+		compilation.Diagnostics.DrainInto(diagnostics);
 
 		if (!diagnostics.IsEmpty)
 		{
