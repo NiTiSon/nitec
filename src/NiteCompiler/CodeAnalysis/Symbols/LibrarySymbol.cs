@@ -23,7 +23,7 @@ public sealed class LibrarySymbol : Symbol
 	{
 		if (string.IsNullOrEmpty(name))
 		{
-			name = "<global>";
+			name = WellKnownSemantic.GlobalModuleName;
 		}
 
 		var module = Modules.FirstOrDefault(t => t.FullName == name);
@@ -33,7 +33,10 @@ public sealed class LibrarySymbol : Symbol
 
 	private ModuleSymbol AddModule(string name)
 	{
-		ModuleSymbol module = new(name);
+		ModuleSymbol module = new(name)
+		{
+			ContainingLibrary = this
+		};
 		_modules.Add(module);
 		return module;
 	}

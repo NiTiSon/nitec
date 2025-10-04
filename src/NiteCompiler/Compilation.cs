@@ -23,10 +23,19 @@ public sealed class Compilation
 		_globalSymbolTable = new(libraryName);
 		Diagnostics = [];
 
-		LookupForSymbols();
+		DeclarationPass();
+
+		foreach (ModuleSymbol module in _globalSymbolTable.Modules)
+		{
+			Console.WriteLine(module.FullName);
+			foreach (Symbol symbol in module)
+			{
+				Console.WriteLine($"\t{symbol}");
+			}
+		}
 	}
 
-	private void LookupForSymbols()
+	private void DeclarationPass()
 	{
 		foreach (SyntaxTree tree in SyntaxTrees)
 		{
@@ -41,10 +50,10 @@ public sealed class Compilation
 				{
 					FunctionSymbol symbol = new(
 						function.Name.GetName(),
-						parameters: null,
-						returnType: null,
-						containingSymbol:
-						currentModule, function);
+						containingSymbol: currentModule,
+						function);
+
+					currentModule.AddMember(symbol);
 				}
 			}
 		}

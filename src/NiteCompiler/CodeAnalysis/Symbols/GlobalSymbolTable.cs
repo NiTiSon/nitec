@@ -11,6 +11,20 @@ public sealed class GlobalSymbolTable
 
 	public LibrarySymbol Library { get; }
 
+	public IEnumerable<LibrarySymbol> Libraries => _libraries.Values;
+
+	/// <summary>
+	/// Return modules across all libraries in compilation.
+	/// </summary>
+	/// <remarks>
+	/// The reference equality of modules is not guarantied, but other symbols must be fine.
+	/// </remarks>
+	public IEnumerable<ModuleSymbol> Modules =>
+		_libraries
+			.SelectMany(t => t.Value.Modules)
+			.GroupBy(t => t.FullName)
+			.Select(ModuleSymbol.Combine);
+
 	public GlobalSymbolTable(string ownLibraryName)
 	{
 		_libraries = [];

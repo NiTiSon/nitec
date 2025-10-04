@@ -41,7 +41,7 @@ public static class Program
 		}
 	}
 
-	private static void Compile(FileInfo[]? files, string packageName)
+	private static void Compile(FileInfo[]? files, string libraryName)
 	{
 		if (files is null || files.Length == 0)
 		{
@@ -64,7 +64,7 @@ public static class Program
 			trees[i] = SyntaxTree.Load(file);
 		});
 
-		Compilation compilation = new("libname", trees);
+		Compilation compilation = new(libraryName, trees);
 		compilation.Diagnostics.DrainInto(diagnostics);
 
 		if (!diagnostics.IsEmpty)
