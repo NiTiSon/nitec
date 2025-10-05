@@ -258,6 +258,8 @@ public enum SyntaxKind : uint
 	TypeDeclaration = 4002,
 	VariableDeclaration = 4003,
 	ModuleDeclaration = 4004,
+	Parameter = 4005,
+	GenericParameter = 4006,
 
 	// === DIRECTIVE ===
 	UseDirective = 5001,
@@ -265,5 +267,6 @@ public enum SyntaxKind : uint
 
 	IdentifierList = 6001,
 	ParameterList = 6002,
-	Retusa = 6003,
+	RetusaClause = 6003,
+	TypeClause = 6004,
 }

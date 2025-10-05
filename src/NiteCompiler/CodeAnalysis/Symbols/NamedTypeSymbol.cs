@@ -1,5 +1,6 @@
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
+// TODO: Implement
 public sealed class NamedTypeSymbol : TypeSymbol
 {
 	public string Name { get; }

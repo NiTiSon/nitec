@@ -16,6 +16,10 @@ public sealed class ModuleSymbol : Symbol, IEnumerable<Symbol>
 
 	public IEnumerable<Symbol> Members => _members;
 
+	public IEnumerable<TypeSymbol> Types => Members.OfType<TypeSymbol>();
+	public IEnumerable<FunctionSymbol> Functions => Members.OfType<FunctionSymbol>();
+	// public IEnumerable<FieldSymbol> Fields => Members.OfType<FieldSymbol>();
+
 	public bool IsGlobalModule => FullName == WellKnownSemantic.GlobalModuleName;
 
 	public ModuleSymbol(string fullName)

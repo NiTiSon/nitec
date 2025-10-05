@@ -26,4 +26,14 @@ public enum SymbolKind : ushort
 	/// Symbol is a type.
 	/// </summary>
 	Type = 4,
+
+	/// <summary>
+	/// Symbol is a function parameter.
+	/// </summary>
+	Parameter = 5,
+
+	/// <summary>
+	/// Symbol is a generic parameter.
+	/// </summary>
+	GenericParameter = 6,
 }

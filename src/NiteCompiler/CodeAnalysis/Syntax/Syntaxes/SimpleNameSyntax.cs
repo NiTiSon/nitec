@@ -3,6 +3,7 @@ using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
+// TODO: Separate `identifier` and identifier
 public sealed class SimpleNameSyntax : NameSyntax
 {
 	public IdentifierToken Identifier { get; }

@@ -2,16 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NiteCompiler.CodeAnalysis.Syntax;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
-public sealed class GlobalSymbolTable
+internal sealed class GlobalSymbolTable
 {
 	private readonly Dictionary<string, LibrarySymbol> _libraries;
 
 	public LibrarySymbol Library { get; }
 
 	public IEnumerable<LibrarySymbol> Libraries => _libraries.Values;
+
+	public DiagnosticBag Diagnostics { get; } = [];
 
 	/// <summary>
 	/// Return modules across all libraries in compilation.

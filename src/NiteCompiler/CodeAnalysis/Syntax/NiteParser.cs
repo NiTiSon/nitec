@@ -110,7 +110,7 @@ public sealed partial class NiteParser
 			Token openParen = MatchToken(SyntaxKind.OpenParenToken);
 			Token closeParen = MatchToken(SyntaxKind.CloseParenToken);
 
-			RetusaSyntax? retusa = null;
+			RetusaClauseSyntax? retusa = null;
 			if (Current.Kind == SyntaxKind.RetusaToken)
 			{
 				Token retusaArrow = MatchToken(SyntaxKind.RetusaToken);
