@@ -1,21 +1,12 @@
 using NiteCompiler.CodeAnalysis.Symbols;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal sealed class Binder
 {
-	private readonly BoundScope _scope;
-	private readonly FunctionSymbol _function;
-
-	private Binder(BoundScope? parent, FunctionSymbol function)
+	public DiagnosticBag Diagnostics { get; } = [];
+	public Binder(Compilation compilation)
 	{
-		_scope = new BoundScope(parent);
-		_function = function;
-
-		// if (function != null)
-		// {
-		// 	foreach (var p in function.Parameters)
-		// 		_scope.TryDeclareVariable(p);
-		// }
 	}
 }
