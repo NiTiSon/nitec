@@ -34,6 +34,8 @@ public sealed class FieldDeclarationSyntax : MemberSyntax
 		{
 			yield return modifier;
 		}
+
+		yield return Name;
 		if (TypeClause != null) yield return TypeClause;
 		if (Initializer != null) yield return Initializer;
 	}

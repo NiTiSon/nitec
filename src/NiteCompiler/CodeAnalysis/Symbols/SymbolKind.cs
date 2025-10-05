@@ -36,4 +36,9 @@ public enum SymbolKind : ushort
 	/// Symbol is a generic parameter.
 	/// </summary>
 	GenericParameter = 6,
+
+	/// <summary>
+	/// Symbol is a field.
+	/// </summary>
+	Field = 7,
 }

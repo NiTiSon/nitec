@@ -9,6 +9,7 @@ public sealed class ParameterSymbol : Symbol
 	public override SymbolKind Kind => SymbolKind.Parameter;
 	public int Index { get; }
 	public FunctionParameterSyntax Syntax { get; }
+	public TypeSymbol Type { get; internal set; }
 
 	public ParameterSymbol(FunctionSymbol containingFunction, string name, int index, FunctionParameterSyntax syntax)
 	{

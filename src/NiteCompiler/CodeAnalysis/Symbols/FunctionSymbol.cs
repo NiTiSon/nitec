@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using NiteCompiler.CodeAnalysis.Syntax;
 
 namespace NiteCompiler.CodeAnalysis.Symbols;
@@ -37,6 +38,8 @@ public sealed class FunctionSymbol : Symbol
 			return symbol as TypeSymbol;
 		}
 	}
+
+	public ImmutableArray<ParameterSymbol> Parameters { get; internal set; }
 
 	public override SymbolKind Kind => SymbolKind.Function;
 }

@@ -14,7 +14,7 @@ public sealed class TypeClauseSyntax : SyntaxNode
 	public Token Colon { get; }
 	public TypeSyntax Type { get; }
 	public override TextSpan Span => TextSpan.FromBounds(Colon.Span, Type.Span);
-	public override SyntaxKind Kind => SyntaxKind.RetusaClause;
+	public override SyntaxKind Kind => SyntaxKind.TypeClause;
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return Colon;

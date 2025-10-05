@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.CodeAnalysis.Text;
@@ -21,6 +22,8 @@ public static class Program
 		#if DEBUG
 		Console.WriteLine("[" + string.Join(", ", args) + "]");
 		#endif
+
+		Console.OutputEncoding = Encoding.UTF8;
 
 		Argument<FileInfo[]> inputArgument = new("files")
 		{
@@ -62,10 +65,16 @@ public static class Program
 		{
 			FileInfo file = files[i];
 			trees[i] = SyntaxTree.Load(file);
+			diagnostics.AddRange(trees[i].Diagnostics);
 		});
 
 		Compilation compilation = new(libraryName, trees);
 		compilation.Diagnostics.DrainInto(diagnostics);
+
+		foreach (SyntaxTree tree in compilation.SyntaxTrees)
+		{
+			PrintTree(tree);
+		}
 
 		if (!diagnostics.IsEmpty)
 		{
@@ -75,6 +84,18 @@ public static class Program
 				Console.WriteLine(diagnostic);
 			}
 		}
+	}
+
+	private static void PrintTree(SyntaxTree tree, string indent = "", bool isLast = true)
+	{
+		if (tree.Root.TopLevelNodes.Length == 0) return;
+
+		Console.WriteLine(tree.Text.FileName ?? "<unknown>");
+
+		SyntaxNode lastChild = tree.Root.TopLevelNodes[^1];
+
+		foreach (SyntaxNode child in tree.Root.TopLevelNodes)
+			PrintNode(child, indent, child == lastChild);
 	}
 
 	private static void PrintNode(SyntaxNode node, string indent = "", bool isLast = true)

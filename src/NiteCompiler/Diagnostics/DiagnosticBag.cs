@@ -90,8 +90,18 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.ExpectedToken, source, kind);
 	}
 
-	public void ReportUnresolvedSymbol(SourceSpan contextualize)
+	public void ReportUnexpectedToken(SourceSpan source, SyntaxKind currentKind)
 	{
-		Add(DiagnosticDescriptor.CannotResolveSymbol, contextualize);
+		Add(DiagnosticDescriptor.UnexpectedToken, source, currentKind);
+	}
+
+	public void ReportUnresolvedSymbol(SourceSpan source)
+	{
+		Add(DiagnosticDescriptor.CannotResolveSymbol, source);
+	}
+
+	public void ReportFieldMustHaveEitherTypeClauseOrDefaultValue(SourceSpan source)
+	{
+		Add(DiagnosticDescriptor.FieldMustHaveEitherTypeClauseOrDefaultValue, source);
 	}
 }

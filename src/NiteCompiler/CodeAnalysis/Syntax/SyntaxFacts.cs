@@ -51,6 +51,9 @@ internal static class SyntaxFacts
 			case "let":
 				info.Kind = SyntaxKind.LetKeyword;
 				return;
+			case "type":
+				info.Kind = SyntaxKind.TypeKeyword;
+				return;
 			case "return":
 				info.Kind = SyntaxKind.ReturnKeyword;
 				return;

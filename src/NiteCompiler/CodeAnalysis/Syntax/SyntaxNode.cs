@@ -10,6 +10,8 @@ public abstract class SyntaxNode
 	public abstract SyntaxKind Kind { get; }
 	public abstract IEnumerable<SyntaxNode> GetChildren();
 
+	public SourceSpan ContextualizedSpan => Span.Contextualize(SyntaxTree.Text);
+
 	public IEnumerable<Token> GetTokens(bool includeThisToken = false)
 	{
 		if (includeThisToken && this is Token token)

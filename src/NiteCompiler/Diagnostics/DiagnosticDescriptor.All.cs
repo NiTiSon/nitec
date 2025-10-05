@@ -3,12 +3,14 @@ namespace NiteCompiler.Diagnostics;
 
 public partial class DiagnosticDescriptor
 {
-	public static DiagnosticDescriptor
+	public static readonly DiagnosticDescriptor
 		DuplicateSourceFiles,
 		NotTerminatedMultilineComment,
 		NotTerminatedStringLiteral,
 		ExpectedToken,
-		CannotResolveSymbol
+		UnexpectedToken,
+		CannotResolveSymbol,
+		FieldMustHaveEitherTypeClauseOrDefaultValue
 		;
 
 	static DiagnosticDescriptor()
@@ -24,10 +26,12 @@ public partial class DiagnosticDescriptor
 			"String literal is not terminated.");
 
 		// Parsing
+		UnexpectedToken = new("unexpected-token", "Unexpected token {0}.");
 		ExpectedToken = new("expected-token", "Expected token {0}.");
 
 		// Binding
 		CannotResolveSymbol = new("cannot-resolve-symbol", "Cannot resolve symbol.");
+		FieldMustHaveEitherTypeClauseOrDefaultValue = new("field-unresolvable-type", "Field must have either type clause or default value.");
 
 		// Type Checking
 	}

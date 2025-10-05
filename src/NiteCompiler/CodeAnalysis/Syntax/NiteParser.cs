@@ -80,16 +80,22 @@ public sealed partial class NiteParser
 			{
 				case SyntaxKind.UseKeyword:
 					membersBuilder.Add(ParseUseDirective());
+					MatchToken(SyntaxKind.SemicolonToken);
 					break;
 				case SyntaxKind.ModuleKeyword:
 					membersBuilder.Add(ParseModuleDeclaration());
+					MatchToken(SyntaxKind.SemicolonToken);
 					break;
 				default:
 					if (IsPresentedAny(SyntaxFacts.AccessKeywords))
 					{
 						membersBuilder.Add(ParseMember());
 					}
-					_position++;
+					else
+					{
+						_position++;
+						_diagnostics.ReportUnexpectedToken(Current.Span.Contextualize(_source), Current.Kind);
+					}
 					break;
 			}
 		}
@@ -149,12 +155,15 @@ public sealed partial class NiteParser
 		if (Current.Kind == SyntaxKind.ColonToken) // field: type
 		{
 			typeClause = ParseTypeClause();
-			if (Current.Kind == SyntaxKind.EqualsToken) // field = expr;
-			{
-				initializer = ParseExpression();
-			}
 		}
 
+		if (Current.Kind == SyntaxKind.EqualsToken) // field = expr;
+		{
+			Advance();
+			initializer = ParseExpression();
+		}
+
+		MatchToken(SyntaxKind.SemicolonToken);
 		return new FieldDeclarationSyntax(accessibilityToken, modifiers, name, typeClause, initializer);
 	}
 
