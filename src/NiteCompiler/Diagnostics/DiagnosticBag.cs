@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.Diagnostics;
@@ -52,6 +53,12 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		}
 	}
 
+	public void DrainInto(DiagnosticBag diagnostics)
+	{
+		diagnostics.AddRange(_diagnostics.ToArray());
+		_diagnostics.Clear();
+	}
+
 	public IEnumerator<Diagnostic> GetEnumerator()
 	{
 		return _diagnostics.GetEnumerator();
@@ -78,9 +85,13 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.NotTerminatedStringLiteral, source);
 	}
 
-	public void DrainInto(DiagnosticBag diagnostics)
+	public void ReportExpectedToken(SourceSpan source, SyntaxKind kind)
 	{
-		diagnostics.AddRange(_diagnostics.ToArray());
-		_diagnostics.Clear();
+		Add(DiagnosticDescriptor.ExpectedToken, source, kind);
+	}
+
+	public void ReportUnresolvedSymbol(SourceSpan contextualize)
+	{
+		Add(DiagnosticDescriptor.CannotResolveSymbol, contextualize);
 	}
 }

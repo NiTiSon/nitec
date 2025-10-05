@@ -105,18 +105,40 @@ public sealed class Compilation
             foreach (var function in module.Functions)
             {
                 function.ReturnType = ResolveType(function.Syntax.Retusa?.ReturnType);
+                int index = 0;
                 foreach (FunctionParameterSyntax paramDecl in function.Syntax.Parameters)
                 {
-                    var param = new ParameterSymbol(paramDecl.Name.GetName(), function, paramDecl);
-                    param.Type = ResolveType(paramDecl.TypeSyntax);
-                    function.Parameters.Add(param);
+                    var param = new ParameterSymbol(function, paramDecl.Name.GetName(), index++, paramDecl);
+
+                    //param.Type = ResolveType(paramDecl.TypeClause.Type);
+                    //function.Parameters.Add(param);
                 }
             }
 		}
 	}
 
-	private TypeSymbol ResolveType(TypeSyntax? typeSyntax)
+	private TypeSymbol ResolveType(TypeSyntax typeSyntax)
 	{
+		if (typeSyntax is NameWithExplicitModuleSyntax nameWithExplicitModuleSyntax)
+		{
+			ModuleSymbol module = _globalSymbolTable.GetCombinedModule(nameWithExplicitModuleSyntax.GetModuleName());
+
+			TypeSymbol? type = module.Members.FirstOrDefault(t =>
+				t is TypeSymbol type && type.Name == nameWithExplicitModuleSyntax.GetName()) as TypeSymbol;
+
+			if (type is null)
+			{
+				Diagnostics.ReportUnresolvedSymbol(typeSyntax.Span.Contextualize(typeSyntax.SyntaxTree.Text));
+			}
+
+			return type;
+		}
+
+		if (typeSyntax is PredefinedTypeSyntax predefinedTypeSyntax)
+		{
+			return _globalSymbolTable.GetPredefinedType(SyntaxFacts.GetDefaultTypeByToken(predefinedTypeSyntax.Keyword));
+		}
+
 		throw new NotImplementedException();
 		//if typeSyntax is null return _globalSymbolTable.GetDefaultType();
 	}

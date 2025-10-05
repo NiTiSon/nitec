@@ -56,6 +56,7 @@ public sealed partial class NiteParser
 		if (Current.Kind == kind)
 			return PeekAndAdvance();
 
+		_diagnostics.ReportExpectedToken(Current.Span.Contextualize(_source), kind);
 		return new Token(kind, Current.Span);
 	}
 
@@ -107,8 +108,7 @@ public sealed partial class NiteParser
 
 		if (Current.Kind == SyntaxKind.OpenParenToken) // Method
 		{
-			Token openParen = MatchToken(SyntaxKind.OpenParenToken);
-			Token closeParen = MatchToken(SyntaxKind.CloseParenToken);
+			SyntaxList<FunctionParameterSyntax> parameters = ParseParameterList();
 
 			RetusaClauseSyntax? retusa = null;
 			if (Current.Kind == SyntaxKind.RetusaToken)
@@ -121,7 +121,7 @@ public sealed partial class NiteParser
 
 			BlockStatementSyntax block = ParseBlockStatement();
 
-			return new FunctionDeclarationSyntax(accessibilityToken, [], name, null, retusa, block);
+			return new FunctionDeclarationSyntax(accessibilityToken, [], name, parameters, retusa, block);
 		}
 		// else // field
 		// {
@@ -131,6 +131,48 @@ public sealed partial class NiteParser
 		// 	}
 		// }
 		return name;
+	}
+
+	private SyntaxList<FunctionParameterSyntax> ParseParameterList()
+	{
+		SyntaxList<FunctionParameterSyntax>.Builder list = new(SyntaxKind.ParameterList);
+
+		MatchToken(SyntaxKind.OpenParenToken);
+
+		while (Current.Kind is not (SyntaxKind.EofToken or SyntaxKind.CloseParenToken))
+		{
+			list.Add(ParseParameter());
+		}
+
+		MatchToken(SyntaxKind.CloseParenToken);
+
+		return list.Build();
+
+		FunctionParameterSyntax ParseParameter()
+		{
+			SimpleNameSyntax name = ParseSimpleName();
+			TypeClauseSyntax? typeClause = null;
+			ExpressionSyntax? initializer = null;
+			if (Current.Kind == SyntaxKind.ColonToken)
+			{
+				 typeClause = ParseTypeClause();
+			}
+
+			if (Current.Kind == SyntaxKind.EqualsToken)
+			{
+				initializer = ParseExpression();
+			}
+
+			return new(name, typeClause, initializer);
+		}
+	}
+
+	private TypeClauseSyntax ParseTypeClause()
+	{
+		Token colon = MatchToken(SyntaxKind.ColonToken);
+		TypeSyntax type = ParseType();
+
+		return new(colon, type);
 	}
 
 	private (SyntaxKind operatorTokenKind, SyntaxKind operatorExpressionKind) GetExpressionOperatorTokenKindAndExpressionKind()

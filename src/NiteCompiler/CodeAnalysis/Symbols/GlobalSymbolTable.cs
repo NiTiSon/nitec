@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Diagnostics;
@@ -34,6 +35,16 @@ internal sealed class GlobalSymbolTable
 		_libraries.Add(ownLibraryName, Library = new LibrarySymbol(ownLibraryName));
 	}
 
+	public void AddLibraryReference()
+	{
+
+	}
+
+	public void ResolveDefaultTypes()
+	{
+
+	}
+
 	public void AddLibrary(LibrarySymbol library)
 	{
 		_libraries[library.Name] = library;
@@ -52,6 +63,11 @@ internal sealed class GlobalSymbolTable
 		}
 	}
 
+	public ModuleSymbol GetCombinedModule(string name)
+	{
+		return ModuleSymbol.Combine(GetModules(name));
+	}
+
 	/// <summary>
 	/// Returns or add new module symbol in current library.
 	/// </summary>
@@ -59,5 +75,14 @@ internal sealed class GlobalSymbolTable
 	public ModuleSymbol GetOrAddInternalModule(string name)
 	{
 		return Library.GetOrAddModule(name);
+	}
+
+	public PredefinedTypeSymbol GetPredefinedType(DefaultType defaultType)
+	{
+		return defaultType switch
+		{
+			DefaultType.I8 => null!,
+			_ => throw new InvalidEnumArgumentException(),
+		};
 	}
 }

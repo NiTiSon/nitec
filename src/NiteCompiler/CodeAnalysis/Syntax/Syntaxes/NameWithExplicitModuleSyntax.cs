@@ -24,6 +24,16 @@ public sealed class NameWithExplicitModuleSyntax : NameSyntax
 	public override TextSpan Span => TextSpan.FromBounds(Module.Span, Name.Span);
 	public override SyntaxKind Kind =>  SyntaxKind.NameWithExplicitModule;
 
+	public string GetModuleName()
+	{
+		return Module.GetName();
+	}
+
+	public override string GetName()
+	{
+		return Name.GetName();
+	}
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return Module;

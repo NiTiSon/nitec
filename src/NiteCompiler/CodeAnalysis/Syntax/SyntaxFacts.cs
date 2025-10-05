@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
@@ -246,5 +247,26 @@ internal static class SyntaxFacts
 			default:
 				throw new NotImplementedException($"{opKind} have undefined precedence");
 		}
+	}
+
+	public static DefaultType GetDefaultTypeByToken(Token keyword)
+	{
+		return keyword.Kind switch
+		{
+			SyntaxKind.I8Keyword => DefaultType.I8,
+			SyntaxKind.I16Keyword => DefaultType.I16,
+			SyntaxKind.I32Keyword => DefaultType.I32,
+			SyntaxKind.I64Keyword => DefaultType.I64,
+			SyntaxKind.U8Keyword => DefaultType.U8,
+			SyntaxKind.U16Keyword => DefaultType.U16,
+			SyntaxKind.U32Keyword => DefaultType.U32,
+			SyntaxKind.U64Keyword => DefaultType.U64,
+			SyntaxKind.F16Keyword => DefaultType.F16,
+			SyntaxKind.F32Keyword => DefaultType.F32,
+			SyntaxKind.F64Keyword => DefaultType.F64,
+			SyntaxKind.VoidKeyword => DefaultType.Void,
+			SyntaxKind.ExclamationToken => DefaultType.NeverReturn,
+			_ => throw new InvalidEnumArgumentException(),
+		};
 	}
 }

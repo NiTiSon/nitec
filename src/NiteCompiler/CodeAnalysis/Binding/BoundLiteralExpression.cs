@@ -10,17 +10,6 @@ internal sealed class BoundLiteralExpression : BoundExpression
 	{
 		Type = value switch
 		{
-			SByte => BuiltinTypeSymbol.SInt8,
-			Int16 => BuiltinTypeSymbol.SInt16,
-			Int32 => BuiltinTypeSymbol.SInt32,
-			Int64 => BuiltinTypeSymbol.SInt64,
-			Byte => BuiltinTypeSymbol.UInt8,
-			UInt16 => BuiltinTypeSymbol.UInt16,
-			UInt32 => BuiltinTypeSymbol.UInt32,
-			UInt64 => BuiltinTypeSymbol.UInt64,
-			Half => BuiltinTypeSymbol.Float16,
-			Single => BuiltinTypeSymbol.Float32,
-			Double => BuiltinTypeSymbol.Float64,
 			_ => throw new NotSupportedException()
 		};
 
