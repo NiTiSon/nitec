@@ -172,6 +172,7 @@ public enum SyntaxKind : uint
 	PrivateKeyword = 326,
 	ModuleKeyword = 327,
 	LetKeyword = 328,
+	TypeKeyword = 329,
 
 	// === TYPE KEYWORDS ===
 	I8Keyword = 401,
@@ -260,6 +261,7 @@ public enum SyntaxKind : uint
 	ModuleDeclaration = 4004,
 	Parameter = 4005,
 	GenericParameter = 4006,
+	FieldDeclaration = 4007,
 
 	// === DIRECTIVE ===
 	UseDirective = 5001,

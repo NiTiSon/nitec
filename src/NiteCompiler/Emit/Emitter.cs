@@ -1,6 +1,6 @@
 using NiteCompiler.CodeAnalysis.Symbols;
 
-namespace NiteCompiler.CodeAnalysis.Emit;
+namespace NiteCompiler.Emit;
 
 internal sealed class Emitter
 {

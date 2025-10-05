@@ -11,7 +11,7 @@ public sealed class FunctionSymbol : Symbol
 		Syntax = syntax;
 	}
 
-	public string Name { get; }
+	public override string Name { get; }
 	public TypeSymbol ReturnType { get; internal set; } = null!;
 
 	/// <summary>
@@ -21,6 +21,22 @@ public sealed class FunctionSymbol : Symbol
 
 	public bool IsMethod => ContainingSymbol is TypeSymbol;
 	public FunctionDeclarationSyntax Syntax { get; }
-	public override Symbol? ContainingSymbol { get; }
+	public override Symbol ContainingSymbol { get; }
+
+	public TypeSymbol? ContainingType
+	{
+		get
+		{
+			Symbol? symbol = ContainingSymbol;
+
+			while (symbol != null || symbol is TypeSymbol)
+			{
+				symbol = symbol.ContainingSymbol;
+			}
+
+			return symbol as TypeSymbol;
+		}
+	}
+
 	public override SymbolKind Kind => SymbolKind.Function;
 }

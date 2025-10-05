@@ -3,15 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net;
 using CommunityToolkit.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
 public sealed class ModuleSymbol : Symbol, IEnumerable<Symbol>
 {
-	private List<Symbol> _members = [];
+	private readonly List<Symbol> _members = [];
 
-	public string FullName { get; }
+	public override string Name { get; }
 	public bool IsCombined { get; }
 
 	public IEnumerable<Symbol> Members => _members;
@@ -20,17 +21,17 @@ public sealed class ModuleSymbol : Symbol, IEnumerable<Symbol>
 	public IEnumerable<FunctionSymbol> Functions => Members.OfType<FunctionSymbol>();
 	// public IEnumerable<FieldSymbol> Fields => Members.OfType<FieldSymbol>();
 
-	public bool IsGlobalModule => FullName == WellKnownSemantic.GlobalModuleName;
+	public bool IsGlobalModule => Name == WellKnownSemantic.GlobalModuleName;
 
-	public ModuleSymbol(string fullName)
+	public ModuleSymbol(string name)
 	{
-		FullName = fullName;
+		Name = name;
 		IsCombined = false;
 	}
 
-	private ModuleSymbol(string fullName, bool isCombined)
+	private ModuleSymbol(string name, bool isCombined)
 	{
-		FullName = fullName;
+		Name = name;
 		IsCombined = isCombined;
 	}
 
@@ -40,9 +41,9 @@ public sealed class ModuleSymbol : Symbol, IEnumerable<Symbol>
 
 		foreach (ModuleSymbol module in modules)
 		{
-			combined ??= new ModuleSymbol(module.FullName, isCombined: true);
+			combined ??= new ModuleSymbol(module.Name, isCombined: true);
 
-			if (module.FullName != combined.FullName)
+			if (module.Name != combined.Name)
 			{
 				ThrowHelper.ThrowArgumentException("One of modules have other name.", nameof(modules));
 			}

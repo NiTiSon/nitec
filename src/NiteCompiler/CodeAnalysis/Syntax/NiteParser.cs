@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
-using CommunityToolkit.Diagnostics;
 using NiteCompiler.CodeAnalysis.Text;
 using NiteCompiler.Diagnostics;
 
@@ -13,7 +11,7 @@ public sealed partial class NiteParser
 	private readonly DiagnosticBag _diagnostics;
 	private readonly List<Token> _tokens;
 	private int _position;
-	private SourceText _source;
+	private readonly SourceText _source;
 
 	public NiteParser(NiteLexer lexer, StringText sourceText, DiagnosticBag diagnostics)
 	{
@@ -100,37 +98,83 @@ public sealed partial class NiteParser
 		return new CompilationUnitSyntax(_source, membersBuilder.ToImmutable(), endOfFileToken);
 	}
 
-	private SyntaxNode ParseMember()
+	private MemberSyntax ParseMember()
 	{
 		Token accessibilityToken = MatchAnyToken(SyntaxFacts.AccessKeywords);
 
+		// TODO: Modifiers parsing
+
+		if (Current.Kind == SyntaxKind.TypeKeyword)
+		{
+			return ParseTypeDeclaration(accessibilityToken, [], PeekAndAdvance());
+		}
+
 		SimpleNameSyntax name = ParseSimpleName();
 
-		if (Current.Kind == SyntaxKind.OpenParenToken) // Method
+		if (Current.Kind == SyntaxKind.OpenParenToken) // Function/Method
 		{
-			SyntaxList<FunctionParameterSyntax> parameters = ParseParameterList();
-
-			RetusaClauseSyntax? retusa = null;
-			if (Current.Kind == SyntaxKind.RetusaToken)
-			{
-				Token retusaArrow = MatchToken(SyntaxKind.RetusaToken);
-
-				TypeSyntax returnParameter = ParseType();
-				retusa = new(retusaArrow, returnParameter);
-			}
-
-			BlockStatementSyntax block = ParseBlockStatement();
-
-			return new FunctionDeclarationSyntax(accessibilityToken, [], name, parameters, retusa, block);
+			return ParseFunctionDeclaration(accessibilityToken, [], name);
 		}
-		// else // field
-		// {
-		// 	if (Current.Kind == SyntaxKind.ColonToken) // field: type
-		// 	{
-		// 		NameSyntax typeName = ParseTypeName();
-		// 	}
-		// }
-		return name;
+		else // field
+		{
+			return ParseFieldDeclaration(accessibilityToken, [], name);
+		}
+	}
+
+	private TypeDeclarationSyntax ParseTypeDeclaration(Token accessibilityToken, ImmutableArray<Token> modifiers, Token typeKeyword)
+	{
+		SimpleNameSyntax name = ParseSimpleName();
+
+		//  Parent type handling
+
+		Token openBrace = MatchToken(SyntaxKind.OpenBraceToken);
+
+		ImmutableArray<MemberSyntax>.Builder membersBuilder = ImmutableArray.CreateBuilder<MemberSyntax>();
+
+		while (Current.Kind != SyntaxKind.EofToken && Current.Kind != SyntaxKind.CloseBraceToken)
+		{
+			membersBuilder.Add(ParseMember());
+		}
+		Token closeBrace = MatchToken(SyntaxKind.CloseBraceToken);
+
+		return new TypeDeclarationSyntax(accessibilityToken, modifiers, typeKeyword,
+			name, openBrace, membersBuilder.ToImmutable(), closeBrace);
+	}
+
+	private FieldDeclarationSyntax ParseFieldDeclaration(Token accessibilityToken, ImmutableArray<Token> modifiers,
+		SimpleNameSyntax name)
+	{
+		TypeClauseSyntax? typeClause = null;
+		ExpressionSyntax? initializer = null;
+		if (Current.Kind == SyntaxKind.ColonToken) // field: type
+		{
+			typeClause = ParseTypeClause();
+			if (Current.Kind == SyntaxKind.EqualsToken) // field = expr;
+			{
+				initializer = ParseExpression();
+			}
+		}
+
+		return new FieldDeclarationSyntax(accessibilityToken, modifiers, name, typeClause, initializer);
+	}
+
+	private FunctionDeclarationSyntax ParseFunctionDeclaration(Token accessibilityToken, ImmutableArray<Token> modifiers,
+		SimpleNameSyntax name)
+	{
+		SyntaxList<FunctionParameterSyntax> parameters = ParseParameterList();
+
+		RetusaClauseSyntax? retusa = null;
+		if (Current.Kind == SyntaxKind.RetusaToken)
+		{
+			Token retusaArrow = MatchToken(SyntaxKind.RetusaToken);
+
+			TypeSyntax returnParameter = ParseType();
+			retusa = new(retusaArrow, returnParameter);
+		}
+
+		BlockStatementSyntax block = ParseBlockStatement();
+
+		return new FunctionDeclarationSyntax(accessibilityToken, modifiers, name, parameters, retusa, block);
 	}
 
 	private SyntaxList<FunctionParameterSyntax> ParseParameterList()

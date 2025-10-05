@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Diagnostics;
 
@@ -9,7 +10,8 @@ namespace NiteCompiler.CodeAnalysis.Symbols;
 
 internal sealed class GlobalSymbolTable
 {
-	private readonly Dictionary<string, LibrarySymbol> _libraries;
+	private readonly Dictionary<string, LibrarySymbol> _libraries = [];
+	private readonly Dictionary<DefaultType, PredefinedTypeSymbol> _defaultTypes = [];
 
 	public LibrarySymbol Library { get; }
 
@@ -26,23 +28,22 @@ internal sealed class GlobalSymbolTable
 	public IEnumerable<ModuleSymbol> Modules =>
 		_libraries
 			.SelectMany(t => t.Value.Modules)
-			.GroupBy(t => t.FullName)
+			.GroupBy(t => t.Name)
 			.Select(ModuleSymbol.Combine);
 
 	public GlobalSymbolTable(string ownLibraryName)
 	{
-		_libraries = [];
 		_libraries.Add(ownLibraryName, Library = new LibrarySymbol(ownLibraryName));
-	}
 
-	public void AddLibraryReference()
-	{
+		LibrarySymbol stdlib = new("stdlib");
+		_libraries.Add(stdlib.Name, stdlib);
 
-	}
-
-	public void ResolveDefaultTypes()
-	{
-
+		ModuleSymbol numericsModule = stdlib.GetOrAddModule(WellKnownSemantic.NumericsModuleName);
+		_defaultTypes[DefaultType.I32] = new(numericsModule, WellKnownSemantic.I32TypeName, DefaultType.I32);
+		foreach (PredefinedTypeSymbol defType in _defaultTypes.Values)
+		{
+			numericsModule.AddMember(defType);
+		}
 	}
 
 	public void AddLibrary(LibrarySymbol library)
@@ -58,7 +59,7 @@ internal sealed class GlobalSymbolTable
 	{
 		foreach (LibrarySymbol libs in _libraries.Values)
 		{
-			ModuleSymbol? module = libs.Modules.FirstOrDefault(t => t.FullName == name);
+			ModuleSymbol? module = libs.Modules.FirstOrDefault(t => t.Name == name);
 			if (module != null) yield return module;
 		}
 	}
@@ -79,10 +80,7 @@ internal sealed class GlobalSymbolTable
 
 	public PredefinedTypeSymbol GetPredefinedType(DefaultType defaultType)
 	{
-		return defaultType switch
-		{
-			DefaultType.I8 => null!,
-			_ => throw new InvalidEnumArgumentException(),
-		};
+		_defaultTypes.TryGetValue(defaultType, out var result);
+		return result ?? throw new NotImplementedException();
 	}
 }

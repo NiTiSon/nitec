@@ -7,7 +7,7 @@ public sealed class LibrarySymbol : Symbol
 {
 	private readonly List<ModuleSymbol> _modules;
 
-	public string Name { get; }
+	public override string Name { get; }
 	public IEnumerable<ModuleSymbol> Modules => _modules;
 
 	public LibrarySymbol(string name)
@@ -26,7 +26,7 @@ public sealed class LibrarySymbol : Symbol
 			name = WellKnownSemantic.GlobalModuleName;
 		}
 
-		var module = Modules.FirstOrDefault(t => t.FullName == name);
+		var module = Modules.FirstOrDefault(t => t.Name == name);
 
 		return module ?? AddModule(name);
 	}

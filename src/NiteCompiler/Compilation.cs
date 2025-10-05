@@ -28,7 +28,7 @@ public sealed class Compilation
 
 		foreach (ModuleSymbol module in _globalSymbolTable.Modules)
 		{
-			Console.WriteLine(module.FullName);
+			Console.WriteLine(module.Name);
 			foreach (Symbol symbol in module)
 			{
 				Console.WriteLine($"\t{symbol}");
@@ -58,6 +58,18 @@ public sealed class Compilation
 						function);
 
 					currentModule.AddMember(symbol);
+				}
+				else if (topLevelNode is TypeDeclarationSyntax type)
+				{
+					NamedTypeSymbol symbol = new(
+						type.Name.GetName(),
+						currentModule
+					);
+
+					currentModule.AddMember(symbol);
+				}
+				else if (topLevelNode is FieldDeclarationSyntax field)
+				{
 				}
 			}
 		}
@@ -140,7 +152,6 @@ public sealed class Compilation
 		}
 
 		throw new NotImplementedException();
-		//if typeSyntax is null return _globalSymbolTable.GetDefaultType();
 	}
 
 	public void Emit(Stream stream)
