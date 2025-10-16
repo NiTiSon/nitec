@@ -1,4 +1,4 @@
-namespace NiteCompiler.CodeAnalysis.Binding;
+namespace NiteLang.Metadata;
 
 public enum Accessibility : byte
 {

@@ -10,6 +10,7 @@ public partial class DiagnosticDescriptor
 		ExpectedToken,
 		UnexpectedToken,
 		CannotResolveSymbol,
+		UnresolvedPredefinedType,
 		FieldMustHaveEitherTypeClauseOrDefaultValue
 		;
 
@@ -31,6 +32,7 @@ public partial class DiagnosticDescriptor
 
 		// Binding
 		CannotResolveSymbol = new("cannot-resolve-symbol", "Cannot resolve symbol.");
+		UnresolvedPredefinedType = new("unresolved-predefined-type", "Predefined type {0} is not resolved.", DiagnosticSeverity.Warning);
 		FieldMustHaveEitherTypeClauseOrDefaultValue = new("field-unresolvable-type", "Field must have either type clause or default value.");
 
 		// Type Checking

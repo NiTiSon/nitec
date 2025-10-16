@@ -16,4 +16,12 @@
         </AssemblyAttribute>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="CodeAnalysis\Symbols\Metadata\Nlib\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\NiteLang.Metadata\NiteLang.Metadata.csproj" />
+    </ItemGroup>
+
 </Project>

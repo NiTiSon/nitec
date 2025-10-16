@@ -252,24 +252,43 @@ internal static class SyntaxFacts
 		}
 	}
 
-	public static DefaultType GetDefaultTypeByToken(Token keyword)
+	public static PredefinedType GetDefaultTypeByToken(Token keyword)
 	{
 		return keyword.Kind switch
 		{
-			SyntaxKind.I8Keyword => DefaultType.I8,
-			SyntaxKind.I16Keyword => DefaultType.I16,
-			SyntaxKind.I32Keyword => DefaultType.I32,
-			SyntaxKind.I64Keyword => DefaultType.I64,
-			SyntaxKind.U8Keyword => DefaultType.U8,
-			SyntaxKind.U16Keyword => DefaultType.U16,
-			SyntaxKind.U32Keyword => DefaultType.U32,
-			SyntaxKind.U64Keyword => DefaultType.U64,
-			SyntaxKind.F16Keyword => DefaultType.F16,
-			SyntaxKind.F32Keyword => DefaultType.F32,
-			SyntaxKind.F64Keyword => DefaultType.F64,
-			SyntaxKind.VoidKeyword => DefaultType.Void,
-			SyntaxKind.ExclamationToken => DefaultType.NeverReturn,
+			SyntaxKind.I8Keyword => PredefinedType.I8,
+			SyntaxKind.I16Keyword => PredefinedType.I16,
+			SyntaxKind.I32Keyword => PredefinedType.I32,
+			SyntaxKind.I64Keyword => PredefinedType.I64,
+			SyntaxKind.U8Keyword => PredefinedType.U8,
+			SyntaxKind.U16Keyword => PredefinedType.U16,
+			SyntaxKind.U32Keyword => PredefinedType.U32,
+			SyntaxKind.U64Keyword => PredefinedType.U64,
+			SyntaxKind.F16Keyword => PredefinedType.F16,
+			SyntaxKind.F32Keyword => PredefinedType.F32,
+			SyntaxKind.F64Keyword => PredefinedType.F64,
+			SyntaxKind.VoidKeyword => PredefinedType.Void,
+			SyntaxKind.ExclamationToken => PredefinedType.NeverReturn,
 			_ => throw new InvalidEnumArgumentException(),
+		};
+	}
+
+	public static (string moduleName, string typeName) GetModuleAndTypeName(PredefinedType type)
+	{
+		return type switch
+		{
+			PredefinedType.I8 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.I8TypeName),
+			PredefinedType.I16 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.I16TypeName),
+			PredefinedType.I32 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.I32TypeName),
+			PredefinedType.I64 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.I64TypeName),
+			PredefinedType.U8 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.U8TypeName),
+			PredefinedType.U16 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.U16TypeName),
+			PredefinedType.U32 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.U32TypeName),
+			PredefinedType.U64 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.U64TypeName),
+			PredefinedType.F16 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.F16TypeName),
+			PredefinedType.F32 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.F32TypeName),
+			PredefinedType.F64 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.F64TypeName),
+			_ => throw new InvalidEnumArgumentException()
 		};
 	}
 }

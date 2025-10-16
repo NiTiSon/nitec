@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.CodeAnalysis.Text;
 using NiteCompiler.Diagnostics;
+using NiteLang.Metadata;
 using NiTiS.Compiler.CliTool;
 
 namespace NiteCompiler.CliTool;
@@ -19,6 +20,16 @@ public static class Program
 {
 	public static void Main(string[] args)
 	{
+		using FileStream fs = new(@"C:\Users\UwU\Desktop\s.bin", FileMode.Open, FileAccess.Write);
+		fs.SetLength(0);
+		using NlibWriter nlib = new(fs, true);
+
+		NlibLibraryBuilder stdlib = new("stdlib");
+		NlibModuleBuilder numericsModule = stdlib.CreateModule("std::numerics");
+		NlibTypeBuilder sint32 = numericsModule.CreateType("SInt32");
+
+		nlib.Write(stdlib);
+		return;
 		#if DEBUG
 		Console.WriteLine("[" + string.Join(", ", args) + "]");
 		#endif

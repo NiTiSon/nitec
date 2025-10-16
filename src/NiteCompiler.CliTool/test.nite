@@ -6,5 +6,4 @@ public main() -> i32 {
 
 module std::numerics;
 
-public type SInt32 {
-}
+public type SInt32;

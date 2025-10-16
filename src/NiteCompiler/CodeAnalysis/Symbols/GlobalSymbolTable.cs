@@ -11,7 +11,7 @@ namespace NiteCompiler.CodeAnalysis.Symbols;
 internal sealed class GlobalSymbolTable
 {
 	private readonly Dictionary<string, LibrarySymbol> _libraries = [];
-	private readonly Dictionary<DefaultType, PredefinedTypeSymbol> _defaultTypes = [];
+	private readonly Dictionary<PredefinedType, TypeSymbol> _defaultTypes = [];
 
 	public LibrarySymbol Library { get; }
 
@@ -34,15 +34,21 @@ internal sealed class GlobalSymbolTable
 	public GlobalSymbolTable(string ownLibraryName)
 	{
 		_libraries.Add(ownLibraryName, Library = new LibrarySymbol(ownLibraryName));
+	}
 
-		LibrarySymbol stdlib = new("stdlib");
-		_libraries.Add(stdlib.Name, stdlib);
-
-		ModuleSymbol numericsModule = stdlib.GetOrAddModule(WellKnownSemantic.NumericsModuleName);
-		_defaultTypes[DefaultType.I32] = new(numericsModule, WellKnownSemantic.I32TypeName, DefaultType.I32);
-		foreach (PredefinedTypeSymbol defType in _defaultTypes.Values)
+	public void ResolvePredefinedTypes()
+	{
+		foreach (PredefinedType type in new[] { PredefinedType.I32, PredefinedType.F32 })
 		{
-			numericsModule.AddMember(defType);
+			(string moduleName, string typeName) = SyntaxFacts.GetModuleAndTypeName(type);
+			ModuleSymbol module = GetCombinedModule(moduleName);
+
+			TypeSymbol? retusa = module.Types.FirstOrDefault(t => t.Name == typeName);
+			if (retusa == null)
+			{
+				Diagnostics.ReportUnresolvedPredefinedSymbol($"{moduleName}::{typeName}");
+			}
+			_defaultTypes[type] = retusa;
 		}
 	}
 
@@ -78,9 +84,44 @@ internal sealed class GlobalSymbolTable
 		return Library.GetOrAddModule(name);
 	}
 
-	public PredefinedTypeSymbol GetPredefinedType(DefaultType defaultType)
+	/// <summary>
+	/// Try to find corresponding type for predefined type.
+	/// </summary>
+	/// <param name="type">Predefined type to find.</param>
+	/// <returns>Named type symbol from this or dependency library.</returns>
+	public TypeSymbol? GetPredefinedType(PredefinedType type)
 	{
-		_defaultTypes.TryGetValue(defaultType, out var result);
-		return result ?? throw new NotImplementedException();
+		if (_defaultTypes.TryGetValue(type, out TypeSymbol? predefinedType))
+		{
+			return predefinedType;
+		}
+
+		return TryResolvePredefinedType();
+
+		TypeSymbol? TryResolvePredefinedType()
+		{
+			string modulePath;
+			string typeName;
+			switch (type)
+			{
+				case PredefinedType.I32:
+					modulePath = WellKnownSemantic.NumericsModuleName;
+					typeName = WellKnownSemantic.I32TypeName;
+					break;
+				default:
+					throw new InvalidEnumArgumentException();
+			}
+
+			ModuleSymbol module = GetCombinedModule(modulePath);
+
+			TypeSymbol? symbol = module.Types.FirstOrDefault(t => t.Name == typeName);
+
+			if (symbol != null)
+			{
+				_defaultTypes[type] = symbol;
+			}
+
+			return symbol;
+		}
 	}
 }

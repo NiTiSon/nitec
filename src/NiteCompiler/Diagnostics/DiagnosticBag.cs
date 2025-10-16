@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using NiteCompiler.CodeAnalysis;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.CodeAnalysis.Text;
 
@@ -103,5 +104,10 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 	public void ReportFieldMustHaveEitherTypeClauseOrDefaultValue(SourceSpan source)
 	{
 		Add(DiagnosticDescriptor.FieldMustHaveEitherTypeClauseOrDefaultValue, source);
+	}
+
+	public void ReportUnresolvedPredefinedSymbol(string type)
+	{
+		Add(DiagnosticDescriptor.UnresolvedPredefinedType, type);
 	}
 }

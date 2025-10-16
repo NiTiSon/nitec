@@ -12,6 +12,9 @@ namespace NiteCompiler;
 public sealed class Compilation
 {
 	private readonly GlobalSymbolTable _globalSymbolTable;
+	public ImmutableArray<SyntaxTree> SyntaxTrees { get; }
+	public LibrarySymbol Library => _globalSymbolTable.Library;
+	public DiagnosticBag Diagnostics { get; }
 
 	public Compilation(string libraryName, params SyntaxTree[] trees)
 	{
@@ -21,8 +24,11 @@ public sealed class Compilation
 
 		Binder binder = new(this);
 		DeclarationPass();
-		binder.BindSignatures();
-		binder.BindBodies();
+		_globalSymbolTable.ResolvePredefinedTypes();
+		// binder.BindSignatures();
+		// binder.BindBodies();
+
+		_globalSymbolTable.Diagnostics.DrainInto(Diagnostics);
 
 		foreach (ModuleSymbol module in _globalSymbolTable.Modules)
 		{
@@ -31,13 +37,8 @@ public sealed class Compilation
 		}
 	}
 
-	public ImmutableArray<SyntaxTree> SyntaxTrees { get; }
-	public LibrarySymbol Library => _globalSymbolTable.Library;
-
-	public DiagnosticBag Diagnostics { get; }
-
 	/// <summary>
-	///     Save only declarations, do not work with arguments, parameters, typization, and the other shit yet.
+	/// Save only declarations, do not work with arguments, parameters, typization, and the other shit yet.
 	/// </summary>
 	private void DeclarationPass()
 	{

@@ -1,6 +1,6 @@
 namespace NiteCompiler.CodeAnalysis;
 
-public enum DefaultType
+public enum PredefinedType
 {
 	I8,
 	I16,

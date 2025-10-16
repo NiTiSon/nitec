@@ -8,21 +8,21 @@ public sealed class TypeDeclarationSyntax : MemberSyntax
 {
 	public Token TypeKeyword { get; }
 	public SimpleNameSyntax Name { get; }
-	public Token OpenBraceToken { get; }
+	public Token? OpenBraceToken { get; }
 	public ImmutableArray<MemberSyntax> Members { get; }
-	public Token CloseBraceToken { get; }
+	public Token CloseBraceOrSemicolonToken { get; }
 	public TypeDeclarationSyntax(Token accessibilityToken, ImmutableArray<Token> modifiers, Token typeKeyword,
-		SimpleNameSyntax name,
-		Token openBrace, ImmutableArray<MemberSyntax> members, Token closeBrace) : base(accessibilityToken, modifiers)
+		SimpleNameSyntax name, Token? openBrace, ImmutableArray<MemberSyntax> members,
+		Token closeBraceOrSemicolon) : base(accessibilityToken, modifiers)
 	{
 		TypeKeyword = typeKeyword;
 		Name = name;
 		OpenBraceToken = openBrace;
 		Members = members;
-		CloseBraceToken = closeBrace;
+		CloseBraceOrSemicolonToken = closeBraceOrSemicolon;
 	}
 
-	public override TextSpan Span => TextSpan.FromBounds(AccessibilityToken.Span, CloseBraceToken.Span);
+	public override TextSpan Span => TextSpan.FromBounds(AccessibilityToken.Span, CloseBraceOrSemicolonToken.Span);
 	public override SyntaxKind Kind => SyntaxKind.TypeDeclaration;
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
@@ -32,11 +32,14 @@ public sealed class TypeDeclarationSyntax : MemberSyntax
 			yield return modifier;
 		}
 		yield return Name;
-		yield return OpenBraceToken;
+		if (OpenBraceToken != null)
+		{
+			yield return OpenBraceToken;
+		}
 		foreach (var member in Members)
 		{
 			yield return member;
 		}
-		yield return CloseBraceToken;
+		yield return CloseBraceOrSemicolonToken;
 	}
 }

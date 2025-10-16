@@ -133,7 +133,12 @@ public sealed partial class NiteParser
 
 		//  Parent type handling
 
-		Token openBrace = MatchToken(SyntaxKind.OpenBraceToken);
+		Token openBraceOrSemicolon = MatchAnyToken(SyntaxKind.OpenBraceToken, SyntaxKind.SemicolonToken);
+
+		if (openBraceOrSemicolon.Kind == SyntaxKind.SemicolonToken)
+		{
+			return new(accessibilityToken, modifiers, typeKeyword, name, null, [], openBraceOrSemicolon);
+		}
 
 		ImmutableArray<MemberSyntax>.Builder membersBuilder = ImmutableArray.CreateBuilder<MemberSyntax>();
 
@@ -143,8 +148,8 @@ public sealed partial class NiteParser
 		}
 		Token closeBrace = MatchToken(SyntaxKind.CloseBraceToken);
 
-		return new TypeDeclarationSyntax(accessibilityToken, modifiers, typeKeyword,
-			name, openBrace, membersBuilder.ToImmutable(), closeBrace);
+		return new(accessibilityToken, modifiers, typeKeyword, name, openBraceOrSemicolon,
+			membersBuilder.ToImmutable(), closeBrace);
 	}
 
 	private FieldDeclarationSyntax ParseFieldDeclaration(Token accessibilityToken, ImmutableArray<Token> modifiers,
