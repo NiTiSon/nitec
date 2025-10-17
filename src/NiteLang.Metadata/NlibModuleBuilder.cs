@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace NiteLang.Metadata;
@@ -32,4 +33,10 @@ public sealed class NlibModuleBuilder : ModuleReference, ITableContent
 	}
 
 	public static TableType TableStorageType => TableType.ModuleDeclaration;
+
+	internal void Write(BinaryWriter writer, Table<StringConstant> strings)
+	{
+		Handle name = strings.Add(Name);
+		writer.Write(name);
+	}
 }

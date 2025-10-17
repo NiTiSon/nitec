@@ -11,6 +11,8 @@ public sealed class NlibLibraryBuilder : LibraryReference
 
 	private readonly Dictionary<string, NlibModuleBuilder> _modules;
 
+	public FunctionReference? MainFunction { get; set; }
+
 	public override IEnumerable<NlibModuleBuilder> Modules => _modules.Values;
 	public override IEnumerable<NlibTypeBuilder> Types => _modules.SelectMany(t => t.Value.Types);
 

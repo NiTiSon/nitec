@@ -8,6 +8,8 @@ public readonly struct Handle : IEquatable<Handle>
 
 	public Handle(uint handle) => _handle = handle;
 
+	public static Handle Null => new Handle(0);
+
 	public TableType Type => (TableType)(_handle & 0xF0000000);
 
 	public uint Value => _handle;

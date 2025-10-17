@@ -31,11 +31,14 @@ public sealed class NlibWriter : IDisposable
 
 	public void Write(NlibLibraryBuilder builder)
 	{
-		NlibModuleBuilder[] modules = builder.Modules.ToArray();
-		NlibTypeBuilder[] types = builder.Types.ToArray();
+		NlibModuleBuilder[] defModules = builder.Modules.ToArray();
+		NlibTypeBuilder[] defTypes = builder.Types.ToArray();
 
-		Table<StringConstant> strings = new();
+		Table<StringConstant> strings = [];
 		Handle libName = strings.Add(builder.Name);
+
+		Table<NlibModuleBuilder> modules = [..defModules];
+		Table<NlibTypeBuilder> types = [..defTypes];
 
 		// 0x00
 		_writer.Write(NlibConstants.MagicNumber);
@@ -47,20 +50,63 @@ public sealed class NlibWriter : IDisposable
 		_writer.Write((ulong)0); // MAIN FUNCTION
 		_writer.Write((ulong)0);
 
+		WriteModuleTable(modules, strings);
+		Align();
+		WriteTypeTable(types, modules, strings);
+		Align();
 		WriteStringTable(strings);
+		Align();
+	}
+
+	private void Align()
+	{
+		long needToAlign = _stream.Position % 16;
+		if (needToAlign != 0)
+		{
+			// Why there's no method to repetitive Write?
+			_writer.Write(stackalloc byte[16 - (int)needToAlign]);
+		}
+	}
+
+	private void WriteTypeTable(Table<NlibTypeBuilder> types, Table<NlibModuleBuilder> modules, Table<StringConstant> strings)
+	{
+		long headerPosition = _writer.BaseStream.Position;
+		_writer.Seek(16, SeekOrigin.Current);
+		foreach (NlibTypeBuilder type in types)
+		{
+			type.Write(_writer, modules, strings);
+		}
+		long size = _writer.BaseStream.Position - headerPosition;
+		_writer.Seek((int)headerPosition, SeekOrigin.Begin);
+		WriteTableHeader(NlibTypeBuilder.TableStorageType, (uint)strings.Count, (uint)size);
+		_writer.Seek((int)(headerPosition + size), SeekOrigin.Begin);
 	}
 
 	private void WriteStringTable(Table<StringConstant> strings)
 	{
 		long headerPosition = _writer.BaseStream.Position;
 		_writer.Seek(16, SeekOrigin.Current);
-		foreach (StringConstant constant in strings)
+		foreach (StringConstant str in strings)
 		{
-			_writer.Write(constant.Value);
+			_writer.Write(str.Value);
 		}
 		long size = _writer.BaseStream.Position - headerPosition;
 		_writer.Seek((int)headerPosition, SeekOrigin.Begin);
 		WriteTableHeader(StringConstant.TableStorageType, (uint)strings.Count, (uint)size);
+		_writer.Seek((int)(headerPosition + size), SeekOrigin.Begin);
+	}
+
+	private void WriteModuleTable(Table<NlibModuleBuilder> modules, Table<StringConstant> strings)
+	{
+		long headerPosition = _writer.BaseStream.Position;
+		_writer.Seek(16, SeekOrigin.Current);
+		foreach (NlibModuleBuilder module in modules)
+		{
+			module.Write(_writer, strings);
+		}
+		long size = _writer.BaseStream.Position - headerPosition;
+		_writer.Seek((int)headerPosition, SeekOrigin.Begin);
+		WriteTableHeader(NlibModuleBuilder.TableStorageType, (uint)modules.Count, (uint)size);
 		_writer.Seek((int)(headerPosition + size), SeekOrigin.Begin);
 	}
 
