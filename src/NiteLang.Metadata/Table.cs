@@ -1,7 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
-using System.Linq;
 
 namespace NiteLang.Metadata;
 
@@ -28,7 +26,7 @@ internal sealed class Table<T> : IEnumerable<T>
 	{
 		int index = (int)(handle.JustValue);
 
-		if (handle.Type != T.TableStorageType)
+		if (handle.Type != T.StorageType)
 			return default;
 
 		if (index < 0 || index >= _values.Count)
@@ -39,7 +37,7 @@ internal sealed class Table<T> : IEnumerable<T>
 
 	private Handle MakeNextId()
 	{
-		return new Handle(((uint)T.TableStorageType << 28) | (uint)_values.Count);
+		return new Handle(((uint)T.StorageType << 28) | (uint)_values.Count);
 	}
 
 	public IEnumerator<T> GetEnumerator() => _values.GetEnumerator();

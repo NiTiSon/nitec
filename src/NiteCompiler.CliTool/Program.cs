@@ -22,21 +22,21 @@ public static class Program
 	{
 		using FileStream fs = new(@"C:\Users\UwU\Desktop\s.bin", FileMode.Open, FileAccess.Write);
 		fs.SetLength(0);
-		using NlibWriter nlib = new(fs, true);
-
-		NlibLibraryBuilder stdlib = new("stdlib");
-		NlibModuleBuilder numericsModule = stdlib.CreateModule("std::numerics");
-		NlibModuleBuilder stdModule = stdlib.CreateModule("std");
-		NlibTypeBuilder sint8 = numericsModule.CreateType("SInt8");
-		NlibTypeBuilder sint16 = numericsModule.CreateType("SInt16");
-		NlibTypeBuilder sint32 = numericsModule.CreateType("SInt32");
-		NlibTypeBuilder sint64 = numericsModule.CreateType("SInt64");
-		NlibTypeBuilder uint8 = numericsModule.CreateType("UInt8");
-		NlibTypeBuilder uint16 = numericsModule.CreateType("UInt16");
-		NlibTypeBuilder uint32 = numericsModule.CreateType("UInt32");
-		NlibTypeBuilder uint64 = numericsModule.CreateType("UInt64");
-
-		nlib.Write(stdlib);
+		// using NlibWriter nlib = new(fs, true);
+		//
+		// NlibLibraryBuilder stdlib = new("stdlib");
+		// NlibModuleBuilder numericsModule = stdlib.CreateModule("std::numerics");
+		// NlibModuleBuilder stdModule = stdlib.CreateModule("std");
+		// NlibTypeBuilder sint8 = numericsModule.CreateType("SInt8");
+		// NlibTypeBuilder sint16 = numericsModule.CreateType("SInt16");
+		// NlibTypeBuilder sint32 = numericsModule.CreateType("SInt32");
+		// NlibTypeBuilder sint64 = numericsModule.CreateType("SInt64");
+		// NlibTypeBuilder uint8 = numericsModule.CreateType("UInt8");
+		// NlibTypeBuilder uint16 = numericsModule.CreateType("UInt16");
+		// NlibTypeBuilder uint32 = numericsModule.CreateType("UInt32");
+		// NlibTypeBuilder uint64 = numericsModule.CreateType("UInt64");
+		//
+		// nlib.Write(stdlib);
 		return;
 		#if DEBUG
 		Console.WriteLine("[" + string.Join(", ", args) + "]");
