@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="src/Directory.Build.props" />
+  </Folder>
+  <Project Path="src/NiteCompiler.CliTool/NiteCompiler.CliTool.csproj" />
+  <Project Path="src/NiteCompiler.Tests/NiteCompiler.Tests.csproj" />
+  <Project Path="src/NiteCompiler/NiteCompiler.csproj" />
+  <Project Path="src/NiteLang.Metadata/NiteLang.Metadata.csproj" />
+</Solution>
