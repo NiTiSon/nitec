@@ -14,9 +14,5 @@ public enum PredefinedType
 	F32,
 	F64,
 	Void,
-	NeverReturn,
-	Reference3,
-	Pointer3,
-	BoxReference3,
-	Optional1,
+	NeverReturn
 }

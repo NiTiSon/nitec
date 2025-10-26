@@ -1,25 +1,42 @@
+using System;
+using System.Collections.Generic;
+
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
-public abstract class TypeSymbol : Symbol
+public abstract class TypeSymbol : Symbol, IContainerSymbol, IMemberSymbol, IEquatable<TypeSymbol>
 {
-	public override SymbolKind Kind => SymbolKind.Type;
-	public abstract override Symbol ContainingSymbol { get; }
-	public ModuleSymbol ContainingModule
-	{
-		get
-		{
-			Symbol s = ContainingSymbol;
-			while (s is not ModuleSymbol)
-			{
-				s = s.ContainingSymbol;
-			}
+	public sealed override SymbolKind Kind => SymbolKind.Type;
+	public abstract IEnumerable<IMemberSymbol> Members { get; }
+	public abstract IContainerSymbol? ContainingSymbol { get; }
 
-			return (ModuleSymbol)s;
-		}
+	private protected TypeSymbol() { }
+
+	public bool Equals(TypeSymbol? other)
+	{
+		if (other is null) return false;
+
+		if (other is PredefinedTypeSymbol predefined) other = predefined;
+
+		return ReferenceEquals(this is PredefinedTypeSymbol type ? type.UnderlyingType : this, other);
 	}
 
-	public override string ToSignatureString()
+	public override bool Equals(object? obj)
 	{
-		return Name;
+		return Equals(obj as TypeSymbol);
+	}
+
+	public override int GetHashCode()
+	{
+		return HashCode.Combine(Members, ContainingSymbol);
+	}
+
+	public static bool operator ==(TypeSymbol? left, TypeSymbol? right)
+	{
+		return !ReferenceEquals(left, null) && left.Equals(right);
+	}
+
+	public static bool operator !=(TypeSymbol? left, TypeSymbol? right)
+	{
+		return !(left == right);
 	}
 }

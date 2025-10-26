@@ -4,7 +4,7 @@ namespace NiteCompiler.Emit;
 
 internal sealed class Emitter
 {
-	public Emitter(GlobalSymbolTable globalSymbolTable, object? references = null)
+	public Emitter(GlobalScope globalScope, object? references = null)
 	{
 
 	}

@@ -3,41 +3,19 @@ using System.Linq;
 
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
-public sealed class LibrarySymbol : Symbol
+public abstract class LibrarySymbol : Symbol, INamedSymbol, IContainerSymbol
 {
-	private readonly List<ModuleSymbol> _modules;
-
-	public override string Name { get; }
-	public IEnumerable<ModuleSymbol> Modules => _modules;
-
-	public LibrarySymbol(string name)
+	public abstract string Name { get; }
+	public sealed override SymbolKind Kind => SymbolKind.Library;
+	public abstract IEnumerable<ModuleSymbol> Modules { get; }
+	public virtual IEnumerable<TypeSymbol> AllTypes
 	{
-		Name = name;
-		_modules = [];
-	}
-
-	public override Symbol? ContainingSymbol => null;
-	public override SymbolKind Kind => SymbolKind.Library;
-
-	internal ModuleSymbol GetOrAddModule(string? name)
-	{
-		if (string.IsNullOrEmpty(name))
+		get
 		{
-			name = WellKnownSemantic.GlobalModuleName;
+			return Modules.SelectMany(t => t.GetMembersRecursively(false)).OfType<TypeSymbol>();
 		}
-
-		var module = Modules.FirstOrDefault(t => t.Name == name);
-
-		return module ?? AddModule(name);
 	}
+	IEnumerable<IMemberSymbol> IContainerSymbol.Members => Modules;
 
-	private ModuleSymbol AddModule(string name)
-	{
-		ModuleSymbol module = new(name)
-		{
-			ContainingLibrary = this
-		};
-		_modules.Add(module);
-		return module;
-	}
+	private protected LibrarySymbol() {}
 }
