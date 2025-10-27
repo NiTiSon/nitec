@@ -1,9 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.Runtime.Serialization;
 using System.Threading;
-using LLVMSharp;
 
 namespace NiteCompiler.CodeAnalysis.Text;
 
@@ -64,7 +62,7 @@ public sealed class SlidingWindow
 			try
 			{
 				Console.ForegroundColor = ConsoleColor.Yellow;
-				SourceLines lines = new(_sourceText);
+				SourceLines lines = _sourceText.Lines;
 				Console.WriteLine($"Sliding window: {_sourceText.FileName ?? "<script>"} {_sourceText.Span}");
 				TextLine? problemLine = lines.GetLineByCharacterPosition(Position);
 				try

@@ -11,7 +11,8 @@ public partial class DiagnosticDescriptor
 		UnexpectedToken,
 		CannotResolveSymbol,
 		UnresolvedPredefinedType,
-		FieldMustHaveEitherTypeClauseOrDefaultValue
+		FieldMustHaveEitherTypeClauseOrDefaultValue,
+		IntegralConstantTooLarge
 		;
 
 	static DiagnosticDescriptor()
@@ -36,5 +37,8 @@ public partial class DiagnosticDescriptor
 		FieldMustHaveEitherTypeClauseOrDefaultValue = new("field-unresolvable-type", "Field must have either type clause or default value.");
 
 		// Type Checking
+
+		// Value checking
+		IntegralConstantTooLarge = new("integral-constant-too-large", "Integral constant too large.");
 	}
 }

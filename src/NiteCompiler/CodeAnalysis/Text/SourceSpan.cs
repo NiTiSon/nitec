@@ -10,4 +10,12 @@ public record SourceSpan
 		Source = source;
 		Span = span;
 	}
+
+	public string GetText() => Source.GetText(Span);
+
+	public int Start => Span.Start;
+	public int Length => Span.Length;
+	public int End => Span.End;
+
+	public static implicit operator TextSpan(SourceSpan span) => span.Span;
 }

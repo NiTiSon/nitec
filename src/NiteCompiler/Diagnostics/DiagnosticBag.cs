@@ -110,4 +110,9 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 	{
 		Add(DiagnosticDescriptor.UnresolvedPredefinedType, type);
 	}
+
+	public void ReportIntegralConstantIsTooLarge(SourceSpan source)
+	{
+		Add(DiagnosticDescriptor.IntegralConstantTooLarge, source);
+	}
 }

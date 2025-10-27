@@ -44,7 +44,7 @@ public sealed partial class NiteLexer
 			case SyntaxKind.IdentifierToken:
 				return new IdentifierToken(info.Kind, info.ContextualKind, span, text!);
 			case SyntaxKind.NumberToken:
-				return NumericParser.Parse(ref info, text, span, _diagnostics);
+				return NumericParser.Parse(ref info, text, span.Contextualize(_source), _diagnostics);
 			default:
 				return new(info.Kind, span);
 		}

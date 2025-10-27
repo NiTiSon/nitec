@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using CommunityToolkit.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Text;
 
@@ -24,6 +23,8 @@ public abstract class SourceText : IDisposable
 
 	public abstract string GetText(TextLine line);
 
+	public abstract SourceLines Lines { get; }
+
 	public abstract int Length { get; }
 
 	public TextSpan Span =>  new(0, Length);
@@ -35,12 +36,12 @@ public abstract class SourceText : IDisposable
 		return new StringText(text);
 	}
 
-	public SourceText FromFile(string fileName)
+	public static SourceText FromFile(string fileName)
 	{
 		return FromFile(new FileInfo(fileName));
 	}
 
-	public SourceText FromFile(FileInfo file)
+	public static SourceText FromFile(FileInfo file)
 	{
 		if (!file.Exists)
 		{

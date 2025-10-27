@@ -38,5 +38,23 @@ public sealed class StringText : SourceText
 		return line.IsEmpty ? string.Empty : GetText(new TextSpan(line.Position, line.LengthIncludingLineBreak));
 	}
 
+	private readonly WeakReference<SourceLines> _lazyLines = new(null!);
+	public override SourceLines Lines
+	{
+		get
+		{
+			if (_lazyLines.TryGetTarget(out SourceLines? lines))
+			{
+				return lines;
+			}
+
+			lines = new SourceLines(this);
+
+			_lazyLines.SetTarget(lines);
+
+			return lines;
+		}
+	}
+
 	public override char this[int i] => _text[i];
 }

@@ -6,8 +6,9 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 
 internal static class NumericParser
 {
-	public static Token Parse(ref NiteLexer.TokenInfo info, ReadOnlySpan<char> text, TextSpan span, DiagnosticBag diagnostics)
+	public static Token Parse(ref NiteLexer.TokenInfo info, ReadOnlySpan<char> text, SourceSpan span, DiagnosticBag diagnostics)
 	{
+		// TODO: Add suffixes logic
 		// By default, all literals are signed
 		ulong value = 0;
 		bool overflow = false;
@@ -30,7 +31,7 @@ internal static class NumericParser
 
 		if (overflow)
 		{
-			// diagnostics TODO: report overflow UInt64
+			diagnostics.ReportIntegralConstantIsTooLarge(span);
 			return new TokenWithValue<int>(SyntaxKind.NumberToken, span, 0);
 		}
 

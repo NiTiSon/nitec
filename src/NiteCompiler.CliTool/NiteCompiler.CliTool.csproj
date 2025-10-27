@@ -6,6 +6,7 @@
 		<PackAsTool>true</PackAsTool>
 		<ToolCommandName>nitec</ToolCommandName>
 		<PackageOutputPath>../../nupkg</PackageOutputPath>
+        <LangVersion>14.0</LangVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
