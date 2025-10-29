@@ -17,20 +17,6 @@ internal sealed class GlobalScope
 	public GlobalScope(string libraryName, params NlibLibrary[] dependencies)
 	{
 		ThisLibrary = new(libraryName);
-		ThisLibrary.Modules.Add(new SourceModuleSymbol(ThisLibrary, "")); // global module
 		Dependencies = [];
-	}
-
-	public SourceModuleSymbol GetInternalModule(string name)
-	{
-		SourceModuleSymbol? sourceModuleSymbol = ThisLibrary.Modules.FirstOrDefault(t => t.Name == name);
-
-		if (sourceModuleSymbol is null)
-		{
-			sourceModuleSymbol = new(ThisLibrary, name);
-			ThisLibrary.Modules.Add(sourceModuleSymbol);
-		}
-
-		return sourceModuleSymbol;
 	}
 }

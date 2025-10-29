@@ -8,6 +8,7 @@ public abstract class TypeSymbol : Symbol, IContainerSymbol, IMemberSymbol, IEqu
 	public sealed override SymbolKind Kind => SymbolKind.Type;
 	public abstract IEnumerable<IMemberSymbol> Members { get; }
 	public abstract IContainerSymbol? ContainingSymbol { get; }
+	public abstract TypeSymbol? Parent { get; }
 
 	private protected TypeSymbol() { }
 

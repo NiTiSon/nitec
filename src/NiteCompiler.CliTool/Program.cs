@@ -103,87 +103,87 @@ public static class Program
 	}
 
 	private static void WriteDiagnostic(Diagnostic diagnostic)
-{
-	if (diagnostic.Severity == DiagnosticSeverity.Hidden)
-		return;
-
-	(string type, ConsoleColor foreColor) = diagnostic.Severity switch
 	{
-		DiagnosticSeverity.Error => ("error", ConsoleColor.Red),
-		DiagnosticSeverity.Warning => ("warning", ConsoleColor.Yellow),
-		DiagnosticSeverity.Info => ("info", ConsoleColor.Cyan),
-		_ => throw new ArgumentException(null, nameof(diagnostic))
-	};
+		if (diagnostic.Severity == DiagnosticSeverity.Hidden)
+			return;
 
-	// header
-	Console.ForegroundColor = foreColor;
-	Console.Write($"{type}[{diagnostic.Id}]");
-	Console.ResetColor();
-	Console.WriteLine(": " + diagnostic.Message);
-
-	if (diagnostic.Span == null)
-		return;
-
-	var span = diagnostic.Span;
-	var source = span.Source;
-	var lines = source.Lines;
-
-	TextLine? beginOpt = lines.GetLineByCharacterPosition(span.Start);
-	TextLine? endOpt = lines.GetLineByCharacterPosition(span.End);
-
-	if (beginOpt == null || endOpt == null)
-	{
-		// Defensive fallback for weird spans (e.g. after EOF)
-		Console.ForegroundColor = ConsoleColor.DarkGray;
-		Console.WriteLine($"(invalid span {span.Start}..{span.End})");
-		Console.ResetColor();
-		return;
-	}
-
-	var begin = beginOpt.Value;
-	var end = endOpt.Value;
-
-	string firstLineNum = begin.HumanReadableLineNumber.ToString();
-	int gutterWidth = firstLineNum.Length + 1;
-
-	Console.WriteLine($"{new string(' ', gutterWidth - 1)}--> {source.FileName}:{begin.HumanReadableLineNumber}:{begin.GetColumnIndex(span.Start) + 1}");
-	Console.WriteLine(new string(' ', gutterWidth) + "|");
-
-	for (int i = begin.Index; i <= end.Index && i < source.Lines.Count; i++)
-	{
-		TextLine current = source.Lines.GetLineByIndex(i);
-		string lineNum = current.HumanReadableLineNumber.ToString().PadLeft(gutterWidth - 1);
-
-		// avoid IndexOutOfRange if line is empty (EOF after newline)
-		string text = string.Empty;
-		if (current.LineSpan.End <= source.Length && current.LineSpan.Start < source.Length)
-			text = source.GetText(current.LineSpan).TrimLineTerminators();
-
-		Console.Write(lineNum);
-		Console.Write(" | ");
-
-		if (text.Length == 0)
+		(string type, ConsoleColor foreColor) = diagnostic.Severity switch
 		{
-			Console.WriteLine();
-			continue;
+			DiagnosticSeverity.Error => ("error", ConsoleColor.Red),
+			DiagnosticSeverity.Warning => ("warning", ConsoleColor.Yellow),
+			DiagnosticSeverity.Info => ("info", ConsoleColor.Cyan),
+			_ => throw new ArgumentException(null, nameof(diagnostic))
+		};
+
+		// header
+		Console.ForegroundColor = foreColor;
+		Console.Write($"{type}[{diagnostic.Id}]");
+		Console.ResetColor();
+		Console.WriteLine(": " + diagnostic.Message);
+
+		if (diagnostic.Span == null)
+			return;
+
+		var span = diagnostic.Span;
+		var source = span.Source;
+		var lines = source.Lines;
+
+		TextLine? beginOpt = lines.GetLineByCharacterPosition(span.Start);
+		TextLine? endOpt = lines.GetLineByCharacterPosition(span.End);
+
+		if (beginOpt == null || endOpt == null)
+		{
+			// Defensive fallback for weird spans (e.g. after EOF)
+			Console.ForegroundColor = ConsoleColor.DarkGray;
+			Console.WriteLine($"(invalid span {span.Start}..{span.End})");
+			Console.ResetColor();
+			return;
 		}
 
-		int startOffset = 0;
-		int endOffset = text.Length;
+		TextLine begin = beginOpt.Value;
+		TextLine end = endOpt.Value;
 
-		if (i == begin.Index)
-			startOffset = Math.Clamp(span.Start - current.Position, 0, text.Length);
-		if (i == end.Index)
-			endOffset = Math.Clamp(span.End - current.Position, startOffset, text.Length);
+		string firstLineNum = begin.HumanReadableLineNumber.ToString();
+		int gutterWidth = firstLineNum.Length + 1;
 
-		Console.Write(text[..startOffset]);
-		Console.ForegroundColor = foreColor;
-		Console.Write(text[startOffset..endOffset]);
-		Console.ResetColor();
-		Console.WriteLine(text[endOffset..]);
-	}
+		Console.WriteLine($"{new string(' ', gutterWidth - 1)}--> {source.FileName}:{begin.HumanReadableLineNumber}:{begin.GetColumnIndex(span.Start) + 1}");
+		Console.WriteLine(new string(' ', gutterWidth) + "|");
 
-	Console.WriteLine(new string(' ', gutterWidth) + "|");
+		for (int i = begin.Index; i <= end.Index && i < source.Lines.Count; i++)
+		{
+			TextLine current = source.Lines.GetLineByIndex(i);
+			string lineNum = current.HumanReadableLineNumber.ToString().PadLeft(gutterWidth - 1);
+
+			// avoid IndexOutOfRange if line is empty (EOF after newline)
+			string text = string.Empty;
+			if (current.LineSpan.End <= source.Length && current.LineSpan.Start < source.Length)
+				text = source.GetText(current.LineSpan).TrimLineTerminators();
+
+			Console.Write(lineNum);
+			Console.Write(" | ");
+
+			if (text.Length == 0)
+			{
+				Console.WriteLine();
+				continue;
+			}
+
+			int startOffset = 0;
+			int endOffset = text.Length;
+
+			if (i == begin.Index)
+				startOffset = Math.Clamp(span.Start - current.Position, 0, text.Length);
+			if (i == end.Index)
+				endOffset = Math.Clamp(span.End - current.Position, startOffset, text.Length);
+
+			Console.Write(text[..startOffset]);
+			Console.ForegroundColor = foreColor;
+			Console.Write(text[startOffset..endOffset]);
+			Console.ResetColor();
+			Console.WriteLine(text[endOffset..]);
+		}
+
+		Console.WriteLine(new string(' ', gutterWidth) + "|");
 }
 
 

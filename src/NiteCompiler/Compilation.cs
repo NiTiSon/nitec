@@ -13,6 +13,7 @@ namespace NiteCompiler;
 public sealed class Compilation
 {
 	private readonly GlobalScope _globalScope;
+	private readonly ModuleManager _moduleManager;
 	public NlibLibrary[] Dependencies { get; }
 	public ImmutableArray<SyntaxTree> SyntaxTrees { get; }
 	public DiagnosticBag Diagnostics { get; }
@@ -22,7 +23,13 @@ public sealed class Compilation
 		Dependencies = dependencies;
 		SyntaxTrees = [..trees];
 		_globalScope = new(libraryName);
+		_moduleManager = new(_globalScope);
 		Diagnostics = [];
+
+		foreach (SyntaxTree tree in trees)
+		{
+			Declarator.DeclarationPass(tree, _globalScope, _moduleManager, Diagnostics);
+		}
 
 		_globalScope.Diagnostics.DrainInto(Diagnostics);
 	}

@@ -12,6 +12,7 @@ public partial class DiagnosticDescriptor
 		CannotResolveSymbol,
 		UnresolvedPredefinedType,
 		FieldMustHaveEitherTypeClauseOrDefaultValue,
+		OnlyTopLevelModuleDeclarationsAreAllowed,
 		IntegralConstantTooLarge
 		;
 
@@ -35,6 +36,7 @@ public partial class DiagnosticDescriptor
 		CannotResolveSymbol = new("cannot-resolve-symbol", "Cannot resolve symbol.");
 		UnresolvedPredefinedType = new("unresolved-predefined-type", "Predefined type {0} is not resolved.", DiagnosticSeverity.Warning);
 		FieldMustHaveEitherTypeClauseOrDefaultValue = new("field-unresolvable-type", "Field must have either type clause or default value.");
+		OnlyTopLevelModuleDeclarationsAreAllowed = new("only-top-level-module-declarations-are-allowed", "Only top-level module declarations are allowed.");
 
 		// Type Checking
 

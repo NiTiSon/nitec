@@ -115,4 +115,9 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 	{
 		Add(DiagnosticDescriptor.IntegralConstantTooLarge, source);
 	}
+
+	public void ReportOnlyTopLevelModuleDeclarationsAreAllowed(SourceSpan source)
+	{
+		Add(DiagnosticDescriptor.OnlyTopLevelModuleDeclarationsAreAllowed, source);
+	}
 }

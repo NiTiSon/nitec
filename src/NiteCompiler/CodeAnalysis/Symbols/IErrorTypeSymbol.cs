@@ -8,4 +8,6 @@ public interface IErrorTypeSymbol
 	/// Either empty or 2+.
 	/// </summary>
 	ImmutableArray<Symbol> Candidates { get; }
+
+	ErrorSymbolReason Reason { get; }
 }
