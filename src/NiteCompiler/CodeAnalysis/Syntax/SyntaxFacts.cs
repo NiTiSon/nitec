@@ -272,23 +272,4 @@ internal static class SyntaxFacts
 			_ => throw new InvalidEnumArgumentException(),
 		};
 	}
-
-	public static (string moduleName, string typeName) GetModuleAndTypeName(PredefinedType type)
-	{
-		return type switch
-		{
-			PredefinedType.I8 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.I8TypeName),
-			PredefinedType.I16 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.I16TypeName),
-			PredefinedType.I32 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.I32TypeName),
-			PredefinedType.I64 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.I64TypeName),
-			PredefinedType.U8 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.U8TypeName),
-			PredefinedType.U16 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.U16TypeName),
-			PredefinedType.U32 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.U32TypeName),
-			PredefinedType.U64 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.U64TypeName),
-			PredefinedType.F16 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.F16TypeName),
-			PredefinedType.F32 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.F32TypeName),
-			PredefinedType.F64 => (WellKnownSemantic.NumericsModuleName, WellKnownSemantic.F64TypeName),
-			_ => throw new InvalidEnumArgumentException()
-		};
-	}
 }

@@ -2,11 +2,10 @@
 	<PropertyGroup>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Authors>NiTiSon and contributors</Authors>
-		<Description>NiteCode &amp;amp; Nibc compiler</Description>
+		<Description>Nite compiler</Description>
 		<TargetFramework>net10.0</TargetFramework>
         <LangVersion>14.0</LangVersion>
 
-		<LangVersion>latest</LangVersion>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>

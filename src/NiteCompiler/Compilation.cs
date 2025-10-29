@@ -22,19 +22,22 @@ public sealed class Compilation
 	{
 		Dependencies = dependencies;
 		SyntaxTrees = [..trees];
-		_globalScope = new(libraryName);
+		_globalScope = new(libraryName, dependencies);
 		_moduleManager = new(_globalScope);
 		Diagnostics = [];
 
 		foreach (SyntaxTree tree in trees)
 		{
-			Declarator.DeclarationPass(tree, _globalScope, _moduleManager, Diagnostics);
+			Declarator.DeclarationPass(tree, _moduleManager, Diagnostics);
 		}
+
+		// So here we do Binding
 
 		_globalScope.Diagnostics.DrainInto(Diagnostics);
 	}
 
 	public void Emit(Stream stream)
 	{
+		// TODO: Later
 	}
 }

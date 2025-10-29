@@ -1,8 +1,7 @@
 namespace NiteCompiler.CodeAnalysis;
 
-internal static class WellKnownSemantic
+internal static class WellKnownMembers
 {
-	public const string GlobalModuleName = "<global>";
 	public const string NumericsModuleName = "std::numerics";
 	public const string StandardModuleName = "std";
 
@@ -18,6 +17,7 @@ internal static class WellKnownSemantic
 	public const string F32TypeName = "Float32";
 	public const string F64TypeName = "Float64";
 	public const string NeverReturnTypeName = "NeverReturn";
+	public const string VoidTypeName = "Void";
 	public const string ReferenceTypeName = "Reference<3>";
 	public const string BoxReferenceTypeName = "BoxReference<3>";
 	public const string PointerTypeName = "Pointer<3>";

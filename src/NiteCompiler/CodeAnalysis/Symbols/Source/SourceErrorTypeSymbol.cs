@@ -8,18 +8,12 @@ internal sealed class SourceErrorTypeSymbol : TypeSymbol, IErrorTypeSymbol
 	public override IEnumerable<IMemberSymbol> Members => [];
 	public override IContainerSymbol? ContainingSymbol => null;
 	public override TypeSymbol? Parent => null;
-	public ImmutableArray<Symbol> Candidates { get; }
+	public ImmutableArray<TypeSymbol> Candidates { get; }
 	public ErrorSymbolReason Reason { get; }
 
-	public SourceErrorTypeSymbol(ErrorSymbolReason reason, params ImmutableArray<Symbol> candidateSymbols)
+	public SourceErrorTypeSymbol(ErrorSymbolReason reason, params ImmutableArray<TypeSymbol> candidateSymbols)
 	{
 		Candidates = candidateSymbols;
 		Reason = reason;
-	}
-
-	public SourceErrorTypeSymbol()
-	{
-		Candidates = ImmutableArray<Symbol>.Empty;
-		Reason = ErrorSymbolReason.Unknown;
 	}
 }

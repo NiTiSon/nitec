@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using NiteCompiler.CodeAnalysis;
+using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.CodeAnalysis.Text;
 
@@ -106,9 +107,14 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.FieldMustHaveEitherTypeClauseOrDefaultValue, source);
 	}
 
-	public void ReportUnresolvedPredefinedSymbol(string type)
+	public void ReportUnresolvedPredefinedType(string type)
 	{
 		Add(DiagnosticDescriptor.UnresolvedPredefinedType, type);
+	}
+
+	public void ReportAmbiguousReference(SourceSpan source, params IEnumerable<Symbol> candidates)
+	{
+		Add(DiagnosticDescriptor.AmbiguousReference, source, string.Join(",\n", candidates));
 	}
 
 	public void ReportIntegralConstantIsTooLarge(SourceSpan source)

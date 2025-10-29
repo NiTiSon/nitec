@@ -9,5 +9,5 @@ public enum ErrorSymbolReason
 	/// <summary>
 	/// Binder unable to find suitable symbol.
 	/// </summary>
-	Unknown = 1,
+	NotFound = 1,
 }

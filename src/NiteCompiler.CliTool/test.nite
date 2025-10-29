@@ -4,3 +4,22 @@ public main() -> i32 {
 	return 1239129387129387129;
 	return 1 + 3 + 5;
 }
+
+module std;
+
+public type Void;
+public type NeverReturn;
+
+module std::numerics;
+
+public type SInt8;
+public type SInt16;
+public type SInt32;
+public type SInt64;
+public type UInt8;
+public type UInt16;
+public type UInt32;
+public type UInt64;
+public type Float16;
+public type Float32;
+public type Float64;

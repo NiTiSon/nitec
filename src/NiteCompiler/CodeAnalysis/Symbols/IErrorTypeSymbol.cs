@@ -7,7 +7,7 @@ public interface IErrorTypeSymbol
 	/// <summary>
 	/// Either empty or 2+.
 	/// </summary>
-	ImmutableArray<Symbol> Candidates { get; }
+	ImmutableArray<TypeSymbol> Candidates { get; }
 
 	ErrorSymbolReason Reason { get; }
 }
