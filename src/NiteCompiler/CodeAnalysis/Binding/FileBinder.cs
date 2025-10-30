@@ -1,18 +1,11 @@
-using System;
-using NiteCompiler.CodeAnalysis.Symbols;
+using System.Collections.Generic;
 using NiteCompiler.CodeAnalysis.Syntax;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
 
-internal sealed class FileBinder : Binder
+internal sealed class FileBinder : BinderWithUsagesAndAliases
 {
-	public SyntaxTree Tree { get; }
-
-	public FileBinder(Binder? parent, SyntaxTree tree,  GlobalScope globalScope, ModuleManager moduleManager,
-		params ReadOnlySpan<UseDirectiveSyntax> usings) : base(parent, globalScope, moduleManager, usings)
+	public FileBinder(Binder? parent, Compilation compilation, IEnumerable<UseDirectiveSyntax> usages) : base(parent, compilation, usages)
 	{
-		Tree = tree;
 	}
-
-
 }

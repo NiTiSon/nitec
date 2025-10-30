@@ -131,14 +131,14 @@ public static class Program
 		TextLine? beginOpt = lines.GetLineByCharacterPosition(span.Start);
 		TextLine? endOpt = lines.GetLineByCharacterPosition(span.End);
 
-		if (beginOpt == null || endOpt == null)
-		{
-			// Defensive fallback for weird spans (e.g. after EOF)
-			Console.ForegroundColor = ConsoleColor.DarkGray;
-			Console.WriteLine($"(invalid span {span.Start}..{span.End})");
-			Console.ResetColor();
-			return;
-		}
+	if (beginOpt == null || endOpt == null)
+	{
+		// Defensive fallback for weird spans (e.g. after EOF)
+		Console.ForegroundColor = ConsoleColor.DarkGray;
+		Console.WriteLine($"(invalid span {span.Start}..{span.End})");
+		Console.ResetColor();
+		return;
+	}
 
 		TextLine begin = beginOpt.Value;
 		TextLine end = endOpt.Value;

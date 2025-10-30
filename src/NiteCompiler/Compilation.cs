@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -30,8 +31,6 @@ public sealed class Compilation
 		{
 			Declarator.DeclarationPass(tree, _moduleManager, Diagnostics);
 		}
-
-		// So here we do Binding
 
 		_globalScope.Diagnostics.DrainInto(Diagnostics);
 	}
