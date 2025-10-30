@@ -1,5 +1,3 @@
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public abstract class StatementSyntax : SyntaxNode
-{
-}
+public abstract class StatementSyntax : StatementOrUseOrUseAsDirectiveSyntax;

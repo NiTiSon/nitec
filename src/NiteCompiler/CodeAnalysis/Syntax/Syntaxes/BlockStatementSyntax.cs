@@ -7,10 +7,10 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 public sealed class BlockStatementSyntax : StatementSyntax
 {
 	public Token LeftParen { get; }
-	public ImmutableArray<StatementSyntax> Statements { get; }
+	public ImmutableArray<StatementOrUseOrUseAsDirectiveSyntax> Statements { get; }
 	public Token RightParen { get; }
 
-	public BlockStatementSyntax(Token leftParen, ImmutableArray<StatementSyntax> statements, Token rightParen)
+	public BlockStatementSyntax(Token leftParen, ImmutableArray<StatementOrUseOrUseAsDirectiveSyntax> statements, Token rightParen)
 	{
 		LeftParen = leftParen;
 		Statements = statements;
@@ -19,6 +19,8 @@ public sealed class BlockStatementSyntax : StatementSyntax
 
 	public override SyntaxKind Kind => SyntaxKind.BlockStatement;
 	public override TextSpan Span => TextSpan.FromBounds(LeftParen.Span.Start, RightParen.Span.End);
+	public override bool IsRequiresSemicolon => false;
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return LeftParen;

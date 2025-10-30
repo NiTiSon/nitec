@@ -3,7 +3,7 @@ using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public sealed class UseDirectiveSyntax : SyntaxNode
+public sealed class UseDirectiveSyntax : UseOrUseAsDirectiveSyntax
 {
 	public Token UseKeyword { get; }
 	public ModuleNameSyntax ModuleName { get; }

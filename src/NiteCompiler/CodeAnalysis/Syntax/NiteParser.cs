@@ -24,11 +24,7 @@ public sealed partial class NiteParser
 		{
 			token = lexer.Lex();
 			_tokens.Add(token);
-		} while (token.Kind != SyntaxKind.EofToken); // Also include EOF token
-
-		#if DEBUG
-		Console.WriteLine("Token/Character ratio: " + (float)_tokens.Count / sourceText.Length);
-		#endif
+		} while (token.Kind != SyntaxKind.EofToken);
 	}
 
 	public Token Current => Peek(0);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Immutable;
+using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
@@ -9,25 +10,44 @@ public sealed partial class NiteParser
 	{
 		Token openBrace = MatchToken(SyntaxKind.OpenBraceToken);
 
-		ImmutableArray<StatementSyntax>.Builder statements = ImmutableArray.CreateBuilder<StatementSyntax>();
+		var statementsBuilder = ImmutableArray.CreateBuilder<StatementOrUseOrUseAsDirectiveSyntax>();
 		while (Current.Kind != SyntaxKind.CloseBraceToken)
 		{
 			if (Current.Kind == SyntaxKind.EofToken)
 			{
-				// report
+				_diagnostics.ReportExpectedToken(
+					new SourceSpan(_source, new TextSpan(int.Max(Current.Span.Start - 1, 0), 1)),
+					SyntaxKind.CloseBraceToken);
 				return new BlockStatementSyntax(openBrace, [], Current);
 			}
 
-			statements.Add(ParseStatement());
-			if (Current.Kind == SyntaxKind.SemicolonToken) // Change to MatchToken to make semicolon explicit
+			StatementOrUseOrUseAsDirectiveSyntax node = ParseStatementOrUseOrUseAsDirective();
+			statementsBuilder.Add(node);
+			if (!node.IsRequiresSemicolon) continue;
+
+			if (Current.Kind == SyntaxKind.SemicolonToken)
 			{
 				Advance();
+			}
+			else
+			{
+				_diagnostics.ReportExpectedToken(Current.Span.Contextualize(_source), SyntaxKind.SemicolonToken);
 			}
 		}
 
 		Token closeBrace = MatchToken(SyntaxKind.CloseBraceToken);
 
-		return new BlockStatementSyntax(openBrace, statements.ToImmutable(), closeBrace);
+		return new BlockStatementSyntax(openBrace, statementsBuilder.ToImmutable(), closeBrace);
+	}
+
+	private StatementOrUseOrUseAsDirectiveSyntax ParseStatementOrUseOrUseAsDirective()
+	{
+		if (Current.Kind == SyntaxKind.UseKeyword)
+		{
+			return ParseUseDirective();
+		}
+
+		return ParseStatement();
 	}
 
 	private StatementSyntax ParseStatement()
