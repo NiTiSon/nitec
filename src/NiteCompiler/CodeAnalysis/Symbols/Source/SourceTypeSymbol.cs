@@ -11,6 +11,7 @@ internal sealed class SourceTypeSymbol : TypeSymbol, INamedSymbol, ISourceContai
 	public override IContainerSymbol ContainingSymbol { get; }
 	public override TypeSymbol? Parent => _parent;
 	public override ICollection<IMemberSymbol> Members { get; } = [];
+	public List<UseOrUseAsDirectiveSyntax> Usages { get; } = [];
 
 	public SourceTypeSymbol(IContainerSymbol containingSymbol, string name, TypeDeclarationSyntax? syntax = null)
 	{

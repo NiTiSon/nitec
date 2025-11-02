@@ -4,7 +4,7 @@ public main() -> i32 {
 	use x::y;
 	return 1 + 2 + 5 / 2 * 2;
 }
-/*
+
 module std;
 
 public type Void;
@@ -22,4 +22,4 @@ public type UInt32;
 public type UInt64;
 public type Float16;
 public type Float32;
-public type Float64;*/
+public type Float64;
