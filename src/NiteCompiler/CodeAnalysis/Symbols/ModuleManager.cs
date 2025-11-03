@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using NiteCompiler.CodeAnalysis.Symbols.Source;
+using NiteCompiler.CodeAnalysis.Syntax;
 
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
@@ -55,7 +56,10 @@ public sealed class ModuleManager
 		}
 	}
 
-	internal SourceModuleSymbol GetModuleDeclaration(string moduleName)
+	internal SourceModuleSymbol GetSourceModuleSymbol(ModuleDeclarationSyntax module)
+		=> GetSourceModuleSymbol(module.Name.GetName());
+
+	internal SourceModuleSymbol GetSourceModuleSymbol(string moduleName)
 	{
 		SourceModuleSymbol? sourceModuleSymbol = Internal.Modules.FirstOrDefault(t => t.Name == moduleName);
 

@@ -11,7 +11,7 @@ internal static class Declarator
 {
 	public static void DeclarationPass(SyntaxTree tree, ModuleManager manager, DiagnosticBag diagnostics)
 	{
-		ISourceContainerSymbol currentModule = manager.GetModuleDeclaration(string.Empty);
+		ISourceContainerSymbol currentModule = manager.GetSourceModuleSymbol(string.Empty);
 		foreach (SyntaxNode node in tree.Root.TopLevelNodes)
 		{
 			DeclarationPass(node, ref currentModule, manager, diagnostics);
@@ -27,7 +27,7 @@ internal static class Declarator
 				diagnostics.ReportOnlyTopLevelModuleDeclarationsAreAllowed(moduleDeclaration.ContextualizedSpan);
 				break;
 			case ModuleDeclarationSyntax moduleDeclaration:
-				container = manager.GetModuleDeclaration(moduleDeclaration.Name.GetName());
+				container = manager.GetSourceModuleSymbol(moduleDeclaration.Name.GetName());
 				break;
 			case FunctionDeclarationSyntax functionDeclaration:
 				container.Members.Add(new SourceFunctionSymbol(container, functionDeclaration.Name.GetName(), functionDeclaration));

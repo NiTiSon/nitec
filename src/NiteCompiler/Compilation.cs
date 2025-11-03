@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Symbols;
+using NiteCompiler.CodeAnalysis.Symbols.Source;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Diagnostics;
 using NiteCompiler.Metadata;
@@ -13,8 +14,8 @@ namespace NiteCompiler;
 
 public sealed class Compilation
 {
-	private readonly GlobalScope _globalScope;
-	private readonly ModuleManager _moduleManager;
+	internal GlobalScope GlobalScope { get; }
+	public ModuleManager ModuleManager { get; }
 	public NlibLibrary[] Dependencies { get; }
 	public ImmutableArray<SyntaxTree> SyntaxTrees { get; }
 	public DiagnosticBag Diagnostics { get; }
@@ -23,16 +24,19 @@ public sealed class Compilation
 	{
 		Dependencies = dependencies;
 		SyntaxTrees = [..trees];
-		_globalScope = new(libraryName, dependencies);
-		_moduleManager = new(_globalScope);
+		GlobalScope = new(libraryName, dependencies);
+		ModuleManager = new(GlobalScope);
 		Diagnostics = [];
 
+		Dictionary<SyntaxTree, FileBinder> fileBinders = new(capacity: trees.Length);
 		foreach (SyntaxTree tree in trees)
 		{
-			Declarator.DeclarationPass(tree, _moduleManager, Diagnostics);
+			Declarator.DeclarationPass(tree, ModuleManager, Diagnostics);
+			fileBinders[tree] = new(null, this, tree);
+			fileBinders[tree].Bind();
 		}
 
-		_globalScope.Diagnostics.DrainInto(Diagnostics);
+		GlobalScope.Diagnostics.DrainInto(Diagnostics);
 	}
 
 	public void Emit(Stream stream)
