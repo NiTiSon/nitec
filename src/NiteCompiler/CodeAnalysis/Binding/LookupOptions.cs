@@ -6,7 +6,7 @@ internal enum LookupOptions
 
 	Libraries = 1 << 0,
 	Modules = 1 << 1,
-	PreferSymbolsFromThisLibrary = 1 << 31,
+	SymbolsFromThisLibrary = 1 << 31,
 
-	Default = Modules | PreferSymbolsFromThisLibrary,
+	Default = Modules | SymbolsFromThisLibrary,
 }

@@ -1,5 +1,3 @@
-use std::numerics::xyz;
-
 module test::test2;
 
 public main() -> i32 {

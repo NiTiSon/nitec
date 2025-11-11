@@ -10,7 +10,7 @@ internal sealed class BoundLiteralExpression : BoundExpression
 	{
 		Type = value switch
 		{
-			_ => throw new NotSupportedException()
+			_ => null!,
 		};
 
 		ConstantValue = new(value);

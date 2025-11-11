@@ -4,7 +4,7 @@ using NiteCompiler.CodeAnalysis.Syntax;
 
 namespace NiteCompiler.CodeAnalysis.Symbols.Source;
 
-internal sealed class SourceFunctionSymbol : FunctionSymbol
+internal sealed class SourceFunctionSymbol : FunctionSymbol, ISourceSymbol
 {
 	public List<UseOrUseAsDirectiveSyntax> Usages { get; } = [];
 

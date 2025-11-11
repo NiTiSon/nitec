@@ -2,7 +2,7 @@ using NiteCompiler.CodeAnalysis.Syntax;
 
 namespace NiteCompiler.CodeAnalysis.Symbols.Source;
 
-internal sealed class SourceFieldSymbol : FieldSymbol
+internal sealed class SourceFieldSymbol : FieldSymbol, ISourceSymbol
 {
 	private TypeSymbol _type;
 
