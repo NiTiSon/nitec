@@ -9,7 +9,7 @@ namespace NiteCompiler.CodeAnalysis.Symbols;
 public sealed class ModuleManager
 {
 	private readonly GlobalScope _globalScope;
-	private readonly Dictionary<string, ImmutableArray<ModuleSymbol>> _cachedModuleInclude = [];
+	private readonly Dictionary<string, MergedModuleSymbol> _cachedMergedModules = [];
 
 	private SourceLibrarySymbol Internal => _globalScope.ThisLibrary;
 
@@ -27,32 +27,45 @@ public sealed class ModuleManager
 	/// <remarks>
 	/// Do not call before Declaration pass.
 	/// </remarks>
-	public ImmutableArray<ModuleSymbol> GetModuleDeclarationWithinAllLibraries(string name, out bool exists)
+	private ImmutableArray<ModuleSymbol> GetModuleDeclarationWithinAllLibraries(string name, out bool exists)
 	{
-		if (_cachedModuleInclude.TryGetValue(name, out ImmutableArray<ModuleSymbol> result))
+		var builder = ImmutableArray.CreateBuilder<ModuleSymbol>();
+
+		SourceModuleSymbol? internalModule = Internal.Modules.FirstOrDefault(t => t.Name == name);
+
+		if (internalModule != null) builder.Add(internalModule);
+
+		foreach (ModuleSymbol module in _globalScope.Dependencies.SelectMany(t => t.Modules))
 		{
-			exists = result.Length != 0;
-			return result;
+			if (module.Name == name)
+			{
+				builder.Add(module);
+			}
+		}
+
+		ImmutableArray<ModuleSymbol> modules = builder.ToImmutable();
+		exists = modules.Length != 0;
+		return modules;
+	}
+
+	public MergedModuleSymbol? GetModule(string name)
+	{
+		if (_cachedMergedModules.TryGetValue(name, out var module))
+		{
+			return module;
 		}
 		else
 		{
-			var builder = ImmutableArray.CreateBuilder<ModuleSymbol>();
+			ImmutableArray<ModuleSymbol> moduleDeclarations
+				= GetModuleDeclarationWithinAllLibraries(name, out bool exists);
 
-			SourceModuleSymbol? internalModule = Internal.Modules.FirstOrDefault(t => t.Name == name);
+			if (!exists) return null;
 
-			if (internalModule != null) builder.Add(internalModule);
+			MergedModuleSymbol merged = new(name, moduleDeclarations);
 
-			foreach (ModuleSymbol module in _globalScope.Dependencies.SelectMany(t => t.Modules))
-			{
-				if (module.Name == name)
-				{
-					builder.Add(module);
-				}
-			}
+			_cachedMergedModules.Add(name, merged);
+			return merged;
 
-			_cachedModuleInclude[name] = result = builder.ToImmutable();
-			exists = result.Length != 0;
-			return result;
 		}
 	}
 
