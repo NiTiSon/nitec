@@ -23,6 +23,8 @@ internal static class Declarator
 	{
 		switch (node)
 		{
+			case UseOrUseAsDirectiveSyntax:
+				break;
 			case ModuleDeclarationSyntax moduleDeclaration when container is not SourceModuleSymbol: // ALL top level declarations has Module container
 				diagnostics.ReportOnlyTopLevelModuleDeclarationsAreAllowed(moduleDeclaration.ContextualizedSpan);
 				break;

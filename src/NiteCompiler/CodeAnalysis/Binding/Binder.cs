@@ -12,6 +12,7 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 internal abstract class Binder
 {
 	private readonly Binder? _parent;
+	public virtual DiagnosticBag Diagnostics => _parent?.Diagnostics ?? throw new Exception("Binder has no parent.");
 
 	protected Binder(Binder? parent)
 	{

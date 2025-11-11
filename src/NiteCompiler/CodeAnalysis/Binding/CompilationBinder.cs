@@ -1,12 +1,14 @@
 using System.Linq;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Symbols.Source;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal sealed class CompilationBinder : Binder
 {
 	public Compilation Compilation { get; }
+	public override DiagnosticBag Diagnostics { get; } = [];
 
 	public CompilationBinder(Compilation compilation) : base(null)
 	{

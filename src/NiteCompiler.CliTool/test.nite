@@ -1,7 +1,8 @@
+use std::numerics::xyz;
+
 module test::test2;
 
 public main() -> i32 {
-	use x::y;
 	return 1 + 2 + 5 / 2 * 2;
 }
 
