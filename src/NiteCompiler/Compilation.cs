@@ -28,12 +28,13 @@ public sealed class Compilation
 		ModuleManager = new(GlobalScope);
 		Diagnostics = [];
 
-		Dictionary<SyntaxTree, FileBinder> fileBinders = new(capacity: trees.Length);
+		CompilationBinder rootBinder = new(this);
+		//Dictionary<SyntaxTree, FileBinder> fileBinders = new(capacity: trees.Length);
 		foreach (SyntaxTree tree in trees)
 		{
 			Declarator.DeclarationPass(tree, ModuleManager, Diagnostics);
-			fileBinders[tree] = new(null, this, tree);
-			fileBinders[tree].Bind();
+			// fileBinders[tree] = new(null, this, tree);
+			// fileBinders[tree].Bind();
 		}
 
 		GlobalScope.Diagnostics.DrainInto(Diagnostics);

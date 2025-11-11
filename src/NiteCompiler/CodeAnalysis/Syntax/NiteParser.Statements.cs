@@ -10,7 +10,7 @@ public sealed partial class NiteParser
 	{
 		Token openBrace = MatchToken(SyntaxKind.OpenBraceToken);
 
-		var statementsBuilder = ImmutableArray.CreateBuilder<StatementOrUseOrUseAsDirectiveSyntax>();
+		var statementsBuilder = ImmutableArray.CreateBuilder<StatementSyntax>();
 		while (Current.Kind != SyntaxKind.CloseBraceToken)
 		{
 			if (Current.Kind == SyntaxKind.EofToken)
@@ -21,7 +21,7 @@ public sealed partial class NiteParser
 				return new BlockStatementSyntax(openBrace, [], Current);
 			}
 
-			StatementOrUseOrUseAsDirectiveSyntax node = ParseStatementOrUseOrUseAsDirective();
+			StatementSyntax node = ParseStatement();
 			statementsBuilder.Add(node);
 			if (!node.IsRequiresSemicolon) continue;
 
@@ -38,16 +38,6 @@ public sealed partial class NiteParser
 		Token closeBrace = MatchToken(SyntaxKind.CloseBraceToken);
 
 		return new BlockStatementSyntax(openBrace, statementsBuilder.ToImmutable(), closeBrace);
-	}
-
-	private StatementOrUseOrUseAsDirectiveSyntax ParseStatementOrUseOrUseAsDirective()
-	{
-		if (Current.Kind == SyntaxKind.UseKeyword)
-		{
-			return ParseUseDirective();
-		}
-
-		return ParseStatement();
 	}
 
 	private StatementSyntax ParseStatement()
