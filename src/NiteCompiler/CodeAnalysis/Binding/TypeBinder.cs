@@ -39,8 +39,17 @@ internal sealed class TypeBinder : Binder
 		return new BoundType(syntax, Type, members.ToImmutable());
 	}
 
-	private BoundNode BindMember(MemberSyntax member)
+	private BoundNode BindMember(MemberSyntax syntax)
 	{
-		throw new NotImplementedException();
+		return syntax switch
+		{
+			FieldDeclarationSyntax field => BindField(field),
+			_ => throw new ArgumentException(null, nameof(syntax))
+		};
+	}
+
+	private BoundNode BindField(FieldDeclarationSyntax syntax)
+	{
+		return new BoundField(syntax, null);
 	}
 }

@@ -3,8 +3,8 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 internal enum BoundKind
 {
 	CompilationUnit,
-	TypeDeclaration,
-	FunctionDeclaration,
+	Type,
+	Field,
 
 	BlockStatement,
 	ExpressionStatement,

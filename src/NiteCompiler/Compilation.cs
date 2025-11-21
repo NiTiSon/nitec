@@ -36,7 +36,7 @@ public sealed class Compilation
 		CompilationUnitBinder binder = new(this, null);
 		foreach (SyntaxTree tree in trees)
 		{
-			binder.Bind(tree.Root);
+			BoundNode node = binder.Bind(tree.Root);
 		}
 
 		GlobalScope.Diagnostics.DrainInto(Diagnostics);

@@ -13,5 +13,5 @@ internal sealed class BoundType : BoundNode
 		Members = members;
 	}
 
-	public override BoundKind Kind => BoundKind.TypeDeclaration;
+	public override BoundKind Kind => BoundKind.Type;
 }

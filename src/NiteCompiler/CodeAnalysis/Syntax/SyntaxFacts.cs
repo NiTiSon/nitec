@@ -6,6 +6,8 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 
 internal static class SyntaxFacts
 {
+	public const char DigitDelimiter = '\'';
+
 	public static ReadOnlySpan<SyntaxKind> AccessKeywords =>
 	[
 		SyntaxKind.PublicKeyword, SyntaxKind.ProtectedKeyword, SyntaxKind.InternalKeyword,
@@ -108,6 +110,30 @@ internal static class SyntaxFacts
 		if (c == '\r' || c == '\n') return 1;
 
 		return 0;
+	}
+
+	public static bool IsValidHexDigit(char number)
+	{
+		return number
+			is >= '0' and <= '9'
+			or >= 'A' and <= 'F'
+			or >= 'a' and <= 'f'
+			or DigitDelimiter;
+	}
+
+	public static bool IsValidDecimalDigit(char number)
+	{
+		return number
+			is >= '0' and <= '9'
+			or DigitDelimiter;
+	}
+
+	public static bool IsValidBinaryDigit(char number)
+	{
+		return number
+			is '0'
+			or '1'
+			or DigitDelimiter;
 	}
 
 	public static bool IsTypeKeyword(SyntaxKind kind)

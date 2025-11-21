@@ -13,8 +13,18 @@ public type NeverReturn;
 
 module std::numerics;
 
-public type SInt8;
-public type SInt16;
+public type SInt8 {
+	private value: i8;
+	public min_value = -128i8;
+	public max_value = 127i8;
+}
+
+public type SInt16 {
+	private value: u8;
+	public min_value = 0u8;
+	public max_value = 255u8;
+}
+
 public type SInt32;
 public type SInt64;
 public type UInt8;

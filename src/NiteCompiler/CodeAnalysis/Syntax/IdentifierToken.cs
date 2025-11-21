@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net.Http.Headers;
 using NiteCompiler.CodeAnalysis.Text;
 

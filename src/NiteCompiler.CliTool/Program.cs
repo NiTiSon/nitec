@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.CodeAnalysis.Text;
@@ -88,6 +89,7 @@ public static class Program
 		Parallel.For(0, files.Length, i =>
 		{
 			FileInfo file = files[i];
+			Thread.CurrentThread.Name = $"Compile thread[{i}]: {file.Name}";
 			trees[i] = SyntaxTree.Load(file);
 			diagnostics.AddRange(trees[i].Diagnostics);
 		});

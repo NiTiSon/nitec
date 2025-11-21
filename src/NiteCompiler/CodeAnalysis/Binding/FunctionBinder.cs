@@ -115,11 +115,12 @@ internal sealed class FunctionBinder : ScopedBinder
 
 		private BoundExpression BindLiteral(LiteralExpressionSyntax syntax)
 		{
-			if (syntax.Token is not ITokenWithValue value) throw new ArgumentException(null, nameof(syntax));
+			if (syntax.Token is not NumberToken value) throw new ArgumentException(null, nameof(syntax));
 
-			TypeSymbol type = Compilation.GlobalScope.GetPredefinedType(value.Type);
+			// TODO: Should
+			//TypeSymbol type = Compilation.GlobalScope.GetPredefinedType(value.Type);
 
-			return new BoundLiteralExpression(syntax, type, value);
+			return new BoundLiteralExpression(syntax, null, value);
 		}
 
 		// private BoundExpression BindIdentifier(IdentifierExpressionSyntax id)

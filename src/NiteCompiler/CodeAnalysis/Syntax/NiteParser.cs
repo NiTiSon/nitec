@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Text;
 using NiteCompiler.Diagnostics;
 
@@ -29,10 +30,13 @@ public sealed partial class NiteParser
 
 	public Token Current => Peek(0);
 
+	[DebuggerStepThrough]
 	private Token Peek(int offset)
 	{
 		return _tokens[int.Min(offset + _position, _tokens.Count - 1)];
 	}
+
+	[DebuggerStepThrough]
 	private Token PeekAndAdvance()
 	{
 		Token current = Current;
@@ -40,11 +44,13 @@ public sealed partial class NiteParser
 		return current;
 	}
 
+	[DebuggerStepThrough]
 	private void Advance()
 	{
 		_position++;
 	}
 
+	[DebuggerStepThrough]
 	private Token MatchToken(SyntaxKind kind)
 	{
 		if (Current.Kind == kind)
@@ -54,11 +60,13 @@ public sealed partial class NiteParser
 		return new Token(kind, Current.Span);
 	}
 
+	[DebuggerStepThrough]
 	private bool IsPresentedAny(params ReadOnlySpan<SyntaxKind> kinds)
 	{
 		return kinds.Contains(Current.Kind);
 	}
 
+	[DebuggerStepThrough]
 	private Token MatchAnyToken(params ReadOnlySpan<SyntaxKind> kinds)
 	{
 		if (IsPresentedAny(kinds))

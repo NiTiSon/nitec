@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Diagnostics;
@@ -7,6 +8,7 @@ namespace NiteCompiler;
 
 public static class SpanExtensions
 {
+	[DebuggerStepThrough]
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static unsafe bool Contains<TEnum>(this ReadOnlySpan<TEnum> span, TEnum value)
 		where TEnum : unmanaged, Enum

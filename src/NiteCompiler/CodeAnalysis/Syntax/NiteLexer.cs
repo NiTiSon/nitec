@@ -16,12 +16,6 @@ public sealed partial class NiteLexer
 		_source = source;
 	}
 
-	internal ref struct TokenInfo
-	{
-		public SyntaxKind Kind;
-		public SyntaxKind ContextualKind;
-	}
-
 	public Token Lex()
 	{
 		TokenInfo info = default;
@@ -44,7 +38,13 @@ public sealed partial class NiteLexer
 			case SyntaxKind.IdentifierToken:
 				return new IdentifierToken(info.Kind, info.ContextualKind, span, text!);
 			case SyntaxKind.NumberToken:
-				return NumericParser.Parse(ref info, text, span.Contextualize(_source), _diagnostics);
+				return new NumberToken(info.Kind, span,
+					NumberParser.Parse(
+						info,
+						text,
+						span.Contextualize(_source), _diagnostics),
+						info.LiteralType,
+						info.LiteralFormat);
 			default:
 				return new(info.Kind, span);
 		}
@@ -194,7 +194,6 @@ public sealed partial class NiteLexer
 				}
 				else if (_window.Next == '|')
 				{
-
 					_window.Advance(2);
 					info.Kind = SyntaxKind.PipePipeToken;
 				}
@@ -264,13 +263,14 @@ public sealed partial class NiteLexer
 				if (_window.Next == '=')
 				{
 					_window.Advance(2);
-					info.Kind =  SyntaxKind.GreaterThanEqualsToken;
+					info.Kind = SyntaxKind.GreaterThanEqualsToken;
 				}
 				else
 				{
 					_window.Advance(1);
 					info.Kind = SyntaxKind.GreaterThanToken;
 				}
+
 				break;
 			case '\"':
 				ReadString(ref info);
@@ -321,10 +321,7 @@ public sealed partial class NiteLexer
 
 				break;
 			case >= '0' and <= '9':
-				// TODO: Replace with advanced number parsing
-				info.Kind = SyntaxKind.NumberToken;
-				_window.Advance();
-				while (char.IsAsciiDigit(_window.Current)) _window.Advance();
+				ReadNumber(ref info);
 				break;
 			default:
 				ReadIdentifier(ref info);

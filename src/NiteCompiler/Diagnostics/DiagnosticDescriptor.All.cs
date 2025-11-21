@@ -14,7 +14,8 @@ public partial class DiagnosticDescriptor
 		AmbiguousReference,
 		FieldMustHaveEitherTypeClauseOrDefaultValue,
 		OnlyTopLevelModuleDeclarationsAreAllowed,
-		IntegralConstantTooLarge
+		IntegralConstantTooLarge,
+		IntegralValueIsGreaterThanMaxValue
 		;
 
 	static DiagnosticDescriptor()
@@ -44,5 +45,6 @@ public partial class DiagnosticDescriptor
 
 		// Value checking
 		IntegralConstantTooLarge = new("integral-constant-too-large", "Integral constant too large.");
+		IntegralValueIsGreaterThanMaxValue = new("integral-value-is-greater-than-max-value", "Integral value is greater than max value of specified type.");
 	}
 }
