@@ -5,7 +5,7 @@ namespace NiteCompiler.CodeAnalysis.Symbols;
 public class FunctionSymbol : Symbol, IMemberSymbol
 {
 	public sealed override SymbolKind Kind => SymbolKind.Function;
-	public string Name { get; }
+	public override string Name { get; }
 	public IContainerSymbol? ContainingSymbol { get; }
 	public bool IsMethod => ContainingSymbol is TypeSymbol;
 	public FunctionDeclarationSyntax? Syntax { get; }

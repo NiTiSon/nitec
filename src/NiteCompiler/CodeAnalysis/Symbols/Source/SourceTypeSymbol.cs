@@ -6,7 +6,7 @@ namespace NiteCompiler.CodeAnalysis.Symbols.Source;
 internal sealed class SourceTypeSymbol : TypeSymbol, INamedSymbol, ISourceContainerSymbol
 {
 	private TypeSymbol? _parent;
-	public string Name { get; }
+	public override string Name { get; }
 	public TypeDeclarationSyntax? Syntax { get; }
 	public override IContainerSymbol ContainingSymbol { get; }
 	public override TypeSymbol? Parent => _parent;

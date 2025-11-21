@@ -38,7 +38,8 @@ public static class Program
 		// // nlib.Write(stdlib);
 		// return;
 		#if DEBUG
-		Console.WriteLine("[" + string.Join(", ", args) + "]");
+		Console.WriteLine("[DEBUG] Input arguments: [" + string.Join(", ", args) + "]");
+		Stopwatch stopwatch = Stopwatch.StartNew();
 		#endif
 
 		Console.OutputEncoding = Encoding.UTF8;
@@ -60,6 +61,11 @@ public static class Program
 		{
 			Console.Error.WriteLine(parseError.Message);
 		}
+
+		#if DEBUG
+		stopwatch.Stop();
+		Console.WriteLine("[DEBUG] Code analysis time: {0:g}", stopwatch.Elapsed);
+		#endif
 	}
 
 	private static void Compile(FileInfo[]? files, string libraryName)

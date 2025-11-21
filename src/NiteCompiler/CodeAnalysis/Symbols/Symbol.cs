@@ -13,6 +13,7 @@ public abstract class Symbol
 	public virtual bool IsSynthetic => false;
 	public virtual IEnumerable<SourceSpan> Locations => [];
 	public virtual SyntaxTree? SyntaxTree => null;
+	public virtual string Name => string.Empty;
 
 	private protected Symbol() {}
 }

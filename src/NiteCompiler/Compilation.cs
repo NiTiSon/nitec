@@ -28,20 +28,42 @@ public sealed class Compilation
 		ModuleManager = new(GlobalScope);
 		Diagnostics = [];
 
-		CompilationBinder rootBinder = new(this);
 		foreach (SyntaxTree tree in trees)
 		{
 			Declarator.DeclarationPass(tree, ModuleManager, Diagnostics);
 		}
 
-		rootBinder.Bind();
+		CompilationUnitBinder binder = new(this, null);
+		foreach (SyntaxTree tree in trees)
+		{
+			binder.Bind(tree.Root);
+		}
 
-		rootBinder.Diagnostics.DrainInto(Diagnostics);
 		GlobalScope.Diagnostics.DrainInto(Diagnostics);
 	}
 
-	public void Emit(Stream stream)
+	public Symbol? GetSymbol(SyntaxNode syntax)
 	{
+		// TODO: Improve
+		IEnumerable<IMemberSymbol> symbols = GlobalScope.ThisLibrary.Modules
+			.SelectMany(t => t.Members);
+		if (syntax is FunctionDeclarationSyntax)
+		{
+			return symbols.OfType<SourceFunctionSymbol>().FirstOrDefault(t => t.Syntax == syntax);
+		}
+		if (syntax is TypeDeclarationSyntax)
+		{
+			return symbols.OfType<SourceTypeSymbol>().FirstOrDefault(t => t.Syntax == syntax);
+		}
+
+		return null;
+	}
+
+	public ImmutableArray<Diagnostic> Emit(Stream stream)
+	{
+		if (!stream.CanWrite) throw new ArgumentException("Stream must be writable", nameof(stream));
+
 		// TODO: Later
+		return [];
 	}
 }

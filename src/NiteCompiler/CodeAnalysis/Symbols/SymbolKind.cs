@@ -41,4 +41,9 @@ public enum SymbolKind : ushort
 	/// Symbol is a field.
 	/// </summary>
 	Field = 7,
+
+	/// <summary>
+	/// Symbol is local variable.
+	/// </summary>
+	Local = 8,
 }

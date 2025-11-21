@@ -32,20 +32,20 @@ internal static class NumericParser
 		if (overflow)
 		{
 			diagnostics.ReportIntegralConstantIsTooLarge(span);
-			return new TokenWithValue<int>(SyntaxKind.NumberToken, span, 0);
+			return new TokenWithValue<int>(SyntaxKind.NumberToken, span, 0, PredefinedType.I32);
 		}
 
 		if (value <= int.MaxValue)
 		{
-			return new TokenWithValue<int>(SyntaxKind.NumberToken, span, (int)value);
+			return new TokenWithValue<int>(SyntaxKind.NumberToken, span, (int)value, PredefinedType.I32);
 		}
 		else if (value <= long.MaxValue)
 		{
-			return new TokenWithValue<long>(SyntaxKind.NumberToken, span, (long)value);
+			return new TokenWithValue<long>(SyntaxKind.NumberToken, span, (long)value, PredefinedType.I64);
 		}
 		else
 		{
-			return new TokenWithValue<ulong>(SyntaxKind.NumberToken, span, value);
+			return new TokenWithValue<ulong>(SyntaxKind.NumberToken, span, value, PredefinedType.U64);
 		}
 	}
 }

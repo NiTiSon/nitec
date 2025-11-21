@@ -5,7 +5,7 @@ namespace NiteCompiler.CodeAnalysis.Symbols;
 
 public abstract class LibrarySymbol : Symbol, INamedSymbol, IContainerSymbol
 {
-	public abstract string Name { get; }
+	public abstract override string Name { get; }
 	public sealed override SymbolKind Kind => SymbolKind.Library;
 	public abstract IEnumerable<ModuleSymbol> Modules { get; }
 	public virtual IEnumerable<TypeSymbol> AllTypes

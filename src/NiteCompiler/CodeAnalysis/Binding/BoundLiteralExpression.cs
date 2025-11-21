@@ -6,13 +6,9 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal sealed class BoundLiteralExpression : BoundExpression
 {
-	public BoundLiteralExpression(SyntaxNode syntax, object value) : base(syntax)
+	public BoundLiteralExpression(SyntaxNode syntax, TypeSymbol type, object value) : base(syntax)
 	{
-		Type = value switch
-		{
-			_ => null!,
-		};
-
+		Type = type;
 		ConstantValue = new(value);
 	}
 

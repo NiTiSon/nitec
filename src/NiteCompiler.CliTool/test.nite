@@ -1,3 +1,5 @@
+use std;
+
 module test::test2;
 
 public main() -> i32 {

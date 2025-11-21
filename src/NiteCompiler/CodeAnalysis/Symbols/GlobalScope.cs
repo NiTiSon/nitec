@@ -41,7 +41,7 @@ internal sealed class GlobalScope
 			.Where(t => t.Name == moduleName)
 			.SelectMany(t => t.Members)
 			.OfType<TypeSymbol>()
-			.Where(t => t is INamedSymbol named && named.Name == typeName);
+			.Where(t => t.Name == typeName);
 
 		ImmutableArray<TypeSymbol> candidates2 = [..candidates];
 
@@ -53,7 +53,7 @@ internal sealed class GlobalScope
 		else if (candidates2.Length > 1)
 		{
 			Diagnostics.ReportUnresolvedPredefinedType($"{moduleName}::{typeName}");
-			symbol = new PredefinedTypeSymbol(new SourceErrorTypeSymbol(ErrorSymbolReason.Ambiguity, candidates2), type);
+			symbol = new PredefinedTypeSymbol(new SourceErrorTypeSymbol(ErrorSymbolReason.Ambiguity, [..candidates2]), type);
 		}
 		else
 		{
