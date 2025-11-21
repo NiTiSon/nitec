@@ -243,6 +243,13 @@ internal static class SyntaxFacts
 			case SyntaxKind.LessThanExpression:
 			case SyntaxKind.LessThanOrEqualExpression:
 				return Precedence.Relational;
+			case SyntaxKind.UnaryAddExpression:
+			case SyntaxKind.UnarySubtractExpression:
+			case SyntaxKind.UnaryLogicalNotExpression:
+			case SyntaxKind.UnaryBitwiseNotExpression:
+			case SyntaxKind.UnaryPointerIndirectionExpression:
+			case SyntaxKind.UnaryAddressOfExpression:
+				return Precedence.Unary;
 			case SyntaxKind.NumericLiteralExpression:
 			case SyntaxKind.FalseLiteralExpression:
 			case SyntaxKind.TrueLiteralExpression:

@@ -29,7 +29,7 @@ public sealed partial class NiteParser
 	{
 		ExpressionSyntax currentExpression = unaryOrPrimaryExpression;
 
-		while (TryExpandExpression(currentExpression, precedence) is ExpressionSyntax expandedExpression)
+		while (TryExpandExpression(currentExpression, precedence) is { } expandedExpression)
 			currentExpression = expandedExpression;
 
 		return currentExpression;
@@ -102,8 +102,8 @@ public sealed partial class NiteParser
 	{
 		if (SyntaxFacts.IsUnaryExpression(Current.Kind))
 		{
-			Token operatorToken = Current;
-			SyntaxKind opKind = SyntaxFacts.GetUnaryExpression(Current.Kind);
+			Token operatorToken = PeekAndAdvance();
+			SyntaxKind opKind = SyntaxFacts.GetUnaryExpression(operatorToken.Kind);
 			ExpressionSyntax expression = ParseSubExpression(SyntaxFacts.GetPrecedence(opKind));
 
 			return new UnaryExpressionSyntax(operatorToken, expression, opKind);
