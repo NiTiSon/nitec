@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 
 namespace NiteCompiler.CodeAnalysis.Symbols.Source;
 
-internal sealed class SourceErrorTypeSymbol : TypeSymbol, IErrorTypeSymbol, ISourceSymbol
+internal sealed class SourceErrorTypeSymbol : TypeSymbol, IErrorSymbol, ISourceSymbol
 {
 	public override IEnumerable<IMemberSymbol> Members => [];
 	public override IContainerSymbol? ContainingSymbol => null;

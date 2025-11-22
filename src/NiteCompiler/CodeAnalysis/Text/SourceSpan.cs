@@ -1,5 +1,8 @@
+using System;
+
 namespace NiteCompiler.CodeAnalysis.Text;
 
+[Obsolete("Use SourceLocation instead.")]
 public record SourceSpan
 {
 	public SourceText Source { get; }

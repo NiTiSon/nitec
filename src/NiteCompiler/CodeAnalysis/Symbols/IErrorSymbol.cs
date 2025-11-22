@@ -2,16 +2,13 @@ using System.Collections.Immutable;
 
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
-public interface IErrorTypeSymbol : IErrorSymbol
-{
-	/// <summary>
-	/// Either empty or 2+.
-	/// </summary>
-	ImmutableArray<Symbol> Candidates { get; }
-}
-
 public interface IErrorSymbol
 {
+	/// <summary>
+	/// Candidates to unresolved symbol (if any).
+	/// </summary>
+	ImmutableArray<Symbol> Candidates { get; }
+
 	/// <summary>
 	/// Error symbol reason.
 	/// </summary>
