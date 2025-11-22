@@ -50,6 +50,14 @@ internal sealed class TypeBinder : Binder
 
 	private BoundNode BindField(FieldDeclarationSyntax syntax)
 	{
-		return new BoundField(syntax, null);
+		TypeSymbol? type = null;
+		if (syntax.Initializer != null)
+		{
+			ExpressionBinder binder = new(Compilation, this);
+			BoundExpression expression = binder.BindExpression(syntax.Initializer);
+			// TODO: Fix nullref
+			// type = expression.Type;
+		}
+		return new BoundField(syntax, type);
 	}
 }

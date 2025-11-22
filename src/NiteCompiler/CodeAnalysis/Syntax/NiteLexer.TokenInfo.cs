@@ -21,14 +21,14 @@ public enum NumericLiteralFormat : byte
 public enum NumericLiteralType : byte
 {
 	None,
-	U8,
-	U16,
-	U32,
-	U64,
 	I8,
 	I16,
 	I32,
 	I64,
+	U8,
+	U16,
+	U32,
+	U64,
 	Signed,
 	Unsigned,
 	F16,

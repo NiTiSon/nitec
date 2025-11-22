@@ -122,9 +122,19 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.IntegralConstantTooLarge, source);
 	}
 
+	public void ReportIntegralValueCantBeSigned(SourceSpan source)
+	{
+		Add(DiagnosticDescriptor.IntegralValueCantBeSigned, source);
+	}
+
 	public void ReportIntegralValueIsGreaterThanMaxValue(SourceSpan source)
 	{
 		Add(DiagnosticDescriptor.IntegralValueIsGreaterThanMaxValue, source);
+	}
+
+	public void ReportIntegralValueIsSmallerThanMinValue(SourceSpan source)
+	{
+		Add(DiagnosticDescriptor.IntegralValueIsSmallerThanMinValue, source);
 	}
 
 	public void ReportOnlyTopLevelModuleDeclarationsAreAllowed(SourceSpan source)
