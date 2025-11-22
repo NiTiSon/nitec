@@ -30,7 +30,7 @@ public class NiteLexerTests
 		Assert.Multiple(() =>
 		{
 			Assert.That(token.Kind, Is.EqualTo(SyntaxKind.NumberToken));
-			Assert.That(token, Is.TypeOf<TokenWithValue<int>>());
+			Assert.That(token, Is.TypeOf<NumberToken>());
 		});
 	}
 
