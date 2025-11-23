@@ -12,7 +12,7 @@ public class NiteLexerTests
 	{
 		DiagnosticBag diagnostics = new();
 		SourceText source = SourceText.From(text);
-		NiteLexer lexer = new(source, diagnostics);
+		NiteLexer lexer = new(source, () => SyntaxTree.Invalid, diagnostics);
 		return lexer.Lex();
 	}
 
@@ -90,7 +90,7 @@ public class NiteLexerTests
 	{
 		DiagnosticBag diagnostics = new();
 		SourceText source = SourceText.From("");
-		NiteLexer lexer = new(source, diagnostics);
+		NiteLexer lexer = new(source, () => SyntaxTree.Invalid, diagnostics);
 		Token token = lexer.Lex();
 
 		Assert.That(token.Kind, Is.EqualTo(SyntaxKind.EofToken));

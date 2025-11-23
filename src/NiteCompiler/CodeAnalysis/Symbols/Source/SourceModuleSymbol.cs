@@ -1,17 +1,31 @@
-using System.Collections.Generic;
-using NiteCompiler.CodeAnalysis.Syntax;
+using System.Collections.Immutable;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Symbols.Source;
 
-internal sealed class SourceModuleSymbol : ModuleSymbol, ISourceContainerSymbol
+internal sealed class SourceModuleSymbol : ModuleSymbol
 {
-	public override string Name { get; }
-	public override ICollection<IMemberSymbol> Members { get; } = [];
-	public override LibrarySymbol Library { get; }
+	private readonly FreezableArray<Location> _locations = new();
+	private readonly FreezableArray<Symbol> _members = new();
 
-	public SourceModuleSymbol(SourceLibrarySymbol library, string name)
+	public override string Name { get; }
+	public override ImmutableArray<Symbol> Members => _members;
+	public override LibrarySymbol ContainingSymbol { get; }
+	public override ImmutableArray<Location> Locations => _locations;
+
+	public SourceModuleSymbol(string name, LibrarySymbol containingLibrary)
 	{
-		Library = library;
 		Name = name;
+		ContainingSymbol = containingLibrary;
+	}
+
+	internal void AddDefinition(Location location)
+	{
+		_locations.Add(location);
+	}
+
+	internal void AddMember(Symbol member)
+	{
+		_members.Add(member);
 	}
 }

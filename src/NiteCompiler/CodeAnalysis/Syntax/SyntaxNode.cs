@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 using NiteCompiler.CodeAnalysis.Text;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
@@ -10,7 +13,9 @@ public abstract class SyntaxNode
 	public abstract SyntaxKind Kind { get; }
 	public abstract IEnumerable<SyntaxNode> GetChildren();
 
+	[Obsolete("Use Location instead.")]
 	public SourceSpan ContextualizedSpan => Span.Contextualize(SyntaxTree.Text);
+	public Location Location => Location.Create(SyntaxTree, Span);
 
 	public IEnumerable<Token> GetTokens(bool includeThisToken = false)
 	{

@@ -6,7 +6,7 @@
     },
     "<input>": {
       "commandName": "Project",
-      "commandLineArgs": "test.nite"
+      "commandLineArgs": "--corelib test.nite"
     }
   }
 }

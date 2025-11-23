@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.CodeAnalysis.Text;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
 
@@ -42,15 +43,13 @@ internal sealed  class ExpressionBinder : Binder
 	{
 		if (syntax.Token is not NumberToken value) throw new ArgumentException(null, nameof(syntax));
 
-		PredefinedType suitable = GetMinimalSuitableInteger(value.Value.U64, syntax.ContextualizedSpan, isNegative);
-		suitable = GetSuitableInteger(suitable, syntax.ContextualizedSpan, value.Type);
+		PredefinedType suitable = GetMinimalSuitableInteger(value.Value.U64, syntax.Location, isNegative);
+		suitable = GetSuitableInteger(suitable, syntax.Location, value.Type);
 
-		TypeSymbol type = Compilation.GlobalScope.GetPredefinedType(suitable);
-
-		return new BoundLiteralExpression(syntax, type, value);
+		return new BoundLiteralExpression(syntax, null, value);
 	}
 
-	private PredefinedType GetSuitableInteger(PredefinedType minimum, SourceSpan span, NumericLiteralType type)
+	private PredefinedType GetSuitableInteger(PredefinedType minimum, Location location, NumericLiteralType type)
 	{
 		var min32Bit = UpcastTo32Bit(minimum);
 		if (type == NumericLiteralType.None) return min32Bit;
@@ -59,7 +58,7 @@ internal sealed  class ExpressionBinder : Binder
 		{
 			if (min32Bit is PredefinedType.I32 or PredefinedType.I64) return minimum; // 000i is only i32 or i64
 
-			Compilation.Diagnostics.ReportIntegralValueCantBeSigned(span);
+			Compilation.Diagnostics.ReportIntegralValueCantBeSigned(location);
 		}
 
 		if (type == NumericLiteralType.Unsigned)
@@ -122,14 +121,13 @@ internal sealed  class ExpressionBinder : Binder
 	/// <summary>
 	/// This type resolution for integral types is a FUCKING SHIT, if you know how to make better, please do 👽👽👽
 	/// </summary>
-	private PredefinedType GetMinimalSuitableInteger(ulong value, SourceSpan span,
-		bool isNegative)
+	private PredefinedType GetMinimalSuitableInteger(ulong value, Location location, bool isNegative)
 	{
 		// Check if fallout of ulong.MinValue
 		// God bless One's complement
 		if (isNegative && value > Unsafe.BitCast<long, ulong>(long.MinValue))
 		{
-			Compilation.Diagnostics.ReportIntegralValueIsSmallerThanMinValue(span);
+			Compilation.Diagnostics.ReportIntegralValueIsSmallerThanMinValue(location);
 
 			return PredefinedType.U64;
 		}

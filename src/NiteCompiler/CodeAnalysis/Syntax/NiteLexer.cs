@@ -1,3 +1,4 @@
+using System;
 using NiteCompiler.CodeAnalysis.Text;
 using NiteCompiler.Diagnostics;
 
@@ -8,12 +9,14 @@ public sealed partial class NiteLexer
 	private readonly DiagnosticBag _diagnostics;
 	private readonly SlidingWindow _window;
 	private readonly SourceText _source;
+	private readonly Func<SyntaxTree> _lazyTree;
 
-	public NiteLexer(SourceText source, DiagnosticBag diagnostics)
+	public NiteLexer(SourceText source, Func<SyntaxTree> lazyTree, DiagnosticBag diagnostics)
 	{
 		_diagnostics = diagnostics;
 		_window = new(source);
 		_source = source;
+		_lazyTree = lazyTree;
 	}
 
 	public Token Lex()
@@ -42,7 +45,7 @@ public sealed partial class NiteLexer
 					NumberParser.Parse(
 						info,
 						text,
-						span.Contextualize(_source), _diagnostics),
+						Location.Create(_lazyTree, span), _diagnostics),
 						info.LiteralType,
 						info.LiteralFormat);
 			default:

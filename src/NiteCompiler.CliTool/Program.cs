@@ -5,14 +5,12 @@ using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.CodeAnalysis.Text;
 using NiteCompiler.Diagnostics;
-using NiteLang.Metadata;
 
 namespace NiteCompiler.CliTool;
 
@@ -20,24 +18,6 @@ public static class Program
 {
 	public static void Main(string[] args)
 	{
-		// using FileStream fs = new(@"C:\Users\UwU\Desktop\s.bin", FileMode.Open, FileAccess.Write);
-		// fs.SetLength(0);
-		// // using NlibWriter nlib = new(fs, true);
-		// //
-		// // NlibLibraryBuilder stdlib = new("stdlib");
-		// // NlibModuleBuilder numericsModule = stdlib.CreateModule("std::numerics");
-		// // NlibModuleBuilder stdModule = stdlib.CreateModule("std");
-		// // NlibTypeBuilder sint8 = numericsModule.CreateType("SInt8");
-		// // NlibTypeBuilder sint16 = numericsModule.CreateType("SInt16");
-		// // NlibTypeBuilder sint32 = numericsModule.CreateType("SInt32");
-		// // NlibTypeBuilder sint64 = numericsModule.CreateType("SInt64");
-		// // NlibTypeBuilder uint8 = numericsModule.CreateType("UInt8");
-		// // NlibTypeBuilder uint16 = numericsModule.CreateType("UInt16");
-		// // NlibTypeBuilder uint32 = numericsModule.CreateType("UInt32");
-		// // NlibTypeBuilder uint64 = numericsModule.CreateType("UInt64");
-		// //
-		// // nlib.Write(stdlib);
-		// return;
 		#if DEBUG
 		Console.WriteLine("[DEBUG] Input arguments: [" + string.Join(", ", args) + "]");
 		Stopwatch stopwatch = Stopwatch.StartNew();
@@ -47,12 +27,22 @@ public static class Program
 
 		Argument<FileInfo[]> inputArgument = new("files")
 		{
-			Description = "Source files",
+			Description = "Input source files.",
+		};
+		Option<bool> noStdOption = new("--corelib")
+		{
+			Description = "Marks current library as core library.\nAllows compiler to resolve special types within current library.\nAllows not any dependency.",
 		};
 
 		RootCommand rootCommand = new("Nite CLI compiler tool (.NET impl).");
 		rootCommand.Arguments.Add(inputArgument);
-		rootCommand.SetAction(result => Compile(result.GetValue(inputArgument), "test123"));
+		rootCommand.Options.Add(noStdOption);
+		rootCommand.SetAction(
+			result => Compile(
+				buildAsCoreLibrary: result.GetValue(noStdOption),
+				files: result.GetValue(inputArgument),
+				libraryName: "test123")
+			);
 
 		ParseResult parseResult = rootCommand.Parse(args);
 		parseResult.Configuration.EnableDefaultExceptionHandler = false;
@@ -69,7 +59,7 @@ public static class Program
 		#endif
 	}
 
-	private static void Compile(FileInfo[]? files, string libraryName)
+	private static void Compile(bool buildAsCoreLibrary, FileInfo[]? files, string libraryName)
 	{
 		if (files is null || files.Length == 0)
 		{
@@ -94,7 +84,7 @@ public static class Program
 			diagnostics.AddRange(trees[i].Diagnostics);
 		});
 
-		Compilation compilation = new(libraryName, [], trees);
+		Compilation compilation = new(libraryName, buildAsCoreLibrary, [], trees);
 		compilation.Diagnostics.DrainInto(diagnostics);
 
 		foreach (SyntaxTree tree in compilation.SyntaxTrees)

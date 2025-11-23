@@ -5,6 +5,7 @@ public partial class DiagnosticDescriptor
 {
 	public static readonly DiagnosticDescriptor
 		DuplicateSourceFiles,
+		DependenciesInCoreLibrary,
 		NotTerminatedMultilineComment,
 		NotTerminatedStringLiteral,
 		ExpectedToken,
@@ -25,6 +26,7 @@ public partial class DiagnosticDescriptor
 		// Compilation
 		DuplicateSourceFiles = new("duplicate-source-files",
 			"Input files contains duplicates.", DiagnosticSeverity.Warning);
+		DependenciesInCoreLibrary = new("dependencies-in-core-lib", "Core library can't have any dependencies.");
 
 		// Lexing
 		NotTerminatedMultilineComment = new("not-terminated-multiline-comment",

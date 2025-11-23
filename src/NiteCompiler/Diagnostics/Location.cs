@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
@@ -23,6 +24,11 @@ public abstract class Location
 	public static Location Create(SyntaxTree tree, TextSpan span)
 	{
 		return new SourceLocation(tree, span);
+	}
+
+	public static Location Create(Func<SyntaxTree> lazyTree, TextSpan span)
+	{
+		return new SourceLocation(lazyTree, span);
 	}
 
 	// TODO: Add Metadata and ExternalFile location

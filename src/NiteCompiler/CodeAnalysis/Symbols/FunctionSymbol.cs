@@ -1,19 +1,19 @@
-using NiteCompiler.CodeAnalysis.Syntax;
+using System.Collections.Immutable;
 
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
-public class FunctionSymbol : Symbol, IMemberSymbol
+public abstract class FunctionSymbol : Symbol
 {
 	public sealed override SymbolKind Kind => SymbolKind.Function;
 	public override string Name { get; }
-	public IContainerSymbol? ContainingSymbol { get; }
+	public override Symbol ContainingSymbol { get; }
+	public ImmutableArray<ParameterSymbol> Parameters { get; }
 	public bool IsMethod => ContainingSymbol is TypeSymbol;
-	public FunctionDeclarationSyntax? Syntax { get; }
 
-	private protected FunctionSymbol(IContainerSymbol containingSymbol, string name, FunctionDeclarationSyntax? syntax = null)
+	private protected FunctionSymbol(string name, Symbol containingSymbol, ImmutableArray<ParameterSymbol> parameters)
 	{
-		ContainingSymbol = containingSymbol;
 		Name = name;
-		Syntax = syntax;
+		ContainingSymbol = containingSymbol;
+		Parameters = parameters;
 	}
 }

@@ -14,49 +14,32 @@ namespace NiteCompiler;
 
 public sealed class Compilation
 {
-	internal GlobalScope GlobalScope { get; }
-	public ModuleManager ModuleManager { get; }
-	public NlibLibrary[] Dependencies { get; }
+	public ImmutableArray<NlibLibrary> Dependencies { get; }
 	public ImmutableArray<SyntaxTree> SyntaxTrees { get; }
+	private DeclarationPass _declarationPass;
+	private SpecialTypeResolvePass  _specialTypeResolvePass;
 	public DiagnosticBag Diagnostics { get; }
 
-	public Compilation(string libraryName, NlibLibrary[] dependencies, SyntaxTree[] trees)
+	public Compilation(string libraryName, bool buildCoreLib, NlibLibrary[] dependencies, SyntaxTree[] trees)
 	{
-		Dependencies = dependencies;
+		Dependencies = [..dependencies];
 		SyntaxTrees = [..trees];
-		GlobalScope = new(libraryName, dependencies);
-		ModuleManager = new(GlobalScope);
 		Diagnostics = [];
-
-		foreach (SyntaxTree tree in trees)
+		_declarationPass = new();
+		_specialTypeResolvePass = new();
+		if (buildCoreLib && dependencies.Length > 0)
 		{
-			Declarator.DeclarationPass(tree, ModuleManager, Diagnostics);
+			// Core library is not allowed to have any dependencies
+			Diagnostics.ReportDependenciesInCoreLibrary();
 		}
+
+		_declarationPass.Declare(trees);
 
 		CompilationUnitBinder binder = new(this, null);
 		foreach (SyntaxTree tree in trees)
 		{
 			BoundNode node = binder.Bind(tree.Root);
 		}
-
-		GlobalScope.Diagnostics.DrainInto(Diagnostics);
-	}
-
-	public Symbol? GetSymbol(SyntaxNode syntax)
-	{
-		// TODO: Improve
-		IEnumerable<IMemberSymbol> symbols = GlobalScope.ThisLibrary.Modules
-			.SelectMany(t => t.Members);
-		if (syntax is FunctionDeclarationSyntax)
-		{
-			return symbols.OfType<SourceFunctionSymbol>().FirstOrDefault(t => t.Syntax == syntax);
-		}
-		if (syntax is TypeDeclarationSyntax)
-		{
-			return symbols.OfType<SourceTypeSymbol>().FirstOrDefault(t => t.Syntax == syntax);
-		}
-
-		return null;
 	}
 
 	public ImmutableArray<Diagnostic> Emit(Stream stream)

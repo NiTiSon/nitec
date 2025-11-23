@@ -29,12 +29,12 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		_diagnostics.Add(diagnostic);
 	}
 
-	private void Add(DiagnosticDescriptor diagnosticDescriptor, params object?[]? args)
+	private void Add(DiagnosticDescriptor diagnosticDescriptor, SourceSpan source, params object?[]? args)
 	{
-		_diagnostics.Add(new Diagnostic(diagnosticDescriptor, null, args));
+		_diagnostics.Add(new Diagnostic(diagnosticDescriptor, source, args));
 	}
 
-	private void Add(DiagnosticDescriptor diagnosticDescriptor, SourceSpan source, params object?[]? args)
+	private void Add(DiagnosticDescriptor diagnosticDescriptor, ImmutableArray<Location> source, params object?[]? args)
 	{
 		_diagnostics.Add(new Diagnostic(diagnosticDescriptor, source, args));
 	}
@@ -74,7 +74,12 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 	// REPORTS
 	public void ReportDuplicateSourceFiles()
 	{
-		Add(DiagnosticDescriptor.DuplicateSourceFiles);
+		Add(DiagnosticDescriptor.DuplicateSourceFiles, []);
+	}
+
+	public void ReportDependenciesInCoreLibrary()
+	{
+		Add(DiagnosticDescriptor.DependenciesInCoreLibrary, []);
 	}
 
 	public void ReportNotTerminatedMultiLineComment(SourceSpan source)
@@ -102,43 +107,43 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.CannotResolveSymbol, source);
 	}
 
-	public void ReportFieldMustHaveEitherTypeClauseOrDefaultValue(SourceSpan source)
+	public void ReportFieldMustHaveEitherTypeClauseOrDefaultValue(Location location)
 	{
-		Add(DiagnosticDescriptor.FieldMustHaveEitherTypeClauseOrDefaultValue, source);
+		Add(DiagnosticDescriptor.FieldMustHaveEitherTypeClauseOrDefaultValue, [location]);
 	}
 
 	public void ReportUnresolvedPredefinedType(string type)
 	{
-		Add(DiagnosticDescriptor.UnresolvedPredefinedType, type);
+		Add(DiagnosticDescriptor.UnresolvedPredefinedType, [], type);
 	}
 
-	public void ReportAmbiguousReference(SourceSpan source, params IEnumerable<Symbol> candidates)
+	public void ReportAmbiguousReference(Location location, params IEnumerable<Symbol> candidates)
 	{
-		Add(DiagnosticDescriptor.AmbiguousReference, source, string.Join(",\n", candidates));
+		Add(DiagnosticDescriptor.AmbiguousReference, [location], string.Join(",\n", candidates));
 	}
 
-	public void ReportIntegralConstantIsTooLarge(SourceSpan source)
+	public void ReportIntegralConstantIsTooLarge(Location location)
 	{
-		Add(DiagnosticDescriptor.IntegralConstantTooLarge, source);
+		Add(DiagnosticDescriptor.IntegralConstantTooLarge, [location]);
 	}
 
-	public void ReportIntegralValueCantBeSigned(SourceSpan source)
+	public void ReportIntegralValueCantBeSigned(Location location)
 	{
-		Add(DiagnosticDescriptor.IntegralValueCantBeSigned, source);
+		Add(DiagnosticDescriptor.IntegralValueCantBeSigned, [location]);
 	}
 
-	public void ReportIntegralValueIsGreaterThanMaxValue(SourceSpan source)
+	public void ReportIntegralValueIsGreaterThanMaxValue(Location location)
 	{
-		Add(DiagnosticDescriptor.IntegralValueIsGreaterThanMaxValue, source);
+		Add(DiagnosticDescriptor.IntegralValueIsGreaterThanMaxValue, [location]);
 	}
 
-	public void ReportIntegralValueIsSmallerThanMinValue(SourceSpan source)
+	public void ReportIntegralValueIsSmallerThanMinValue(Location location)
 	{
-		Add(DiagnosticDescriptor.IntegralValueIsSmallerThanMinValue, source);
+		Add(DiagnosticDescriptor.IntegralValueIsSmallerThanMinValue, [location]);
 	}
 
-	public void ReportOnlyTopLevelModuleDeclarationsAreAllowed(SourceSpan source)
+	public void ReportOnlyTopLevelModuleDeclarationsAreAllowed(Location location)
 	{
-		Add(DiagnosticDescriptor.OnlyTopLevelModuleDeclarationsAreAllowed, source);
+		Add(DiagnosticDescriptor.OnlyTopLevelModuleDeclarationsAreAllowed, [location]);
 	}
 }

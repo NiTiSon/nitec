@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
@@ -71,7 +72,7 @@ public sealed partial class NiteParser
 			return new BinaryExpressionSyntax(leftOperand, operatorToken, ParseSubExpression(newPrecedence), operatorExpressionKind);
 		}
 
-		throw new Exception("Unreachable");
+		throw new UnreachableException();
 	}
 
 	private AssignmentExpressionSyntax ParseAssignmentExpression(SyntaxKind operatorExpressionKind,

@@ -12,6 +12,8 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 
 public sealed class SyntaxTree
 {
+	public static SyntaxTree Invalid => new(null, null, []);
+
 	public SourceText Text { get; }
 	public CompilationUnitSyntax Root { get; }
 	public ImmutableArray<Diagnostic> Diagnostics { get; }
@@ -26,20 +28,21 @@ public sealed class SyntaxTree
 	public static SyntaxTree Load(FileInfo file)
 	{
 		DiagnosticBag diagnostics = new();
+		SyntaxTree? syntaxTree = null;
 		string text = File.ReadAllText(file.FullName);
 		StringText sourceText = new(text, file.FullName);
 
-		NiteLexer lexer = new(sourceText, diagnostics);
+		NiteLexer lexer = new(sourceText, () => syntaxTree!, diagnostics);
 		NiteParser parser = new(lexer, sourceText, diagnostics);
 
 		CompilationUnitSyntax unit = parser.Parse();
 
-		SyntaxTree tree = new(sourceText, unit, [..diagnostics]);
+		syntaxTree = new(sourceText, unit, [..diagnostics]);
 		foreach (SyntaxNode node in unit.GetNodes(includeThisToken: true))
 		{
-			node.SyntaxTree = tree;
+			node.SyntaxTree = syntaxTree;
 		}
 
-		return tree;
+		return syntaxTree;
 	}
 }

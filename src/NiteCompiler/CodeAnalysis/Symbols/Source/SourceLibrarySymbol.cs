@@ -1,14 +1,25 @@
-using System.Collections.Generic;
+using System;
+using System.Collections.Immutable;
 
 namespace NiteCompiler.CodeAnalysis.Symbols.Source;
 
-internal sealed class SourceLibrarySymbol : LibrarySymbol, ISourceSymbol
+internal sealed class SourceLibrarySymbol : LibrarySymbol
 {
-	public override string Name { get; }
-	public override List<SourceModuleSymbol> Modules { get; } = [];
+	private readonly FreezableArray<ModuleSymbol> _modules = new();
 
-	public SourceLibrarySymbol(string name)
+	public override string Name { get; }
+
+	public override ImmutableArray<ModuleSymbol> Modules => _modules;
+	public override bool IsExplicitlyDeclaredAsCoreLibrary { get; }
+
+	public SourceLibrarySymbol(string name, bool isCoreLibrary)
 	{
 		Name = name;
+		IsExplicitlyDeclaredAsCoreLibrary = isCoreLibrary;
+	}
+
+	internal void AddModule(SourceModuleSymbol module)
+	{
+		_modules.Add(module);
 	}
 }

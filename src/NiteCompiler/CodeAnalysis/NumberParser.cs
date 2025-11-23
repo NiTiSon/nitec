@@ -7,16 +7,16 @@ namespace NiteCompiler.CodeAnalysis;
 
 internal static class NumberParser
 {
-	public static NumberToken.Packed Parse(in NiteLexer.TokenInfo info, ReadOnlySpan<char> text, SourceSpan span, DiagnosticBag diagnostics)
+	public static NumberToken.Packed Parse(in NiteLexer.TokenInfo info, ReadOnlySpan<char> text, Location location, DiagnosticBag diagnostics)
 	{
 		return info.LiteralFormat switch
 		{
-			NumericLiteralFormat.Integer => ParseInteger(info, text, span, diagnostics),
+			NumericLiteralFormat.Integer => ParseInteger(info, text, location, diagnostics),
 			_ => throw new NotImplementedException()
 		};
 	}
 
-	public static NumberToken.Packed ParseInteger(in NiteLexer.TokenInfo info, ReadOnlySpan<char> text, SourceSpan span, DiagnosticBag diagnostics)
+	public static NumberToken.Packed ParseInteger(in NiteLexer.TokenInfo info, ReadOnlySpan<char> text, Location location, DiagnosticBag diagnostics)
 	{
 		ulong value = 0;
 		bool overflow = false;
@@ -45,7 +45,7 @@ internal static class NumberParser
 
 		if (overflow)
 		{
-			diagnostics.ReportIntegralConstantIsTooLarge(span);
+			diagnostics.ReportIntegralConstantIsTooLarge(location);
 			return default;
 		}
 		else

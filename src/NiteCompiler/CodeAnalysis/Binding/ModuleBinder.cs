@@ -23,21 +23,21 @@ internal sealed class ModuleBinder : Binder
 	{
 		return syntax switch
 		{
-			FunctionDeclarationSyntax func => BindFunctionDeclaration(func),
-			TypeDeclarationSyntax type => BindTypeDeclaration(type),
+			// FunctionDeclarationSyntax func => BindFunctionDeclaration(func),
+			// TypeDeclarationSyntax type => BindTypeDeclaration(type),
 			_ => throw new ArgumentException(null, nameof(syntax))
 		};
 	}
 
-	private BoundNode BindFunctionDeclaration(FunctionDeclarationSyntax syntax)
-	{
-		FunctionBinder binder = new(Compilation, this, (Compilation.GetSymbol(syntax) as FunctionSymbol)!);
-		return binder.Bind(syntax);
-	}
-
-	private BoundNode BindTypeDeclaration(TypeDeclarationSyntax syntax)
-	{
-		TypeBinder binder = new(Compilation, this, (Compilation.GetSymbol(syntax) as TypeSymbol)!);
-		return binder.Bind(syntax);
-	}
+	// private BoundNode BindFunctionDeclaration(FunctionDeclarationSyntax syntax)
+	// {
+	// 	FunctionBinder binder = new(Compilation, this, (Compilation.GetSymbol(syntax) as FunctionSymbol)!);
+	// 	return binder.Bind(syntax);
+	// }
+	//
+	// private BoundNode BindTypeDeclaration(TypeDeclarationSyntax syntax)
+	// {
+	// 	TypeBinder binder = new(Compilation, this, (Compilation.GetSymbol(syntax) as TypeSymbol)!);
+	// 	return binder.Bind(syntax);
+	// }
 }
