@@ -1,6 +1,5 @@
 using System;
 using NiteCompiler.CodeAnalysis.Symbols;
-using NiteCompiler.CodeAnalysis.Symbols.Source;
 using NiteCompiler.CodeAnalysis.Syntax;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
