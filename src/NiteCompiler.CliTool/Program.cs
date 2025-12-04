@@ -8,8 +8,12 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using LLVMSharp;
+using LLVMSharp.Interop;
+using static LLVMSharp.Interop.LLVM;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.CodeAnalysis.Text;
+using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CliTool;
@@ -79,25 +83,27 @@ public static class Program
 		Parallel.For(0, files.Length, i =>
 		{
 			FileInfo file = files[i];
+			#if DEBUG
 			Thread.CurrentThread.Name = $"Compile thread[{i}]: {file.Name}";
+			#endif
 			trees[i] = SyntaxTree.Load(file);
 			diagnostics.AddRange(trees[i].Diagnostics);
 		});
 
-		Compilation compilation = new(libraryName, buildAsCoreLibrary, [], trees);
-		compilation.Diagnostics.DrainInto(diagnostics);
-
-		foreach (SyntaxTree tree in compilation.SyntaxTrees)
-		{
-			PrintTree(tree);
-		}
-
-		if (diagnostics.IsEmpty) return;
-
-		foreach (Diagnostic diagnostic in diagnostics)
-		{
-			WriteDiagnostic(diagnostic);
-		}
+		// NiteCompilation niteCompilation = new(libraryName, buildAsCoreLibrary, [], trees);
+		// niteCompilation.Diagnostics.DrainInto(diagnostics);
+		//
+		// foreach (SyntaxTree tree in niteCompilation.SyntaxTrees)
+		// {
+		// 	PrintTree(tree);
+		// }
+		//
+		// if (diagnostics.IsEmpty) return;
+		//
+		// foreach (Diagnostic diagnostic in diagnostics)
+		// {
+		// 	WriteDiagnostic(diagnostic);
+		// }
 	}
 
 	private static void WriteDiagnostic(Diagnostic diagnostic)
@@ -199,7 +205,6 @@ public static class Program
 
 	private static void PrintNode(SyntaxNode node, string indent = "", bool isLast = true)
 	{
-
 		string tokenMarker = isLast ? "└──" : "├──";
 
 		Console.Write(indent);

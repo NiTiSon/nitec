@@ -1,16 +1,17 @@
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
+using NiteCompiler.Compilation;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal abstract class Binder
 {
-	public Compilation Compilation { get; }
+	public NiteCompilation NiteCompilation { get; }
 	protected Binder? Parent { get; }
 
-	protected Binder(Compilation compilation, Binder? parent)
+	protected Binder(NiteCompilation niteCompilation, Binder? parent)
 	{
-		Compilation = compilation;
+		NiteCompilation = niteCompilation;
 		Parent = parent;
 	}
 

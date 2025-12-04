@@ -3,13 +3,14 @@ using System.Runtime.CompilerServices;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.CodeAnalysis.Text;
+using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal sealed  class ExpressionBinder : Binder
 {
-	public ExpressionBinder(Compilation compilation, Binder parent) : base(compilation, parent)
+	public ExpressionBinder(NiteCompilation niteCompilation, Binder parent) : base(niteCompilation, parent)
 	{
 	}
 
@@ -58,7 +59,7 @@ internal sealed  class ExpressionBinder : Binder
 		{
 			if (min32Bit is PredefinedType.I32 or PredefinedType.I64) return minimum; // 000i is only i32 or i64
 
-			Compilation.Diagnostics.ReportIntegralValueCantBeSigned(location);
+			NiteCompilation.Diagnostics.ReportIntegralValueCantBeSigned(location);
 		}
 
 		if (type == NumericLiteralType.Unsigned)
@@ -127,7 +128,7 @@ internal sealed  class ExpressionBinder : Binder
 		// God bless One's complement
 		if (isNegative && value > Unsafe.BitCast<long, ulong>(long.MinValue))
 		{
-			Compilation.Diagnostics.ReportIntegralValueIsSmallerThanMinValue(location);
+			NiteCompilation.Diagnostics.ReportIntegralValueIsSmallerThanMinValue(location);
 
 			return PredefinedType.U64;
 		}

@@ -9,6 +9,7 @@ public main() -> i32 {
 module std;
 
 public type Void;
+
 public type NeverReturn;
 
 module std::numerics;
@@ -20,13 +21,23 @@ public type SInt8 {
 }
 
 public type SInt16 {
-	private value: u8;
-	public min_value = 0u8;
-	public max_value = 255u8;
+	private value: i16;
+	public min_value = -32'768i16;
+	public max_value = 32'767i16;
 }
 
-public type SInt32;
-public type SInt64;
+public type SInt32 {
+	private value: i32;
+    public min_value = -2'147'483'648i32;
+    public max_value = 2'147'483'647i32;
+}
+
+public type SInt64 {
+	private value: i64;
+    public min_value = -9'223'372'036'854'775'808i64;
+    public max_value = 9'223'372'036'854'775'807i64;
+}
+
 public type UInt8;
 public type UInt16;
 public type UInt32;
@@ -34,3 +45,6 @@ public type UInt64;
 public type Float16;
 public type Float32;
 public type Float64;
+
+public type Integer; // Abstract: is_signed
+public type Number;

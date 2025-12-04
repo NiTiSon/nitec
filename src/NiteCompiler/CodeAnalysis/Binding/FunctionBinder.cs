@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Numerics;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
+using NiteCompiler.Compilation;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
 
@@ -11,7 +12,7 @@ internal sealed class FunctionBinder : ScopedBinder
 {
 	public FunctionSymbol Function { get; }
 
-	public FunctionBinder(Compilation compilation, Binder parent, FunctionSymbol function) : base(compilation, parent, new())
+	public FunctionBinder(NiteCompilation niteCompilation, Binder parent, FunctionSymbol function) : base(niteCompilation, parent, new())
 	{
 		Function = function;
 	}
@@ -29,7 +30,7 @@ internal sealed class FunctionBinder : ScopedBinder
 	private BoundNode BindBlock(BlockStatementSyntax syntax)
 	{
 		var statements = ImmutableArray.CreateBuilder<BoundStatement>();
-		StatementBinder binder = new(Compilation, this, new Scope(this.Scope));
+		StatementBinder binder = new(NiteCompilation, this, new Scope(this.Scope));
 		foreach (var s in syntax.Statements)
 			statements.Add(binder.BindStatement(s));
 

@@ -1,4 +1,5 @@
 using NiteCompiler.CodeAnalysis.Symbols;
+using NiteCompiler.Compilation;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
 
@@ -6,7 +7,7 @@ internal abstract class ScopedBinder : Binder
 {
 	protected Scope Scope { get; }
 
-	protected ScopedBinder(Compilation compilation, Binder parent, Scope scope) : base(compilation, parent)
+	protected ScopedBinder(NiteCompilation niteCompilation, Binder parent, Scope scope) : base(niteCompilation, parent)
 	{
 		Scope = scope;
 	}

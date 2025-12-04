@@ -1,6 +1,7 @@
 using System;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
+using NiteCompiler.Compilation;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
 
@@ -8,7 +9,7 @@ internal sealed class ModuleBinder : Binder
 {
 	public ModuleSymbol Module { get; }
 
-	public ModuleBinder(Compilation compilation, Binder parent, ModuleSymbol module) : base(compilation, parent)
+	public ModuleBinder(NiteCompilation niteCompilation, Binder parent, ModuleSymbol module) : base(niteCompilation, parent)
 	{
 		Module = module;
 	}

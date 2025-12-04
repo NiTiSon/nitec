@@ -27,5 +27,10 @@ public abstract class Symbol
 
 	public abstract Symbol? ContainingSymbol { get; }
 
+	public virtual bool IsAbstract => false;
+	public virtual bool IsOverride => false;
+	public virtual bool IsVirtual => false;
+	public virtual bool IsSealed => false;
+
 	private protected Symbol() {}
 }

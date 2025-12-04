@@ -2,13 +2,14 @@ using System;
 using System.Collections.Immutable;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
+using NiteCompiler.Compilation;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal sealed class CompilationUnitBinder : Binder
 {
-	public CompilationUnitBinder(Compilation compilation, Binder? parent)
-		: base(compilation, parent)
+	public CompilationUnitBinder(NiteCompilation niteCompilation, Binder? parent)
+		: base(niteCompilation, parent)
 	{
 		// TODO: Resolve usages
 	}

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Immutable;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
+using NiteCompiler.Compilation;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
 
@@ -9,7 +10,7 @@ internal sealed class TypeBinder : Binder
 {
 	public TypeSymbol Type { get; }
 
-	public TypeBinder(Compilation compilation, Binder parent, TypeSymbol type) : base(compilation, parent)
+	public TypeBinder(NiteCompilation niteCompilation, Binder parent, TypeSymbol type) : base(niteCompilation, parent)
 	{
 		Type = type;
 	}
@@ -53,7 +54,7 @@ internal sealed class TypeBinder : Binder
 		TypeSymbol? type = null;
 		if (syntax.Initializer != null)
 		{
-			ExpressionBinder binder = new(Compilation, this);
+			ExpressionBinder binder = new(NiteCompilation, this);
 			BoundExpression expression = binder.BindExpression(syntax.Initializer);
 			// TODO: Fix nullref
 			// type = expression.Type;

@@ -1,11 +1,12 @@
 using System;
 using NiteCompiler.CodeAnalysis.Syntax;
+using NiteCompiler.Compilation;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal sealed class StatementBinder : ScopedBinder
 {
-	public StatementBinder(Compilation compilation, Binder parent, Scope scope) : base(compilation, parent, scope)
+	public StatementBinder(NiteCompilation niteCompilation, Binder parent, Scope scope) : base(niteCompilation, parent, scope)
 	{
 	}
 
@@ -29,7 +30,7 @@ internal sealed class StatementBinder : ScopedBinder
 
 	private BoundStatement BindExpressionStatement(ExpressionStatementSyntax statement)
 	{
-		ExpressionBinder binder = new(Compilation, this);
+		ExpressionBinder binder = new(NiteCompilation, this);
 		return new BoundExpressionStatement(statement, binder.BindExpression(statement.Expression));
 	}
 
@@ -37,7 +38,7 @@ internal sealed class StatementBinder : ScopedBinder
 	{
 		if (statement.Expression != null)
 		{
-			ExpressionBinder binder = new(Compilation, this);
+			ExpressionBinder binder = new(NiteCompilation, this);
 			return new BoundReturnStatement(statement, binder.BindExpression(statement.Expression));
 		}
 
