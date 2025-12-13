@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Runtime.Serialization;
 using CommunityToolkit.Diagnostics;
+using NiteCompiler.CodeAnalysis.Syntax;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Text;
 
+/// <summary>
+/// Span of text.
+/// </summary>
 [DataContract]
-public readonly struct TextSpan
+public readonly struct TextSpan : IEquatable<TextSpan>
 {
 	[DataMember(Order = 0)] public readonly int Start;
 	[DataMember(Order = 1)] public readonly int Length;
@@ -31,56 +36,6 @@ public readonly struct TextSpan
 		return span.Start >= Start && span.End <= End;
 	}
 
-	public bool OverlapsWith(TextSpan span)
-	{
-		int overlapStart = int.Max(Start, span.Start);
-		int overlapEnd = int.Min(End, span.End);
-
-		return overlapStart < overlapEnd;
-	}
-
-	public TextSpan? Overlap(TextSpan span)
-	{
-		int overlapStart = Math.Max(Start, span.Start);
-		int overlapEnd = Math.Min(End, span.End);
-
-		return overlapStart < overlapEnd
-			? FromBounds(overlapStart, overlapEnd)
-			: null;
-	}
-
-	public bool IntersectsWith(TextSpan span)
-	{
-		return span.Start <= End && span.End >= Start;
-	}
-
-	public bool IntersectsWith(int position)
-	{
-		return unchecked((uint)(position - Start) <= (uint)Length);
-	}
-
-	public TextSpan? Intersection(TextSpan span)
-	{
-		int intersectStart = int.Max(Start, span.Start);
-		int intersectEnd = int.Min(End, span.End);
-
-		return intersectStart <= intersectEnd
-			? FromBounds(intersectStart, intersectEnd)
-			: null;
-	}
-
-	public TextSpan First(int length) => SubSpan(0, length);
-
-	public TextSpan Last(int length)
-	{
-		if (length > Length)
-		{
-			ThrowHelper.ThrowArgumentOutOfRangeException(nameof(length));
-		}
-
-		return SubSpan(Length - length, length);
-	}
-
 	public TextSpan SubSpan(int position, int length)
 	{
 		if ((uint)position > (uint)Length)
@@ -96,9 +51,9 @@ public readonly struct TextSpan
 		return new(Start + position, length);
 	}
 
-	public SourceSpan Contextualize(SourceText source)
+	public Location Contextualize(SyntaxTree tree)
 	{
-		return new(source, this);
+		return Location.Create(tree, this);
 	}
 
 	public static TextSpan FromBounds(int start, int end)
@@ -115,4 +70,29 @@ public readonly struct TextSpan
 	}
 
 	public override string ToString() => $"[{Start}..{End})";
+
+	public bool Equals(TextSpan other)
+	{
+		return Start == other.Start && Length == other.Length;
+	}
+
+	public override bool Equals(object? obj)
+	{
+		return obj is TextSpan other && Equals(other);
+	}
+
+	public override int GetHashCode()
+	{
+		return HashCode.Combine(Start, Length);
+	}
+
+	public static bool operator ==(TextSpan left, TextSpan right)
+	{
+		return left.Equals(right);
+	}
+
+	public static bool operator !=(TextSpan left, TextSpan right)
+	{
+		return !(left == right);
+	}
 }

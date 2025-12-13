@@ -6,7 +6,7 @@
     },
     "<input>": {
       "commandName": "Project",
-      "commandLineArgs": "--corelib test.nite"
+      "commandLineArgs": "--corelib --output-kind=nitis_lib test.nite"
     }
   }
 }

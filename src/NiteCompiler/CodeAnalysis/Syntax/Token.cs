@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using NiteCompiler.CodeAnalysis.Text;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
@@ -25,6 +26,11 @@ public class Token : SyntaxNode
     public bool IsConnectedBefore(Token token)
     {
 	    return token.IsConnectedAfter(this);
+    }
+
+    public Location CreateLocation(SyntaxTree tree)
+    {
+	    return Location.Create(tree, Span);
     }
 
     public override IEnumerable<SyntaxNode> GetChildren()

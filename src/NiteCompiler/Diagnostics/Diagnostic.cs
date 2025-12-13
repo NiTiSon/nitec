@@ -10,8 +10,6 @@ public sealed class Diagnostic
 	private readonly object?[]? _args;
 
 	public string Id => _descriptor.Id;
-	[Obsolete("Use Locations instead.")]
-	public SourceSpan? Span { get; }
 	public ImmutableArray<Location> Locations { get; }
 	public DiagnosticSeverity Severity => DefaultSeverity;
 	public DiagnosticSeverity DefaultSeverity => _descriptor.DefaultSeverity;
@@ -29,15 +27,6 @@ public sealed class Diagnostic
 				return string.Empty;
 			}
 		}
-	}
-
-	[Obsolete("Do not use SourceSpan.")]
-	public Diagnostic(DiagnosticDescriptor descriptor, SourceSpan? span, params object?[]? args)
-	{
-		_descriptor = descriptor;
-		Span = span;
-		Locations = [];
-		_args = args;
 	}
 
 	public Diagnostic(DiagnosticDescriptor descriptor, ImmutableArray<Location> locations, params object?[]? args)

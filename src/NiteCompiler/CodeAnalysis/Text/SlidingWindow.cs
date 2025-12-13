@@ -42,52 +42,7 @@ public sealed class SlidingWindow
 		_offset = 0;
 		_lexemeStart = 0;
 		_window = new char[BufferLength];
-
-#if DEBUG
-		AppDomain.CurrentDomain.UnhandledException += ExceptionHandler;
-#endif
 	}
-
-#if DEBUG
-	~SlidingWindow()
-	{
-		AppDomain.CurrentDomain.UnhandledException -= ExceptionHandler;
-	}
-
-	private static Semaphore _debugSemaphore = new Semaphore(1, 1);
-	private void ExceptionHandler(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
-	{
-		if (_debugSemaphore.WaitOne())
-		{
-			try
-			{
-				Console.ForegroundColor = ConsoleColor.Yellow;
-				SourceLines lines = _sourceText.Lines;
-				Console.WriteLine($"Sliding window: {_sourceText.FileName ?? "<script>"} {_sourceText.Span}");
-				TextLine? problemLine = lines.GetLineByCharacterPosition(Position);
-				try
-				{
-					if (problemLine is not null)
-					{
-						Console.Write($"#{(problemLine.Value.Index + 1):0000}| {_sourceText.GetText(problemLine.Value)}");
-					}
-				}
-				catch (Exception e)
-				{
-					Console.WriteLine(e);
-					throw;
-				}
-				Console.WriteLine();
-				Console.WriteLine($"Thrown when window cursor was at {Position}");
-				Console.ResetColor();
-			}
-			finally
-			{
-				_debugSemaphore.Release();
-			}
-		}
-	}
-#endif
 
 	public char Current => Peek(0);
 	public char Next => Peek(1);

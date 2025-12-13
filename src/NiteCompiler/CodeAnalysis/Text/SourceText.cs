@@ -5,13 +5,6 @@ namespace NiteCompiler.CodeAnalysis.Text;
 
 public abstract class SourceText : IDisposable
 {
-	public string? FileName { get; }
-
-	protected SourceText(string? fileName)
-	{
-		FileName = fileName;
-	}
-
 	/// <summary>
 	/// Copy a range of characters from this SourceText to a destination array.
 	/// </summary>
@@ -21,35 +14,22 @@ public abstract class SourceText : IDisposable
 
 	public abstract string GetText(TextSpan span);
 
-	public abstract string GetText(TextLine line);
+	/// <summary>
+	/// Fills <paramref name="destination"/> with text.
+	/// </summary>
+	/// <param name="index">Index of source text to start copy from.</param>
+	/// <param name="destination">Span to fill.</param>
+	/// <returns>Amount of filled characters in span.</returns>
+	public abstract int GetText(int index, Span<char> destination);
 
+	public abstract char this[int index] { get; }
+
+	/// <summary>
+	/// Returns source line collection of this source text.
+	/// </summary>
 	public abstract SourceLines Lines { get; }
 
 	public abstract int Length { get; }
 
 	public TextSpan Span =>  new(0, Length);
-
-	public virtual char this[int i] => GetText(new TextSpan(i, 1))[0];
-
-	public static SourceText From(string text)
-	{
-		return new StringText(text);
-	}
-
-	public static SourceText FromFile(string fileName)
-	{
-		return FromFile(new FileInfo(fileName));
-	}
-
-	public static SourceText FromFile(FileInfo file)
-	{
-		if (!file.Exists)
-		{
-			throw new FileNotFoundException();
-		}
-
-		string text =File.ReadAllText(file.FullName);
-
-		return new StringText(text, file.FullName);
-	}
 }

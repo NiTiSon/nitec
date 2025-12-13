@@ -7,7 +7,7 @@ public sealed class StringText : SourceText
 {
 	private readonly string _text;
 
-	public StringText(string text, string? fileName = null) : base(fileName)
+	public StringText(string text)
 	{
 		ArgumentNullException.ThrowIfNull(text);
 
@@ -23,22 +23,40 @@ public sealed class StringText : SourceText
 
 	public override string GetText(TextSpan span)
 	{
-		TextSpan wholeSpan = new(0, Length);
-
-		if (wholeSpan.OverlapsWith(span))
-		{
-			return _text.Substring(span.Start, span.Length);
-		}
-
-		throw new ArgumentException(null, nameof(span));
+		return _text.Substring(span.Start, span.Length);
 	}
 
-	public override string GetText(TextLine line)
+	public override int GetText(int index, Span<char> destination)
 	{
-		return line.IsEmpty ? string.Empty : GetText(new TextSpan(line.Position, line.LengthIncludingLineBreak));
+		ReadOnlySpan<char> source = _text.AsSpan(index);
+
+		if (source.Length > destination.Length)
+		{
+			source[..destination.Length].CopyTo(destination);
+			return destination.Length;
+		}
+
+		source.CopyTo(destination);
+		return source.Length;
+	}
+
+	public override char this[int index]
+	{
+		get
+		{
+			#if DEBUG
+			if (index < 0 || index >= _text.Length)
+			{
+				throw new IndexOutOfRangeException();
+			}
+			#endif
+
+			return _text[index];
+		}
 	}
 
 	private readonly WeakReference<SourceLines> _lazyLines = new(null!);
+
 	public override SourceLines Lines
 	{
 		get
@@ -55,6 +73,4 @@ public sealed class StringText : SourceText
 			return lines;
 		}
 	}
-
-	public override char this[int i] => _text[i];
 }

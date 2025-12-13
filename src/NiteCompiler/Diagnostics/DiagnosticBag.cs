@@ -29,11 +29,6 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		_diagnostics.Add(diagnostic);
 	}
 
-	private void Add(DiagnosticDescriptor diagnosticDescriptor, SourceSpan source, params object?[]? args)
-	{
-		_diagnostics.Add(new Diagnostic(diagnosticDescriptor, source, args));
-	}
-
 	private void Add(DiagnosticDescriptor diagnosticDescriptor, ImmutableArray<Location> source, params object?[]? args)
 	{
 		_diagnostics.Add(new Diagnostic(diagnosticDescriptor, source, args));
@@ -82,29 +77,29 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.DependenciesInCoreLibrary, []);
 	}
 
-	public void ReportNotTerminatedMultiLineComment(SourceSpan source)
+	public void ReportNotTerminatedMultiLineComment(Location source)
 	{
-		Add(DiagnosticDescriptor.NotTerminatedMultilineComment, source);
+		Add(DiagnosticDescriptor.NotTerminatedMultilineComment, [source]);
 	}
 
-	public void ReportNotTerminatedStringLiteral(SourceSpan source)
+	public void ReportNotTerminatedStringLiteral(Location source)
 	{
-		Add(DiagnosticDescriptor.NotTerminatedStringLiteral, source);
+		Add(DiagnosticDescriptor.NotTerminatedStringLiteral, [source]);
 	}
 
-	public void ReportExpectedToken(SourceSpan source, SyntaxKind kind)
+	public void ReportExpectedToken(Location source, SyntaxKind kind)
 	{
-		Add(DiagnosticDescriptor.ExpectedToken, source, kind);
+		Add(DiagnosticDescriptor.ExpectedToken, [source], kind);
 	}
 
-	public void ReportUnexpectedToken(SourceSpan source, SyntaxKind currentKind)
+	public void ReportUnexpectedToken(Location source, SyntaxKind currentKind)
 	{
-		Add(DiagnosticDescriptor.UnexpectedToken, source, currentKind);
+		Add(DiagnosticDescriptor.UnexpectedToken, [source], currentKind);
 	}
 
-	public void ReportUnresolvedSymbol(SourceSpan source)
+	public void ReportUnresolvedSymbol(Location source)
 	{
-		Add(DiagnosticDescriptor.CannotResolveSymbol, source);
+		Add(DiagnosticDescriptor.CannotResolveSymbol, [source]);
 	}
 
 	public void ReportFieldMustHaveEitherTypeClauseOrDefaultValue(Location location)

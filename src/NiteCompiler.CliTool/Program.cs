@@ -8,9 +8,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using LLVMSharp;
-using LLVMSharp.Interop;
-using static LLVMSharp.Interop.LLVM;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.CodeAnalysis.Text;
 using NiteCompiler.Compilation;
@@ -29,24 +26,43 @@ public static class Program
 
 		Console.OutputEncoding = Encoding.UTF8;
 
-		Argument<FileInfo[]> inputArgument = new("files")
+		Argument<FileInfo[]> inputArgument = new("sources")
 		{
 			Description = "Input source files.",
 		};
-		Option<bool> noStdOption = new("--corelib")
+		Option<string> libraryNameOption = new("-n", "--name")
+		{
+			Description = "Name of library.",
+		};
+		Option<string> outputNameOption = new("-o", "--output")
+		{
+			Description = "Path of the output file.",
+		};
+		Option<bool> coreLibraryOption = new("--corelib")
 		{
 			Description = "Marks current library as core library.\nAllows compiler to resolve special types within current library.\nAllows not any dependency.",
 		};
+		Option<OutputKind> outputKindOption = new("--output-kind")
+		{
+			DefaultValueFactory = (_) => OutputKind.exec,
+			Description = "Determines output format."
+		};
 
-		RootCommand rootCommand = new("Nite CLI compiler tool (.NET impl).");
+
+		RootCommand rootCommand = new("Nite CLI compiler tool.");
 		rootCommand.Arguments.Add(inputArgument);
-		rootCommand.Options.Add(noStdOption);
+		rootCommand.Options.Add(libraryNameOption);
+		rootCommand.Options.Add(outputNameOption);
+		rootCommand.Options.Add(coreLibraryOption);
+		rootCommand.Options.Add(outputKindOption);
+
 		rootCommand.SetAction(
 			result => Compile(
-				buildAsCoreLibrary: result.GetValue(noStdOption),
-				files: result.GetValue(inputArgument),
-				libraryName: "test123")
-			);
+				libraryName: result.GetValue(libraryNameOption),
+				outputName: result.GetValue(outputNameOption),
+				sources: result.GetValue(inputArgument),
+				outputKind: result.GetValue(outputKindOption),
+				isCoreLibrary: result.GetValue(coreLibraryOption)));
 
 		ParseResult parseResult = rootCommand.Parse(args);
 		parseResult.Configuration.EnableDefaultExceptionHandler = false;
@@ -59,13 +75,18 @@ public static class Program
 
 		#if DEBUG
 		stopwatch.Stop();
-		Console.WriteLine("[DEBUG] Code analysis time: {0:g}", stopwatch.Elapsed);
+		Console.WriteLine("[DEBUG] Compilation time: {0:g}", stopwatch.Elapsed);
 		#endif
 	}
 
-	private static void Compile(bool buildAsCoreLibrary, FileInfo[]? files, string libraryName)
+	private static void Compile(
+		string? libraryName,
+		string? outputName,
+		FileInfo[]? sources,
+		bool isCoreLibrary,
+		OutputKind outputKind)
 	{
-		if (files is null || files.Length == 0)
+		if (sources is null || sources.Length == 0)
 		{
 			Console.ForegroundColor = ConsoleColor.Red;
 			Console.Error.WriteLine("No input files.");
@@ -74,36 +95,57 @@ public static class Program
 		}
 		DiagnosticBag diagnostics = [];
 
-		if (RemoveDuplicates(ref files))
+		if (RemoveDuplicates(ref sources))
 		{
 			diagnostics.ReportDuplicateSourceFiles();
 		}
 
-		SyntaxTree[] trees = new SyntaxTree[files.Length];
-		Parallel.For(0, files.Length, i =>
-		{
-			FileInfo file = files[i];
-			#if DEBUG
-			Thread.CurrentThread.Name = $"Compile thread[{i}]: {file.Name}";
-			#endif
-			trees[i] = SyntaxTree.Load(file);
-			diagnostics.AddRange(trees[i].Diagnostics);
-		});
+		// compile [example.nite] -> library_name := example
+		libraryName ??= Path.GetFileNameWithoutExtension(sources[0].Name);
 
-		// NiteCompilation niteCompilation = new(libraryName, buildAsCoreLibrary, [], trees);
-		// niteCompilation.Diagnostics.DrainInto(diagnostics);
-		//
+		NiteCompilationOptions options = NiteCompilationOptions.Default;
+
+		options.IsCoreLibrary = isCoreLibrary;
+
+		NiteCompilation compilation = NiteCompilation.Create(
+			libraryName,
+			sources,
+			null,
+			null);
+
+		compilation.Diagnostics.DrainInto(diagnostics);
+
 		// foreach (SyntaxTree tree in niteCompilation.SyntaxTrees)
 		// {
 		// 	PrintTree(tree);
 		// }
-		//
-		// if (diagnostics.IsEmpty) return;
-		//
-		// foreach (Diagnostic diagnostic in diagnostics)
-		// {
-		// 	WriteDiagnostic(diagnostic);
-		// }
+
+		if (!diagnostics.IsEmpty)
+		{
+			foreach (Diagnostic diagnostic in diagnostics)
+			{
+				WriteDiagnostic(diagnostic);
+			}
+
+			return;
+		}
+
+		switch (outputKind)
+		{
+			case OutputKind.nitis_lib:
+			{
+				outputName ??= $"{libraryName}.nlib";
+				using FileStream stream = new(outputName, FileMode.Create, FileAccess.Write);
+				compilation.WriteNiTiSLibrary(stream);
+				break;
+			}
+			default:
+			{
+				Console.Error.WriteLine("Not implement yet.");
+				break;
+			}
+		}
+
 	}
 
 	private static void WriteDiagnostic(Diagnostic diagnostic)
@@ -119,15 +161,27 @@ public static class Program
 			_ => throw new ArgumentException(null, nameof(diagnostic))
 		};
 
-		// header
+
+
+		// Header
 		Console.ForegroundColor = foreColor;
 		Console.Write($"{type}[{diagnostic.Id}]");
 		Console.ResetColor();
 		Console.WriteLine(": " + diagnostic.Message);
 
-		if (diagnostic.Span == null)
+		if (diagnostic.Locations.IsEmpty)
 			return;
 
+		var locationsGroupedBySource = diagnostic.Locations
+			.GroupBy(d => d.SyntaxTree)
+			.Select(g => new { SourceTree = g.Key, Locations = g.ToArray() });
+
+		foreach (var group in locationsGroupedBySource)
+		{
+			// TODO: Reimplement with new location API
+		}
+
+		/*
 		var span = diagnostic.Span;
 		var source = span.Source;
 		var lines = source.Lines;
@@ -135,22 +189,13 @@ public static class Program
 		TextLine? beginOpt = lines.GetLineByCharacterPosition(span.Start);
 		TextLine? endOpt = lines.GetLineByCharacterPosition(span.End);
 
-	if (beginOpt == null || endOpt == null)
-	{
-		// Defensive fallback for weird spans (e.g. after EOF)
-		Console.ForegroundColor = ConsoleColor.DarkGray;
-		Console.WriteLine($"(invalid span {span.Start}..{span.End})");
-		Console.ResetColor();
-		return;
-	}
-
 		TextLine begin = beginOpt.Value;
 		TextLine end = endOpt.Value;
 
 		string firstLineNum = begin.HumanReadableLineNumber.ToString();
 		int gutterWidth = firstLineNum.Length + 1;
 
-		Console.WriteLine($"{new string(' ', gutterWidth - 1)}--> {source.FileName}:{begin.HumanReadableLineNumber}:{begin.GetColumnIndex(span.Start) + 1}");
+		Console.WriteLine($"{new string(' ', gutterWidth - 1)}--> {"filename"}:{begin.HumanReadableLineNumber}:{begin.GetColumnIndex(span.Start) + 1}");
 		Console.WriteLine(new string(' ', gutterWidth) + "|");
 
 		for (int i = begin.Index; i <= end.Index && i < source.Lines.Count; i++)
@@ -188,14 +233,15 @@ public static class Program
 		}
 
 		Console.WriteLine(new string(' ', gutterWidth) + "|");
-}
+		*/
+	}
 
 
 	private static void PrintTree(SyntaxTree tree, string indent = "", bool isLast = true)
 	{
 		if (tree.Root.TopLevelNodes.Length == 0) return;
 
-		Console.WriteLine(tree.Text.FileName ?? "<unnamed>");
+		Console.WriteLine(tree.Filename ?? "<unnamed>");
 
 		SyntaxNode lastChild = tree.Root.TopLevelNodes[^1];
 

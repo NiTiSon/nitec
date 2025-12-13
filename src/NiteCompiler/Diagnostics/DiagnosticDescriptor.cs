@@ -13,7 +13,7 @@ public sealed partial class DiagnosticDescriptor
 	public DiagnosticSeverity DefaultSeverity { get; }
 
 	public DiagnosticDescriptor(
-		string id,
+		[StringSyntax("a-zA-Z0-9_")] string id,
 		[StringSyntax(StringSyntaxAttribute.CompositeFormat)] string message,
 		DiagnosticSeverity defaultSeverity = DiagnosticSeverity.Error)
 	{

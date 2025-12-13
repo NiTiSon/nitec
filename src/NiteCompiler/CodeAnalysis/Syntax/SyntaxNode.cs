@@ -12,9 +12,6 @@ public abstract class SyntaxNode
 	public abstract TextSpan Span { get; }
 	public abstract SyntaxKind Kind { get; }
 	public abstract IEnumerable<SyntaxNode> GetChildren();
-
-	[Obsolete("Use Location instead.")]
-	public SourceSpan ContextualizedSpan => Span.Contextualize(SyntaxTree.Text);
 	public Location Location => Location.Create(SyntaxTree, Span);
 
 	public IEnumerable<Token> GetTokens(bool includeThisToken = false)

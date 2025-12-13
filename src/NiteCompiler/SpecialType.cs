@@ -1,4 +1,4 @@
-namespace NiteLang.Metadata;
+namespace NiteCompiler;
 
 public enum SpecialType : byte
 {

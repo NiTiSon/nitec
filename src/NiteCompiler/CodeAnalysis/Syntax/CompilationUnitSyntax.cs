@@ -8,16 +8,15 @@ public sealed class CompilationUnitSyntax : SyntaxNode
 {
 	public ImmutableArray<SyntaxNode> TopLevelNodes { get; }
 	public Token EndOfFileToken { get; }
-	public SourceText Source { get; }
 
-	public CompilationUnitSyntax(SourceText source, ImmutableArray<SyntaxNode> topLevelNodes, Token endOfFileToken)
+	public CompilationUnitSyntax(SyntaxTree owner, ImmutableArray<SyntaxNode> topLevelNodes, Token endOfFileToken)
 	{
-		Source = source;
+		SyntaxTree = owner;
 		TopLevelNodes = topLevelNodes;
 		EndOfFileToken = endOfFileToken;
 	}
 
-	public override TextSpan Span => Source.Span;
+	public override TextSpan Span => SyntaxTree.Text.Span;
 	public override SyntaxKind Kind => SyntaxKind.CompilationUnit;
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{

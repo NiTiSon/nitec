@@ -10,26 +10,14 @@ public abstract class Location
 {
 	private protected Location() {}
 
-	[MemberNotNullWhen(true, nameof(SourceTree))]
-	public bool IsInSource => SourceTree != null;
-
-	[MemberNotNullWhen(true, nameof(MetadataLibrary))]
-	public bool IsInMetadata => MetadataLibrary != null;
-
-	public virtual SyntaxTree? SourceTree => null;
-	public virtual LibrarySymbol? MetadataLibrary => null;
-
-	public virtual TextSpan Span => default;
+	[NotNullIfNotNull(nameof(Span))]
+	public virtual SyntaxTree? SyntaxTree => null;
+	public virtual TextSpan? Span => null;
+	public virtual string? Filename => SyntaxTree?.Filename;
 
 	public static Location Create(SyntaxTree tree, TextSpan span)
 	{
-		return new SourceLocation(tree, span);
+		SourceLocation location = new(tree, span);
+		return location;
 	}
-
-	public static Location Create(Func<SyntaxTree> lazyTree, TextSpan span)
-	{
-		return new SourceLocation(lazyTree, span);
-	}
-
-	// TODO: Add Metadata and ExternalFile location
 }

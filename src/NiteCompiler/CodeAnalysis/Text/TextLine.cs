@@ -3,7 +3,9 @@ using System.Runtime.Serialization;
 
 namespace NiteCompiler.CodeAnalysis.Text;
 
-[DebuggerStepThrough]
+/// <summary>
+/// Struct describes a line within text.
+/// </summary>
 public readonly struct TextLine
 {
 	/// <summary>

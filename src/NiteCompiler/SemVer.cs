@@ -5,7 +5,7 @@ using System.Linq;
 using System.Numerics;
 using CommunityToolkit.Diagnostics;
 
-namespace NiteLang.Metadata;
+namespace NiteCompiler;
 
 public readonly struct SemVer :
 	IEquatable<SemVer>,

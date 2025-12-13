@@ -17,8 +17,4 @@
         </AssemblyAttribute>
     </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\NiteLang.Metadata\NiteLang.Metadata.csproj" />
-    </ItemGroup>
-
 </Project>

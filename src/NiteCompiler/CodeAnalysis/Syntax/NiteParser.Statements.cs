@@ -16,7 +16,7 @@ public sealed partial class NiteParser
 			if (Current.Kind == SyntaxKind.EofToken)
 			{
 				_diagnostics.ReportExpectedToken(
-					new SourceSpan(_source, new TextSpan(int.Max(Current.Span.Start - 1, 0), 1)),
+					new TextSpan(int.Max(Current.Span.Start - 1, 0), 1).Contextualize(_syntaxTree),
 					SyntaxKind.CloseBraceToken);
 				return new BlockStatementSyntax(openBrace, [], Current);
 			}
@@ -31,7 +31,7 @@ public sealed partial class NiteParser
 			}
 			else
 			{
-				_diagnostics.ReportExpectedToken(Current.Span.Contextualize(_source), SyntaxKind.SemicolonToken);
+				_diagnostics.ReportExpectedToken(Current.Span.Contextualize(_syntaxTree), SyntaxKind.SemicolonToken);
 			}
 		}
 

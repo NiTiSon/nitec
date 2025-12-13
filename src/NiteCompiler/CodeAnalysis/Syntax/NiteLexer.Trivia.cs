@@ -111,7 +111,7 @@ public partial class NiteLexer
 			{
 				case SlidingWindow.InvalidCharacter:
 					TextSpan span = _window.LexemeSpan;
-					_diagnostics.ReportNotTerminatedMultiLineComment(span.Contextualize(_source));
+					_diagnostics.ReportNotTerminatedMultiLineComment(span.Contextualize(_syntaxTree));
 					done = true;
 					break;
 				case '*':

@@ -12,13 +12,13 @@ public sealed partial class NiteParser
 	private readonly DiagnosticBag _diagnostics;
 	private readonly List<Token> _tokens;
 	private int _position;
-	private readonly SourceText _source;
+	private readonly SyntaxTree _syntaxTree;
 
-	public NiteParser(NiteLexer lexer, StringText sourceText, DiagnosticBag diagnostics)
+	public NiteParser(NiteLexer lexer, SyntaxTree syntaxTree, DiagnosticBag diagnostics)
 	{
 		_diagnostics = diagnostics;
 		_tokens = new(capacity: 64);
-		_source = sourceText;
+		_syntaxTree = syntaxTree;
 
 		Token token;
 		do
@@ -56,7 +56,7 @@ public sealed partial class NiteParser
 		if (Current.Kind == kind)
 			return PeekAndAdvance();
 
-		_diagnostics.ReportExpectedToken(Current.Span.Contextualize(_source), kind);
+		_diagnostics.ReportExpectedToken(Current.Span.Contextualize(_syntaxTree), kind);
 		return new Token(kind, Current.Span);
 	}
 
@@ -98,14 +98,14 @@ public sealed partial class NiteParser
 					else
 					{
 						_position++;
-						_diagnostics.ReportUnexpectedToken(Current.Span.Contextualize(_source), Current.Kind);
+						_diagnostics.ReportUnexpectedToken(Current.Span.Contextualize(_syntaxTree), Current.Kind);
 					}
 					break;
 			}
 		}
 		Token endOfFileToken = MatchToken(SyntaxKind.EofToken);
 
-		return new CompilationUnitSyntax(_source, membersBuilder.ToImmutable(), endOfFileToken);
+		return new CompilationUnitSyntax(_syntaxTree, membersBuilder.ToImmutable(), endOfFileToken);
 	}
 
 	private MemberSyntax ParseMember()

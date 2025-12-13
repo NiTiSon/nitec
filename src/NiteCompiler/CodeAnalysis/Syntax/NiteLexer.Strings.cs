@@ -27,7 +27,7 @@ public partial class NiteLexer
 
 		if (_window.IsAtTheEnd && !terminated)
 		{
-			_diagnostics.ReportNotTerminatedStringLiteral(_window.LexemeSpan.Contextualize(_source));
+			_diagnostics.ReportNotTerminatedStringLiteral(_window.LexemeSpan.Contextualize(_syntaxTree));
 		}
 	}
 }
