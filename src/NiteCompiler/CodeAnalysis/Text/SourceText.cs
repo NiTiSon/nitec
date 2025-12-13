@@ -32,4 +32,10 @@ public abstract class SourceText : IDisposable
 	public abstract int Length { get; }
 
 	public TextSpan Span =>  new(0, Length);
+
+	public static SourceText FromText(string text)
+	{
+		StringText stringText = new(text);
+		return stringText;
+	}
 }

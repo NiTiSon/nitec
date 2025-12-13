@@ -48,7 +48,7 @@ public sealed class NiteCompilation
 		var sources = ImmutableArray.CreateBuilder<SyntaxTree>();
 		foreach (var sourceFile in sourceFiles ?? [])
 		{
-			SyntaxTree syntaxTree = SyntaxTree.Load(sourceFile);
+			SyntaxTree syntaxTree = SyntaxTree.FromFile(sourceFile);
 			sources.Add(syntaxTree);
 		}
 

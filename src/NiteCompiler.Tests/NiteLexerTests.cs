@@ -10,9 +10,9 @@ public class NiteLexerTests
 {
 	private static Token LexSingle(string text)
 	{
-		DiagnosticBag diagnostics = new();
-		SourceText source = SourceText.From(text);
-		NiteLexer lexer = new(source, () => SyntaxTree.Invalid, diagnostics);
+		DiagnosticBag diagnostics = [];
+		SyntaxTree tree = SyntaxTree.FromText(text, filename: "<tests>");
+		NiteLexer lexer = new(tree, diagnostics);
 		return lexer.Lex();
 	}
 
@@ -88,9 +88,9 @@ public class NiteLexerTests
 	[Test]
 	public void Lex_EndOfFile_ReturnsEofToken()
 	{
-		DiagnosticBag diagnostics = new();
-		SourceText source = SourceText.From("");
-		NiteLexer lexer = new(source, () => SyntaxTree.Invalid, diagnostics);
+		DiagnosticBag diagnostics = [];
+		SyntaxTree tree = SyntaxTree.FromText(string.Empty, filename: "<tests>");
+		NiteLexer lexer = new(tree, diagnostics);
 		Token token = lexer.Lex();
 
 		Assert.That(token.Kind, Is.EqualTo(SyntaxKind.EofToken));

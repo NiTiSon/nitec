@@ -23,11 +23,21 @@ public sealed class SyntaxTree
 		Filename = filename;
 	}
 
-	public static SyntaxTree Load(FileInfo file)
+	public static SyntaxTree FromFile(FileInfo file)
 	{
 		string text = File.ReadAllText(file.FullName);
+		return Create(text, file.FullName);
+	}
+
+	public static SyntaxTree FromText(string text, string? filename)
+	{
+		return Create(text, filename);
+	}
+
+	public static SyntaxTree Create(string text, string? filename)
+	{
 		StringText sourceText = new(text);
-		SyntaxTree syntaxTree = new(sourceText, file.FullName);
+		SyntaxTree syntaxTree = new(sourceText, filename);
 
 		NiteLexer lexer = new(syntaxTree, syntaxTree.Diagnostics);
 		NiteParser parser = new(lexer, syntaxTree, syntaxTree.Diagnostics);
