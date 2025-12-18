@@ -14,6 +14,13 @@ internal static class SyntaxFacts
 		SyntaxKind.PrivateKeyword, SyntaxKind.FamilyKeyword, SyntaxKind.FriendKeyword,
 	];
 
+	public static ReadOnlySpan<SyntaxKind> ModifiersKeywords =>
+	[
+		SyntaxKind.StaticKeyword,
+		SyntaxKind.ConstKeyword,
+		SyntaxKind.VirtualKeyword, SyntaxKind.OverrideKeyword, SyntaxKind.AbstractKeyword, SyntaxKind.SealedKeyword,
+	];
+
 	public static bool IsPossibleKeyword(int lexemeWidth)
 	{
 		return lexemeWidth is >= 2 and <= 11;
@@ -31,6 +38,24 @@ internal static class SyntaxFacts
 				return;
 			case "module":
 				info.Kind = SyntaxKind.ModuleKeyword;
+				return;
+			case "static":
+				info.Kind =  SyntaxKind.StaticKeyword;
+				return;
+			case "const":
+				info.Kind = SyntaxKind.ConstKeyword;
+				return;
+			case "abstract":
+				info.Kind = SyntaxKind.AbstractKeyword;
+				return;
+			case "virtual":
+				info.Kind = SyntaxKind.VirtualKeyword;
+				return;
+			case "override":
+				info.Kind = SyntaxKind.OverrideKeyword;
+				return;
+			case "sealed":
+				info.Kind = SyntaxKind.SealedKeyword;
 				return;
 			case "public":
 				info.Kind = SyntaxKind.PublicKeyword;

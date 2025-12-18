@@ -7,6 +7,10 @@ file.nlib [zip format]
 ├── checksum.txt {unsure, is this really required}
 ├── lib-info.yml
 ├── lib-data.bin
+├── src/ [optional]
+│   ├── file1.nite
+│   ├── file2.nite
+│   └── file3.nite
 └── native/ [optional]
     ├── x86_64-windows
     │   └── xyz.dll

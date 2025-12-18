@@ -43,6 +43,7 @@ public sealed class SyntaxTree
 		NiteParser parser = new(lexer, syntaxTree, syntaxTree.Diagnostics);
 
 		CompilationUnitSyntax unit = parser.Parse();
+		syntaxTree.Root = unit;
 		foreach (SyntaxNode node in unit.GetNodes(includeThisToken: true))
 		{
 			node.SyntaxTree = syntaxTree;

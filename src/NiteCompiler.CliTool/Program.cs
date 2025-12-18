@@ -115,10 +115,10 @@ public static class Program
 
 		compilation.Diagnostics.DrainInto(diagnostics);
 
-		// foreach (SyntaxTree tree in niteCompilation.SyntaxTrees)
-		// {
-		// 	PrintTree(tree);
-		// }
+		foreach (SyntaxTree tree in compilation.SyntaxTrees)
+		{
+			PrintTree(tree);
+		}
 
 		if (!diagnostics.IsEmpty)
 		{
@@ -160,8 +160,6 @@ public static class Program
 			DiagnosticSeverity.Info => ("info", ConsoleColor.Cyan),
 			_ => throw new ArgumentException(null, nameof(diagnostic))
 		};
-
-
 
 		// Header
 		Console.ForegroundColor = foreColor;

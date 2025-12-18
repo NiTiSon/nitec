@@ -3,7 +3,7 @@ using System;
 namespace NiteCompiler.CodeAnalysis.Declarations;
 
 [Flags]
-public enum DeclarationModifiers : uint
+internal enum DeclarationModifiers : uint
 {
 	None = 0,
 
@@ -21,9 +21,10 @@ public enum DeclarationModifiers : uint
 	Static = 1 << 10,
 	Const = 1 << 11,
 	Unsafe = 1 << 12,
+	Partial = 1 << 13,
 
-	All = (1 << 13) - 1,
-	Unset = 1 << 13,
+	All = (1 << 14) - 1,
+	Unset = 1 << 14,
 
 	AccessibilityMask = Public | Protected | Private | Friend | Family | Internal,
 }

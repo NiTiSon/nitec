@@ -21,7 +21,7 @@ public sealed class NiteCompilation
 	public DiagnosticBag Diagnostics { get; } = [];
 
 	private NiteCompilation(
-		string? libraryName,
+		string libraryName,
 		ImmutableArray<SyntaxTree> syntaxTrees,
 		ImmutableArray<Dependency> dependencies,
 		NiteCompilationOptions options)
@@ -37,6 +37,10 @@ public sealed class NiteCompilation
 		{
 			Diagnostics.ReportDependenciesInCoreLibrary();
 		}
+
+		DeclarationPass declarationPass = new(this, SyntaxTrees);
+		SymbolPass symbolPass = new(this, libraryName, declarationPass);
+		_ = 0x3; // breakpoint
 	}
 
 	public static NiteCompilation Create(

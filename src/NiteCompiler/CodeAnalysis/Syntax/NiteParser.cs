@@ -108,26 +108,30 @@ public sealed partial class NiteParser
 		return new CompilationUnitSyntax(_syntaxTree, membersBuilder.ToImmutable(), endOfFileToken);
 	}
 
+	private readonly ImmutableArray<Token>.Builder _modifiers = ImmutableArray.CreateBuilder<Token>(16);
 	private MemberSyntax ParseMember()
 	{
 		Token accessibilityToken = MatchAnyToken(SyntaxFacts.AccessKeywords);
 
-		// TODO: Modifiers parsing
+		while (IsPresentedAny(SyntaxFacts.ModifiersKeywords))
+		{
+			_modifiers.Add(PeekAndAdvance());
+		}
 
 		if (Current.Kind == SyntaxKind.TypeKeyword)
 		{
-			return ParseTypeDeclaration(accessibilityToken, [], PeekAndAdvance());
+			return ParseTypeDeclaration(accessibilityToken, _modifiers.DrainToImmutable(), PeekAndAdvance());
 		}
 
 		SimpleNameSyntax name = ParseSimpleName();
 
 		if (Current.Kind == SyntaxKind.OpenParenToken) // Function/Method
 		{
-			return ParseFunctionDeclaration(accessibilityToken, [], name);
+			return ParseFunctionDeclaration(accessibilityToken, _modifiers.DrainToImmutable(), name);
 		}
 		else // field
 		{
-			return ParseFieldDeclaration(accessibilityToken, [], name);
+			return ParseFieldDeclaration(accessibilityToken, _modifiers.DrainToImmutable(), name);
 		}
 	}
 

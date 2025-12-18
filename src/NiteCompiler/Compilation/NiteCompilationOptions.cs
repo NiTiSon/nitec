@@ -1,6 +1,6 @@
 namespace NiteCompiler.Compilation;
 
-public sealed class NiteCompilationOptions
+public sealed record NiteCompilationOptions
 {
 	public static readonly NiteCompilationOptions Default = new NiteCompilationOptions();
 

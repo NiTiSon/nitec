@@ -173,6 +173,12 @@ public enum SyntaxKind : uint
 	ModuleKeyword = 327,
 	LetKeyword = 328,
 	TypeKeyword = 329,
+	StaticKeyword = 330,
+	ConstKeyword = 331,
+	SealedKeyword = 332,
+	OverrideKeyword = 333,
+	AbstractKeyword = 334,
+	VirtualKeyword = 335,
 
 	// === TYPE KEYWORDS ===
 	I8Keyword = 401,
