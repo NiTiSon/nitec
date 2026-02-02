@@ -3,21 +3,20 @@ using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public sealed class UnaryExpressionSyntax : ExpressionSyntax
+public class UnaryExpressionSyntax : ExpressionSyntax
 {
 	public Token Operator { get; }
 	public ExpressionSyntax Expression { get; }
+	public override TextSpan Span => TextSpan.FromBounds(Operator.Span.Start, Expression.Span.End);
+	public override NodeKind Kind { get; }
 
-	public override SyntaxKind Kind { get; }
-
-	public UnaryExpressionSyntax(Token @operator, ExpressionSyntax expression, SyntaxKind kind)
+	public UnaryExpressionSyntax(SyntaxTree tree, Token @operator, ExpressionSyntax expression, NodeKind operatorKind) : base(tree)
 	{
 		Operator = @operator;
 		Expression = expression;
-		Kind = kind;
+		Kind = operatorKind;
 	}
 
-	public override TextSpan Span => TextSpan.FromBounds(Operator.Span, Expression.Span);
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return Operator;

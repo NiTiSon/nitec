@@ -35,3 +35,13 @@ native-resolver: # Optional
 ```
 
 ### lib-data.bin
+
+## Meta-attributes
+Meta-attributes are used to provide specific information to compiler.
+
++ `#when PURE_EXPRESSION` member with this meta-attribute would be accessible only when expression is true.
++ `#compiler_impl` function with this attribute may not have body, as its implementation is delegated to compiler.
++ `#inline(never|always)` functions with this attribute would never|always be inlined.
++ `#export("export_name")` or `#export` functions and fields with this attribute is exported when compiler into native library.
+You can override export symbol name by providing string argument. By default, name is used without names of containing.
++ `#import("")` or `#import("", "")`

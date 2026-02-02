@@ -1,10 +1,13 @@
 using NiteCompiler.CodeAnalysis.Text;
+using NiteCompiler.Compilation;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
 public partial class NiteLexer
 {
-	private void ReadTrivia(bool leading)
+	private bool StoreTrivia => DocumentationMode != DocumentationMode.None;
+
+	private void ReadTrivia(bool leading, SyntaxList<Trivia>.Builder trivia)
 	{
 		bool done = false;
 
@@ -17,14 +20,31 @@ public partial class NiteLexer
 				case SlidingWindow.InvalidCharacter:
 					done = true;
 					break;
+				case '#':
+					if (_window.Next == '!')
+					{
+						ReadShebang();
+						if (StoreTrivia) trivia.Add(new Trivia(_syntaxTree, TokenKind.Shebang, _window.LexemeSpan));
+					}
+					break;
 				case '/':
 					switch (_window.Next)
 					{
 						case '/':
-							ReadSingleLineComment();
+							if (_window.Peek(2) == '/' && DocumentationMode == DocumentationMode.Parse)
+							{
+								ReadDocsComment();
+								if (StoreTrivia) trivia.Add(new Trivia(_syntaxTree, TokenKind.DocsComment, _window.LexemeSpan));
+							}
+							else
+							{
+								ReadSingleLineComment();
+								if (StoreTrivia) trivia.Add(new Trivia(_syntaxTree, TokenKind.SingleLineComment, _window.LexemeSpan));
+							}
 							break;
 						case '*':
 							ReadMultiLineComment();
+							if (StoreTrivia) trivia.Add(new Trivia(_syntaxTree, TokenKind.MultiLineComment, _window.LexemeSpan));
 							break;
 						default:
 							done = true;
@@ -36,19 +56,29 @@ public partial class NiteLexer
 					if (!leading)
 						done = true;
 					ReadLineBreak();
+					if (StoreTrivia) trivia.Add(new Trivia(_syntaxTree, TokenKind.LineBreak, _window.LexemeSpan));
 					break;
 				case ' ':
 				case '\t':
 					ReadWhiteSpace();
+					if (StoreTrivia) trivia.Add(new Trivia(_syntaxTree, TokenKind.Whitespace, _window.LexemeSpan));
 					break;
 				default:
 					if (char.IsWhiteSpace(_window.Current))
+					{
 						ReadWhiteSpace();
+						if (StoreTrivia) trivia.Add(new Trivia(_syntaxTree, TokenKind.Whitespace, _window.LexemeSpan));
+					}
 					else
 						done = true;
 					break;
 			}
 		}
+	}
+
+	private void ReadShebang()
+	{
+		ReadSingleLineComment();
 	}
 
 	private void ReadLineBreak()
@@ -77,6 +107,11 @@ public partial class NiteLexer
 					break;
 			}
 		}
+	}
+
+	private void ReadDocsComment()
+	{
+		ReadSingleLineComment();
 	}
 
 	private void ReadSingleLineComment()

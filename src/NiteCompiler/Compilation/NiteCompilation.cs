@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Text;
 using CommunityToolkit.Diagnostics;
 using NiteCompiler.CodeAnalysis.Syntax;
@@ -38,8 +36,6 @@ public sealed class NiteCompilation
 			Diagnostics.ReportDependenciesInCoreLibrary();
 		}
 
-		DeclarationPass declarationPass = new(this, SyntaxTrees);
-		SymbolPass symbolPass = new(this, libraryName, declarationPass);
 		_ = 0x3; // breakpoint
 	}
 
@@ -50,9 +46,10 @@ public sealed class NiteCompilation
 		NiteCompilationOptions? options)
 	{
 		var sources = ImmutableArray.CreateBuilder<SyntaxTree>();
+		options ??= NiteCompilationOptions.Default;
 		foreach (var sourceFile in sourceFiles ?? [])
 		{
-			SyntaxTree syntaxTree = SyntaxTree.FromFile(sourceFile);
+			SyntaxTree syntaxTree = SyntaxTree.FromFile(sourceFile, options);
 			sources.Add(syntaxTree);
 		}
 
@@ -63,7 +60,7 @@ public sealed class NiteCompilation
 		string? libraryName,
 		IEnumerable<SyntaxTree>? sourceFiles,
 		IEnumerable<Dependency>? dependencies,
-		NiteCompilationOptions? options)
+		NiteCompilationOptions options)
 	{
 		ImmutableArray<SyntaxTree> syntaxTrees = sourceFiles?.ToImmutableArray() ?? [];
 		ImmutableArray<Dependency> dependenciesArray = dependencies?.ToImmutableArray() ?? [];
@@ -74,7 +71,6 @@ public sealed class NiteCompilation
 		}
 
 		libraryName ??= FallbackLibraryName;
-		options ??= NiteCompilationOptions.Default;
 		return new NiteCompilation(libraryName, syntaxTrees, dependenciesArray, options);
 	}
 

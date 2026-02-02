@@ -5,24 +5,24 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 
 public sealed class ParenthesizedExpressionSyntax : ExpressionSyntax
 {
-	public Token OpenParenthesisToken { get; }
+	public Token OpenParenToken { get; }
 	public ExpressionSyntax Expression { get; }
-	public Token CloseParenthesisToken { get; }
+	public Token CloseParenToken { get; }
 
-	public ParenthesizedExpressionSyntax(Token leftParen, ExpressionSyntax expression, Token rightParen)
+	public override TextSpan Span => TextSpan.FromBounds(OpenParenToken.Span.Start, CloseParenToken.Span.End);
+	public override NodeKind Kind => NodeKind.ParenthesizedExpression;
+
+	public ParenthesizedExpressionSyntax(SyntaxTree tree, Token openParen, ExpressionSyntax expression, Token closeParen) : base(tree)
 	{
-		OpenParenthesisToken = leftParen;
+		OpenParenToken = openParen;
 		Expression = expression;
-		CloseParenthesisToken = rightParen;
+		CloseParenToken = closeParen;
 	}
-
-	public override TextSpan Span => TextSpan.FromBounds(OpenParenthesisToken.Span, CloseParenthesisToken.Span);
-	public override SyntaxKind Kind => SyntaxKind.ParenthesizedExpression;
 
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
-		yield return OpenParenthesisToken;
+		yield return OpenParenToken;
 		yield return Expression;
-		yield return CloseParenthesisToken;
+		yield return CloseParenToken;
 	}
 }

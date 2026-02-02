@@ -1,6 +1,4 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
-using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.CodeAnalysis.Text;
 

@@ -1,9 +1,10 @@
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public abstract class NameSyntax : TypeSyntax
+public abstract class NameSyntax : ExpressionSyntax
 {
-	public virtual string GetName()
-	{
-		return SyntaxTree.Text.GetText(Span);
-	}
+	protected NameSyntax(SyntaxTree tree) : base(tree) {}
+
+	public abstract string ShortName { get; }
+
+	public virtual string GetFullName() => ShortName;
 }

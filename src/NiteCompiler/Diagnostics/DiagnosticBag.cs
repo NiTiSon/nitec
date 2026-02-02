@@ -5,10 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using NiteCompiler.CodeAnalysis;
-using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
-using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.Diagnostics;
 
@@ -87,12 +84,12 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.NotTerminatedStringLiteral, [source]);
 	}
 
-	public void ReportExpectedToken(Location source, SyntaxKind kind)
+	public void ReportExpectedToken(Location source, TokenKind kind)
 	{
 		Add(DiagnosticDescriptor.ExpectedToken, [source], kind);
 	}
 
-	public void ReportUnexpectedToken(Location source, SyntaxKind currentKind)
+	public void ReportUnexpectedToken(Location source, TokenKind currentKind)
 	{
 		Add(DiagnosticDescriptor.UnexpectedToken, [source], currentKind);
 	}
@@ -112,10 +109,10 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.UnresolvedPredefinedType, [], type);
 	}
 
-	public void ReportAmbiguousReference(Location location, params IEnumerable<Symbol> candidates)
-	{
-		Add(DiagnosticDescriptor.AmbiguousReference, [location], string.Join(",\n", candidates));
-	}
+	// public void ReportAmbiguousReference(Location location, params IEnumerable<Symbol> candidates)
+	// {
+	// 	Add(DiagnosticDescriptor.AmbiguousReference, [location], string.Join(",\n", candidates));
+	// }
 
 	public void ReportIntegralConstantIsTooLarge(Location location)
 	{
@@ -140,5 +137,10 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 	public void ReportOnlyTopLevelModuleDeclarationsAreAllowed(Location location)
 	{
 		Add(DiagnosticDescriptor.OnlyTopLevelModuleDeclarationsAreAllowed, [location]);
+	}
+
+	public void ReportAccessibilityModifierRequiredBeforeMemberDeclaration(Location location)
+	{
+		Add(DiagnosticDescriptor.AccessibilityModifierRequiredBeforeMemberDeclaration, [location]);
 	}
 }

@@ -3,21 +3,21 @@ using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-// TODO: Separate `identifier` and identifier
 public sealed class SimpleNameSyntax : NameSyntax
 {
-	public IdentifierToken Identifier { get; }
+	public Token IdentifierToken { get; }
+	public override string ShortName { get; }
+	public override TextSpan Span => IdentifierToken.Span;
+	public override NodeKind Kind => NodeKind.SimpleNameExpression;
 
-	public SimpleNameSyntax(IdentifierToken identifier)
+	public SimpleNameSyntax(SyntaxTree tree, Token identifierToken, string identifier) : base(tree)
 	{
-		Identifier = identifier;
+		IdentifierToken = identifierToken;
+		ShortName = identifier;
 	}
-
-	public override TextSpan Span => Identifier.Span;
-	public override SyntaxKind Kind => SyntaxKind.SimpleName;
 
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
-		yield return Identifier;
+		yield return IdentifierToken;
 	}
 }

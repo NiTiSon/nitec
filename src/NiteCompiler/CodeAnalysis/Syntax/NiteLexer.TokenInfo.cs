@@ -4,8 +4,7 @@ public partial class NiteLexer
 {
 	internal ref struct TokenInfo
 	{
-		public SyntaxKind Kind;
-		public SyntaxKind ContextualKind;
+		public TokenKind Kind;
 		public NumericLiteralFormat LiteralFormat;
 		public NumericLiteralType LiteralType;
 	}

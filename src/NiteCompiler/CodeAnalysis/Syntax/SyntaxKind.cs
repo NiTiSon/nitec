@@ -1,5 +1,8 @@
+using System;
+
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
+[Obsolete("Do not use plz")]
 public enum SyntaxKind : uint
 {
 	None = 0,
@@ -8,6 +11,10 @@ public enum SyntaxKind : uint
 
 	// === Tokens ===
 	/// <summary>
+	/// String token.
+	/// </summary>
+	RegularStringToken = 99,
+	/// <summary>
 	/// Identifier token.
 	/// </summary>
 	IdentifierToken = 101,
@@ -15,10 +22,6 @@ public enum SyntaxKind : uint
 	/// Number token.
 	/// </summary>
 	NumberToken = 102,
-	/// <summary>
-	/// String token.
-	/// </summary>
-	StringToken = 99,
 
 	/// <summary>Represents <c>+</c> token.</summary>
 	PlusToken = 103,
@@ -76,7 +79,6 @@ public enum SyntaxKind : uint
 	CaretToken = 139,
 	/// <summary>Represents <c>_</c> token.</summary>
 	UnderscoreToken = 140,
-	// SKIPPED ASCII LOWERCASE LETTERS
 	/// <summary>Represents <c>{</c> token.</summary>
 	OpenBraceToken = 175,
 	/// <summary>Represents <c>|</c> token.</summary>
@@ -85,10 +87,6 @@ public enum SyntaxKind : uint
 	CloseBraceToken = 177,
 	/// <summary>Represents <c>~</c> token.</summary>
 	TildeToken = 178,
-	/// <summary>Represents <c>--</c> token.</summary>
-	MinusMinusToken = 179,
-	/// <summary>Represents <c>++</c> token.</summary>
-	PlusPlusToken = 180,
 	/// <summary>Represents <c>+=</c> token.</summary>
 	PlusEqualsToken = 181,
 	/// <summary>Represents <c>-=</c> token.</summary>
@@ -268,13 +266,18 @@ public enum SyntaxKind : uint
 	Parameter = 4005,
 	GenericParameter = 4006,
 	FieldDeclaration = 4007,
+	ErrorMemberDeclaration = 4008,
 
 	// === DIRECTIVE ===
 	UseDirective = 5001,
 	// UseAsDirective // use std::Type as OtherName;
 
-	IdentifierList = 6001,
-	ParameterList = 6002,
+	SyntaxList = 6001,
 	RetusaClause = 6003,
 	TypeClause = 6004,
+	EmptyTypeBody = 6005,
+	MembersTypeBody = 6006,
+	ErrorTypeBody = 6007,
+	EmptyFunctionBody = 6008,
+	BlockFunctionBody = 6009,
 }

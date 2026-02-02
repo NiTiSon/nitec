@@ -6,10 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using NiteCompiler.CodeAnalysis.Syntax;
-using NiteCompiler.CodeAnalysis.Text;
 using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
 
@@ -22,6 +19,9 @@ public static class Program
 		#if DEBUG
 		Console.WriteLine("[DEBUG] Input arguments: [" + string.Join(", ", args) + "]");
 		Stopwatch stopwatch = Stopwatch.StartNew();
+		#if TRACE
+		Trace.Listeners.Add(new ConsoleTraceListener());
+		#endif
 		#endif
 
 		Console.OutputEncoding = Encoding.UTF8;
@@ -47,6 +47,12 @@ public static class Program
 			DefaultValueFactory = (_) => OutputKind.exec,
 			Description = "Determines output format."
 		};
+		Option<string[]> emitOption = new("--emit")
+		{
+			Arity = ArgumentArity.OneOrMore,
+			AllowMultipleArgumentsPerToken = true
+		};
+		emitOption.AcceptOnlyFromAmong("syntax-tree", "nitis-bc", "llvm-bc", "llvm");
 
 
 		RootCommand rootCommand = new("Nite CLI compiler tool.");
@@ -55,6 +61,7 @@ public static class Program
 		rootCommand.Options.Add(outputNameOption);
 		rootCommand.Options.Add(coreLibraryOption);
 		rootCommand.Options.Add(outputKindOption);
+		rootCommand.Options.Add(emitOption);
 
 		rootCommand.SetAction(
 			result => Compile(
@@ -62,6 +69,7 @@ public static class Program
 				outputName: result.GetValue(outputNameOption),
 				sources: result.GetValue(inputArgument),
 				outputKind: result.GetValue(outputKindOption),
+				emitOptions: result.GetValue(emitOption),
 				isCoreLibrary: result.GetValue(coreLibraryOption)));
 
 		ParseResult parseResult = rootCommand.Parse(args);
@@ -79,11 +87,11 @@ public static class Program
 		#endif
 	}
 
-	private static void Compile(
-		string? libraryName,
+	private static void Compile(string? libraryName,
 		string? outputName,
 		FileInfo[]? sources,
 		bool isCoreLibrary,
+		string[]? emitOptions,
 		OutputKind outputKind)
 	{
 		if (sources is null || sources.Length == 0)
@@ -115,10 +123,20 @@ public static class Program
 
 		compilation.Diagnostics.DrainInto(diagnostics);
 
-		foreach (SyntaxTree tree in compilation.SyntaxTrees)
+		if (emitOptions?.Contains("syntax-tree") ?? false)
 		{
-			PrintTree(tree);
+			int index = 0;
+			foreach (SyntaxTree tree in compilation.SyntaxTrees)
+			{
+				string fileName = tree.Filename is null ? $"{index}.syntax" : (Path.GetFileNameWithoutExtension(tree.Filename) + ".syntax");
+				index++;
+
+				FileInfo fileInfo = new(fileName);
+				using var tw = fileInfo.CreateText();
+				tree.Emit(tw);
+			}
 		}
+
 
 		if (!diagnostics.IsEmpty)
 		{
@@ -232,35 +250,6 @@ public static class Program
 
 		Console.WriteLine(new string(' ', gutterWidth) + "|");
 		*/
-	}
-
-
-	private static void PrintTree(SyntaxTree tree, string indent = "", bool isLast = true)
-	{
-		if (tree.Root.TopLevelNodes.Length == 0) return;
-
-		Console.WriteLine(tree.Filename ?? "<unnamed>");
-
-		SyntaxNode lastChild = tree.Root.TopLevelNodes[^1];
-
-		foreach (SyntaxNode child in tree.Root.TopLevelNodes)
-			PrintNode(child, indent, child == lastChild);
-	}
-
-	private static void PrintNode(SyntaxNode node, string indent = "", bool isLast = true)
-	{
-		string tokenMarker = isLast ? "└──" : "├──";
-
-		Console.Write(indent);
-		Console.Write(tokenMarker);
-		Console.WriteLine(node);
-
-		indent += isLast ? "   " : "│  ";
-
-		SyntaxNode? lastChild = node.GetChildren().LastOrDefault();
-
-		foreach (SyntaxNode child in node.GetChildren())
-			PrintNode(child, indent, child == lastChild);
 	}
 
 	private static bool RemoveDuplicates(ref FileInfo[] files)

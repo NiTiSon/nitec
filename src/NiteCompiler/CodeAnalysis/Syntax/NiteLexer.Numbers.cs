@@ -6,7 +6,7 @@ public partial class NiteLexer
 {
 	private void ReadNumber(ref TokenInfo info)
 	{
-		info.Kind = SyntaxKind.NumberToken;
+		info.Kind = TokenKind.NumberLiteral;
 		info.LiteralType = NumericLiteralType.None;
 		info.LiteralFormat = NumericLiteralFormat.Integer;
 

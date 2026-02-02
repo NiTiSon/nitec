@@ -6,15 +6,15 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 public sealed class LiteralExpressionSyntax : ExpressionSyntax
 {
 	public Token Token { get; }
-	public override SyntaxKind Kind { get; }
+	public override NodeKind Kind { get; }
+	public override TextSpan Span => Token.Span;
 
-	public LiteralExpressionSyntax(Token token, SyntaxKind kind)
+	public LiteralExpressionSyntax(SyntaxTree tree, Token token, NodeKind literalType) : base(tree)
 	{
 		Token = token;
-		Kind = kind;
+		Kind = literalType;
 	}
 
-	public override TextSpan Span => Token.Span;
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return Token;

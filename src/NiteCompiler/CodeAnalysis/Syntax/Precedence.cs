@@ -1,24 +1,22 @@
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public enum Precedence : uint
+public enum Precedence : byte
 {
 	Expression = 0,
 	Assignment = Expression,
+	Ternary,
 	ConditionalOr,
 	ConditionalAnd,
-	LogicalOr,
-	LogicalXor,
-	LogicalAnd,
+	BitwiseOr, // bitwise or aka logical or
+	BitwiseXor,
+	BitwiseAnd,
 	Equality,
 	Relational,
 	Shift,
 	Additive,
 	Multiplicative,
-	Switch,
 	Range,
 	Unary,
 	Cast,
-	PointerIndirection,
-	AddressOf,
 	Primary
 }

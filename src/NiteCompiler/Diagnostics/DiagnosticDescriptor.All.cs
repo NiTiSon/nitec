@@ -15,6 +15,7 @@ public partial class DiagnosticDescriptor
 		AmbiguousReference,
 		FieldMustHaveEitherTypeClauseOrDefaultValue,
 		OnlyTopLevelModuleDeclarationsAreAllowed,
+		AccessibilityModifierRequiredBeforeMemberDeclaration,
 		IntegralConstantTooLarge,
 		IntegralValueCantBeSigned,
 		IntegralValueIsGreaterThanMaxValue,
@@ -37,6 +38,7 @@ public partial class DiagnosticDescriptor
 		// Parsing
 		UnexpectedToken = new("unexpected-token", "Unexpected token {0}.");
 		ExpectedToken = new("expected-token", "Expected token {0}.");
+		AccessibilityModifierRequiredBeforeMemberDeclaration = new("accessibility-modifier-required", "Accessibility modifier required before member declaration.");
 
 		// Binding
 		CannotResolveSymbol = new("cannot-resolve-symbol", "Cannot resolve symbol.");

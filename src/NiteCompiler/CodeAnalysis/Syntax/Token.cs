@@ -1,40 +1,53 @@
-using System;
 using System.Collections.Generic;
 using NiteCompiler.CodeAnalysis.Text;
-using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public class Token : SyntaxNode
+public abstract class Token : SyntaxNode
 {
-    public override SyntaxKind Kind { get; }
+	public override TextSpan Span { get; }
+	public SyntaxList<Trivia> LeadingTrivia { get; }
+	public SyntaxList<Trivia> TrailingTrivia { get; }
+	public abstract TokenKind TKind { get; }
+	public sealed override NodeKind Kind => NodeKind.Token;
+	public bool IsKeyword => TKind.IsKeyword;
+	public bool IsTypeKeyword => TKind.IsTypeKeyword;
 
-    public SyntaxKind ContextualKind => this is IdentifierToken identifier ? identifier.ContextualKind : SyntaxKind.None;
-    public override TextSpan Span { get; }
+	protected Token(SyntaxTree tree, TextSpan span, SyntaxList<Trivia> leadingTrivia, SyntaxList<Trivia> trailingTrivia) : base(tree)
+	{
+		LeadingTrivia = leadingTrivia;
+		TrailingTrivia = trailingTrivia;
+		Span = span;
+	}
 
-    public Token(SyntaxKind kind, TextSpan span)
-    {
-        Kind = kind;
-        Span = span;
-    }
+	public TokenKind GetContextualKeyword()
+	{
+		if (TKind == TokenKind.IdentifierOrKeyword) // IdentifierOrKeyword stores Keyword kind in high 16 bits
+		{
+			return TKind.HighBits;
+		}
 
-    public bool IsConnectedAfter(Token token)
-    {
-	    return Span.End == token.Span.Start;
-    }
+		return TokenKind.None;
+	}
 
-    public bool IsConnectedBefore(Token token)
-    {
-	    return token.IsConnectedAfter(this);
-    }
+	public override IEnumerable<SyntaxNode> GetChildren()
+	{
+		return [];
+	}
 
-    public Location CreateLocation(SyntaxTree tree)
-    {
-	    return Location.Create(tree, Span);
-    }
+	public override string ToString()
+	{
+		return $"TokenKind = {TKind};";
+	}
 
-    public override IEnumerable<SyntaxNode> GetChildren()
-    {
-        return [];
-    }
+	public sealed class Default(
+		SyntaxTree tree,
+		TokenKind kind,
+		TextSpan span,
+		SyntaxList<Trivia> leadingTrivia,
+		SyntaxList<Trivia> trailingTrivia) :
+		Token(tree, span, leadingTrivia, trailingTrivia)
+	{
+		public override TokenKind TKind { get; } = kind;
+	}
 }

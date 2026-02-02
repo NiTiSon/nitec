@@ -9,14 +9,13 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 public sealed class SyntaxList<TNode> : SyntaxNode, IEnumerable<TNode>
 	where TNode : SyntaxNode
 {
-	private readonly ImmutableArray<TNode> _nodes;
+	private readonly TNode[] _nodes;
 	public override TextSpan Span => _nodes.Length > 0 ? TextSpan.FromBounds(_nodes[0].Span.Start, _nodes[^1].Span.End) : default;
-	public override SyntaxKind Kind { get; }
+	public override NodeKind Kind => NodeKind.SyntaxList;
 
-	private SyntaxList(ImmutableArray<TNode>.Builder nodes, SyntaxKind listKind)
+	private SyntaxList(SyntaxTree tree, TNode[] nodes) : base(tree)
 	{
-		_nodes = nodes.DrainToImmutable();
-		Kind = listKind;
+		_nodes = nodes;
 	}
 
 	public override IEnumerable<TNode> GetChildren()
@@ -34,36 +33,65 @@ public sealed class SyntaxList<TNode> : SyntaxNode, IEnumerable<TNode>
 		return GetEnumerator();
 	}
 
-	internal readonly struct Builder
+	internal sealed class Builder
 	{
-		private readonly SyntaxKind _listKind;
-		private readonly ImmutableArray<TNode>.Builder _builder;
+		private TNode[] _buffer;
 
-		[Obsolete("Use Builder(SyntaxKind) constructor instead.")]
-		public Builder()
-		{
-			throw new("Use Builder(SyntaxKind) constructor instead.");
-		}
+		public int Count { get; private set; }
+		public int Capacity => _buffer.Length;
 
-		public Builder(SyntaxKind listKind)
+		public Builder() : this(8) {}
+
+		public Builder(int initialCapacity)
 		{
-			_listKind = listKind;
-			_builder = ImmutableArray.CreateBuilder<TNode>();
+			_buffer = new TNode[initialCapacity];
 		}
 
 		public void Add(TNode node)
 		{
-			_builder.Add(node);
+			EnsureCapacity(1);
+			_buffer[Count++] = node;
 		}
 
-		public SyntaxList<TNode> Build()
+		public void Add(ReadOnlySpan<TNode> nodes)
 		{
-			return new(_builder, _listKind);
+			EnsureCapacity(nodes.Length);
+			nodes.CopyTo(_buffer.AsSpan().Slice(Count));
+			Count += nodes.Length;
 		}
 
-		public void RemoveLast()
+		public void Clear()
 		{
-			_builder.RemoveAt(_builder.Count - 1);
+			Array.Clear(_buffer, 0, Count);
+			Count = 0;
+		}
+
+		public void EnsureCapacity(int additionalSize)
+		{
+			int newSize = Count + additionalSize;
+
+			if (newSize < _buffer.Length) return;
+
+			Array.Resize(ref _buffer, int.Max(Count * 2, newSize));
+		}
+
+		public SyntaxList<TNode> Build(SyntaxTree tree)
+		{
+			int capacity = _buffer.Length;
+
+			if (capacity < Count)
+			{
+				TNode[] temp = new TNode[Count];
+				Array.Copy(_buffer, temp, Count);
+				Clear();
+				return new SyntaxList<TNode>(tree, temp);
+			}
+			else // capacity == _count
+			{
+				TNode[] buffer = _buffer;
+				_buffer = new TNode[8];
+				return new SyntaxList<TNode>(tree, _buffer);
+			}
 		}
 	}
 }

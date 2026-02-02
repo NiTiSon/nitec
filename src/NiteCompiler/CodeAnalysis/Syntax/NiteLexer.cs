@@ -1,5 +1,5 @@
-using System;
 using NiteCompiler.CodeAnalysis.Text;
+using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
@@ -8,56 +8,89 @@ public sealed partial class NiteLexer
 {
 	private readonly DiagnosticBag _diagnostics;
 	private readonly SlidingWindow _window;
+	private readonly LexerCache _cache;
 	private readonly SourceText _source;
 	private readonly SyntaxTree _syntaxTree;
+	private readonly NiteCompilationOptions _options;
+	private Mode _mode = Mode.Syntax;
 
-	public NiteLexer(SyntaxTree tree, DiagnosticBag diagnostics)
+	private enum Mode
+	{
+		/// <summary>
+		/// Usual syntax.
+		/// </summary>
+		Syntax,
+		/// <summary>
+		/// Threat text as markdown comment.
+		/// </summary>
+		DocumentationComment,
+		/// <summary>
+		/// Threat text as non-standard item reference.
+		/// <code>
+		/// /// This is [[Bar.foo]] item reference.
+		/// </code>
+		/// </summary>
+		DocumentationReference
+	}
+
+	private DocumentationMode DocumentationMode => _options.DocumentationMode;
+
+	public NiteLexer(SyntaxTree tree, NiteCompilationOptions options, DiagnosticBag diagnostics)
 	{
 		_diagnostics = diagnostics;
+		_cache = LexerCache.GetInstance();
 		_source = tree.Text;
 		_window = new(_source);
 		_syntaxTree = tree;
+		_options = options;
 	}
 
 	public Token Lex()
 	{
 		TokenInfo info = default;
 
-		ReadTrivia(true);
+		ReadTrivia(true, _cache.LeadingTrivia);
 
 		_window.Start();
 		ReadToken(ref info);
 		TextSpan span = _window.LexemeSpan;
-		string? text = info.Kind
-			is SyntaxKind.IdentifierToken
-			or SyntaxKind.NumberToken
-			? _window.Lexeme
-			: null;
 
-		ReadTrivia(false);
-
-		switch (info.Kind)
+		string? text = null;
+		if (info.Kind == TokenKind.IdentifierOrKeyword || info.Kind == TokenKind.NumberLiteral)
 		{
-			case SyntaxKind.IdentifierToken:
-				return new IdentifierToken(info.Kind, info.ContextualKind, span, text!);
-			case SyntaxKind.NumberToken:
-				return new NumberToken(info.Kind, span,
-					NumberParser.Parse(
-						info,
-						text,
-						Location.Create(_syntaxTree, span), _diagnostics),
-						info.LiteralType,
-						info.LiteralFormat);
-			default:
-				return new(info.Kind, span);
+			text = _window.Lexeme;
 		}
+
+		ReadTrivia(false, _cache.TrailingTrivia);
+
+		var leading = _cache.LeadingTrivia.Build(_syntaxTree);
+		var trailing = _cache.TrailingTrivia.Build(_syntaxTree);
+
+		if (info.Kind == TokenKind.IdentifierOrKeyword)
+		{
+			return new IdentifierOrKeywordToken(_syntaxTree, info.Kind, span, text!, leading, trailing);
+		}
+		if (info.Kind == TokenKind.NumberLiteral)
+		{
+			return new NumberToken(_syntaxTree, span,
+				NumberParser.Parse(
+					info,
+					text,
+					Location.Create(_syntaxTree, span), _diagnostics),
+				info.LiteralType,
+				info.LiteralFormat,
+				leading,
+				trailing);
+		}
+
+		return new Token.Default(_syntaxTree, info.Kind, span, leading, trailing);
 	}
 
 	private void ReadToken(ref TokenInfo info)
 	{
 		if (_window.IsAtTheEnd)
 		{
-			info.Kind = SyntaxKind.EofToken;
+			info.Kind = TokenKind.EndOfFile;
 			return;
 		}
 
@@ -72,63 +105,62 @@ public sealed partial class NiteLexer
 				_window.Advance();
 				if (_window.Current == ':')
 				{
-					info.Kind = SyntaxKind.ColonColonToken;
+					info.Kind = TokenKind.DoubleColon;
 					_window.Advance();
 				}
 				else
 				{
-					info.Kind = SyntaxKind.ColonToken;
+					info.Kind = TokenKind.Colon;
 				}
 
 				break;
-			case '?':
-				if (_window.Next == '?')
-				{
-					if (_window.Peek(2) == '=')
-					{
-						_window.Advance(3);
-						info.Kind = SyntaxKind.QuestionQuestionEqualsToken;
-					}
-					else
-					{
-						_window.Advance(2);
-						info.Kind = SyntaxKind.QuestionQuestionToken;
-					}
-				}
-				else
-				{
-					_window.Advance();
-					info.Kind = SyntaxKind.QuestionToken;
-				}
-
-				break;
+			// case '?':
+			// 	if (_window.Next == '?')
+			// 	{
+			// 		if (_window.Peek(2) == '=')
+			// 		{
+			// 			_window.Advance(3);
+			// 			info.Kind = TokenKind.QuestionQuestionEqualsToken;
+			// 		}
+			// 		else
+			// 		{
+			// 			_window.Advance(2);
+			// 			info.Kind = TokenKind.QuestionQuestionToken;
+			// 		}
+			// 	}
+			// 	else
+			// 	{
+			// 		_window.Advance();
+			// 		info.Kind = TokenKind.QuestionToken;
+			// 	}
+			//	break;
 			case '-':
 				if (_window.Next == '>')
 				{
 					_window.Advance(2);
-					info.Kind = SyntaxKind.RetusaToken;
+					info.Kind = TokenKind.Retusa;
 				}
 				else
 				{
 					_window.Advance();
-					info.Kind = SyntaxKind.MinusToken;
+					info.Kind = TokenKind.Minus;
 				}
 
 				break;
 			case '+':
 				_window.Advance();
-				info.Kind = SyntaxKind.PlusToken;
+				info.Kind = TokenKind.Plus;
 				break;
 			case '*':
 				if (_window.Next == '=')
 				{
 					_window.Advance(2);
-					info.Kind = SyntaxKind.AsteriskEqualsToken;
+					info.Kind = TokenKind.AsteriskAssignment;
 				}
 				else
 				{
 					_window.Advance();
-					info.Kind = SyntaxKind.AsteriskToken;
+					info.Kind = TokenKind.Asterisk;
 				}
 
 				break;
@@ -136,12 +168,12 @@ public sealed partial class NiteLexer
 				if (_window.Next == '=')
 				{
 					_window.Advance(2);
-					info.Kind = SyntaxKind.SlashEqualsToken;
+					info.Kind = TokenKind.SlashAssignment;
 				}
 				else
 				{
 					_window.Advance();
-					info.Kind = SyntaxKind.SlashToken;
+					info.Kind = TokenKind.Slash;
 				}
 
 				break;
@@ -149,17 +181,17 @@ public sealed partial class NiteLexer
 				if (_window.Next == '=')
 				{
 					_window.Advance(2);
-					info.Kind = SyntaxKind.AmpersandEqualsToken;
+					info.Kind = TokenKind.AmpersandAssignment;
 				}
 				else if (_window.Next == '&')
 				{
 					_window.Advance(2);
-					info.Kind = SyntaxKind.AmpersandAmpersandToken;
+					info.Kind = TokenKind.DoubleAmpersand;
 				}
 				else
 				{
 					_window.Advance();
-					info.Kind = SyntaxKind.AmpersandToken;
+					info.Kind = TokenKind.Ampersand;
 				}
 
 				break;
@@ -167,12 +199,12 @@ public sealed partial class NiteLexer
 				if (_window.Next == '=')
 				{
 					_window.Advance(2);
-					info.Kind = SyntaxKind.ExclamationEqualsToken;
+					info.Kind = TokenKind.NotEqual;
 				}
 				else
 				{
 					_window.Advance();
-					info.Kind = SyntaxKind.ExclamationToken;
+					info.Kind = TokenKind.Not;
 				}
 
 				break;
@@ -180,12 +212,12 @@ public sealed partial class NiteLexer
 				if (_window.Next == '=')
 				{
 					_window.Advance(2);
-					info.Kind = SyntaxKind.PercentEqualsToken;
+					info.Kind = TokenKind.PercentAssignment;
 				}
 				else
 				{
 					_window.Advance();
-					info.Kind = SyntaxKind.PercentToken;
+					info.Kind = TokenKind.Percent;
 				}
 
 				break;
@@ -193,17 +225,17 @@ public sealed partial class NiteLexer
 				if (_window.Next == '=')
 				{
 					_window.Advance(2);
-					info.Kind = SyntaxKind.PipeEqualsToken;
+					info.Kind = TokenKind.PipeAssignment;
 				}
 				else if (_window.Next == '|')
 				{
 					_window.Advance(2);
-					info.Kind = SyntaxKind.PipePipeToken;
+					info.Kind = TokenKind.DoublePipe;
 				}
 				else
 				{
 					_window.Advance();
-					info.Kind = SyntaxKind.PipeToken;
+					info.Kind = TokenKind.Pipe;
 				}
 
 				break;
@@ -211,12 +243,12 @@ public sealed partial class NiteLexer
 				if (_window.Next == '=')
 				{
 					_window.Advance(2);
-					info.Kind = SyntaxKind.CaretEqualsToken;
+					info.Kind = TokenKind.CircumflexAssignment;
 				}
 				else
 				{
 					_window.Advance();
-					info.Kind = SyntaxKind.CaretToken;
+					info.Kind = TokenKind.Circumflex;
 				}
 
 				break;
@@ -224,12 +256,12 @@ public sealed partial class NiteLexer
 				if (_window.Next == '=')
 				{
 					_window.Advance(2);
-					info.Kind = SyntaxKind.EqualsEqualsToken;
+					info.Kind = TokenKind.DoubleEqual;
 				}
 				else
 				{
 					_window.Advance();
-					info.Kind = SyntaxKind.EqualsToken;
+					info.Kind = TokenKind.Equal;
 				}
 
 				break;
@@ -239,23 +271,23 @@ public sealed partial class NiteLexer
 					if (_window.Peek(2) == '=') // <<=
 					{
 						_window.Advance(3);
-						info.Kind = SyntaxKind.LeftShiftEqualsToken;
+						info.Kind = TokenKind.LeftArithmeticShiftAssignment;
 					}
 					else
 					{
 						_window.Advance(2);
-						info.Kind = SyntaxKind.LeftShiftToken;
+						info.Kind = TokenKind.LeftArithmeticShift;
 					}
 				}
 				else if (_window.Next == '=')
 				{
 					_window.Advance(2);
-					info.Kind = SyntaxKind.LessThanEqualsToken;
+					info.Kind = TokenKind.LessOrEquals;
 				}
 				else
 				{
 					_window.Advance();
-					info.Kind = SyntaxKind.LessThanToken;
+					info.Kind = TokenKind.Less;
 				}
 
 				break;
@@ -266,12 +298,12 @@ public sealed partial class NiteLexer
 				if (_window.Next == '=')
 				{
 					_window.Advance(2);
-					info.Kind = SyntaxKind.GreaterThanEqualsToken;
+					info.Kind = TokenKind.GreaterOrEquals;
 				}
 				else
 				{
 					_window.Advance(1);
-					info.Kind = SyntaxKind.GreaterThanToken;
+					info.Kind = TokenKind.Greater;
 				}
 
 				break;
@@ -280,27 +312,27 @@ public sealed partial class NiteLexer
 				break;
 			case ';':
 				_window.Advance();
-				info.Kind = SyntaxKind.SemicolonToken;
+				info.Kind = TokenKind.Semicolon;
 				break;
 			case '{':
 				_window.Advance();
-				info.Kind = SyntaxKind.OpenBraceToken;
+				info.Kind = TokenKind.OpenBrace;
 				break;
 			case '}':
 				_window.Advance();
-				info.Kind = SyntaxKind.CloseBraceToken;
+				info.Kind = TokenKind.CloseBrace;
 				break;
 			case '(':
 				_window.Advance();
-				info.Kind = SyntaxKind.OpenParenToken;
+				info.Kind = TokenKind.OpenParen;
 				break;
 			case ')':
 				_window.Advance();
-				info.Kind = SyntaxKind.CloseParenToken;
+				info.Kind = TokenKind.CloseParen;
 				break;
 			case ',':
 				_window.Advance();
-				info.Kind = SyntaxKind.CommaToken;
+				info.Kind = TokenKind.Comma;
 				break;
 			case '.':
 				if (_window.Next == '.')
@@ -308,20 +340,23 @@ public sealed partial class NiteLexer
 					if (_window.Peek(2) == '=')
 					{
 						_window.Advance(3);
-						info.Kind = SyntaxKind.DotDotEqualsToken;
+						info.Kind = TokenKind.RangeInclusive;
 					}
 					else
 					{
 						_window.Advance(2);
-						info.Kind = SyntaxKind.DotDotToken;
+						info.Kind = TokenKind.Range;
 					}
 				}
 				else
 				{
 					_window.Advance();
-					info.Kind = SyntaxKind.DotToken;
+					info.Kind = TokenKind.Dot;
 				}
 
+				break;
+			case '\'':
+				ReadLifetimeIdentifierOrCharacter(ref info);
 				break;
 			case >= '0' and <= '9':
 				ReadNumber(ref info);
@@ -332,13 +367,13 @@ public sealed partial class NiteLexer
 				if (_window.Width == 0)
 				{
 					_window.Advance();
-					info.Kind = SyntaxKind.None;
+					info.Kind = TokenKind.None;
 				}
 
 				break;
 		}
 
-		if (info.Kind == SyntaxKind.IdentifierToken && SyntaxFacts.IsPossibleKeyword(_window.Width))
+		if (info.Kind == TokenKind.IdentifierOrKeyword && SyntaxFacts.IsPossibleKeyword(_window.Width))
 			SyntaxFacts.DefineKeywordOrIdentifier(_window.Lexeme, ref info);
 	}
 }

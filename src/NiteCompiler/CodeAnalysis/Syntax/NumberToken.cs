@@ -8,9 +8,10 @@ public sealed class NumberToken : Token
 	public Packed Value { get; }
 	public NumericLiteralType Type { get; }
 	public NumericLiteralFormat Format { get; }
+	public override TokenKind TKind => TokenKind.NumberLiteral;
 
-	public NumberToken(SyntaxKind kind, TextSpan span, Packed value, NumericLiteralType type, NumericLiteralFormat format)
-		: base(kind, span)
+	public NumberToken(SyntaxTree tree, TextSpan span, Packed value, NumericLiteralType type, NumericLiteralFormat format,
+		SyntaxList<Trivia> leadingTrivia, SyntaxList<Trivia> trailingTrivia) : base(tree, span, leadingTrivia, trailingTrivia)
 	{
 		Value = value;
 		Type = type;
@@ -36,6 +37,6 @@ public sealed class NumberToken : Token
 
 	public override string ToString()
 	{
-		return $"{Kind}: int := {Value.U64} | real := {Value.F64}";
+		return base.ToString() + $"int := {Value.U64} | real := {Value.F64}";
 	}
 }
