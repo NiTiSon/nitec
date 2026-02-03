@@ -168,4 +168,6 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind RightArithmeticShiftAssignmentExpression = Reg(Operation + AssignmentFlag + BinaryFlag + 38, Precedence.Shift, "right-arithmetic-shift-assignment-expression");
 	public static readonly NodeKind RightUnsignedShiftExpression = Reg(Operation + BinaryFlag + 39, Precedence.Shift, "right-unsigned-shift-expression");
 	public static readonly NodeKind RightUnsignedShiftAssignmentExpression = Reg(Operation + AssignmentFlag + BinaryFlag + 40, Precedence.Shift, "right-unsigned-shift-assignment-expression");
+	public static readonly NodeKind RangeExpression = Reg(Operation + BinaryFlag + 41, Precedence.Range, "range-expression");
+	public static readonly NodeKind RangeInclusiveExpression = Reg(Operation + BinaryFlag + 42, Precedence.Range, "range-inclusive-expression");
 }

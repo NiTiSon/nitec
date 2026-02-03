@@ -21,7 +21,7 @@ public sealed partial class NiteLexer
 		/// </summary>
 		Syntax,
 		/// <summary>
-		/// Threat text as markdown comment.
+		/// Threat text as Markdown comment.
 		/// </summary>
 		DocumentationComment,
 		/// <summary>
@@ -76,7 +76,8 @@ public sealed partial class NiteLexer
 				NumberParser.Parse(
 					info,
 					text,
-					Location.Create(_syntaxTree, span), _diagnostics),
+					Location.Create(_syntaxTree, span),
+					_diagnostics),
 				info.LiteralType,
 				info.LiteralFormat,
 				leading,

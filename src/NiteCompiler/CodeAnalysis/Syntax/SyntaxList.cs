@@ -79,7 +79,7 @@ public sealed class SyntaxList<TNode> : SyntaxNode, IEnumerable<TNode>
 		{
 			int capacity = _buffer.Length;
 
-			if (capacity < Count)
+			if (capacity > Count)
 			{
 				TNode[] temp = new TNode[Count];
 				Array.Copy(_buffer, temp, Count);
@@ -90,7 +90,7 @@ public sealed class SyntaxList<TNode> : SyntaxNode, IEnumerable<TNode>
 			{
 				TNode[] buffer = _buffer;
 				_buffer = new TNode[8];
-				return new SyntaxList<TNode>(tree, _buffer);
+				return new SyntaxList<TNode>(tree, buffer);
 			}
 		}
 	}

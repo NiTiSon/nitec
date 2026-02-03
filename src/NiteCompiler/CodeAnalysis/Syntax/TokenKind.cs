@@ -126,6 +126,9 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 		if (this == DoubleAmpersand) return NodeKind.ConditionalAndExpression;
 		if (this == DoublePipe) return NodeKind.ConditionalOrExpression;
 
+		if (this == Range) return NodeKind.RangeExpression;
+		if (this == RangeInclusive) return NodeKind.RangeInclusiveExpression;
+
 		Debug.WriteLine("ToBinaryExpressionKind is failed");
 		return NodeKind.None;
 	}
