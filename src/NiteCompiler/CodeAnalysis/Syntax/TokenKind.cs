@@ -81,7 +81,7 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 		if (this == False) return NodeKind.FalseLiteralExpression;
 		if (this == NumberLiteral) return NodeKind.NumberLiteralExpression;
 
-		Debug.WriteLine("ToLiteralExpressionKind is failed");
+		Debug.WriteLine($"ToLiteralExpressionKind({this}) is failed");
 		return NodeKind.None;
 	}
 
@@ -93,8 +93,10 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 		if (this == Circumflex) return NodeKind.UnaryCircumflexExpression;
 		if (this == Asterisk) return NodeKind.DereferencingExpression;
 		if (this == Ampersand) return NodeKind.AddressOfExpression;
+		if (this == ExclamationSign) return NodeKind.UnaryLogicalNotExpression;
+		if (this == Tilde) return NodeKind.UnaryTildeExpression;
 
-		Debug.WriteLine("ToUnaryExpressionKind is failed");
+		Debug.WriteLine($"ToUnaryExpressionKind({this}) is failed");
 		return NodeKind.None;
 	}
 
@@ -103,6 +105,26 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 		Debug.Assert(CanBeBinaryOperator);
 		if (this == Plus) return NodeKind.AddExpression;
 		if (this == Minus) return NodeKind.SubtractExpression;
+		if (this == Asterisk) return NodeKind.MultiplyExpression;
+		if (this == Slash) return NodeKind.DivideExpression;
+		if (this == Percent) return NodeKind.ModuloExpression;
+		if (this == Tilde) return NodeKind.TildeExpression;
+		if (this == Pipe) return NodeKind.BitwiseOrExpression;
+		if (this == Circumflex) return NodeKind.BitwiseXorExpression;
+		if (this == Ampersand) return NodeKind.BitwiseAndExpression;
+		if (this == LeftArithmeticShift) return NodeKind.LeftArithmeticShiftExpression;
+		if (this == RightArithmeticShift) return NodeKind.RightArithmeticShiftExpression;
+		if (this == RightUnsignedShift) return NodeKind.RightUnsignedShiftExpression;
+
+		if (this == DoubleEqual) return NodeKind.EqualsExpression;
+		if (this == NotEqual) return NodeKind.NotEqualsExpression;
+		if (this == Greater) return NodeKind.GreaterExpression;
+		if (this == GreaterOrEquals) return NodeKind.GreaterOrEqualsExpression;
+		if (this == Less) return NodeKind.LessExpression;
+		if (this == LessOrEquals) return NodeKind.LessOrEqualsExpression;
+
+		if (this == DoubleAmpersand) return NodeKind.ConditionalAndExpression;
+		if (this == DoublePipe) return NodeKind.ConditionalOrExpression;
 
 		Debug.WriteLine("ToBinaryExpressionKind is failed");
 		return NodeKind.None;
@@ -113,10 +135,20 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 		Debug.Assert(IsAssignmentOperator);
 		if (this == PlusAssignment) return NodeKind.AddAssignmentExpression;
 		if (this == MinusAssignment) return NodeKind.SubtractAssignmentExpression;
+		if (this == AsteriskAssignment) return NodeKind.MultiplyAssignmentExpression;
+		if (this == SlashAssignment) return NodeKind.DivideAssignmentExpression;
+		if (this == PercentAssignment) return NodeKind.ModuloAssignmentExpression;
+		if (this == TildeAssignment) return NodeKind.TildeAssignmentExpression;
+		if (this == PipeAssignment) return NodeKind.BitwiseOrAssignmentExpression;
+		if (this == CircumflexAssignment) return NodeKind.BitwiseXorAssignmentExpression;
+		if (this == AmpersandAssignment) return NodeKind.BitwiseAndAssignmentExpression;
+		if (this == LeftArithmeticShiftAssignment) return NodeKind.LeftArithmeticShiftAssignmentExpression;
+		if (this == RightArithmeticShiftAssignment) return NodeKind.RightArithmeticShiftAssignmentExpression;
+		if (this == RightUnsignedShiftAssignment) return NodeKind.RightUnsignedShiftAssignmentExpression;
 
 		if (this == Equal) return NodeKind.AssignmentExpression;
 
-		Debug.WriteLine("ToAssignmentExpressionKind is failed");
+		Debug.WriteLine($"ToAssignmentExpressionKind({this}) is failed");
 		return NodeKind.None;
 	}
 
@@ -299,7 +331,7 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 	public static readonly TokenKind CircumflexAssignment = Reg(BinaryFlag | AssignmentFlag | Operator | 16, "^=");
 	public static readonly TokenKind Ampersand = Reg(UnaryFlag | BinaryFlag | Operator | 17, "&");
 	public static readonly TokenKind AmpersandAssignment = Reg(BinaryFlag | AssignmentFlag | Operator | 18, "&=");
-	public static readonly TokenKind Not = Reg(UnaryFlag | Operator | 19, "!");
+	public static readonly TokenKind ExclamationSign = Reg(UnaryFlag | Operator | 19, "!");
 	public static readonly TokenKind DoublePipe = Reg(BinaryFlag | Operator | 20, "||");
 	public static readonly TokenKind DoubleAmpersand = Reg(BinaryFlag | Operator | 21, "&&");
 	public static readonly TokenKind Equal = Reg(BinaryFlag | AssignmentFlag | Operator | 22, "=");

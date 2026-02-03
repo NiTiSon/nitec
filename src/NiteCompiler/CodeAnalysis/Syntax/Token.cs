@@ -37,7 +37,7 @@ public abstract class Token : SyntaxNode
 
 	public override string ToString()
 	{
-		return $"TokenKind = {TKind};";
+		return $"Token = {TKind};";
 	}
 
 	public sealed class Default(

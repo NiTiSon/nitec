@@ -31,7 +31,7 @@ public abstract class SyntaxNode
 
 	public override string ToString()
 	{
-		return $"NodeKind = {Kind}";
+		return $"Node = {Kind}";
 	}
 
 	public abstract IEnumerable<SyntaxNode> GetChildren();

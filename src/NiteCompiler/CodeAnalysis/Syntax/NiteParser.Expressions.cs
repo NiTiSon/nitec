@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
@@ -22,14 +23,14 @@ public sealed partial class NiteParser
 			&& (token2.TKind == TokenKind.Greater || token2.TKind == TokenKind.GreaterOrEquals)
 			&& token1.IsBefore(token2)) // check to see if they really are adjacent
 		{
-			if (token2.Kind == TokenKind.Greater)
+			if (token2.TKind == TokenKind.Greater)
 			{
 				Token token3 = Peek(2);
 				if ((token3.TKind == TokenKind.Greater || token3.TKind == TokenKind.GreaterOrEquals)
 					&& token2.IsBefore(token3)) // check to see if they really are adjacent
 				{
 					// >>>  or  >>>=
-					token1Kind = token3.Kind == TokenKind.Greater
+					token1Kind = token3.TKind == TokenKind.Greater
 						? TokenKind.RightUnsignedShift
 						: TokenKind.RightUnsignedShiftAssignment;
 				}
@@ -59,6 +60,43 @@ public sealed partial class NiteParser
 		// Something that doesn't expand the current expression we're looking at.  Bail out and see if we
 		// can end with a conditional expression.
 		return (TokenKind.None, NodeKind.None);
+	}
+
+	private Token ConsumeExpressionOperatorToken(TokenKind operatorTokenKind)
+	{
+		if (operatorTokenKind == TokenKind.RightArithmeticShift ||
+		    operatorTokenKind == TokenKind.RightArithmeticShiftAssignment)
+		{
+			// >> and >>=
+			Token token1 = PeekAndAdvance();
+			Token token2 = PeekAndAdvance();
+
+			return CreateTokenFromTokens(token1, token2, operatorTokenKind);
+		}
+
+		if (operatorTokenKind == TokenKind.RightUnsignedShift ||
+		    operatorTokenKind == TokenKind.RightUnsignedShiftAssignment)
+		{
+			// >> and >>=
+			Token token1 = PeekAndAdvance();
+			_ = PeekAndAdvance();
+			Token token3 = PeekAndAdvance();
+
+			return CreateTokenFromTokens(token1, token3, operatorTokenKind);
+		}
+
+		return PeekAndAdvance();
+
+		static Token CreateTokenFromTokens(Token leftMost, Token rightMost, TokenKind operatorTokenKind)
+		{
+			return new Token.Default(
+				leftMost.Tree,
+				operatorTokenKind,
+				TextSpan.FromBounds(leftMost.Span, rightMost.Span),
+				leftMost.LeadingTrivia,
+				rightMost.TrailingTrivia
+			);
+		}
 	}
 
 	private ExpressionSyntax ParseExpression()
@@ -112,7 +150,7 @@ public sealed partial class NiteParser
 			return null;
 
 		// TODO: Add support for >>, >>>, >>>=
-		Token operatorToken = PeekAndAdvance();
+		Token operatorToken = ConsumeExpressionOperatorToken(operatorTokenKind);
 
 		if (newPrecedence > operatorExpressionKind.Precedence)
 		{
@@ -144,14 +182,14 @@ public sealed partial class NiteParser
 	private ExpressionSyntax ParsePrimaryExpression()
 	{
 		NodeKind literalType;
-		if ((literalType = Current.TKind.ToLiteralExpressionKind()) != NodeKind.None)
-		{
-			return new LiteralExpressionSyntax(Current.Tree, PeekAndAdvance(), literalType);
-		}
-
 		if (Current.TKind == TokenKind.OpenParen)
 		{
 			return ParseParenthesizedExpression();
+		}
+
+		if ((literalType = Current.TKind.ToLiteralExpressionKind()) != NodeKind.None)
+		{
+			return new LiteralExpressionSyntax(Current.Tree, PeekAndAdvance(), literalType);
 		}
 
 		throw new NotImplementedException();

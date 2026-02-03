@@ -101,6 +101,19 @@ public sealed partial class NiteLexer
 				_window.Advance();
 				ReadIdentifierSkipFirst(ref info);
 				break;
+			case '~':
+				_window.Advance();
+				if (_window.Current == '=')
+				{
+					info.Kind = TokenKind.TildeAssignment;
+					_window.Advance();
+				}
+				else
+				{
+					info.Kind = TokenKind.Tilde;
+				}
+
+				break;
 			case ':':
 				_window.Advance();
 				if (_window.Current == ':')
@@ -140,6 +153,11 @@ public sealed partial class NiteLexer
 					_window.Advance(2);
 					info.Kind = TokenKind.Retusa;
 				}
+				else if (_window.Next == '=')
+				{
+					_window.Advance(2);
+					info.Kind = TokenKind.MinusAssignment;
+				}
 				else
 				{
 					_window.Advance();
@@ -148,8 +166,17 @@ public sealed partial class NiteLexer
 
 				break;
 			case '+':
-				_window.Advance();
-				info.Kind = TokenKind.Plus;
+				if (_window.Next == '=')
+				{
+					_window.Advance(2);
+					info.Kind = TokenKind.PlusAssignment;
+				}
+				else
+				{
+					_window.Advance();
+					info.Kind = TokenKind.Plus;
+				}
+
 				break;
 			case '*':
 				if (_window.Next == '=')
@@ -204,7 +231,7 @@ public sealed partial class NiteLexer
 				else
 				{
 					_window.Advance();
-					info.Kind = TokenKind.Not;
+					info.Kind = TokenKind.ExclamationSign;
 				}
 
 				break;
