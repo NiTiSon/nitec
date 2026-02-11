@@ -4,7 +4,7 @@ public abstract class NameSyntax : ExpressionSyntax
 {
 	protected NameSyntax(SyntaxTree tree) : base(tree) {}
 
-	public abstract string ShortName { get; }
+	public abstract string GetName();
 
-	public virtual string GetFullName() => ShortName;
+	public virtual string GetFullName() => GetName();
 }

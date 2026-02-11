@@ -7,19 +7,6 @@ internal static class SyntaxFacts
 {
 	public const char DigitDelimiter = '\'';
 
-	public static ReadOnlySpan<SyntaxKind> AccessKeywords =>
-	[
-		SyntaxKind.PublicKeyword, SyntaxKind.ProtectedKeyword, SyntaxKind.InternalKeyword,
-		SyntaxKind.PrivateKeyword, SyntaxKind.FamilyKeyword, SyntaxKind.FriendKeyword,
-	];
-
-	public static ReadOnlySpan<SyntaxKind> ModifierKeywords =>
-	[
-		SyntaxKind.StaticKeyword,
-		SyntaxKind.ConstKeyword,
-		SyntaxKind.VirtualKeyword, SyntaxKind.OverrideKeyword, SyntaxKind.AbstractKeyword, SyntaxKind.SealedKeyword,
-	];
-
 	public static bool IsPossibleKeyword(int lexemeWidth)
 	{
 		return lexemeWidth is >= 2 and <= 11;
@@ -30,78 +17,78 @@ internal static class SyntaxFacts
 
 	public static void DefineKeywordOrIdentifier(string identifier, ref NiteLexer.TokenInfo info)
 	{
-	    switch (identifier)
-	    {
-	        case "true":
-	            info.Kind = TokenKind.True;
-	            return;
-	        case "false":
-	            info.Kind = TokenKind.False;
-	            return;
-	        case "use":
-	            info.Kind = TokenKind.Use;
-	            return;
-	        case "if":
-	            info.Kind = TokenKind.If;
-	            return;
-	        case "else":
-	            info.Kind = TokenKind.Else;
-	            return;
-	        case "loop":
-	            info.Kind = TokenKind.Loop;
-	            return;
-	        case "while":
-	            info.Kind = TokenKind.While;
-	            return;
-	        case "for":
-	            info.Kind = TokenKind.For;
-	            return;
-	        case "do":
-	            info.Kind = TokenKind.Do;
-	            return;
-	        case "module":
-	            info.Kind = TokenKind.Module;
-	            return;
-	        case "type":
-	            info.Kind = TokenKind.Type;
-	            return;
-	        case "break":
-	            info.Kind = TokenKind.Break;
-	            return;
-	        case "return":
-	            info.Kind = TokenKind.Return;
-	            return;
-	        case "public":
-	            info.Kind = TokenKind.Public;
-	            return;
-	        case "friend":
-	            info.Kind = TokenKind.Friend;
-	            return;
-	        case "protected":
-	            info.Kind = TokenKind.Protected;
-	            return;
-	        case "internal":
-	            info.Kind = TokenKind.Internal;
-	            return;
-	        case "family":
-	            info.Kind = TokenKind.Family;
-	            return;
-	        case "private":
-	            info.Kind = TokenKind.Private;
-	            return;
-	        case "let":
-	            info.Kind = TokenKind.Let;
-	            return;
-	        case "static":
-	            info.Kind = TokenKind.Static;
-	            return;
-	        case "const":
-	            info.Kind = TokenKind.Const;
-	            return;
-	        case "pure":
-	            info.Kind = TokenKind.Pure;
-	            return;
-	    }
+		switch (identifier)
+		{
+			case "true":
+				info.Kind = TokenKind.True;
+				return;
+			case "false":
+				info.Kind = TokenKind.False;
+				return;
+			case "use":
+				info.Kind = TokenKind.Use;
+				return;
+			case "if":
+				info.Kind = TokenKind.If;
+				return;
+			case "else":
+				info.Kind = TokenKind.Else;
+				return;
+			case "loop":
+				info.Kind = TokenKind.Loop;
+				return;
+			case "while":
+				info.Kind = TokenKind.While;
+				return;
+			case "for":
+				info.Kind = TokenKind.For;
+				return;
+			case "do":
+				info.Kind = TokenKind.Do;
+				return;
+			case "module":
+				info.Kind = TokenKind.Module;
+				return;
+			case "type":
+				info.Kind = TokenKind.Type;
+				return;
+			case "break":
+				info.Kind = TokenKind.Break;
+				return;
+			case "return":
+				info.Kind = TokenKind.Return;
+				return;
+			case "public":
+				info.Kind = TokenKind.Public.ToContextualKeyword();
+				return;
+			case "friend":
+				info.Kind = TokenKind.Friend.ToContextualKeyword();
+				return;
+			case "protected":
+				info.Kind = TokenKind.Protected.ToContextualKeyword();
+				return;
+			case "internal":
+				info.Kind = TokenKind.Internal.ToContextualKeyword();
+				return;
+			case "family":
+				info.Kind = TokenKind.Family.ToContextualKeyword();
+				return;
+			case "private":
+				info.Kind = TokenKind.Private.ToContextualKeyword();
+				return;
+			case "let":
+				info.Kind = TokenKind.Let;
+				return;
+			case "static":
+				info.Kind = TokenKind.Static;
+				return;
+			case "const":
+				info.Kind = TokenKind.Const;
+				return;
+			case "pure":
+				info.Kind = TokenKind.Pure;
+				return;
+		}
 	}
 
 

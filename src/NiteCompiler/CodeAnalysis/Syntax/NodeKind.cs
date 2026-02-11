@@ -118,6 +118,12 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind EmptyTypeBody = Reg(Body + 1, "<empty-type-body>");
 	public static readonly NodeKind TypeBody = Reg(Body + 2, "<type-body>");
 	public static readonly NodeKind ErrorTypeBody = Reg(Body + 3, "<error-type-body>");
+	public static readonly NodeKind EmptyFunctionBody = Reg(Body + 1, "<empty-function-body>");
+	public static readonly NodeKind FunctionBlockBody = Reg(Body + 2, "<function-block-body>");
+	public static readonly NodeKind ErrorFunctionBody = Reg(Body + 3, "<error-function-body>");
+
+	private const uint Item = 0x00_00__18_00;
+	public static readonly NodeKind Function = Reg(Item + 1, "function");
 
 	private const uint Expression = 0x00_00__20_00;
 	private const uint BinaryFlag = 0x00_01__00_00;
@@ -170,4 +176,10 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind RightUnsignedShiftAssignmentExpression = Reg(Operation + AssignmentFlag + BinaryFlag + 40, Precedence.Shift, "right-unsigned-shift-assignment-expression");
 	public static readonly NodeKind RangeExpression = Reg(Operation + BinaryFlag + 41, Precedence.Range, "range-expression");
 	public static readonly NodeKind RangeInclusiveExpression = Reg(Operation + BinaryFlag + 42, Precedence.Range, "range-inclusive-expression");
+
+	private const uint Statement = 0x00_00__30_00;
+	public static readonly NodeKind ExpressionStatement = Reg(Statement + 1, "expression-statement");
+	public static readonly NodeKind EmptyStatement = Reg(Statement + 2, "empty-statement");
+	public static readonly NodeKind BlockStatement = Reg(Statement + 3, "block-statement");
+	public static readonly NodeKind ReturnStatement = Reg(Statement + 4, "return-statement");
 }

@@ -71,23 +71,23 @@ public sealed partial class NiteParser
 			Token token1 = PeekAndAdvance();
 			Token token2 = PeekAndAdvance();
 
-			return CreateTokenFromTokens(token1, token2, operatorTokenKind);
+			return CombineTokens(token1, token2, operatorTokenKind);
 		}
 
 		if (operatorTokenKind == TokenKind.RightUnsignedShift ||
 		    operatorTokenKind == TokenKind.RightUnsignedShiftAssignment)
 		{
-			// >> and >>=
+			// >>> and >>>=
 			Token token1 = PeekAndAdvance();
 			_ = PeekAndAdvance();
 			Token token3 = PeekAndAdvance();
 
-			return CreateTokenFromTokens(token1, token3, operatorTokenKind);
+			return CombineTokens(token1, token3, operatorTokenKind);
 		}
 
 		return PeekAndAdvance();
 
-		static Token CreateTokenFromTokens(Token leftMost, Token rightMost, TokenKind operatorTokenKind)
+		static Token CombineTokens(Token leftMost, Token rightMost, TokenKind operatorTokenKind)
 		{
 			return new Token.Default(
 				leftMost.Tree,
@@ -218,5 +218,18 @@ public sealed partial class NiteParser
 		Token closeParen = MatchToken(TokenKind.CloseParen);
 
 		return new(openParen.Tree, openParen, expression, closeParen);
+	}
+
+	private SimpleNameSyntax ParseSimpleName()
+	{
+		Token current = PeekAndAdvance();
+
+		if (current.TKind == TokenKind.IdentifierOrKeyword)
+		{
+			string identifier = (current as IdentifierOrKeywordToken)!.Identifier;
+			return new(_syntaxTree, current, identifier);
+		}
+
+		throw new NotImplementedException();
 	}
 }

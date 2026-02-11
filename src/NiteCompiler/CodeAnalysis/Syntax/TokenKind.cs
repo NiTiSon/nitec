@@ -75,6 +75,17 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 		}
 	}
 
+	public TokenKind ToContextualKeyword()
+	{
+		return (uint)(IdentifierOrKeyword.RawValue | (this.RawValue << 16));
+	}
+
+	public TokenKind GetContextualKeyword()
+	{
+		Debug.Assert(this == IdentifierOrKeyword);
+		return this.HighBits;
+	}
+
 	public NodeKind ToLiteralExpressionKind()
 	{
 		if (this == True) return NodeKind.TrueLiteralExpression;

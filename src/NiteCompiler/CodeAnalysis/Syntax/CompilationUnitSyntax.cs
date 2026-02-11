@@ -6,10 +6,10 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 
 public sealed class CompilationUnitSyntax : SyntaxNode
 {
-	public ImmutableArray<SyntaxNode> TopLevelNodes { get; }
+	public SyntaxList<TopLevelSyntax> TopLevelNodes { get; }
 	public Token EndOfFileToken { get; }
 
-	public CompilationUnitSyntax(SyntaxTree owner, ImmutableArray<SyntaxNode> topLevelNodes, Token endOfFileToken) : base(owner)
+	public CompilationUnitSyntax(SyntaxTree owner, SyntaxList<TopLevelSyntax> topLevelNodes, Token endOfFileToken) : base(owner)
 	{
 		TopLevelNodes = topLevelNodes;
 		EndOfFileToken = endOfFileToken;

@@ -12,6 +12,9 @@ public sealed class SyntaxList<TNode> : SyntaxNode, IEnumerable<TNode>
 	private readonly TNode[] _nodes;
 	public override TextSpan Span => _nodes.Length > 0 ? TextSpan.FromBounds(_nodes[0].Span.Start, _nodes[^1].Span.End) : default;
 	public override NodeKind Kind => NodeKind.SyntaxList;
+	public int Count => _nodes.Length;
+
+	public SyntaxNode this[Index index] => _nodes[index];
 
 	private SyntaxList(SyntaxTree tree, TNode[] nodes) : base(tree)
 	{
@@ -53,7 +56,7 @@ public sealed class SyntaxList<TNode> : SyntaxNode, IEnumerable<TNode>
 			_buffer[Count++] = node;
 		}
 
-		public void Add(ReadOnlySpan<TNode> nodes)
+		public void AddRange(params ReadOnlySpan<TNode> nodes)
 		{
 			EnsureCapacity(nodes.Length);
 			nodes.CopyTo(_buffer.AsSpan().Slice(Count));

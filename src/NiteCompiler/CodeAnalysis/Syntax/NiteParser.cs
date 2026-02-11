@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using NiteCompiler.Diagnostics;
 
@@ -59,10 +58,20 @@ public sealed partial class NiteParser
 		return new Token.Default(Current.Tree, kind, Current.Span, Current.LeadingTrivia, Current.TrailingTrivia);
 	}
 
-	[DebuggerStepThrough]
 	private bool IsPresentedAny(params ReadOnlySpan<TokenKind> kinds)
 	{
 		return kinds.Contains(Current.TKind);
+	}
+
+	private bool IsPresentedAnyAccessibilityToken()
+	{
+		return IsPresentedAny(TokenKind.Public, TokenKind.Friend, TokenKind.Protected, TokenKind.Internal, TokenKind.Family, TokenKind.Private);
+	}
+
+	private bool IsPresentedContextualKeyword(TokenKind contextualKeywordType)
+	{
+		Debug.Assert(contextualKeywordType.IsKeyword);
+		return Current.TKind.GetContextualKeyword() == contextualKeywordType;
 	}
 
 	[DebuggerStepThrough]
@@ -76,7 +85,7 @@ public sealed partial class NiteParser
 
 	public CompilationUnitSyntax Parse()
 	{
-		ImmutableArray<SyntaxNode>.Builder membersBuilder = ImmutableArray.CreateBuilder<SyntaxNode>();
+		SyntaxList<TopLevelSyntax>.Builder itemsBuilder = new();
 		while (Current.TKind != TokenKind.EndOfFile)
 		{
 			switch (Current.TKind)
@@ -90,22 +99,20 @@ public sealed partial class NiteParser
 				// 	MatchToken(SyntaxKind.SemicolonToken);
 				// 	break;
 				default:
-					// if (IsPresentedAny(SyntaxFacts.AccessKeywords))
-					// {
-					// 	membersBuilder.Add(ParseMember());
-					// }
-					// else
-				{
-					ExpressionSyntax expr = ParseExpression();
-					membersBuilder.Add(expr);
-					// _diagnostics.ReportUnexpectedToken(Current.Span.Contextualize(_syntaxTree), Current.TKind);
-					// _position++;
-				}
+					if (IsPresentedAnyAccessibilityToken())
+					{
+						itemsBuilder.Add(ParseItem(Current));
+					}
+					else
+					{
+						_diagnostics.ReportUnexpectedToken(Current.Span.Contextualize(_syntaxTree), Current.TKind);
+						_position++;
+					}
 					break;
 			}
 		}
 		Token endOfFileToken = MatchToken(TokenKind.EndOfFile);
 
-		return new CompilationUnitSyntax(_syntaxTree, membersBuilder.ToImmutable(), endOfFileToken);
+		return new CompilationUnitSyntax(_syntaxTree, itemsBuilder.Build(_syntaxTree), endOfFileToken);
 	}
 }

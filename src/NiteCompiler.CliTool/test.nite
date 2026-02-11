@@ -1,5 +1,13 @@
 use std;
 
+public enum<u8> Inlining {
+	default,
+	never,
+	always,
+}
+
+public attribute[function] inline(arg: Inlining);
+
 public main() -> i32 {
 	return 1 + 2 + 5 / 2 * 2;
 }
