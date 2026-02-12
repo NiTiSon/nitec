@@ -81,7 +81,7 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	{
 		if (_names.TryGetValue(value, out string? name))
 		{
-			Debug.Write("TokenKind: " + value + " (" + name + ") is already registered.");
+			Debug.WriteLine("TokenKind: " + value + " (" + name + ") is already registered.");
 		}
 	}
 
@@ -118,9 +118,9 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind EmptyTypeBody = Reg(Body + 1, "<empty-type-body>");
 	public static readonly NodeKind TypeBody = Reg(Body + 2, "<type-body>");
 	public static readonly NodeKind ErrorTypeBody = Reg(Body + 3, "<error-type-body>");
-	public static readonly NodeKind EmptyFunctionBody = Reg(Body + 1, "<empty-function-body>");
-	public static readonly NodeKind FunctionBlockBody = Reg(Body + 2, "<function-block-body>");
-	public static readonly NodeKind ErrorFunctionBody = Reg(Body + 3, "<error-function-body>");
+	public static readonly NodeKind EmptyFunctionBody = Reg(Body + 4, "<empty-function-body>");
+	public static readonly NodeKind FunctionBlockBody = Reg(Body + 5, "<function-block-body>");
+	public static readonly NodeKind ErrorFunctionBody = Reg(Body + 6, "<error-function-body>");
 
 	private const uint Item = 0x00_00__18_00;
 	public static readonly NodeKind Function = Reg(Item + 1, "function");
@@ -133,6 +133,7 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind FalseLiteralExpression = Reg(Expression + 3, "<false-literal-expression>");
 	public static readonly NodeKind ParenthesizedExpression = Reg(Expression + 4, "<parenthesized-expression>");
 	public static readonly NodeKind NumberLiteralExpression = Reg(Expression + 5, "<number-literal-expression>");
+	public static readonly NodeKind PredefinedType = Reg(Expression + 6, "<predefined-type>");
 	private const uint Operation = 0x00_00__28_00;
 	public static readonly NodeKind UnaryAddExpression = Reg(Operation + 1, Precedence.Unary, "unary-add-expression");
 	public static readonly NodeKind AddExpression = Reg(Operation + BinaryFlag + 2, Precedence.Additive, "add-expression");
@@ -182,4 +183,10 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind EmptyStatement = Reg(Statement + 2, "empty-statement");
 	public static readonly NodeKind BlockStatement = Reg(Statement + 3, "block-statement");
 	public static readonly NodeKind ReturnStatement = Reg(Statement + 4, "return-statement");
+	public static readonly NodeKind LocalVariableDeclarationStatement = Reg(Statement + 5, "local-variable-declaration-statement");
+
+	private const uint Other = 0x00_00_F0_00;
+	public static readonly NodeKind EqualsValueClause = Reg(Other + 1, "<equals-value-clause>");
+	public static readonly NodeKind TypeClause = Reg(Other + 2, "<type-clause>");
+	public static readonly NodeKind LocalVariableDeclarator = Reg(Other + 3, "<local-variable-declarator>");
 }

@@ -1,6 +1,6 @@
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public abstract class NameSyntax : ExpressionSyntax
+public abstract class NameSyntax : TypeSyntax
 {
 	protected NameSyntax(SyntaxTree tree) : base(tree) {}
 

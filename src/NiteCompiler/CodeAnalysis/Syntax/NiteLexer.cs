@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Text;
 using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
@@ -59,6 +60,10 @@ public sealed partial class NiteLexer
 		if (info.Kind == TokenKind.IdentifierOrKeyword || info.Kind == TokenKind.NumberLiteral)
 		{
 			text = _window.Lexeme;
+			if (SyntaxFacts.IsPossibleKeyword(_window.Width))
+			{
+				SyntaxFacts.DefineKeywordOrIdentifier(text, ref info);
+			}
 		}
 
 		ReadTrivia(false, _cache.TrailingTrivia);
@@ -400,8 +405,5 @@ public sealed partial class NiteLexer
 
 				break;
 		}
-
-		if (info.Kind == TokenKind.IdentifierOrKeyword && SyntaxFacts.IsPossibleKeyword(_window.Width))
-			SyntaxFacts.DefineKeywordOrIdentifier(_window.Lexeme, ref info);
 	}
 }

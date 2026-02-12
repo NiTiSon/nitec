@@ -14,6 +14,10 @@ public sealed partial class NiteParser
 		{
 			return ParseReturnStatement();
 		}
+		else if (Current.TKind == TokenKind.Let)
+		{
+			return ParseLocalVariableDeclarationStatement();
+		}
 		else
 		{
 			return ParseExpressionStatement();
@@ -39,16 +43,6 @@ public sealed partial class NiteParser
 
 			StatementSyntax node = ParseStatement();
 			statementsBuilder.Add(node);
-
-			if (Current.TKind == TokenKind.Semicolon)
-			{
-				Token semicolon = MatchToken(TokenKind.Semicolon);
-				statementsBuilder.Add(new EmptyStatementSyntax(semicolon.Tree, semicolon));
-			}
-			else
-			{
-				_diagnostics.ReportExpectedToken(Current.Span.Contextualize(_syntaxTree), TokenKind.Semicolon);
-			}
 		}
 		Token closeBrace = MatchToken(TokenKind.CloseBrace);
 
@@ -65,8 +59,51 @@ public sealed partial class NiteParser
 	private ReturnStatementSyntax ParseReturnStatement()
 	{
 		Token returnKeyword = MatchToken(TokenKind.Return);
-		return Current.TKind == TokenKind.Semicolon
-			? new(returnKeyword.Tree, returnKeyword, null, MatchToken(TokenKind.Semicolon))
-			: new(returnKeyword.Tree, returnKeyword, ParseExpression(), MatchToken(TokenKind.Semicolon));
+
+		if (Current.TKind == TokenKind.Semicolon)
+		{
+			return new(returnKeyword.Tree, returnKeyword, null, PeekAndAdvance());
+		}
+		else
+		{
+			ExpressionSyntax expression = ParseExpression();
+			Token semicolon = MatchToken(TokenKind.Semicolon);
+			return new(returnKeyword.Tree, returnKeyword, expression, semicolon);
+		}
+	}
+
+	private LocalVariableDeclarationStatement ParseLocalVariableDeclarationStatement()
+	{
+		Token let = MatchToken(TokenKind.Let);
+
+		LocalVariableDeclarator declarator = ParseLocalVariableDeclarator();
+
+		Token semicolon = MatchToken(TokenKind.Semicolon);
+
+		return new(_syntaxTree, let, declarator, semicolon);
+	}
+
+	private LocalVariableDeclarator ParseLocalVariableDeclarator()
+	{
+		SimpleNameSyntax name = ParseSimpleName();
+
+		TypeClause? typeClause = null;
+		EqualsValueClause? valueClause = null;
+
+		if (Current.TKind == TokenKind.Colon)
+		{
+			Token colon = PeekAndAdvance();
+			TypeSyntax type = ParseType();
+			typeClause = new(_syntaxTree, colon, type);
+		}
+
+		if (Current.TKind == TokenKind.Equal)
+		{
+			Token equalsToken = PeekAndAdvance();
+			ExpressionSyntax expression = ParseExpression();
+			valueClause = new(_syntaxTree, equalsToken, expression);
+		}
+
+		return new(_syntaxTree, name, typeClause, valueClause);
 	}
 }

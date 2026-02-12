@@ -234,7 +234,7 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 	public static readonly TokenKind None = Reg(0u, "<none>");
 	public static readonly TokenKind EndOfFile = Reg(uint.MaxValue, "<end-of-file>");
 
-	private const uint CategoryFlag = 0x00_00__F0_00u;
+	private const uint CategoryFlag = 0x00_00__F8_00u;
 	public static readonly TokenKind IdentifierOrKeyword = Reg(1, "<identifier>"); // identifier XID_Start XID_Continue*
 	public static readonly TokenKind EscapeIdentifier = Reg(2, "<escape-identifier>"); // `...`
 	public static readonly TokenKind LifetimeIdentifier = Reg(3, "<lifetime>"); // ' XID_Continue*

@@ -34,9 +34,17 @@ public partial class NiteParser
 		Token openParenToken = MatchToken(TokenKind.OpenParen);
 		Token closeParenToken = MatchToken(TokenKind.CloseParen);
 
+		TypeClause? typeClause = null;
+		if (Current.TKind == TokenKind.Retusa)
+		{
+			Token retusa = PeekAndAdvance();
+			TypeSyntax type = ParseType();
+			typeClause = new(_syntaxTree, retusa, type);
+		}
+
 		FunctionBodySyntax body = ParseFunctionBody();
 
-		return new FunctionSyntax(accessibilityToken.Tree, accessibilityToken, modifiers.Build(accessibilityToken.Tree), name, body);
+		return new FunctionSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree), name, typeClause, body);
 	}
 
 	private FunctionBodySyntax ParseFunctionBody()

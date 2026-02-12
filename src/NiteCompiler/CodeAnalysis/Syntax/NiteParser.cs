@@ -65,7 +65,17 @@ public sealed partial class NiteParser
 
 	private bool IsPresentedAnyAccessibilityToken()
 	{
-		return IsPresentedAny(TokenKind.Public, TokenKind.Friend, TokenKind.Protected, TokenKind.Internal, TokenKind.Family, TokenKind.Private);
+		if (Current.TKind != TokenKind.IdentifierOrKeyword) return false;
+
+		ReadOnlySpan<ushort> s = [
+			TokenKind.Public.RawValue,
+			TokenKind.Friend.RawValue,
+			TokenKind.Protected.RawValue,
+			TokenKind.Internal.RawValue,
+			TokenKind.Family.RawValue,
+			TokenKind.Private.RawValue];
+
+		return s.Contains(Current.TKind.GetContextualKeyword().RawValue);
 	}
 
 	private bool IsPresentedContextualKeyword(TokenKind contextualKeywordType)
@@ -101,7 +111,8 @@ public sealed partial class NiteParser
 				default:
 					if (IsPresentedAnyAccessibilityToken())
 					{
-						itemsBuilder.Add(ParseItem(Current));
+						// All accessibility tokens are contextual
+						itemsBuilder.Add(ParseItem(PeekAndAdvance().ToContextualKeywordToken()));
 					}
 					else
 					{

@@ -220,6 +220,35 @@ public sealed partial class NiteParser
 		return new(openParen.Tree, openParen, expression, closeParen);
 	}
 
+	private TypeSyntax ParseType()
+	{
+		if (Current.IsTypeKeyword)
+		{
+			return ParsePredefinedType();
+		}
+		else if (Current.TKind == TokenKind.IdentifierOrKeyword)
+		{
+			return ParseName();
+		}
+
+		throw new NotImplementedException();
+	}
+
+	private PredefinedTypeSyntax ParsePredefinedType()
+	{
+		return new(_syntaxTree, PeekAndAdvance());
+	}
+
+	private NameSyntax ParseName()
+	{
+		if (Current.TKind == TokenKind.IdentifierOrKeyword)
+		{
+			return ParseSimpleName();
+		}
+
+		throw new NotImplementedException();
+	}
+
 	private SimpleNameSyntax ParseSimpleName()
 	{
 		Token current = PeekAndAdvance();

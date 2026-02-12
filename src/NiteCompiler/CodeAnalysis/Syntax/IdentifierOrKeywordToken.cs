@@ -12,7 +12,7 @@ public sealed class IdentifierOrKeywordToken : Token
 		SyntaxList<Trivia> leadingTrivia, SyntaxList<Trivia> trailingTrivia) : base(tree, span, leadingTrivia, trailingTrivia)
 	{
 		Identifier = identifier;
-		TKind = (contextualKeyword << 16) & (TokenKind.IdentifierOrKeyword);
+		TKind = contextualKeyword;
 	}
 
 	public override string ToString()

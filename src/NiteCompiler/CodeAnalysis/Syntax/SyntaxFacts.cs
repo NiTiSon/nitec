@@ -19,6 +19,42 @@ internal static class SyntaxFacts
 	{
 		switch (identifier)
 		{
+			case "i8":
+				info.Kind = TokenKind.I8;
+				return;
+			case "i16":
+				info.Kind = TokenKind.I16;
+				return;
+			case "i32":
+				info.Kind = TokenKind.I32;
+				return;
+			case "i64":
+				info.Kind = TokenKind.I64;
+				return;
+			case "u8":
+				info.Kind = TokenKind.U8;
+				return;
+			case "u16":
+				info.Kind = TokenKind.U16;
+				return;
+			case "u32":
+				info.Kind = TokenKind.U32;
+				return;
+			case "u64":
+				info.Kind = TokenKind.U64;
+				return;
+			case "f16":
+				info.Kind = TokenKind.F16;
+				return;
+			case "f32":
+				info.Kind = TokenKind.F32;
+				return;
+			case "f64":
+				info.Kind = TokenKind.F64;
+				return;
+			case "void":
+				info.Kind = TokenKind.Void;
+				return;
 			case "true":
 				info.Kind = TokenKind.True;
 				return;

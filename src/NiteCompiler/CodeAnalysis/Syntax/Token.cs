@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
@@ -28,6 +29,14 @@ public abstract class Token : SyntaxNode
 		}
 
 		return TokenKind.None;
+	}
+
+	public Token ToContextualKeywordToken()
+	{
+		TokenKind contextualToken = GetContextualKeyword();
+		Debug.Assert(contextualToken != TokenKind.None);
+
+		return new Default(Tree, contextualToken, Span, LeadingTrivia, TrailingTrivia);
 	}
 
 	public override IEnumerable<SyntaxNode> GetChildren()
