@@ -34,5 +34,9 @@ public abstract class SyntaxNode
 		return $"Node = {Kind}";
 	}
 
+	public abstract TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor);
+
+	public abstract void Accept(SyntaxVisitor visitor);
+
 	public abstract IEnumerable<SyntaxNode> GetChildren();
 }

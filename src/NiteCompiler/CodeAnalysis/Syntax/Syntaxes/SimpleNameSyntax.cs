@@ -22,6 +22,9 @@ public sealed class SimpleNameSyntax : NameSyntax
 		return _name;
 	}
 
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitSimpleName(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitSimpleName(this);
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return IdentifierToken;

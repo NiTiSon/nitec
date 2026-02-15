@@ -15,6 +15,9 @@ public sealed class LiteralExpressionSyntax : ExpressionSyntax
 		Kind = literalType;
 	}
 
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitLiteralExpression(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitLiteralExpression(this);
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return Token;

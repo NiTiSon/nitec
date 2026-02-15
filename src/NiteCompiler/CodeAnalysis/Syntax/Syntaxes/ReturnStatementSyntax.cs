@@ -21,6 +21,9 @@ public sealed class ReturnStatementSyntax : StatementSyntax
 		Expression = expression;
 	}
 
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitReturnStatement(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitReturnStatement(this);
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return ReturnKeyword;

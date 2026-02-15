@@ -20,6 +20,9 @@ public sealed class AssignmentExpressionSyntax : ExpressionSyntax
 		Kind = operatorExpressionKind;
 	}
 
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitAssignmentExpression(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitAssignmentExpression(this);
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return Left;

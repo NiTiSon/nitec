@@ -18,6 +18,9 @@ public sealed class ExpressionStatementSyntax : StatementSyntax
 		Expression = expression;
 	}
 
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitExpressionStatement(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitExpressionStatement(this);
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return Expression;

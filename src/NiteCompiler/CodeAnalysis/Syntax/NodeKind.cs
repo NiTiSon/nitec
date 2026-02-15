@@ -123,7 +123,7 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind ErrorFunctionBody = Reg(Body + 6, "<error-function-body>");
 
 	private const uint Item = 0x00_00__18_00;
-	public static readonly NodeKind Function = Reg(Item + 1, "function");
+	public static readonly NodeKind FunctionDeclaration = Reg(Item + 1, "function-declaration");
 
 	private const uint Expression = 0x00_00__20_00;
 	private const uint BinaryFlag = 0x00_01__00_00;

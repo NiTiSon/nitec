@@ -15,6 +15,9 @@ public sealed class Trivia : SyntaxNode
 		TKind = kind;
 	}
 
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitTrivia(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitTrivia(this);
+
 
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{

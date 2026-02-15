@@ -17,6 +17,9 @@ public sealed class PredefinedTypeSyntax : TypeSyntax
 		TypeKeyword = typeKeyword;
 	}
 
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitPredefinedType(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitPredefinedType(this);
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return TypeKeyword;

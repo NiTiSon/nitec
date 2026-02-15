@@ -21,6 +21,9 @@ public sealed class SyntaxList<TNode> : SyntaxNode, IEnumerable<TNode>
 		_nodes = nodes;
 	}
 
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitSyntaxList(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitSyntaxList(this);
+
 	public override IEnumerable<TNode> GetChildren()
 	{
 		return _nodes;

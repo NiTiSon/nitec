@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
@@ -34,5 +35,12 @@ internal abstract class Binder
 		return _parent.GetBinder(node);
 	}
 
-	public abstract Symbol? Resolve();
+	internal void LookupSymbolsSimpleName(
+		LookupResult result,
+		ContainerSymbol? qualifier,
+		string name,
+		LookupOptions options)
+	{
+		throw new NotImplementedException();
+	}
 }

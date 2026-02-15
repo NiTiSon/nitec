@@ -14,6 +14,10 @@ public sealed class EmptyTypeBodySyntax : TypeBodySyntax
 
 	public override TextSpan Span => SemicolonToken.Span;
 	public override NodeKind Kind => NodeKind.EmptyTypeBody;
+
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitEmptyTypeBody(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitEmptyTypeBody(this);
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return SemicolonToken;

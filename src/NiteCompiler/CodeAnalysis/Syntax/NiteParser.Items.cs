@@ -44,7 +44,7 @@ public partial class NiteParser
 
 		FunctionBodySyntax body = ParseFunctionBody();
 
-		return new FunctionSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree), name, typeClause, body);
+		return new FunctionDeclarationSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree), name, typeClause, body);
 	}
 
 	private FunctionBodySyntax ParseFunctionBody()

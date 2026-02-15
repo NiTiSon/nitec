@@ -22,6 +22,9 @@ public sealed class BlockStatementSyntax : StatementSyntax
 		CloseBrace = closeBrace;
 	}
 
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitBlockStatement(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitBlockStatement(this);
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return OpenBrace;

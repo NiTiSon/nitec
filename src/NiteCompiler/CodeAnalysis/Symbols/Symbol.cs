@@ -1,6 +1,6 @@
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
-public abstract class Symbol
+internal abstract class Symbol
 {
 	public abstract SymbolKind Kind { get; }
 }

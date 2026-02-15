@@ -14,6 +14,10 @@ public sealed class EmptyFunctionBodySyntax : FunctionBodySyntax
 
 	public override TextSpan Span => SemicolonToken.Span;
 	public override NodeKind Kind => NodeKind.EmptyFunctionBody;
+
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitEmptyFunctionBody(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitEmptyFunctionBody(this);
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return SemicolonToken;

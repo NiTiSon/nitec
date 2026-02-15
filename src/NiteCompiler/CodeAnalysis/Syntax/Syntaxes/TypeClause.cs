@@ -17,6 +17,9 @@ public sealed class TypeClause : SyntaxNode
 		Type = type;
 	}
 
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitTypeClause(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitTypeClause(this);
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return Token;

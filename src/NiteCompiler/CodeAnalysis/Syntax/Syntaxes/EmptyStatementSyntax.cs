@@ -17,6 +17,8 @@ public sealed class EmptyStatementSyntax : StatementSyntax
 		SemicolonToken = semicolonToken;
 	}
 
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitEmptyStatement(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitEmptyStatement(this);
 
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{

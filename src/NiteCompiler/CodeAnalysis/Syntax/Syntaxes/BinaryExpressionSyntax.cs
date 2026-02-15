@@ -20,6 +20,9 @@ public sealed class BinaryExpressionSyntax : ExpressionSyntax
 		Kind = operatorExpressionKind;
 	}
 
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitBinaryExpression(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitBinaryExpression(this);
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return Left;

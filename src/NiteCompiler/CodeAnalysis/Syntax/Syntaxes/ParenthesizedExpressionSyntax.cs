@@ -19,6 +19,9 @@ public sealed class ParenthesizedExpressionSyntax : ExpressionSyntax
 		CloseParenToken = closeParen;
 	}
 
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitParenthesizedExpression(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitParenthesizedExpression(this);
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return OpenParenToken;

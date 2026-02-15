@@ -26,6 +26,9 @@ public sealed class LocalVariableDeclarator : SyntaxNode
 		EqualsValueClause = equalsValueClause;
 	}
 
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitLocalVariableDeclarator(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitLocalVariableDeclarator(this);
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return Name;

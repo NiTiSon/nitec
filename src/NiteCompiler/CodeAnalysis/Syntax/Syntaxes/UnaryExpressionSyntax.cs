@@ -17,6 +17,9 @@ public class UnaryExpressionSyntax : ExpressionSyntax
 		Kind = operatorKind;
 	}
 
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitUnaryExpression(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitUnaryExpression(this);
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return Operator;

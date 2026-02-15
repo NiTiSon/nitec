@@ -187,6 +187,11 @@ public sealed partial class NiteParser
 			return ParseParenthesizedExpression();
 		}
 
+		if (Current.TKind == TokenKind.IdentifierOrKeyword)
+		{
+			return ParseName();
+		}
+
 		if ((literalType = Current.TKind.ToLiteralExpressionKind()) != NodeKind.None)
 		{
 			return new LiteralExpressionSyntax(Current.Tree, PeekAndAdvance(), literalType);

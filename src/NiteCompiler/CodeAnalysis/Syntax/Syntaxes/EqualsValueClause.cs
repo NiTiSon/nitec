@@ -19,6 +19,9 @@ public sealed class EqualsValueClause : SyntaxNode
 		Expression = expression;
 	}
 
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitEqualsValueClause(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitEqualsValueClause(this);
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return EqualsToken;

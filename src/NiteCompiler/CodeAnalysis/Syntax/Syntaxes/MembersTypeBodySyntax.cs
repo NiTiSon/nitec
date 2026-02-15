@@ -18,6 +18,10 @@ public sealed class MembersTypeBodySyntax : TypeBodySyntax
 
 	public override TextSpan Span => TextSpan.FromBounds(OpenBrace.Span, CloseBrace.Span);
 	public override NodeKind Kind => NodeKind.TypeBody;
+
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitMembersTypeBody(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitMembersTypeBody(this);
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return OpenBrace;

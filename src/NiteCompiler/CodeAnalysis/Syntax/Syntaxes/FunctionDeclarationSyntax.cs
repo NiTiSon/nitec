@@ -3,7 +3,7 @@ using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public sealed class FunctionSyntax : ItemSyntax
+public sealed class FunctionDeclarationSyntax : ItemSyntax
 {
 	public Token AccessibilityToken { get; }
 	public SyntaxList<Token> Modifiers { get; }
@@ -12,9 +12,9 @@ public sealed class FunctionSyntax : ItemSyntax
 	public FunctionBodySyntax Body { get; }
 
 	public override TextSpan Span => TextSpan.FromBounds(AccessibilityToken.Span, Body.Span);
-	public override NodeKind Kind => NodeKind.Function;
+	public override NodeKind Kind => NodeKind.FunctionDeclaration;
 
-	public FunctionSyntax(SyntaxTree tree, Token accessibilityToken, SyntaxList<Token> modifiers, SimpleNameSyntax name, TypeClause? typeClause, FunctionBodySyntax body) : base(tree)
+	public FunctionDeclarationSyntax(SyntaxTree tree, Token accessibilityToken, SyntaxList<Token> modifiers, SimpleNameSyntax name, TypeClause? typeClause, FunctionBodySyntax body) : base(tree)
 	{
 		AccessibilityToken = accessibilityToken;
 		Modifiers = modifiers;
@@ -22,6 +22,9 @@ public sealed class FunctionSyntax : ItemSyntax
 		TypeClause = typeClause;
 		Body = body;
 	}
+
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitFunctionDeclaration(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitFunctionDeclaration(this);
 
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{

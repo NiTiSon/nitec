@@ -19,6 +19,10 @@ public sealed class LocalVariableDeclarationStatement : StatementSyntax
 		SemicolonToken = semicolonToken;
 	}
 
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default =>
+		visitor.VisitLocalVariableDeclarationStatement(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitLocalVariableDeclarationStatement(this);
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return DeclarationToken;

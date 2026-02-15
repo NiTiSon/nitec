@@ -39,6 +39,9 @@ public abstract class Token : SyntaxNode
 		return new Default(Tree, contextualToken, Span, LeadingTrivia, TrailingTrivia);
 	}
 
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitToken(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitToken(this);
+
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		return [];
