@@ -17,8 +17,4 @@
         </AssemblyAttribute>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="CodeAnalysis\Declarations\" />
-    </ItemGroup>
-
 </Project>
