@@ -34,6 +34,8 @@ public abstract class SyntaxNode
 		return $"Node = {Kind}";
 	}
 
+	public SyntaxReference CreateReference() => new SourceSyntaxReference(this);
+
 	public abstract TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor);
 
 	public abstract void Accept(SyntaxVisitor visitor);

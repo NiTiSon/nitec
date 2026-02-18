@@ -1,4 +1,4 @@
-namespace NiteCompiler.CodeAnalysis.Symbols.Declarations;
+namespace NiteCompiler.CodeAnalysis.Declarations;
 
 internal enum DeclarationKind
 {

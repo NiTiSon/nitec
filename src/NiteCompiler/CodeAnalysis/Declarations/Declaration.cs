@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace NiteCompiler.CodeAnalysis.Symbols.Declarations;
+namespace NiteCompiler.CodeAnalysis.Declarations;
 
 internal abstract class Declaration
 {
@@ -14,11 +14,4 @@ internal abstract class Declaration
 	}
 
 	protected abstract ImmutableArray<Declaration> GetDeclarationChildren();
-}
-
-internal class ModuleDeclaration : Declaration
-{
-	public ModuleDeclaration(string name, ImmutableArray<Declaration> members)
-	{
-	}
 }
