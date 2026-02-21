@@ -4,18 +4,18 @@ using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Declarations;
 
-internal class SingleTypeDeclaration : SingleDeclaration
+internal sealed class SingleTypeDeclaration : SingleItemDeclaration
 {
-	private readonly ImmutableArray<SingleDeclaration> _members;
+	private readonly ImmutableArray<SingleItemDeclaration> _children;
 	public override DeclarationKind Kind => DeclarationKind.Type;
 
-	public SingleTypeDeclaration(string name, SyntaxReference syntax, SourceLocation nameLocation, ImmutableArray<SingleDeclaration> members) : base(name, syntax, nameLocation)
+	public SingleTypeDeclaration(string name, SyntaxReference syntax, SourceLocation nameLocation, ImmutableArray<SingleItemDeclaration> children) : base(name, syntax, nameLocation)
 	{
-		_members = members;
+		_children = children;
 	}
 
-	protected override ImmutableArray<SingleDeclaration> GetNamespaceOrTypeDeclarationChildren()
+	protected override ImmutableArray<SingleItemDeclaration> GetModuleOrTypeDeclarationChildren()
 	{
-		return _members;
+		return _children;
 	}
 }

@@ -4,19 +4,19 @@ using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Declarations;
 
-internal class SingleModuleDeclaration : SingleDeclaration
+internal class SingleModuleDeclaration : SingleItemDeclaration
 {
-	private readonly ImmutableArray<SingleDeclaration> _members;
+	private readonly ImmutableArray<SingleItemDeclaration> _children;
 	public override DeclarationKind Kind => DeclarationKind.Module;
 
-	public SingleModuleDeclaration(string name, SyntaxReference syntax, SourceLocation nameLocation, ImmutableArray<SingleDeclaration> members)
+	public SingleModuleDeclaration(string name, SyntaxReference syntax, SourceLocation nameLocation, ImmutableArray<SingleItemDeclaration> children)
 		: base(name, syntax, nameLocation)
 	{
-		_members = members;
+		_children = children;
 	}
 
-	protected override ImmutableArray<SingleDeclaration> GetNamespaceOrTypeDeclarationChildren()
+	protected override ImmutableArray<SingleItemDeclaration> GetModuleOrTypeDeclarationChildren()
 	{
-		return _members;
+		return _children;
 	}
 }

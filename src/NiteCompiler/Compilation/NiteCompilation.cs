@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using CommunityToolkit.Diagnostics;
+using NiteCompiler.CodeAnalysis.Declarations;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Dependencies;
 using NiteCompiler.Diagnostics;
@@ -13,6 +14,8 @@ namespace NiteCompiler.Compilation;
 public sealed class NiteCompilation
 {
 	private const string FallbackLibraryName = "unnamed-library";
+
+	internal DeclarationTable Declarations { get; }
 
 	public ImmutableArray<SyntaxTree> SyntaxTrees { get; }
 	public NiteCompilationOptions Options { get; }
@@ -35,6 +38,8 @@ public sealed class NiteCompilation
 		{
 			Diagnostics.ReportDependenciesInCoreLibrary();
 		}
+
+		Declarations = new(syntaxTrees);
 
 		_ = 0x3; // breakpoint
 	}

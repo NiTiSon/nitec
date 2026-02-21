@@ -18,8 +18,9 @@ public abstract class SyntaxReference
 		return Task.FromResult(GetSyntax(cancellationToken));
 	}
 
-	internal Location GetLocation()
+	internal SourceLocation GetLocation()
 	{
-		return Location.Create(SyntaxTree, Span);
+		SourceLocation location = new(SyntaxTree, Span);
+		return location;
 	}
 }
