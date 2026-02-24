@@ -24,6 +24,7 @@ public abstract class SyntaxVisitor
 	public virtual void VisitSimpleName(SimpleNameSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitPredefinedType(PredefinedTypeSyntax expression) => DefaultVisit(expression);
 
+	public virtual void VisitModuleDeclaration(ModuleDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual void VisitFunctionDeclaration(FunctionDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual void VisitBlockFunctionBody(BlockFunctionBodySyntax body) => DefaultVisit(body);
 	public virtual void VisitEmptyFunctionBody(EmptyFunctionBodySyntax body) => DefaultVisit(body);
@@ -63,6 +64,7 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitSimpleName(SimpleNameSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitPredefinedType(PredefinedTypeSyntax expression) => DefaultVisit(expression);
 
+	public virtual TResult? VisitModuleDeclaration(ModuleDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual TResult? VisitFunctionDeclaration(FunctionDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual TResult? VisitBlockFunctionBody(BlockFunctionBodySyntax body) => DefaultVisit(body);
 	public virtual TResult? VisitEmptyFunctionBody(EmptyFunctionBodySyntax body) => DefaultVisit(body);

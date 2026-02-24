@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Text;
 using CommunityToolkit.Diagnostics;
 using NiteCompiler.CodeAnalysis.Declarations;
+using NiteCompiler.CodeAnalysis.Symbols.Source;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Dependencies;
 using NiteCompiler.Diagnostics;
@@ -40,6 +41,8 @@ public sealed class NiteCompilation
 		}
 
 		Declarations = new(syntaxTrees);
+
+		SourceLibrarySymbol librarySymbol = new(this, Declarations.GetMergedRoot(this), libraryName);
 
 		_ = 0x3; // breakpoint
 	}

@@ -124,6 +124,7 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 
 	private const uint Item = 0x00_00__18_00;
 	public static readonly NodeKind FunctionDeclaration = Reg(Item + 1, "function-declaration");
+	public static readonly NodeKind ModuleDeclaration = Reg(Item + 2, "module-declaration");
 
 	private const uint Expression = 0x00_00__20_00;
 	private const uint BinaryFlag = 0x00_01__00_00;

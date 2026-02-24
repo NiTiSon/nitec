@@ -37,7 +37,7 @@ internal abstract class Binder
 
 	internal void LookupSymbolsSimpleName(
 		LookupResult result,
-		ContainerSymbol? qualifier,
+		Symbol? qualifier,
 		string name,
 		LookupOptions options)
 	{

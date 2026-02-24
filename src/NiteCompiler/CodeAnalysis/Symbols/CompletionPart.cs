@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading;
 
 namespace NiteCompiler.CodeAnalysis.Symbols;
@@ -7,11 +8,13 @@ namespace NiteCompiler.CodeAnalysis.Symbols;
 internal enum CompletionPart
 {
 	None = 0,
-
-	// Functions completion parts:
-	ReturnType = 1 << 1,
-
+	Attributes = 1 << 0,
+	MembersCompleted = 1 << 1,
 	All = (1 << 2) - 1,
+
+	// Modules
+	NameToMembersMap = 1 << 11,
+	ModuleSymbolAll = NameToMembersMap | MembersCompleted,
 }
 
 internal static class CompletionPartExtensions
@@ -52,6 +55,22 @@ internal static class CompletionPartExtensions
 				cancellationToken.ThrowIfCancellationRequested();
 				spinWait.SpinOnce();
 			}
+		}
+
+		public CompletionPart NextIncompletePart
+		{
+			get
+			{
+				int incomplete = (int)self;
+				int next = incomplete & ~(incomplete - 1);
+				Debug.Assert(CompletionPart.HasAtMostOneBitSet(next), "ForceComplete won't handle the result correctly if more than one bit is set.");
+				return (CompletionPart)next;
+			}
+		}
+
+		private static bool HasAtMostOneBitSet(int bits)
+		{
+			return (bits & (bits - 1)) == 0;
 		}
 	}
 }
