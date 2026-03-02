@@ -4,7 +4,7 @@ using NiteCompiler.CodeAnalysis.Symbols.Source;
 
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
-internal abstract class Symbol
+public abstract class Symbol
 {
 	public abstract SymbolKind Kind { get; }
 	public abstract Symbol? ContainingSymbol { get; }
