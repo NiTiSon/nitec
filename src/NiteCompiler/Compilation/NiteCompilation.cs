@@ -82,6 +82,11 @@ public sealed class NiteCompilation
 		return new NiteCompilation(libraryName, syntaxTrees, dependenciesArray, options);
 	}
 
+	public void EmitLLVMModule()
+	{
+
+	}
+
 	public void WriteNiTiSLibrary(Stream stream)
 	{
 		Guard.CanWrite(stream);

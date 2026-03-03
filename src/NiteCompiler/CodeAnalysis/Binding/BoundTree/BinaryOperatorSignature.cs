@@ -11,15 +11,34 @@ internal struct BinaryOperatorSignature : IEquatable<BinaryOperatorSignature>
 	public readonly TypeSymbol RightType;
 	public readonly TypeSymbol ReturnType;
 	public readonly FunctionSymbol? CorrespondingFunction;
-	public readonly TypeSymbol? ConstrainedToTypeOpt;
+	public readonly BinaryOperatorKind Kind;
+
+	public BinaryOperatorSignature(BinaryOperatorKind kind, TypeSymbol leftType, TypeSymbol rightType, TypeSymbol returnType)
+	{
+		Kind = kind;
+		LeftType = leftType;
+		RightType = rightType;
+		ReturnType = returnType;
+		CorrespondingFunction = null;
+	}
+
+	public BinaryOperatorSignature(BinaryOperatorKind kind, TypeSymbol leftType, TypeSymbol rightType, TypeSymbol returnType, FunctionSymbol function)
+	{
+		Kind = kind;
+		LeftType = leftType;
+		RightType = rightType;
+		ReturnType = returnType;
+		CorrespondingFunction = function;
+	}
+
 
 	public bool Equals(BinaryOperatorSignature other)
 	{
-		return LeftType.Equals(other.LeftType) &&
+		return Kind.Equals(other.Kind) &&
+			   LeftType.Equals(other.LeftType) &&
 		       RightType.Equals(other.RightType) &&
 		       ReturnType.Equals(other.ReturnType) &&
-		       Equals(CorrespondingFunction, other.CorrespondingFunction) &&
-		       Equals(ConstrainedToTypeOpt, other.ConstrainedToTypeOpt);
+		       Equals(CorrespondingFunction, other.CorrespondingFunction);
 	}
 
 	public override bool Equals(object? obj)
@@ -29,6 +48,6 @@ internal struct BinaryOperatorSignature : IEquatable<BinaryOperatorSignature>
 
 	public override int GetHashCode()
 	{
-		return HashCode.Combine(LeftType, RightType, ReturnType, CorrespondingFunction, ConstrainedToTypeOpt);
+		return HashCode.Combine(Kind, LeftType, RightType, ReturnType, CorrespondingFunction);
 	}
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using NiteCompiler.CodeAnalysis.Binding;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
@@ -31,6 +32,87 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 		{
 			Debug.Assert(IsExpression);
 			return (Precedence)((_value & PrecedenceMask) >> PrecedenceShift);
+		}
+	}
+
+	internal BinaryOperatorKind BinaryOperator
+	{
+		get
+		{
+			if (Equals(AddExpression) || Equals(AddAssignmentExpression))
+			{
+				return BinaryOperatorKind.Addition;
+			}
+			if (Equals(SubtractExpression) || Equals(SubtractAssignmentExpression))
+			{
+				return BinaryOperatorKind.Subtraction;
+			}
+			if (Equals(MultiplyExpression) || Equals(MultiplyAssignmentExpression))
+			{
+				return BinaryOperatorKind.Multiplication;
+			}
+			if (Equals(DivideExpression) || Equals(DivideAssignmentExpression))
+			{
+				return BinaryOperatorKind.Division;
+			}
+			if (Equals(ModuloExpression) || Equals(ModuloAssignmentExpression))
+			{
+				return BinaryOperatorKind.Modulo;
+			}
+			if (Equals(LeftArithmeticShiftExpression) || Equals(LeftArithmeticShiftAssignmentExpression))
+			{
+				return BinaryOperatorKind.LeftArithmeticShift;
+			}
+			if (Equals(RightArithmeticShiftExpression) || Equals(RightArithmeticShiftAssignmentExpression))
+			{
+				return BinaryOperatorKind.RightArithmeticShift;
+			}
+			if (Equals(RightUnsignedShiftExpression) || Equals(RightUnsignedShiftAssignmentExpression))
+			{
+				return BinaryOperatorKind.RightUnsignedShift;
+			}
+			if (Equals(EqualsExpression))
+			{
+				return BinaryOperatorKind.Equal;
+			}
+			if (Equals(NotEqualsExpression))
+			{
+				return BinaryOperatorKind.NotEqual;
+			}
+			if (Equals(GreaterExpression))
+			{
+				return BinaryOperatorKind.Greater;
+			}
+			if (Equals(LessExpression))
+			{
+				return BinaryOperatorKind.Less;
+			}
+			if (Equals(GreaterOrEqualsExpression))
+			{
+				return BinaryOperatorKind.GreaterOrEqual;
+			}
+			if (Equals(LessOrEqualsExpression))
+			{
+				return BinaryOperatorKind.LessOrEqual;
+			}
+			if (Equals(BitwiseAndExpression) || Equals(BitwiseAndAssignmentExpression))
+			{
+				return BinaryOperatorKind.And;
+			}
+			if (Equals(BitwiseOrAssignmentExpression) || Equals(BitwiseOrAssignmentExpression))
+			{
+				return BinaryOperatorKind.Or;
+			}
+			if (Equals(BitwiseXorAssignmentExpression) || Equals(BitwiseXorAssignmentExpression))
+			{
+				return BinaryOperatorKind.Xor;
+			}
+			if (Equals(TildeExpression) || Equals(TildeAssignmentExpression))
+			{
+				return BinaryOperatorKind.Tilde;
+			}
+
+			throw new UnreachableException();
 		}
 	}
 

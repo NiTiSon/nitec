@@ -7,7 +7,7 @@ using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
 
-internal abstract class Binder
+internal abstract partial class Binder
 {
 	protected NiteCompilation Compilation { get; }
 	protected Binder? _parent;
