@@ -4,11 +4,14 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using CommunityToolkit.Diagnostics;
+using LLVMSharp;
+using LLVMSharp.Interop;
 using NiteCompiler.CodeAnalysis.Declarations;
 using NiteCompiler.CodeAnalysis.Symbols.Source;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Dependencies;
 using NiteCompiler.Diagnostics;
+using static LLVMSharp.Interop.LLVM;
 
 namespace NiteCompiler.Compilation;
 
@@ -82,9 +85,40 @@ public sealed class NiteCompilation
 		return new NiteCompilation(libraryName, syntaxTrees, dependenciesArray, options);
 	}
 
-	public void EmitLLVMModule()
+	public unsafe void EmitLLVMModule()
 	{
+		InitializeAllTargets();
+		InitializeAllTargetInfos();
+		InitializeAllTargetMCs();
+		InitializeAllAsmPrinters();
 
+		using LLVMContextRef context = LLVMContextRef.Create();
+		using LLVMModuleRef module = LLVMModuleRef.CreateWithName("__ananas");
+
+		LLVMTypeRef int32_t = LLVMTypeRef.Int32;
+		LLVMTypeRef addI32_fun_t = LLVMTypeRef.CreateFunction(int32_t, [int32_t, int32_t]);
+		LLVMValueRef addI32_fun = module.AddFunction("add", addI32_fun_t);
+
+		using LLVMBuilderRef builder = CreateBuilderInContext(context);
+		LLVMBasicBlockRef entry = addI32_fun.AppendBasicBlock("entry");
+		builder.PositionAtEnd(entry);
+		LLVMValueRef param0 = GetParam(addI32_fun, 0);
+		LLVMValueRef param1 = GetParam(addI32_fun, 1);
+		param0.Name = "x1";
+		param1.Name = "x2";
+		LLVMValueRef sum = builder.BuildAdd(param0, param1, "sum");
+		builder.BuildRet(sum);
+
+		module.Verify(LLVMVerifierFailureAction.LLVMPrintMessageAction);
+
+		var targetTriple = "x86_64-unknown-windows";
+
+		LLVMTargetRef target = LLVMTargetRef.GetTargetFromTriple(targetTriple);
+		LLVMTargetMachineRef targetMachine = target.CreateTargetMachine(
+			targetTriple, "generic", "", LLVMCodeGenOptLevel.LLVMCodeGenLevelDefault,
+			LLVMRelocMode.LLVMRelocDefault, LLVMCodeModel.LLVMCodeModelDefault);
+		targetMachine.EmitToFile(module, "add.asm", LLVMCodeGenFileType.LLVMAssemblyFile);
+		targetMachine.EmitToFile(module, "add.o", LLVMCodeGenFileType.LLVMObjectFile);
 	}
 
 	public void WriteNiTiSLibrary(Stream stream)
