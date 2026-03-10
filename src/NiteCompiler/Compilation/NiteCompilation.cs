@@ -24,6 +24,7 @@ public sealed class NiteCompilation
 	public ImmutableArray<SyntaxTree> SyntaxTrees { get; }
 	public NiteCompilationOptions Options { get; }
 	public DiagnosticBag Diagnostics { get; } = [];
+	internal SourceLibrarySymbol SourceLibrary { get; }
 
 	private NiteCompilation(
 		string libraryName,
@@ -45,7 +46,7 @@ public sealed class NiteCompilation
 
 		Declarations = new(syntaxTrees);
 
-		SourceLibrarySymbol librarySymbol = new(this, Declarations.GetMergedRoot(this), libraryName);
+		SourceLibrary = new(this, Declarations.GetMergedRoot(this), libraryName);
 
 		_ = 0x3; // breakpoint
 	}
@@ -109,7 +110,7 @@ public sealed class NiteCompilation
 		LLVMValueRef sum = builder.BuildAdd(param0, param1, "sum");
 		builder.BuildRet(sum);
 
-		module.Verify(LLVMVerifierFailureAction.LLVMPrintMessageAction);
+		module.Verify(LLVMVerifierFailureAction.LLVMReturnStatusAction);
 
 		var targetTriple = "x86_64-unknown-windows";
 

@@ -9,7 +9,6 @@ internal sealed class SourceLibrarySymbol : LibrarySymbol
 	public override string Name { get; }
 	public override Symbol? ContainingSymbol => null;
 
-	public override SymbolKind Kind => SymbolKind.Library;
 	public SourceModuleSymbol GlobalModule { get; }
 
 	public SourceLibrarySymbol(NiteCompilation compilation, MergedModuleDeclaration rootModule, string name)

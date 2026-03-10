@@ -1,23 +1,25 @@
+using System.Collections.Immutable;
+
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
-public abstract class LibrarySymbol : Symbol
+public abstract class ModuleSymbol : Symbol
 {
-	public sealed override SymbolKind Kind => SymbolKind.Library;
-	public override Symbol? ContainingSymbol => null;
-	public override LibrarySymbol? ContainingLibrary => null;
+	public sealed override SymbolKind Kind => SymbolKind.Module;
 
 	public override void Accept(SymbolVisitor visitor)
 	{
-		visitor.VisitLibrary(this);
+		visitor.VisitModule(this);
 	}
 
 	public override TResult? Accept<TResult>(SymbolVisitor<TResult> visitor) where TResult : default
 	{
-		return visitor.VisitLibrary(this);
+		return visitor.VisitModule(this);
 	}
 
 	public override TResult? Accept<TResult, TArgument>(SymbolVisitor<TResult, TArgument> visitor, TArgument arg) where TResult : default
 	{
-		return visitor.VisitLibrary(this, arg);
+		return visitor.VisitModule(this, arg);
 	}
+
+	public abstract ImmutableArray<Symbol> GetMembersUnordered();
 }

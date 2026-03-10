@@ -1,6 +1,5 @@
 using System;
 using System.Threading;
-using NiteCompiler.CodeAnalysis.Symbols.Source;
 
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
@@ -23,6 +22,12 @@ public abstract class Symbol
 	}
 
 	public virtual string Name => string.Empty;
+
+	public abstract void Accept(SymbolVisitor visitor);
+	public abstract TResult? Accept<TResult>(SymbolVisitor<TResult> visitor);
+	public abstract TResult? Accept<TResult, TArgument>(SymbolVisitor<TResult, TArgument> visitor, TArgument arg);
+
+	public virtual bool IsExtern => false;
 
 	internal virtual void ForceComplete(Predicate<Symbol>? filter, CancellationToken cancellationToken = default) {}
 	internal virtual bool HasComplete(CompletionPart part) => true;

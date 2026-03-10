@@ -10,4 +10,19 @@ public sealed class BuiltinTypeSymbol : TypeSymbol
 	public BuiltinTypeSymbol(string name) => Name = name;
 
 	public static BuiltinTypeSymbol I32 = new BuiltinTypeSymbol("Int32");
+
+	public override void Accept(SymbolVisitor visitor)
+	{
+
+	}
+
+	public override TResult? Accept<TResult>(SymbolVisitor<TResult> visitor) where TResult : default
+	{
+		return default;
+	}
+
+	public override TResult? Accept<TResult, TArgument>(SymbolVisitor<TResult, TArgument> visitor, TArgument argument) where TResult : default
+	{
+		return default;
+	}
 }

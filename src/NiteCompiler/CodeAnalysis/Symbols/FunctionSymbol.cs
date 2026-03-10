@@ -1,6 +1,6 @@
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
-internal abstract class FunctionSymbol : Symbol
+public abstract class FunctionSymbol : Symbol
 {
-	public override SymbolKind Kind => SymbolKind.Function;
+	public sealed override SymbolKind Kind => SymbolKind.Function;
 }

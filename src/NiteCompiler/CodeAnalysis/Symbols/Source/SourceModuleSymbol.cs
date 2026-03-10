@@ -1,15 +1,15 @@
 using System;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Threading;
 using NiteCompiler.CodeAnalysis.Declarations;
 
 namespace NiteCompiler.CodeAnalysis.Symbols.Source;
 
-internal sealed class SourceModuleSymbol : Symbol
+internal sealed class SourceModuleSymbol : ModuleSymbol
 {
 	public MergedModuleDeclaration Declaration { get; }
 	public override string Name { get; }
-	public override SymbolKind Kind => SymbolKind.Module;
 	public override Symbol ContainingSymbol { get; }
 
 	public override SourceLibrarySymbol ContainingLibrary
@@ -37,6 +37,12 @@ internal sealed class SourceModuleSymbol : Symbol
 		Declaration = declaration;
 		ContainingSymbol = containing;
 		Name = name;
+	}
+
+	public override ImmutableArray<Symbol> GetMembersUnordered()
+	{
+		Console.WriteLine("IMPLEMENT GetMembersUnordered right now!!!");
+		return [];
 	}
 
 	internal override void ForceComplete(Predicate<Symbol>? filter, CancellationToken cancellationToken = default)

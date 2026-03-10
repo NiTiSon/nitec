@@ -13,6 +13,8 @@ internal abstract partial class Binder
 	protected Binder? _parent;
 	protected DiagnosticBag _diagnostics;
 
+	public Binder? Parent => _parent;
+
 	protected Binder(NiteCompilation compilation)
 	{
 		Compilation = compilation;
