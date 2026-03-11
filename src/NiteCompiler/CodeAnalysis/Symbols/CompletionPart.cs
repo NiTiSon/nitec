@@ -9,11 +9,11 @@ internal enum CompletionPart
 {
 	None = 0,
 	Attributes = 1 << 0,
-	MembersCompleted = 1 << 1,
-	All = (1 << 2) - 1,
+	MembersCompleted = 1 << 10,
+	All = (1 << 11) - 1,
 
 	// Modules
-	NameToMembersMap = 1 << 11,
+	NameToMembersMap = 1 << 9,
 	ModuleSymbolAll = NameToMembersMap | MembersCompleted,
 }
 
