@@ -9,12 +9,13 @@ internal enum CompletionPart
 {
 	None = 0,
 	Attributes = 1 << 0,
-	MembersCompleted = 1 << 10,
-	All = (1 << 11) - 1,
+	MembersCompleted = 1 << 2,
+	All = (1 << 3) - 1,
 
 	// Modules
-	NameToMembersMap = 1 << 9,
+	NameToMembersMap = 1 << 1,
 	ModuleSymbolAll = NameToMembersMap | MembersCompleted,
+	LibrarySymbolAll = MembersCompleted,
 }
 
 internal static class CompletionPartExtensions
@@ -57,11 +58,13 @@ internal static class CompletionPartExtensions
 			}
 		}
 
+		private int IncompleteParts => ~(int)self & (int)CompletionPart.All;
+
 		public CompletionPart NextIncompletePart
 		{
 			get
 			{
-				int incomplete = (int)self;
+				int incomplete = self.IncompleteParts;
 				int next = incomplete & ~(incomplete - 1);
 				Debug.Assert(CompletionPart.HasAtMostOneBitSet(next), "ForceComplete won't handle the result correctly if more than one bit is set.");
 				return (CompletionPart)next;

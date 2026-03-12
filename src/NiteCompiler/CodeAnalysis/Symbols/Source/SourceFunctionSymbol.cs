@@ -8,6 +8,7 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 {
 	public override Symbol ContainingSymbol { get; }
 	public FunctionDeclarationSyntax Syntax { get; }
+	public override string Name => Syntax.Name.GetName();
 
 	public SourceFunctionSymbol(Symbol containingSymbol, FunctionDeclarationSyntax syntax)
 	{

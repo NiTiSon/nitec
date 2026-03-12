@@ -89,12 +89,39 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 
 		foreach (var declaration in Declaration.Declarations)
 		{
-			ModuleDeclarationSyntax moduleDeclarationSyntax = (declaration.SyntaxReference.GetSyntax() as ModuleDeclarationSyntax)!;
-			Debug.Assert(moduleDeclarationSyntax != null);
+			SyntaxNode moduleSyntax = declaration.SyntaxReference.GetSyntax();
 
-			foreach (var member in moduleDeclarationSyntax.Members)
+			if (moduleSyntax is ModuleDeclarationSyntax moduleDeclarationSyntax)
 			{
-				//: Implement
+				foreach (var member in moduleDeclarationSyntax.Members)
+				{
+					Symbol symbol = BuildSymbol(member);
+
+					if (!result.TryGetValue(symbol.Name, out var existing))
+					{
+						result[symbol.Name] = [symbol];
+					}
+					else
+					{
+						result[symbol.Name] = existing.Add(symbol);
+					}
+				}
+			}
+			else if (moduleSyntax is CompilationUnitSyntax rootDeclarationSyntax)
+			{
+				foreach (var member in rootDeclarationSyntax.TopLevelNodes)
+				{
+					Symbol symbol = BuildSymbol(member);
+
+					if (!result.TryGetValue(symbol.Name, out var existing))
+					{
+						result[symbol.Name] = [symbol];
+					}
+					else
+					{
+						result[symbol.Name] = existing.Add(symbol);
+					}
+				}
 			}
 		}
 
@@ -112,6 +139,18 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 
 			default:
 				throw new InvalidEnumArgumentException(nameof(declaration.Kind), (int)declaration.Kind, typeof(DeclarationKind));
+		}
+	}
+
+	private Symbol BuildSymbol(SyntaxNode syntax)
+	{
+		if (syntax.Kind == NodeKind.FunctionDeclaration)
+		{
+			return new SourceFunctionSymbol(this, (FunctionDeclarationSyntax)syntax);
+		}
+		else
+		{
+			throw new UnreachableException();
 		}
 	}
 
@@ -133,7 +172,27 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 					_ = GetNameToMembersMap();
 					break;
 				case CompletionPart.MembersCompleted:
-					_ = GetMembersUnordered(); // TODO: Replace with GetMembers
+					var members = GetMembersUnordered(); // TODO: Replace with GetMembers
+
+					bool allCompleted = true;
+
+					// TODO: Concurrency
+					foreach (var member in members)
+					{
+						ForceCompleteMemberConditionally(filter, member, cancellationToken);
+						allCompleted = allCompleted && member.HasComplete(CompletionPart.All);
+					}
+
+					if (allCompleted)
+					{
+						_state.NotePartComplete(CompletionPart.MembersCompleted);
+						Debug.Assert(_state.HasComplete(CompletionPart.MembersCompleted));
+					}
+					else
+					{
+						goto DONE;
+					}
+
 					break;
 				case CompletionPart.None:
 					return;
@@ -145,6 +204,10 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 
 			_state.SpinWaitComplete(incompletePart, cancellationToken);
 		}
+
+		DONE:
+		CompletionPart allParts = (filter == null) ? CompletionPart.ModuleSymbolAll : CompletionPart.ModuleSymbolAll & ~CompletionPart.MembersCompleted;
+		_state.SpinWaitComplete(allParts, cancellationToken);
 	}
 
 	internal override bool HasComplete(CompletionPart part)

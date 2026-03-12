@@ -47,6 +47,7 @@ public sealed class NiteCompilation
 		Declarations = new(syntaxTrees);
 
 		SourceLibrary = new(this, Declarations.GetMergedRoot(this), libraryName);
+		SourceLibrary.ForceComplete(null);
 
 		_ = 0x3; // breakpoint
 	}

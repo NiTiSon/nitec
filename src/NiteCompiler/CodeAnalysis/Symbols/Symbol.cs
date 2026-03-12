@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
@@ -30,5 +31,13 @@ public abstract class Symbol
 	public virtual bool IsExtern => false;
 
 	internal virtual void ForceComplete(Predicate<Symbol>? filter, CancellationToken cancellationToken = default) {}
+	internal static void ForceCompleteMemberConditionally(Predicate<Symbol>? filter, Symbol member, CancellationToken cancellationToken)
+	{
+		if (filter == null || filter(member))
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+			member.ForceComplete(filter, cancellationToken);
+		}
+	}
 	internal virtual bool HasComplete(CompletionPart part) => true;
 }
