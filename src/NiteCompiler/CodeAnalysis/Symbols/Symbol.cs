@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Symbols;
@@ -19,6 +20,23 @@ public abstract class Symbol
 			}
 
 			return ContainingSymbol?.ContainingLibrary;
+		}
+	}
+
+	public virtual NiteCompilation? DeclaringCompilation
+	{
+		get
+		{
+			Symbol? containingSymbol = ContainingSymbol;
+			while (containingSymbol != null)
+			{
+				NiteCompilation? declaring = containingSymbol.DeclaringCompilation;
+				if (declaring != null) return declaring;
+
+				containingSymbol = containingSymbol.ContainingSymbol;
+			}
+
+			return null;
 		}
 	}
 

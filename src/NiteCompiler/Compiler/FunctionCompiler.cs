@@ -18,6 +18,8 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 	private FunctionCompiler(NiteCompilation compilation, Predicate<Symbol>? filter = null, CancellationToken cancellationToken = default)
 	{
 		_compilation = compilation;
+		_filter = filter;
+		_cancellationToken = cancellationToken;
 	}
 
 	public static void CompileBodies(NiteCompilation compilation)
@@ -49,6 +51,16 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 		return null;
 	}
 
+	public override object? VisitFunction(FunctionSymbol symbol, object arg)
+	{
+		if (!PassesFilter(_filter, symbol))
+		{
+			return null;
+		}
+
+		return BindFunctionBody(symbol);
+	}
+
 	private static BoundBlock? BindFunctionBody(FunctionSymbol function)
 	{
 		if (function is SourceFunctionSymbol sourceFunction)
@@ -58,7 +70,8 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 				return null;
 			}
 
-			Binder bodyBinder = sourceFunction.TryGetBodyBinder();
+			Binder? bodyBinder = sourceFunction.TryGetBodyBinder();
+			return null;
 		}
 
 		throw new UnreachableException();

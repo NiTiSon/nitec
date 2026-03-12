@@ -1,15 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using System.Threading;
 using CommunityToolkit.Diagnostics;
 using LLVMSharp;
 using LLVMSharp.Interop;
+using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Declarations;
 using NiteCompiler.CodeAnalysis.Symbols.Source;
 using NiteCompiler.CodeAnalysis.Syntax;
+using NiteCompiler.Compiler;
 using NiteCompiler.Dependencies;
 using NiteCompiler.Diagnostics;
 using static LLVMSharp.Interop.LLVM;
@@ -50,6 +55,8 @@ public sealed class NiteCompilation
 		SourceLibrary = new(this, Declarations.GetMergedRoot(this), libraryName);
 		SourceLibrary.ForceComplete(null);
 
+		FunctionCompiler.CompileBodies(this);
+
 		_ = 0x3; // breakpoint
 	}
 
@@ -86,6 +93,73 @@ public sealed class NiteCompilation
 
 		libraryName ??= FallbackLibraryName;
 		return new NiteCompilation(libraryName, syntaxTrees, dependenciesArray, options);
+	}
+
+	internal int GetSyntaxTreeOrdinal(SyntaxTree tree)
+	{
+		// TODO: Improve
+		int i;
+		for (i = 0; i < SyntaxTrees.Length; i++)
+		{
+			if (tree == SyntaxTrees[i])
+			{
+				return i;
+			}
+		}
+
+		throw new KeyNotFoundException($"SyntaxTree is not used within this compilation: '{tree.Filename ?? "empty-filepath"}'");
+	}
+
+	private WeakReference<BinderFactory>?[]? _binderFactories;
+
+	internal BinderFactory GetBinderFactory(SyntaxTree syntaxTree)
+	{
+		return GetBinderFactory(syntaxTree, ref _binderFactories);
+	}
+
+	private BinderFactory GetBinderFactory(SyntaxTree syntaxTree, ref WeakReference<BinderFactory>?[]? cachedBinderFactories)
+	{
+		var treeNum = GetSyntaxTreeOrdinal(syntaxTree);
+		WeakReference<BinderFactory>?[]? binderFactories = cachedBinderFactories;
+		if (binderFactories == null)
+		{
+			binderFactories = new WeakReference<BinderFactory>[this.SyntaxTrees.Length];
+			binderFactories = Interlocked.CompareExchange(ref cachedBinderFactories, binderFactories, null) ?? binderFactories;
+		}
+
+		var previousWeakReference = binderFactories[treeNum];
+		if (previousWeakReference != null && previousWeakReference.TryGetTarget(out BinderFactory? previousFactory))
+		{
+			return previousFactory;
+		}
+
+		return AddNewFactory(syntaxTree, ref binderFactories[treeNum]);
+	}
+
+	private BinderFactory AddNewFactory(SyntaxTree syntaxTree, [NotNull] ref WeakReference<BinderFactory>? slot)
+	{
+		var newFactory = new BinderFactory(this, syntaxTree);
+		var newWeakReference = new WeakReference<BinderFactory>(newFactory);
+
+		while (true)
+		{
+			WeakReference<BinderFactory>? previousWeakReference = slot;
+			if (previousWeakReference != null && previousWeakReference.TryGetTarget(out BinderFactory? previousFactory))
+			{
+				Debug.Assert(slot != null);
+				return previousFactory;
+			}
+
+			if (Interlocked.CompareExchange(ref slot!, newWeakReference, previousWeakReference) == previousWeakReference)
+			{
+				return newFactory;
+			}
+		}
+	}
+
+	internal Binder GetBinder(SyntaxNode node)
+	{
+		return GetBinderFactory(node.Tree).GetBinder(node);
 	}
 
 	public void EmitObjectFile() => throw new NotImplementedException();

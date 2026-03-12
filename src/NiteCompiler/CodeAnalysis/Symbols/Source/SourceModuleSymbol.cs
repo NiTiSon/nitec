@@ -175,6 +175,7 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 					break;
 				case CompletionPart.MembersCompleted:
 					var members = GetMembersUnordered(); // TODO: Replace with GetMembers
+					// TODO: RegisterStdTypes();
 
 					bool allCompleted = true;
 

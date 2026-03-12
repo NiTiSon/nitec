@@ -15,6 +15,8 @@ internal abstract partial class Binder
 
 	public Binder? Parent => _parent;
 
+	public virtual Symbol? ContainingMember { get; }
+
 	protected Binder(NiteCompilation compilation)
 	{
 		Compilation = compilation;

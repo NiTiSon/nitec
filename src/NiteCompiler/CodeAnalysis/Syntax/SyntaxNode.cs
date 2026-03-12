@@ -10,6 +10,8 @@ public abstract class SyntaxNode
 	public abstract TextSpan Span { get; }
 	public abstract NodeKind Kind { get; }
 
+	public SyntaxNode? Parent => Tree.GetParent(this);
+
 	public Location Location
 	{
 		get

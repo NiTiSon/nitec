@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Threading;
 using NiteCompiler.CodeAnalysis.Text;
 using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
@@ -47,6 +49,55 @@ public sealed class SyntaxTree
 		syntaxTree.Root = unit;
 
 		return syntaxTree;
+	}
+
+	private Dictionary<SyntaxNode, SyntaxNode?>? _parentMap;
+	internal SyntaxNode? GetParent(SyntaxNode syntaxNode)
+	{
+		Debug.Assert(syntaxNode != null);
+		Debug.Assert(syntaxNode.Tree == this);
+		_parentMap ??= new();
+
+		ref SyntaxNode? parent = ref CollectionsMarshal.GetValueRefOrAddDefault(_parentMap, syntaxNode, out bool exists);
+
+		if (exists)
+		{
+			return parent;
+		}
+		else
+		{
+			parent = GetParentSlow(syntaxNode);
+			return parent;
+		}
+	}
+
+	private SyntaxNode? GetParentSlow(SyntaxNode syntaxNode)
+	{
+		if (ReferenceEquals(Root, syntaxNode))
+			return null;
+
+		SyntaxNode current = Root;
+
+		while (true)
+		{
+			bool descended = false;
+
+			foreach (SyntaxNode child in current.GetChildren())
+			{
+				if (ReferenceEquals(child, syntaxNode))
+					return current;
+
+				if (child.Span.Contains(syntaxNode.Span))
+				{
+					current = child;
+					descended = true;
+					break;
+				}
+			}
+
+			if (!descended)
+				return null;
+		}
 	}
 
 	public void Emit(TextWriter writer)

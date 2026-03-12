@@ -33,9 +33,34 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 		return visitor.VisitFunction(this, arg);
 	}
 
-	public Binder? TryGetInFunctionBinder()
+	private SyntaxNode? GetInFunctionSyntaxNode()
 	{
-		return null;
+		return Syntax.Body;
+	}
+
+	public Binder? TryGetInFunctionBinder(BinderFactory? binderFactory = null)
+	{
+		SyntaxNode? inNode = GetInFunctionSyntaxNode();
+
+		if (inNode == null) return null;
+
+		Binder result = (binderFactory ?? DeclaringCompilation!.GetBinderFactory(inNode.Tree)).GetBinder(inNode);
+#if DEBUG
+		Binder? current = result;
+		do
+		{
+			if (current is InFunctionBinder)
+			{
+				break;
+			}
+
+			current = current.Parent;
+		}
+		while (current != null);
+
+		Debug.Assert(current is InFunctionBinder);
+#endif
+		return result;
 	}
 
 	public ExecutableCodeBinder? TryGetBodyBinder()
