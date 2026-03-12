@@ -1,6 +1,6 @@
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public abstract class ItemSyntax : TopLevelSyntax
+public abstract class ItemSyntax : SyntaxNode
 {
 	protected ItemSyntax(SyntaxTree tree) : base(tree)
 	{

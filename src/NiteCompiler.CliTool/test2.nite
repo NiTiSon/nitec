@@ -1,5 +1,7 @@
 #!bin/nite
 
+module test::the_second::aaa_2;
+
 public abc() -> i32 {
 	return 3 + 2;
 	/*

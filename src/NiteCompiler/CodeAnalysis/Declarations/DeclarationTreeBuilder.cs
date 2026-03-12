@@ -1,5 +1,9 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using NiteCompiler.CodeAnalysis.Syntax;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Declarations;
 
@@ -20,14 +24,55 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 
 	public override RootModuleDeclaration VisitCompilationUnit(CompilationUnitSyntax node)
 	{
-		ImmutableArray<SingleItemDeclaration> children = VisitModuleMembers(node, node.TopLevelNodes);
+		ImmutableArray<SingleItemDeclaration> children = VisitModuleMembers(node, node.Items);
 
 		return new RootModuleDeclaration(node.CreateReference(), children);
 	}
 
-	private ImmutableArray<SingleItemDeclaration> VisitModuleMembers(SyntaxNode node, SyntaxList<TopLevelSyntax> members)
+	public override SingleModuleDeclaration VisitModuleDeclaration(ModuleDeclarationSyntax node)
 	{
-		// TODO: Impl
-		return [];
+		var members = VisitModuleMembers(node, SyntaxList<ItemSyntax>.CastUp(node.Members));
+
+		ModuleNameSyntax name = node.Name;
+		SyntaxNode currentNode = node;
+
+		var parts = name.Parts;
+		for (int i = parts.Count - 1; i > 0; i--)
+		{
+			var part = parts[i];
+
+			var module = new SingleModuleDeclaration(
+				name: part.GetName(),
+				syntax: currentNode.CreateReference(),
+				nameLocation: (part.Location as SourceLocation)!,
+				members: members);
+
+			members = [module];
+			currentNode = part;
+		}
+
+		return new SingleModuleDeclaration(
+			node.Name.Parts[0].GetName(),
+			node.Name.Parts[0].CreateReference(),
+			(name.Location as SourceLocation)!,
+			members);
+	}
+
+	private ImmutableArray<SingleItemDeclaration> VisitModuleMembers(SyntaxNode node, SyntaxList<ItemSyntax> members)
+	{
+		if (members.Count == 0)
+		{
+			return [];
+		}
+
+		List<SingleItemDeclaration> memberBuilder = new();
+		foreach (var member in members)
+		{
+			SingleItemDeclaration? item = Visit(member);
+
+			memberBuilder.AddNotNull(item);
+		}
+
+		return [..memberBuilder];
 	}
 }

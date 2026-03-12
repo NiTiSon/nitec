@@ -3,7 +3,7 @@ using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public sealed class FunctionDeclarationSyntax : ItemSyntax
+public sealed class FunctionDeclarationSyntax : MemberSyntax
 {
 	public Token AccessibilityToken { get; }
 	public SyntaxList<Token> Modifiers { get; }

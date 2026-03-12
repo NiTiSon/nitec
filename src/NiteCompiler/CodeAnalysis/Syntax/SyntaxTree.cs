@@ -56,11 +56,11 @@ public sealed class SyntaxTree
 
 	private static void PrintTree(TextWriter tw, SyntaxTree tree, string indent = "", bool isLast = true)
 	{
-		if (tree.Root.TopLevelNodes.Count == 0) return;
+		if (tree.Root.Items.Count == 0) return;
 
-		SyntaxNode lastChild = tree.Root.TopLevelNodes[^1];
+		SyntaxNode lastChild = tree.Root.Items[^1];
 
-		foreach (TopLevelSyntax child in tree.Root.TopLevelNodes)
+		foreach (ItemSyntax child in tree.Root.Items)
 			PrintNode(tw, child, indent, child == lastChild);
 	}
 

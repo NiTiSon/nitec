@@ -251,6 +251,7 @@ public sealed partial class NiteParser
 			return ParseSimpleName();
 		}
 
+		// TODO: Qualified names
 		throw new NotImplementedException();
 	}
 
@@ -264,6 +265,23 @@ public sealed partial class NiteParser
 			return new(_syntaxTree, current, identifier);
 		}
 
+		// TODO: Escaped `identifier`
 		throw new NotImplementedException();
+	}
+
+	private ModuleNameSyntax ParseModuleName()
+	{
+		// SimpleName (:: SimpleName)*
+		SyntaxList<SimpleNameSyntax>.Builder parts = new();
+
+		parts.Add(ParseSimpleName());
+
+		while (Current.TKind == TokenKind.DoubleColon)
+		{
+			_ = MatchToken(TokenKind.DoubleColon);
+			parts.Add(ParseSimpleName());
+		}
+
+		return new(_syntaxTree, parts.Build(_syntaxTree));
 	}
 }

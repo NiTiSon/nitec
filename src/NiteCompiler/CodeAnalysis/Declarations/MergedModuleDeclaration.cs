@@ -49,7 +49,7 @@ internal sealed class MergedModuleDeclaration : MergedItemDeclaration
 		}
 	}
 
-	protected override ImmutableArray<Declaration> GetDeclarationChildren()
+	protected override ImmutableArray<Declaration> GetDeclarationMembers()
 	{
 		return ImmutableArray<Declaration>.CastUp(Children);
 	}

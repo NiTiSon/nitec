@@ -95,35 +95,44 @@ public sealed partial class NiteParser
 
 	public CompilationUnitSyntax Parse()
 	{
-		SyntaxList<TopLevelSyntax>.Builder itemsBuilder = new();
+		SyntaxList<ItemSyntax>.Builder itemsBuilder = new();
 		while (Current.TKind != TokenKind.EndOfFile)
 		{
-			switch (Current.TKind)
+			if (IsPresentedAnyAccessibilityToken())
 			{
-				// case SyntaxKind.UseKeyword:
-				// 	membersBuilder.Add(ParseUseDirective());
-				// 	MatchToken(SyntaxKind.SemicolonToken);
-				// 	break;
-				// case SyntaxKind.ModuleKeyword:
-				// 	membersBuilder.Add(ParseModuleDeclaration());
-				// 	MatchToken(SyntaxKind.SemicolonToken);
-				// 	break;
-				default:
-					if (IsPresentedAnyAccessibilityToken())
-					{
-						// All accessibility tokens are contextual
-						itemsBuilder.Add(ParseItem(PeekAndAdvance().ToContextualKeywordToken()));
-					}
-					else
-					{
-						_diagnostics.ReportUnexpectedToken(Current.Span.Contextualize(_syntaxTree), Current.TKind);
-						_position++;
-					}
-					break;
+				// All accessibility tokens are contextual
+				Token elevatedKeyword = PeekAndAdvance().ToContextualKeywordToken();
+				itemsBuilder.Add(ParseMember(elevatedKeyword));
+			}
+			else if (Current.TKind == TokenKind.Module)
+			{
+				Token moduleKeyword = PeekAndAdvance();
+				itemsBuilder.Add(ParseModuleDeclaration(moduleKeyword));
+			}
+			else
+			{
+				_diagnostics.ReportUnexpectedToken(Current.Span.Contextualize(_syntaxTree), Current.TKind);
+				_position++;
 			}
 		}
 		Token endOfFileToken = MatchToken(TokenKind.EndOfFile);
 
 		return new CompilationUnitSyntax(_syntaxTree, itemsBuilder.Build(_syntaxTree), endOfFileToken);
+	}
+
+	private ItemSyntax ParseModuleDeclaration(Token moduleKeyword)
+	{
+		ModuleNameSyntax name = ParseModuleName();
+		Token semicolon = MatchToken(TokenKind.Semicolon);
+
+		SyntaxList<MemberSyntax>.Builder membersBuilder = new();
+
+		while (IsPresentedAnyAccessibilityToken())
+		{
+			Token elevatedKeyword = PeekAndAdvance().ToContextualKeywordToken();
+			membersBuilder.Add(ParseMember(elevatedKeyword));
+		}
+
+		return new ModuleDeclarationSyntax(_syntaxTree, moduleKeyword, name, semicolon, membersBuilder.Build(_syntaxTree));
 	}
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
@@ -13,8 +14,9 @@ public sealed class SyntaxList<TNode> : SyntaxNode, IEnumerable<TNode>
 	public override TextSpan Span => _nodes.Length > 0 ? TextSpan.FromBounds(_nodes[0].Span.Start, _nodes[^1].Span.End) : default;
 	public override NodeKind Kind => NodeKind.SyntaxList;
 	public int Count => _nodes.Length;
+	public bool IsEmpty => Count == 0;
 
-	public SyntaxNode this[Index index] => _nodes[index];
+	public TNode this[Index index] => _nodes[index];
 
 	private SyntaxList(SyntaxTree tree, TNode[] nodes) : base(tree)
 	{
@@ -23,6 +25,18 @@ public sealed class SyntaxList<TNode> : SyntaxNode, IEnumerable<TNode>
 
 	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitSyntaxList(this);
 	public override void Accept(SyntaxVisitor visitor) => visitor.VisitSyntaxList(this);
+
+	public static SyntaxList<TNode> CastUp<TDerived>(SyntaxList<TDerived> items)
+		where TDerived : TNode
+	{
+		return new SyntaxList<TNode>(items.Tree, items._nodes.ToArray<TNode>());
+	}
+
+	public SyntaxList<TDerived> CastUp<TDerived>()
+		where TDerived : TNode
+	{
+		return new SyntaxList<TDerived>(this.Tree, (TDerived[])this._nodes);
+	}
 
 	public override IEnumerable<TNode> GetChildren()
 	{

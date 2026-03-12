@@ -22,6 +22,8 @@ public abstract class SyntaxVisitor
 	public virtual void VisitParenthesizedExpression(ParenthesizedExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitLiteralExpression(LiteralExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitSimpleName(SimpleNameSyntax expression) => DefaultVisit(expression);
+	public virtual void VisitEscapedName(SyntaxNode __TODO) => DefaultVisit(__TODO);
+	public virtual void VisitModuleName(ModuleNameSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitPredefinedType(PredefinedTypeSyntax expression) => DefaultVisit(expression);
 
 	public virtual void VisitModuleDeclaration(ModuleDeclarationSyntax declaration) => DefaultVisit(declaration);
@@ -62,6 +64,8 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitParenthesizedExpression(ParenthesizedExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitLiteralExpression(LiteralExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitSimpleName(SimpleNameSyntax expression) => DefaultVisit(expression);
+	public virtual TResult? VisitEscapedName(SyntaxNode __TODO) => DefaultVisit(__TODO);
+	public virtual TResult? VisitModuleName(ModuleNameSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitPredefinedType(PredefinedTypeSyntax expression) => DefaultVisit(expression);
 
 	public virtual TResult? VisitModuleDeclaration(ModuleDeclarationSyntax declaration) => DefaultVisit(declaration);

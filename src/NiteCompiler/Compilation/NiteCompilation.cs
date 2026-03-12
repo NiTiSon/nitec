@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -87,8 +88,12 @@ public sealed class NiteCompilation
 		return new NiteCompilation(libraryName, syntaxTrees, dependenciesArray, options);
 	}
 
+	public void EmitObjectFile() => throw new NotImplementedException();
+	public void EmitAssemblyFile() => throw new NotImplementedException();
+
 	public unsafe void EmitLLVMModule()
 	{
+		// just a stub herě
 		InitializeAllTargets();
 		InitializeAllTargetInfos();
 		InitializeAllTargetMCs();
@@ -125,6 +130,7 @@ public sealed class NiteCompilation
 
 	public void WriteNiTiSLibrary(Stream stream)
 	{
+		// just a stub herě 2
 		Guard.CanWrite(stream);
 		using ZipArchive file = new(stream, ZipArchiveMode.Create, leaveOpen: true);
 		ZipArchiveEntry libInfo = file.CreateEntry("lib-info.yml", CompressionLevel.NoCompression);

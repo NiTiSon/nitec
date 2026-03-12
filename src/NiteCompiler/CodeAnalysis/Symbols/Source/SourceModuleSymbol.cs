@@ -109,8 +109,10 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 			}
 			else if (moduleSyntax is CompilationUnitSyntax rootDeclarationSyntax)
 			{
-				foreach (var member in rootDeclarationSyntax.TopLevelNodes)
+				foreach (var member in rootDeclarationSyntax.Items)
 				{
+					if (member.Kind == NodeKind.ModuleDeclaration) continue;
+
 					Symbol symbol = BuildSymbol(member);
 
 					if (!result.TryGetValue(symbol.Name, out var existing))

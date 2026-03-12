@@ -16,13 +16,13 @@ internal abstract class SingleItemDeclaration : Declaration
 		NameLocation = nameLocation;
 	}
 
-	protected override ImmutableArray<Declaration> GetDeclarationChildren()
+	protected override ImmutableArray<Declaration> GetDeclarationMembers()
 	{
-		return ImmutableArray<Declaration>.CastUp(GetModuleOrTypeDeclarationChildren());
+		return ImmutableArray<Declaration>.CastUp(GetModuleOrTypeDeclarationMembers());
 	}
 
-	public new ImmutableArray<SingleItemDeclaration> Children => GetModuleOrTypeDeclarationChildren();
+	public new ImmutableArray<SingleItemDeclaration> Children => GetModuleOrTypeDeclarationMembers();
 
-	protected abstract ImmutableArray<SingleItemDeclaration> GetModuleOrTypeDeclarationChildren();
+	protected abstract ImmutableArray<SingleItemDeclaration> GetModuleOrTypeDeclarationMembers();
 
 }

@@ -6,12 +6,12 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 
 public sealed class CompilationUnitSyntax : SyntaxNode
 {
-	public SyntaxList<TopLevelSyntax> TopLevelNodes { get; }
+	public SyntaxList<ItemSyntax> Items { get; }
 	public Token EndOfFileToken { get; }
 
-	public CompilationUnitSyntax(SyntaxTree owner, SyntaxList<TopLevelSyntax> topLevelNodes, Token endOfFileToken) : base(owner)
+	public CompilationUnitSyntax(SyntaxTree owner, SyntaxList<ItemSyntax> items, Token endOfFileToken) : base(owner)
 	{
-		TopLevelNodes = topLevelNodes;
+		Items = items;
 		EndOfFileToken = endOfFileToken;
 	}
 
@@ -23,6 +23,6 @@ public sealed class CompilationUnitSyntax : SyntaxNode
 
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
-		return TopLevelNodes;
+		return Items;
 	}
 }

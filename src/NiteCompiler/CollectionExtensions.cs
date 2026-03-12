@@ -1,10 +1,25 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NiteCompiler;
 
 public static class CollectionExtensions
 {
+	extension<T>(List<T> list)
+	{
+		public bool AddNotNull([NotNullWhen(true)] T? item)
+		{
+			if (item == null)
+			{
+				return false;
+			}
+
+			list.Add(item);
+			return true;
+		}
+	}
+
     extension<TKey, TValue>(Dictionary<TKey, TValue> dictionary)
         where TKey : notnull
     {

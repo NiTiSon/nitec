@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
@@ -9,8 +10,9 @@ public partial class NiteParser
 		return IsPresentedAny(TokenKind.Pure, TokenKind.Static, TokenKind.Const);
 	}
 
-	public ItemSyntax ParseItem(Token accessibilityToken)
+	public MemberSyntax ParseMember(Token accessibilityToken)
 	{
+		Debug.Assert(accessibilityToken.IsKeyword);
 		SyntaxList<Token>.Builder modifiers = new();
 		while (IsPresentedAnyModifier())
 		{
@@ -23,11 +25,11 @@ public partial class NiteParser
 		}
 		else
 		{
-			return ParseFunction(accessibilityToken, modifiers);
+			return ParseFunctionDeclaration(accessibilityToken, modifiers);
 		}
 	}
 
-	private ItemSyntax ParseFunction(Token accessibilityToken, SyntaxList<Token>.Builder modifiers)
+	private MemberSyntax ParseFunctionDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers)
 	{
 		SimpleNameSyntax name = ParseSimpleName();
 

@@ -14,7 +14,7 @@ internal sealed class SingleTypeDeclaration : SingleItemDeclaration
 		_children = children;
 	}
 
-	protected override ImmutableArray<SingleItemDeclaration> GetModuleOrTypeDeclarationChildren()
+	protected override ImmutableArray<SingleItemDeclaration> GetModuleOrTypeDeclarationMembers()
 	{
 		return _children;
 	}
