@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
@@ -7,9 +8,12 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal sealed partial class BinderFactory
 {
+	private record struct BinderCache(SyntaxNode Node, NodeUsage Usage);
+
 	private readonly NiteCompilation _compilation;
 	private readonly SyntaxTree _syntaxTree;
 	private readonly SeniorBinder _seniorBinder;
+	private readonly Dictionary<BinderCache, Binder> _binderCache;
 
 	private static readonly ObjectPool<Visitor> sharedBinderFactoryVisitorPool = new(static () => new Visitor(), 64);
 
@@ -18,6 +22,7 @@ internal sealed partial class BinderFactory
 	{
 		_compilation = compilation;
 		_syntaxTree = syntaxTree;
+		_binderCache = [];
 
 		_binderFactoryVisitorPool = binderFactoryVisitorPool ?? sharedBinderFactoryVisitorPool;
 
@@ -37,7 +42,7 @@ internal sealed partial class BinderFactory
 
 		Visitor visitor = GetBinderFactoryVisitor(position, memberDeclaration, member);
 		Binder? result = visitor.Visit(node);
-		Debug.Assert(result != null);
+		Debug.Assert(result != null, $"result != null; node: {node.Kind}");
 		ClearBinderFactoryVisitor(visitor);
 
 		return result;

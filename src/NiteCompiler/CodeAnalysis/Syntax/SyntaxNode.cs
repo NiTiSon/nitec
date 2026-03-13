@@ -43,4 +43,19 @@ public abstract class SyntaxNode
 	public abstract void Accept(SyntaxVisitor visitor);
 
 	public abstract IEnumerable<SyntaxNode> GetChildren();
+
+	public virtual IEnumerable<Token> GetTokens()
+	{
+		foreach (SyntaxNode node in GetChildren())
+		{
+			if (node is Token token) yield return token;
+			else
+			{
+				foreach (Token deepToken in node.GetTokens())
+				{
+					yield return deepToken;
+				}
+			}
+		}
+	}
 }

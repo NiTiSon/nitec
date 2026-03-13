@@ -10,6 +10,8 @@ public sealed class BlockFunctionBodySyntax : FunctionBodySyntax
 	public override NodeKind Kind => NodeKind.FunctionBlockBody;
 	public override TextSpan Span => Block.Span;
 
+	internal override Token ClosingToken => Block.CloseBrace;
+
 	public BlockFunctionBodySyntax(SyntaxTree tree, BlockStatementSyntax block) : base(tree)
 	{
 		Block = block;

@@ -1,10 +1,13 @@
 using System.Collections.Generic;
+using System.Linq;
 using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
 public sealed class ModuleDeclarationSyntax : ItemSyntax
 {
+	internal readonly Token LastToken;
+
 	public Token ModuleKeyword { get; }
 	public ModuleNameSyntax Name { get; }
 	public Token SemicolonToken { get; }
@@ -30,6 +33,15 @@ public sealed class ModuleDeclarationSyntax : ItemSyntax
 		Name = name;
 		SemicolonToken = semicolon;
 		Members = members;
+
+		if (members.IsEmpty)
+		{
+			LastToken = SemicolonToken;
+		}
+		else
+		{
+			LastToken = members[^1].GetTokens().Last();
+		}
 	}
 
 	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitModuleDeclaration(this);

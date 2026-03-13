@@ -7,6 +7,8 @@ public sealed class EmptyFunctionBodySyntax : FunctionBodySyntax
 {
 	public Token SemicolonToken { get; }
 
+	internal override Token ClosingToken => SemicolonToken;
+
 	public EmptyFunctionBodySyntax(SyntaxTree tree, Token semicolonToken) : base(tree)
 	{
 		SemicolonToken = semicolonToken;

@@ -10,12 +10,11 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 internal abstract partial class Binder
 {
 	protected NiteCompilation Compilation { get; }
-	protected Binder? _parent;
-	protected DiagnosticBag _diagnostics;
+	protected readonly DiagnosticBag _diagnostics;
 
-	public Binder? Parent => _parent;
+	public Binder? Parent { get; }
 
-	public virtual Symbol? ContainingMember { get; }
+	public virtual Symbol? ContainingMember => null;
 
 	protected Binder(NiteCompilation compilation)
 	{
@@ -26,7 +25,7 @@ internal abstract partial class Binder
 	protected Binder(Binder parent)
 	{
 		Compilation = parent.Compilation;
-		_parent = parent;
+		Parent = parent;
 		_diagnostics = parent._diagnostics;
 	}
 
@@ -35,8 +34,8 @@ internal abstract partial class Binder
 	/// </summary>
 	public virtual Binder? GetBinder(SyntaxNode node)
 	{
-		Debug.Assert(_parent != null);
-		return _parent.GetBinder(node);
+		Debug.Assert(Parent != null);
+		return Parent.GetBinder(node);
 	}
 
 	internal void LookupSymbolsSimpleName(

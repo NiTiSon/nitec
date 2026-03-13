@@ -18,8 +18,9 @@ internal sealed class ExecutableCodeBinder : Binder
 
 	public override Binder GetBinder(SyntaxNode node)
 	{
-		Binder binder;
-		return BinderMap.TryGetValue(node, out binder) ? binder : Parent.GetBinder(node);
+		return BinderMap.TryGetValue(node, out Binder? binder)
+			? binder
+			: Parent.GetBinder(node);
 	}
 
 	private void ComputeBinderMap()

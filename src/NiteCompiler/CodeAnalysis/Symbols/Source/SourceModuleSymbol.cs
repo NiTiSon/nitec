@@ -55,6 +55,12 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 		return _lateinitMembersUnordered;
 	}
 
+	public override ImmutableArray<Symbol> GetMembers()
+	{
+		// TODO: Order
+		return GetMembersUnordered();
+	}
+
 	private Dictionary<string, ImmutableArray<Symbol>>? _lateinitNameToMembersMap;
 	private Dictionary<string, ImmutableArray<Symbol>> GetNameToMembersMap()
 	{

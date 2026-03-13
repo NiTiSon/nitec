@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
@@ -10,6 +11,8 @@ public sealed class FunctionDeclarationSyntax : MemberSyntax
 	public SimpleNameSyntax Name { get; }
 	public TypeClause? TypeClause { get; }
 	public FunctionBodySyntax Body { get; }
+
+	public Token ClosingToken => Body.ClosingToken;
 
 	public override TextSpan Span => TextSpan.FromBounds(AccessibilityToken.Span, Body.Span);
 	public override NodeKind Kind => NodeKind.FunctionDeclaration;

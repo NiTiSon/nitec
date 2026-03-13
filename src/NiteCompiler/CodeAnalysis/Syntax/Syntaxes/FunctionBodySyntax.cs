@@ -5,4 +5,6 @@ public abstract class FunctionBodySyntax : BodySyntax
 	protected FunctionBodySyntax(SyntaxTree tree) : base(tree)
 	{
 	}
+
+	internal abstract Token ClosingToken { get; }
 }

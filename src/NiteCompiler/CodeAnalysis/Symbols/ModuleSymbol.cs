@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
-public abstract class ModuleSymbol : Symbol
+public abstract class ModuleSymbol : ContainerSymbol
 {
 	public sealed override SymbolKind Kind => SymbolKind.Module;
 
