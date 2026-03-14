@@ -6,6 +6,7 @@ using NiteCompiler.CodeAnalysis.Binding.BoundTree;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Symbols.Source;
 using NiteCompiler.Compilation;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.Compiler;
 
@@ -71,7 +72,22 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 			}
 
 			Binder? bodyBinder = sourceFunction.TryGetBodyBinder();
-			return null;
+			if (bodyBinder != null)
+			{
+				BoundNode methodBody = bodyBinder.BindFunctionBody(sourceFunction.Syntax, []);
+
+				if (methodBody.Kind == BoundKind.FunctionBody)
+				{
+					var nonConstructor = (BoundFunctionBody)methodBody;
+					BoundBlock body = nonConstructor.BlockBody;
+					Debug.Assert(body != null);
+					return body;
+				}
+				else
+				{
+					throw new NotImplementedException();
+				}
+			}
 		}
 
 		throw new UnreachableException();

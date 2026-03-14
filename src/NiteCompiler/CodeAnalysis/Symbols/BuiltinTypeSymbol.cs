@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
 [ForRemoval("Temporal solution, in future will be replaced with standard type resolving phase.")]
@@ -6,10 +8,20 @@ public sealed class BuiltinTypeSymbol : TypeSymbol
 	public override Symbol? ContainingSymbol => null;
 
 	public override string Name { get; }
+	public override SpecialType SpecialType { get; }
 
-	public BuiltinTypeSymbol(string name) => Name = name;
+	public BuiltinTypeSymbol(string name, SpecialType type)
+	{
+		Name = name;
+		SpecialType = type;
+	}
 
-	public static BuiltinTypeSymbol I32 = new BuiltinTypeSymbol("Int32");
+	public static BuiltinTypeSymbol I32 = new BuiltinTypeSymbol("SInt32", SpecialType.StdNumericsSInt32);
+
+	public override ImmutableArray<Symbol> GetMembers()
+	{
+		return [];
+	}
 
 	public override void Accept(SymbolVisitor visitor)
 	{

@@ -64,7 +64,6 @@ internal partial class BinderFactory
 
 		private Binder VisitCore(SyntaxNode node)
 		{
-			Debug.WriteLine($"VisitCore({node})");
 			return node.Accept(this)!;
 		}
 

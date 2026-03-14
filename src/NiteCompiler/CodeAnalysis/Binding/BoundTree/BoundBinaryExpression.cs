@@ -19,4 +19,6 @@ internal sealed class BoundBinaryExpression : BoundExpression
 		Op = op;
 		Right = right;
 	}
+
+	public override Binder.BindValueKind ValueKind => Binder.BindValueKind.RValue;
 }

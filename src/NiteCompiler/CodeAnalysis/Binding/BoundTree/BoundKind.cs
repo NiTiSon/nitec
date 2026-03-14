@@ -7,6 +7,8 @@ internal enum BoundKind
 	Return,
 	ExpressionStatement,
 
+	FunctionBody,
+
 	Literal,
 	UnaryExpression,
 	BinaryExpression,

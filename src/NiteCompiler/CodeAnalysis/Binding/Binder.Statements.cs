@@ -1,0 +1,119 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics;
+using NiteCompiler.CodeAnalysis.Binding.BoundTree;
+using NiteCompiler.CodeAnalysis.Syntax;
+using NiteCompiler.Diagnostics;
+
+namespace NiteCompiler.CodeAnalysis.Binding;
+
+internal partial class Binder
+{
+	public virtual BoundNode BindFunctionBody(SyntaxNode syntax, DiagnosticBag diagnostics)
+	{
+		switch (syntax)
+		{
+			case FunctionDeclarationSyntax function:
+				// if (function.Kind == NodeKind.ConstructorDeclaration)
+				// {
+				// 	return BindConstructorBody((ConstructorDeclarationSyntax)method, diagnostics);
+				// }
+				// if (function.Kind == NodeKind.NamedConstructorDeclaration)
+				// {
+				// 	return BindConstructorBody((NamedConstructorDeclarationSyntax)method, diagnostics);
+				// }
+
+				return BindFunctionBody(function, function.Body, diagnostics);
+			default:
+				throw new ArgumentException($"Unexpected syntax kind: {syntax.Kind}");
+		}
+	}
+
+	private BoundNode BindFunctionBody(FunctionDeclarationSyntax function, FunctionBodySyntax body,
+		DiagnosticBag diagnostics)
+	{
+		return new BoundFunctionBody(function, (BoundBlock)BindMethodBodyStatement(body, diagnostics));
+	}
+
+	private BoundNode BindMethodBodyStatement(FunctionBodySyntax syntax, DiagnosticBag diagnostics)
+	{
+		switch (syntax)
+		{
+			case EmptyFunctionBodySyntax empty:
+				return BindSemicolonAsEmptyBlock(empty.SemicolonToken);
+			case BlockFunctionBodySyntax block:
+				return BindStatement(block.Block, diagnostics);
+			default:
+				throw new ArgumentException($"Unexpected syntax kind: {syntax.Kind}");
+		}
+	}
+
+	private BoundNode BindSemicolonAsEmptyBlock(Token semicolon)
+	{
+		return new BoundBlock(semicolon, []);
+	}
+
+	private BoundStatement BindStatement(StatementSyntax syntax, DiagnosticBag diagnostics)
+	{
+		NodeKind kind = syntax.Kind;
+
+		if (kind == NodeKind.BlockStatement)
+		{
+			return BindBlock((BlockStatementSyntax)syntax, diagnostics);
+		}
+
+		if (kind == NodeKind.ExpressionStatement)
+		{
+			return BindExpressionStatement((ExpressionStatementSyntax)syntax, diagnostics);
+		}
+
+		if (kind == NodeKind.EmptyStatement)
+		{
+			return BindEmptyStatement((EmptyStatementSyntax)syntax, diagnostics);
+		}
+
+		throw new ArgumentException($"Unexpected syntax kind: {kind}");
+	}
+
+	private BoundBlock BindBlock(BlockStatementSyntax syntax, DiagnosticBag diagnostics)
+	{
+		var binder = GetBinder(syntax);
+		Debug.Assert(binder != null);
+
+		return binder.BindBlockParts(syntax, diagnostics);
+	}
+
+	private BoundBlock BindBlockParts(BlockStatementSyntax syntax, DiagnosticBag diagnostics)
+	{
+		var syntaxStatements = syntax.Statements;
+		int statementCount = syntaxStatements.Count;
+
+		List<BoundStatement> boundStatements = new List<BoundStatement>(statementCount);
+
+		for (int i = 0; i < statementCount; i++)
+		{
+			var boundStatement = BindStatement(syntaxStatements[i], diagnostics);
+			boundStatements.Add(boundStatement);
+		}
+
+		return new BoundBlock(syntax, [..boundStatements]);
+	}
+
+	private BoundExpressionStatement BindExpressionStatement(ExpressionStatementSyntax syntax, DiagnosticBag diagnostics)
+	{
+		throw new NotImplementedException();
+	}
+
+	private BoundExpressionStatement BindExpressionStatement(ExpressionSyntax syntax, DiagnosticBag diagnostics)
+	{
+		BoundExpression expression = BindRValueWithoutTargetType(syntax, diagnostics);
+
+		return new BoundExpressionStatement(syntax, expression);
+	}
+
+	private BoundStatement BindEmptyStatement(EmptyStatementSyntax syntax, DiagnosticBag diagnostics)
+	{
+		throw new NotImplementedException();
+	}
+}

@@ -14,4 +14,6 @@ internal sealed class BoundLiteral : BoundExpression
 		ConstantValue = constantValue;
 		Type = type;
 	}
+
+	public override Binder.BindValueKind ValueKind => Binder.BindValueKind.RValue;
 }

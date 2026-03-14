@@ -10,4 +10,5 @@ internal abstract class BoundExpression : BoundNode
 	}
 
 	public abstract TypeSymbol Type { get; }
+	public abstract Binder.BindValueKind ValueKind { get; }
 }

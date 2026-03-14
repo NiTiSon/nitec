@@ -21,6 +21,7 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public bool IsExpression => (_value & CategoryFlag) == Expression;
 
 	public bool IsAssignmentExpression => (_value & AssignmentFlag) == AssignmentFlag;
+	public bool IsBinary => (_value & BinaryFlag) == BinaryFlag;
 
 	public bool IsRightAssociative => IsAssignmentExpression;
 
