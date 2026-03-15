@@ -16,6 +16,7 @@ internal enum CompletionPart
 	NameToMembersMap = 1 << 1,
 	ModuleSymbolAll = NameToMembersMap | MembersCompleted,
 	LibrarySymbolAll = MembersCompleted,
+	TypeSymbolAll = MembersCompleted,
 }
 
 internal static class CompletionPartExtensions

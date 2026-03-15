@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Microsoft.VisualBasic.CompilerServices;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Diagnostics;
 
@@ -29,12 +30,12 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 		return new RootModuleDeclaration(node.CreateReference(), children);
 	}
 
-	public override SingleModuleDeclaration VisitModuleDeclaration(ModuleDeclarationSyntax node)
+	public override SingleModuleDeclaration VisitModuleDeclaration(ModuleDeclarationSyntax declaration)
 	{
-		var members = VisitModuleMembers(node, SyntaxList<ItemSyntax>.CastUp(node.Members));
+		var members = VisitModuleMembers(declaration, SyntaxList<ItemSyntax>.CastUp(declaration.Members));
 
-		ModuleNameSyntax name = node.Name;
-		SyntaxNode currentNode = node;
+		ModuleNameSyntax name = declaration.Name;
+		SyntaxNode currentNode = declaration;
 
 		var parts = name.Parts;
 		for (int i = parts.Count - 1; i > 0; i--)
@@ -52,9 +53,9 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 		}
 
 		return new SingleModuleDeclaration(
-			node.Name.Parts[0].GetName(),
-			node.Name.Parts[0].CreateReference(),
-			(name.Location as SourceLocation)!,
+			declaration.Name.Parts[0].GetName(),
+			syntax: declaration.Name.Parts[0].CreateReference(),
+			nameLocation: (name.Location as SourceLocation)!,
 			members);
 	}
 
@@ -74,5 +75,36 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 		}
 
 		return [..memberBuilder];
+	}
+
+	public override SingleTypeDeclaration VisitTypeDeclaration(TypeDeclarationSyntax declaration)
+	{
+		var members = VisitModuleMembers(declaration, declaration.Members);
+
+		SimpleNameSyntax name = declaration.Name;
+
+		return new SingleTypeDeclaration(
+			declaration.Name.GetName(),
+			syntax: declaration.CreateReference(),
+			nameLocation: (name.Location as SourceLocation)!,
+			members);
+	}
+
+	private ImmutableArray<SingleItemDeclaration> VisitModuleMembers(SyntaxNode node, SyntaxList<MemberSyntax>? members)
+	{
+		if (members == null || members.Count == 0)
+		{
+			return [];
+		}
+
+		List<SingleItemDeclaration> memberBuilder = new();
+		foreach (var member in members)
+		{
+			SingleItemDeclaration? item = Visit(member);
+
+			memberBuilder.AddNotNull(item);
+		}
+
+		return [];
 	}
 }

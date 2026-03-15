@@ -42,7 +42,6 @@ internal sealed class SourceLibrarySymbol : LibrarySymbol
 				case CompletionPart.MembersCompleted:
 					GlobalModule.ForceComplete(null, cancellationToken);
 
-					Debug.Assert(GlobalModule.HasComplete(CompletionPart.ModuleSymbolAll));
 					_state.NotePartComplete(CompletionPart.MembersCompleted);
 					break;
 				default:

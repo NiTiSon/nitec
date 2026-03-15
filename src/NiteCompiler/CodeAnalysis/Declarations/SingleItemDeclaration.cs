@@ -21,7 +21,7 @@ internal abstract class SingleItemDeclaration : Declaration
 		return ImmutableArray<Declaration>.CastUp(GetModuleOrTypeDeclarationMembers());
 	}
 
-	public new ImmutableArray<SingleItemDeclaration> Children => GetModuleOrTypeDeclarationMembers();
+	public new ImmutableArray<SingleItemDeclaration> Members => GetModuleOrTypeDeclarationMembers();
 
 	protected abstract ImmutableArray<SingleItemDeclaration> GetModuleOrTypeDeclarationMembers();
 

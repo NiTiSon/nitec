@@ -14,6 +14,7 @@ public abc() -> i32 {
 	*/
 }
 
-module test::the_second::aaa_2;
+module std::numerics;
 
-public abc() -> i32 { return 0; }
+public type SInt32;
+public type Float32;

@@ -52,7 +52,7 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 		return null;
 	}
 
-	public override object? VisitFunction(FunctionSymbol symbol, object arg)
+	public override BoundBlock? VisitFunction(FunctionSymbol symbol, object arg)
 	{
 		if (!PassesFilter(_filter, symbol))
 		{

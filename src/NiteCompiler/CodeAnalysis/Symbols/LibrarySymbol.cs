@@ -6,6 +6,11 @@ public abstract class LibrarySymbol : Symbol
 	public override Symbol? ContainingSymbol => null;
 	public override LibrarySymbol? ContainingLibrary => null;
 
+	public override string ToDisplayString()
+	{
+		return Name;
+	}
+
 	public override void Accept(SymbolVisitor visitor)
 	{
 		visitor.VisitLibrary(this);

@@ -30,7 +30,7 @@ public abstract class SyntaxVisitor
 	public virtual void VisitFunctionDeclaration(FunctionDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual void VisitBlockFunctionBody(BlockFunctionBodySyntax body) => DefaultVisit(body);
 	public virtual void VisitEmptyFunctionBody(EmptyFunctionBodySyntax body) => DefaultVisit(body);
-	// public virtual TResult? VisitTypeDeclaration(TypeDeclarationSyntax declaration) => DefaultVisit(declaration);
+	public virtual void VisitTypeDeclaration(TypeDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual void VisitMembersTypeBody(MembersTypeBodySyntax body) => DefaultVisit(body);
 	public virtual void VisitEmptyTypeBody(EmptyTypeBodySyntax body) => DefaultVisit(body);
 	public virtual void VisitLocalVariableDeclarator(LocalVariableDeclarator declarator) => DefaultVisit(declarator);
@@ -72,7 +72,7 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitFunctionDeclaration(FunctionDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual TResult? VisitBlockFunctionBody(BlockFunctionBodySyntax body) => DefaultVisit(body);
 	public virtual TResult? VisitEmptyFunctionBody(EmptyFunctionBodySyntax body) => DefaultVisit(body);
-	// public virtual TResult? VisitTypeDeclaration(TypeDeclarationSyntax declaration) => DefaultVisit(declaration);
+	public virtual TResult? VisitTypeDeclaration(TypeDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual TResult? VisitMembersTypeBody(MembersTypeBodySyntax body) => DefaultVisit(body);
 	public virtual TResult? VisitEmptyTypeBody(EmptyTypeBodySyntax body) => DefaultVisit(body);
 	public virtual TResult? VisitLocalVariableDeclarator(LocalVariableDeclarator declarator) => DefaultVisit(declarator);

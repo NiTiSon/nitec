@@ -33,16 +33,14 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 		return visitor.VisitFunction(this, arg);
 	}
 
-	private SyntaxNode? GetInFunctionSyntaxNode()
+	private FunctionBodySyntax GetInFunctionSyntaxNode()
 	{
 		return Syntax.Body;
 	}
 
 	public Binder? TryGetInFunctionBinder(BinderFactory? binderFactory = null)
 	{
-		SyntaxNode? inNode = GetInFunctionSyntaxNode();
-
-		if (inNode == null) return null;
+		SyntaxNode inNode = GetInFunctionSyntaxNode();
 
 		Binder result = (binderFactory ?? DeclaringCompilation!.GetBinderFactory(inNode.Tree)).GetBinder(inNode);
 #if DEBUG
@@ -66,6 +64,14 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 	public ExecutableCodeBinder? TryGetBodyBinder()
 	{
 		Binder? inFunctionBinder = TryGetInFunctionBinder();
-		return inFunctionBinder == null ? null : new ExecutableCodeBinder(Syntax, this, inFunctionBinder);
+		FunctionBodySyntax body = GetInFunctionSyntaxNode();
+		SyntaxNode? syntax = null;
+		if (body is BlockFunctionBodySyntax blockBody)
+		{
+			syntax = blockBody.Block;
+		}
+
+		Debug.Assert(syntax != null);
+		return inFunctionBinder == null ? null : new ExecutableCodeBinder(syntax, this, inFunctionBinder);
 	}
 }

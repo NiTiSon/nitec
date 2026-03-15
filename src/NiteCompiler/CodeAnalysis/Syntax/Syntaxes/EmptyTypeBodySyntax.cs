@@ -7,6 +7,8 @@ public sealed class EmptyTypeBodySyntax : TypeBodySyntax
 {
 	public Token SemicolonToken { get; }
 
+	internal override Token ClosingToken => SemicolonToken;
+
 	public EmptyTypeBodySyntax(SyntaxTree tree, Token semicolonToken) : base(tree)
 	{
 		SemicolonToken = semicolonToken;

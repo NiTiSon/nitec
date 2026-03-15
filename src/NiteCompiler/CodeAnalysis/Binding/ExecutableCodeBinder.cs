@@ -29,7 +29,7 @@ internal sealed class ExecutableCodeBinder : Binder
 
 		if (_memberSymbol != null && _root != null)
 		{
-			map = [];
+			map = LocalBinderFactory.Build(_memberSymbol, _root, this);
 		}
 		else
 		{

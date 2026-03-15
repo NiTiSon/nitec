@@ -6,6 +6,18 @@ public abstract class ModuleSymbol : ContainerSymbol
 {
 	public sealed override SymbolKind Kind => SymbolKind.Module;
 
+	public bool IsGlobalModule => ContainingSymbol is not ModuleSymbol;
+
+	public override string ToDisplayString()
+	{
+		if (ContainingSymbol is ModuleSymbol parentModule && !parentModule.IsGlobalModule) // do not include <global> into display string
+		{
+			return parentModule.ToDisplayString() + "::" + Name;
+		}
+
+		return Name;
+	}
+
 	public override void Accept(SymbolVisitor visitor)
 	{
 		visitor.VisitModule(this);

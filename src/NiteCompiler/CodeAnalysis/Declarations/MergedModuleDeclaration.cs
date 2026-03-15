@@ -51,30 +51,30 @@ internal sealed class MergedModuleDeclaration : MergedItemDeclaration
 
 	protected override ImmutableArray<Declaration> GetDeclarationMembers()
 	{
-		return ImmutableArray<Declaration>.CastUp(Children);
+		return ImmutableArray<Declaration>.CastUp(Members);
 	}
 
-	public new ImmutableArray<MergedItemDeclaration> Children
+	public new ImmutableArray<MergedItemDeclaration> Members
 	{
 		get
 		{
 			if (field.IsDefault)
 			{
-				ImmutableInterlocked.InterlockedInitialize(ref field, MakeChildren());
+				ImmutableInterlocked.InterlockedInitialize(ref field, MakeMembers());
 			}
 
 			return field;
 		}
 	}
 
-	private ImmutableArray<MergedItemDeclaration> MakeChildren()
+	private ImmutableArray<MergedItemDeclaration> MakeMembers()
 	{
 		List<SingleModuleDeclaration>? modules = null;
 		List<SingleTypeDeclaration>? types = null;
 
 		foreach (var decl in Declarations)
 		{
-			foreach (var child in decl.Children)
+			foreach (var child in decl.Members)
 			{
 
 				if (child is SingleTypeDeclaration typeDecl)
@@ -105,15 +105,28 @@ internal sealed class MergedModuleDeclaration : MergedItemDeclaration
 				builder.Add(n);
 			}
 
-			foreach (var (_, namespaceGroup) in moduleGroups)
+			foreach (var (_, moduleGroup) in moduleGroups)
 			{
-				children.Add(MergedModuleDeclaration.Create([..namespaceGroup]));
+				children.Add(MergedModuleDeclaration.Create([..moduleGroup]));
 			}
 		}
 
 		if (types != null)
 		{
-			throw new NotImplementedException("Types not implement yet.");
+			// TODO Upgrade when generics: add arity
+			var typeGroups = new Dictionary<string, List<SingleTypeDeclaration>>(StringComparer.Ordinal);
+
+			foreach (var n in types)
+			{
+				var builder = typeGroups.GetOrAdd(n.Name, static () => []);
+
+				builder.Add(n);
+			}
+
+			foreach (var (_, typeGroup) in typeGroups)
+			{
+				children.Add(MergedTypeDeclaration.Create([..typeGroup]));
+			}
 		}
 
 		return children.ToImmutable();

@@ -32,8 +32,8 @@ internal partial class Binder
 			// case UnaryExpressionSyntax unary:
 			// 	return BindUnaryExpression(unary, diagnostics);
 			//
-			// case BinaryExpressionSyntax binary:
-			// 	return BindBinaryExpression(binary, diagnostics);
+			case BinaryExpressionSyntax binary:
+				return BindBinaryExpression(binary, diagnostics);
 
 			case ParenthesizedExpressionSyntax paren:
 				return BindExpression(paren.Expression, diagnostics, invoked: false, indexed: false);
@@ -84,6 +84,8 @@ internal partial class Binder
 		NumberToken? value = syntax.Token as NumberToken;
 		Debug.Assert(value != null);
 
-		return new BoundLiteral(syntax, (int)value.Value.U64, BuiltinTypeSymbol.I32);
+		TypeSymbol? i32 = Compilation.GetSpecialType(SpecialType.StdNumericsSInt32);
+		Debug.Assert(i32 != null);
+		return new BoundLiteral(syntax, (int)value.Value.U64, i32);
 	}
 }

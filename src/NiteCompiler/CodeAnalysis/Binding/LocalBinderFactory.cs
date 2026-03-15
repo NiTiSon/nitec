@@ -19,7 +19,7 @@ internal sealed class LocalBinderFactory : SyntaxVisitor
 
 		if (syntax is StatementSyntax && syntax.Kind != NodeKind.BlockStatement)
 		{
-
+			throw new UnreachableException();
 		}
 		else if (syntax is BlockStatementSyntax block)
 		{

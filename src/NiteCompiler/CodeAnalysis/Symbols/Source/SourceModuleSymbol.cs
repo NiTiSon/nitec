@@ -78,8 +78,8 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 
 	private Dictionary<string, ImmutableArray<Symbol>> MakeNameToMembersMap()
 	{
-		Dictionary<string, ImmutableArray<Symbol>> result = new(capacity: Declaration.Children.Length);
-		foreach (var declaration in Declaration.Children)
+		Dictionary<string, ImmutableArray<Symbol>> result = new(capacity: Declaration.Members.Length);
+		foreach (var declaration in Declaration.Members)
 		{
 			Symbol symbol = BuildSymbol(declaration);
 
@@ -99,9 +99,11 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 
 			if (moduleSyntax is ModuleDeclarationSyntax moduleDeclarationSyntax)
 			{
-				foreach (var member in moduleDeclarationSyntax.Members)
+				foreach (var memberSyntax in moduleDeclarationSyntax.Members)
 				{
-					Symbol symbol = BuildSymbol(member);
+					if (memberSyntax.Kind == NodeKind.TypeDeclaration) continue;
+
+					Symbol symbol = BuildSymbol(memberSyntax);
 
 					if (!result.TryGetValue(symbol.Name, out var existing))
 					{
@@ -115,11 +117,12 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 			}
 			else if (moduleSyntax is CompilationUnitSyntax rootDeclarationSyntax)
 			{
-				foreach (var member in rootDeclarationSyntax.Items)
+				foreach (var memberSyntax in rootDeclarationSyntax.Items)
 				{
-					if (member.Kind == NodeKind.ModuleDeclaration) continue;
+					if (memberSyntax.Kind == NodeKind.ModuleDeclaration ||
+					    memberSyntax.Kind == NodeKind.TypeDeclaration) continue;
 
-					Symbol symbol = BuildSymbol(member);
+					Symbol symbol = BuildSymbol(memberSyntax);
 
 					if (!result.TryGetValue(symbol.Name, out var existing))
 					{
@@ -143,7 +146,7 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 			case DeclarationKind.Module:
 				return new SourceModuleSymbol(this, (MergedModuleDeclaration)declaration, declaration.Name);
 			case DeclarationKind.Type:
-				//return new SourceNamedTypeSymbol(this, (MergedTypeDeclaration)declaration);
+				return new SourceTypeSymbol(this, (MergedTypeDeclaration)declaration);
 
 			default:
 				throw new InvalidEnumArgumentException(nameof(declaration.Kind), (int)declaration.Kind, typeof(DeclarationKind));
@@ -159,6 +162,25 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 		else
 		{
 			throw new UnreachableException();
+		}
+	}
+
+	private void RegisterSpecialTypes()
+	{
+		foreach (var array in _lateinitNameToMembersMap!.Values)
+		{
+			foreach (var member in array)
+			{
+				if (member is TypeSymbol type && type.SpecialType != SpecialType.None)
+				{
+					DeclaringCompilation!.RegisterSpecialType(type);
+
+					if (!DeclaringCompilation!.LookingForSpecialTypes)
+					{
+						return;
+					}
+				}
+			}
 		}
 	}
 
@@ -181,7 +203,10 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 					break;
 				case CompletionPart.MembersCompleted:
 					var members = GetMembersUnordered(); // TODO: Replace with GetMembers
-					// TODO: RegisterStdTypes();
+					if (DeclaringCompilation!.LookingForSpecialTypes)
+					{
+						RegisterSpecialTypes();
+					}
 
 					bool allCompleted = true;
 

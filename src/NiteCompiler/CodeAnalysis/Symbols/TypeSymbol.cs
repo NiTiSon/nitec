@@ -4,5 +4,32 @@ public abstract class TypeSymbol : ContainerSymbol
 {
 	public sealed override SymbolKind Kind => SymbolKind.Type;
 
-	public abstract SpecialType SpecialType { get; }
+	public virtual SpecialType SpecialType => SpecialType.None;
+
+	public bool IsVoid => SpecialType == SpecialType.StdVoid;
+
+	public override string ToDisplayString()
+	{
+		if (ContainingSymbol is LibrarySymbol)
+		{
+			return Name;
+		}
+
+		return ContainingSymbol!.ToDisplayString() + "::" + Name;
+	}
+
+	public override void Accept(SymbolVisitor visitor)
+	{
+		visitor.VisitType(this);
+	}
+
+	public override TResult? Accept<TResult>(SymbolVisitor<TResult> visitor) where TResult : default
+	{
+		return visitor.VisitType(this);
+	}
+
+	public override TResult? Accept<TResult, TArgument>(SymbolVisitor<TResult, TArgument> visitor, TArgument arg) where TResult : default
+	{
+		return visitor.VisitType(this, arg);
+	}
 }

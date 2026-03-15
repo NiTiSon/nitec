@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -12,6 +13,7 @@ using LLVMSharp;
 using LLVMSharp.Interop;
 using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Declarations;
+using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Symbols.Source;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Compiler;
@@ -160,6 +162,37 @@ public sealed class NiteCompilation
 	internal Binder GetBinder(SyntaxNode node)
 	{
 		return GetBinderFactory(node.Tree).GetBinder(node);
+	}
+
+	internal bool LookingForSpecialTypes
+	{
+		get
+		{
+			return Options.IsCoreLibrary;
+		}
+	}
+
+	private TypeSymbol?[]? _lateinitSpecialTypes = null;
+	internal void RegisterSpecialType(TypeSymbol type)
+	{
+		if (_lateinitSpecialTypes == null)
+		{
+			Interlocked.CompareExchange(ref _lateinitSpecialTypes, new TypeSymbol[(int)SpecialType.Count], null);
+		}
+
+		_lateinitSpecialTypes[(int)type.SpecialType] = type;
+	}
+
+	public TypeSymbol? GetSpecialType(SpecialType type)
+	{
+		if (type == SpecialType.None) return null;
+
+		if (type >= SpecialType.Count)
+		{
+			throw new InvalidEnumArgumentException(nameof(type), (int)type, typeof(SpecialType));
+		}
+
+		return _lateinitSpecialTypes?[(int)type];
 	}
 
 	public void EmitObjectFile() => throw new NotImplementedException();

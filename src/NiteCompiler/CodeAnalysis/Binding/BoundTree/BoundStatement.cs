@@ -4,7 +4,7 @@ namespace NiteCompiler.CodeAnalysis.Binding.BoundTree;
 
 internal abstract class BoundStatement : BoundNode
 {
-	protected BoundStatement(SyntaxNode syntax) : base(syntax)
+	protected BoundStatement(SyntaxNode syntax, bool hasErrors = false) : base(syntax, hasErrors)
 	{
 	}
 }

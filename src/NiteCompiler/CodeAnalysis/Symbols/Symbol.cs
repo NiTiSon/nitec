@@ -42,11 +42,14 @@ public abstract class Symbol
 
 	public virtual string Name => string.Empty;
 
+	public abstract string ToDisplayString();
+
 	public abstract void Accept(SymbolVisitor visitor);
 	public abstract TResult? Accept<TResult>(SymbolVisitor<TResult> visitor);
 	public abstract TResult? Accept<TResult, TArgument>(SymbolVisitor<TResult, TArgument> visitor, TArgument arg);
 
 	public virtual bool IsExtern => false;
+	public virtual bool IsStatic => false;
 
 	internal virtual void ForceComplete(Predicate<Symbol>? filter, CancellationToken cancellationToken = default) {}
 	internal static void ForceCompleteMemberConditionally(Predicate<Symbol>? filter, Symbol member, CancellationToken cancellationToken)

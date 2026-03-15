@@ -6,13 +6,15 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 public sealed class MembersTypeBodySyntax : TypeBodySyntax
 {
 	public Token OpenBrace { get; }
-	public SyntaxList<ItemSyntax> Items { get; }
+	public SyntaxList<MemberSyntax> Members { get; }
 	public Token CloseBrace { get; }
 
-	public MembersTypeBodySyntax(SyntaxTree tree, Token openBrace, SyntaxList<ItemSyntax> items, Token closeBrace) : base(tree)
+	internal override Token ClosingToken => CloseBrace;
+
+	public MembersTypeBodySyntax(SyntaxTree tree, Token openBrace, SyntaxList<MemberSyntax> members, Token closeBrace) : base(tree)
 	{
 		OpenBrace = openBrace;
-		Items = items;
+		Members = members;
 		CloseBrace = closeBrace;
 	}
 
@@ -25,7 +27,7 @@ public sealed class MembersTypeBodySyntax : TypeBodySyntax
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return OpenBrace;
-		foreach (ItemSyntax item in Items)
+		foreach (ItemSyntax item in Members)
 		{
 			yield return item;
 		}

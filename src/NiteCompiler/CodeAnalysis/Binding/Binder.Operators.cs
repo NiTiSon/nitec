@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Binding.BoundTree;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
@@ -29,7 +30,9 @@ internal partial class Binder
 		if (left.Type.SpecialType == SpecialType.StdNumericsSInt32 &&
 		    right.Type.SpecialType == SpecialType.StdNumericsSInt32)
 		{
-			BinaryOperatorSignature op = new(BinaryOperatorKind.Addition, BuiltinTypeSymbol.I32, BuiltinTypeSymbol.I32, BuiltinTypeSymbol.I32);
+			TypeSymbol? i32 = Compilation.GetSpecialType(SpecialType.StdNumericsSInt32);
+			Debug.Assert(i32 != null);
+			BinaryOperatorSignature op = new(BinaryOperatorKind.Addition, i32, i32, i32);
 			return new BoundBinaryExpression(syntax, left, op, right);
 		}
 		else

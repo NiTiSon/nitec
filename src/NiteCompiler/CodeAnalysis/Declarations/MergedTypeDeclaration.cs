@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Diagnostics;
@@ -16,6 +17,16 @@ internal sealed class MergedTypeDeclaration : MergedItemDeclaration
 	}
 
 	public override DeclarationKind Kind => DeclarationKind.Type;
+
+	public static MergedTypeDeclaration Create(ImmutableArray<SingleTypeDeclaration> declarations)
+	{
+		return new(declarations);
+	}
+
+	public static MergedTypeDeclaration Create(SingleTypeDeclaration declaration)
+	{
+		return new([declaration]);
+	}
 
 	public ImmutableArray<SyntaxReference> SyntaxReferences
 	{

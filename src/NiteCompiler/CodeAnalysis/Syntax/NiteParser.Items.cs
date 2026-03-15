@@ -21,7 +21,8 @@ public partial class NiteParser
 
 		if (Current.TKind == TokenKind.Type)
 		{
-			throw new NotImplementedException("Types not yet implemented");
+			Token typeKeyword = PeekAndAdvance();
+			return ParseTypeDeclaration(accessibilityToken, modifiers, typeKeyword);
 		}
 		else
 		{
@@ -29,7 +30,42 @@ public partial class NiteParser
 		}
 	}
 
-	private MemberSyntax ParseFunctionDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers)
+	private TypeDeclarationSyntax ParseTypeDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers,
+		Token typeKeyword)
+	{
+		SimpleNameSyntax name = ParseSimpleName();
+
+		TypeBodySyntax body = ParseTypeBody();
+
+		return new TypeDeclarationSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree), typeKeyword, name, body);
+	}
+
+	private TypeBodySyntax ParseTypeBody()
+	{
+		if (Current.TKind == TokenKind.OpenBrace)
+		{
+			Token openBrace = PeekAndAdvance();
+
+			SyntaxList<MemberSyntax>.Builder membersBuilder = new();
+			if (IsPresentedAnyAccessibilityToken())
+			{
+				Token elevatedKeyword = PeekAndAdvance().ToContextualKeywordToken();
+				membersBuilder.Add(ParseMember(elevatedKeyword));
+			}
+
+			Token closeBrace = MatchToken(TokenKind.CloseBrace);
+
+			return new MembersTypeBodySyntax(_syntaxTree, openBrace, membersBuilder.Build(_syntaxTree), closeBrace);
+		}
+		else if (Current.TKind == TokenKind.Semicolon)
+		{
+			return new EmptyTypeBodySyntax(_syntaxTree, PeekAndAdvance());
+		}
+
+		throw new UnreachableException();
+	}
+
+	private FunctionDeclarationSyntax ParseFunctionDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers)
 	{
 		SimpleNameSyntax name = ParseSimpleName();
 
@@ -61,6 +97,6 @@ public partial class NiteParser
 			return new EmptyFunctionBodySyntax(_syntaxTree, PeekAndAdvance());
 		}
 
-		throw new NotImplementedException("");
+		throw new UnreachableException();
 	}
 }

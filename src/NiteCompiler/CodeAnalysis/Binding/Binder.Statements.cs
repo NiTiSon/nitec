@@ -73,7 +73,24 @@ internal partial class Binder
 			return BindEmptyStatement((EmptyStatementSyntax)syntax, diagnostics);
 		}
 
+		if (kind == NodeKind.ReturnStatement)
+		{
+			return BindReturn((ReturnStatementSyntax)syntax, diagnostics);
+		}
+
 		throw new ArgumentException($"Unexpected syntax kind: {kind}");
+	}
+
+	private BoundReturn BindReturn(ReturnStatementSyntax syntax, DiagnosticBag diagnostics)
+	{
+		BoundExpression? arg = null;
+
+		if (syntax.Expression != null)
+		{
+			arg = BindValue(syntax.Expression, diagnostics, BindValueKind.RValue);
+		}
+
+		return new BoundReturn(syntax, arg);
 	}
 
 	private BoundBlock BindBlock(BlockStatementSyntax syntax, DiagnosticBag diagnostics)
