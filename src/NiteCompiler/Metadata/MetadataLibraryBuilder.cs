@@ -65,7 +65,14 @@ internal sealed class MetadataLibraryBuilder : SymbolVisitor<MetadataEntry?, Met
 
 		foreach (Symbol member in symbol.GetMembers())
 		{
-			Visit(member, module);
+			if (member.Kind == SymbolKind.Module)
+			{
+				Visit(member, library);
+			}
+			else
+			{
+				Visit(member, module);
+			}
 		}
 
 		return module;

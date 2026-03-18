@@ -24,7 +24,7 @@ internal readonly struct MetadataId
 		Debug.Assert(Kind == kind);
 	}
 
-	public MetadataKind Kind => (MetadataKind)(_bits << KindOffset);
+	public MetadataKind Kind => (MetadataKind)(_bits >> KindOffset);
 
 	public uint Value => _bits & 0x00FFFFFF;
 

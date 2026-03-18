@@ -19,6 +19,7 @@ using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Compiler;
 using NiteCompiler.Dependencies;
 using NiteCompiler.Diagnostics;
+using NiteCompiler.Metadata;
 using static LLVMSharp.Interop.LLVM;
 
 namespace NiteCompiler.Compilation;
@@ -58,6 +59,7 @@ public sealed class NiteCompilation
 		SourceLibrary.ForceComplete(null);
 
 		FunctionCompiler.CompileBodies(this);
+		MetadataLibraryBuilder.Translate(this, new MemoryStream());
 
 		_ = 0x3; // breakpoint
 	}
