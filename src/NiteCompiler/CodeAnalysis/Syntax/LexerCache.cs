@@ -4,7 +4,7 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 
 internal sealed class LexerCache
 {
-	private static readonly ObjectPool<LexerCache> CachePool = new(() => new());
+	private static readonly ObjectPool<LexerCache> CachePool = new(static () => new());
 
 	private const int LeadingTriviaCacheInitialCapacity = 128;
 	private const int TrailingTriviaCacheInitialCapacity = 16;

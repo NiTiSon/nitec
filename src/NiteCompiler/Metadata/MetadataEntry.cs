@@ -1,11 +1,11 @@
 ﻿namespace NiteCompiler.Metadata;
 
-public abstract class MetadataEntry
+internal abstract class MetadataEntry
 {
-	public int InternalId { get; }
+	public MetadataId Id { get; }
 
-	private protected MetadataEntry(int internalId)
+	private protected MetadataEntry(MetadataId id)
 	{
-		this.InternalId = internalId;
+		this.Id = id;
 	}
 }

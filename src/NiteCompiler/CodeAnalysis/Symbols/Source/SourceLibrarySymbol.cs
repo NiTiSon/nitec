@@ -11,7 +11,7 @@ internal sealed class SourceLibrarySymbol : LibrarySymbol
 	public override string Name { get; }
 	public override Symbol? ContainingSymbol => null;
 
-	public SourceModuleSymbol GlobalModule { get; }
+	public override SourceModuleSymbol GlobalModule { get; }
 	public override NiteCompilation? DeclaringCompilation { get; }
 
 	private CompletionPart _state;

@@ -21,6 +21,11 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 
 	public bool HasAnyWarningsOrErrors => _diagnostics.Any(t => t.Severity > DiagnosticSeverity.Warning);
 
+	public void Clear()
+	{
+		_diagnostics.Clear();
+	}
+
 	public void Add(Diagnostic diagnostic)
 	{
 		_diagnostics.Add(diagnostic);
