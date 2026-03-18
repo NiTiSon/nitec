@@ -1,4 +1,6 @@
-﻿namespace NiteCompiler.Metadata;
+﻿using System.IO;
+
+namespace NiteCompiler.Metadata;
 
 internal abstract class MetadataEntry
 {
@@ -8,4 +10,6 @@ internal abstract class MetadataEntry
 	{
 		this.Id = id;
 	}
+
+	public abstract void Write(BinaryWriter writer);
 }

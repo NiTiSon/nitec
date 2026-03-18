@@ -154,7 +154,7 @@ public static class Program
 			{
 				outputName ??= $"{libraryName}.nlib";
 				using FileStream stream = new(outputName, FileMode.Create, FileAccess.Write);
-				compilation.WriteNiTiSLibrary(stream);
+				compilation.EmitNiteLibrary(stream);
 				compilation.EmitLLVMModule();
 				break;
 			}

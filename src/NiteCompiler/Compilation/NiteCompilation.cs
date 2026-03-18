@@ -59,7 +59,6 @@ public sealed class NiteCompilation
 		SourceLibrary.ForceComplete(null);
 
 		FunctionCompiler.CompileBodies(this);
-		MetadataLibraryBuilder.Translate(this, new MemoryStream());
 
 		_ = 0x3; // breakpoint
 	}
@@ -237,14 +236,8 @@ public sealed class NiteCompilation
 		targetMachine.EmitToFile(module, "add.o", LLVMCodeGenFileType.LLVMObjectFile);
 	}
 
-	public void WriteNiTiSLibrary(Stream stream)
+	public void EmitNiteLibrary(Stream stream)
 	{
-		// just a stub herě 2
-		Guard.CanWrite(stream);
-		using ZipArchive file = new(stream, ZipArchiveMode.Create, leaveOpen: true);
-		ZipArchiveEntry libInfo = file.CreateEntry("lib-info.yml", CompressionLevel.NoCompression);
-
-		using StreamWriter libInfoWriter = new(libInfo.Open(), Encoding.Default, leaveOpen: false);
-		libInfoWriter.Write("Hello World");
+		MetadataLibraryBuilder.Translate(this, stream);
 	}
 }

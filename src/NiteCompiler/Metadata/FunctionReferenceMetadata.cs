@@ -1,4 +1,6 @@
-﻿namespace NiteCompiler.Metadata;
+﻿using System.IO;
+
+namespace NiteCompiler.Metadata;
 
 internal sealed class FunctionReferenceMetadata : MetadataEntry
 {
@@ -9,5 +11,11 @@ internal sealed class FunctionReferenceMetadata : MetadataEntry
 	{
 		ContainerId = containerId;
 		NameId = nameId;
+	}
+
+	public override void Write(BinaryWriter writer)
+	{
+		writer.Write(ContainerId);
+		writer.Write(NameId);
 	}
 }

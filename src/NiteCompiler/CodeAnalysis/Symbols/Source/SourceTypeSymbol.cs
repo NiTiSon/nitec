@@ -37,6 +37,8 @@ internal sealed class SourceTypeSymbol : TypeSymbol
 
 	public override ImmutableArray<Symbol> GetMembers()
 	{
+		// TODO: Implement
+		return [];
 		throw new System.NotImplementedException();
 	}
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 
 namespace NiteCompiler.Metadata;
 
@@ -41,5 +42,17 @@ internal sealed class Table
 	{
 		int count = _entries.Count;
 		return new MetadataId(_kind, (uint)count + 1);
+	}
+
+	public void Write(BinaryWriter writer)
+	{
+		writer.Write((byte)_kind);
+		writer.Write7BitEncodedInt(_entries.Count);
+		for (int i = 0; i < _entries.Count; i++)
+		{
+			MetadataEntry entry = _entries[i];
+
+			entry.Write(writer);
+		}
 	}
 }

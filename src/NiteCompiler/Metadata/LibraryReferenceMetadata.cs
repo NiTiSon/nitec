@@ -1,4 +1,6 @@
-﻿namespace NiteCompiler.Metadata;
+﻿using System.IO;
+
+namespace NiteCompiler.Metadata;
 
 internal sealed class LibraryReferenceMetadata : MetadataEntry
 {
@@ -7,5 +9,10 @@ internal sealed class LibraryReferenceMetadata : MetadataEntry
 	public LibraryReferenceMetadata(MetadataId id, uint nameId) : base(id)
 	{
 		NameId = nameId;
+	}
+
+	public override void Write(BinaryWriter writer)
+	{
+		writer.Write(NameId);
 	}
 }

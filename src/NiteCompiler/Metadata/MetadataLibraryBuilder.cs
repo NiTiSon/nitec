@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using CommunityToolkit.Diagnostics;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.Compilation;
@@ -8,8 +9,11 @@ namespace NiteCompiler.Metadata;
 
 internal sealed class MetadataLibraryBuilder : SymbolVisitor<MetadataEntry?, MetadataEntry?>
 {
+	internal const int FormatVersion = 1;
+
 	private readonly Table?[] _tables;
 	private readonly StringTable _stringTable;
+	private uint libraryNameId;
 
 	private MetadataLibraryBuilder()
 	{
@@ -29,23 +33,29 @@ internal sealed class MetadataLibraryBuilder : SymbolVisitor<MetadataEntry?, Met
 		return table;
 	}
 
-	public static object Translate(NiteCompilation compilation, Stream library)
+	public static void Translate(NiteCompilation compilation, Stream library)
 	{
 		Guard.CanWrite(library);
-		// Library:
-		// + name
-		// + dependencies
-		// + string table
-		// + tables
+
 		MetadataLibraryBuilder builder = new();
 		builder.Visit(compilation.SourceLibrary, null);
 
-		throw new NotImplementedException();
+		using BinaryWriter writer = new(library);
+		writer.Write(['n', 'l', 'i', 'b']);
+		writer.Write((ushort)FormatVersion);
+		writer.Write(builder.libraryNameId);
+		Span<byte> reserved = stackalloc byte[6 + 16];
+		writer.Write(reserved);
+		builder._stringTable.Write(writer);
+		foreach (Table? table in builder._tables)
+		{
+			table?.Write(writer);
+		}
 	}
 
 	public override MetadataEntry? VisitLibrary(LibrarySymbol lib, MetadataEntry? container)
 	{
-		_stringTable.AddOrGet(lib.Name);
+		libraryNameId = _stringTable.AddOrGet(lib.Name);
 		return lib.GlobalModule.Accept(this, null);
 	}
 

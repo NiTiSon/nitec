@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 
 namespace NiteCompiler.Metadata;
@@ -29,6 +30,15 @@ internal sealed class StringTable
 			index = Interlocked.Increment(ref _counter);
 			_strings.Add(value, index);
 			return index;
+		}
+	}
+
+	public void Write(BinaryWriter writer)
+	{
+		var strings = _strings.Keys;
+		foreach (string str in strings)
+		{
+			writer.Write(str);
 		}
 	}
 }

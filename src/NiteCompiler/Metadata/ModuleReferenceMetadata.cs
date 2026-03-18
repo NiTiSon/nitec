@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO;
 
 namespace NiteCompiler.Metadata;
 
@@ -12,5 +13,11 @@ internal sealed class ModuleReferenceMetadata : MetadataEntry
 		Debug.Assert(libraryId.Kind == MetadataKind.LibraryReference);
 		LibraryId = libraryId;
 		NameId = nameId;
+	}
+
+	public override void Write(BinaryWriter writer)
+	{
+		writer.Write(LibraryId);
+		writer.Write(NameId);
 	}
 }
