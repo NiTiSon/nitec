@@ -70,6 +70,22 @@ public partial class NiteParser
 		SimpleNameSyntax name = ParseSimpleName();
 
 		Token openParenToken = MatchToken(TokenKind.OpenParen);
+		SyntaxList<ParameterSyntax>.Builder parameters = new();
+		while (Current.TKind != TokenKind.CloseParen ||
+		       Current.TKind != TokenKind.EndOfFile)
+		{
+			ParameterSyntax parameter = ParseParameter();
+			parameters.Add(parameter);
+
+			if (Current.TKind == TokenKind.Comma)
+			{
+				Advance();
+			}
+			else
+			{
+				break;
+			}
+		}
 		Token closeParenToken = MatchToken(TokenKind.CloseParen);
 
 		TypeClause? typeClause = null;
@@ -82,7 +98,27 @@ public partial class NiteParser
 
 		FunctionBodySyntax body = ParseFunctionBody();
 
-		return new FunctionDeclarationSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree), name, typeClause, body);
+		return new FunctionDeclarationSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree), parameters.Build(_syntaxTree), name, typeClause, body);
+	}
+
+	private ParameterSyntax ParseParameter()
+	{
+		SimpleNameSyntax name = ParseSimpleName();
+
+		TypeClause? typeClause = null;
+		if (Current.TKind == TokenKind.Colon)
+		{
+			Token colon = PeekAndAdvance();
+			TypeSyntax type = ParseType();
+			typeClause = new(_syntaxTree, colon, type);
+		}
+		else
+		{
+			typeClause = new(_syntaxTree, name.IdentifierToken, name);
+			_diagnostics.ReportMissingParameterTypeSpecification(name.Location);
+		}
+
+		return new ParameterSyntax(_syntaxTree, name, typeClause);
 	}
 
 	private FunctionBodySyntax ParseFunctionBody()

@@ -148,4 +148,9 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 	{
 		Add(DiagnosticDescriptor.AccessibilityModifierRequiredBeforeMemberDeclaration, [location]);
 	}
+
+	public void ReportMissingParameterTypeSpecification(Location location)
+	{
+		Add(DiagnosticDescriptor.MissingParameterTypeSpecification, [location]);
+	}
 }

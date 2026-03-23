@@ -16,6 +16,7 @@ public partial class DiagnosticDescriptor
 		FieldMustHaveEitherTypeClauseOrDefaultValue,
 		OnlyTopLevelModuleDeclarationsAreAllowed,
 		AccessibilityModifierRequiredBeforeMemberDeclaration,
+		MissingParameterTypeSpecification,
 		IntegralConstantTooLarge,
 		IntegralValueCantBeSigned,
 		IntegralValueIsGreaterThanMaxValue,
@@ -39,6 +40,7 @@ public partial class DiagnosticDescriptor
 		UnexpectedToken = new("unexpected-token", "Unexpected token {0}.");
 		ExpectedToken = new("expected-token", "Expected token {0}.");
 		AccessibilityModifierRequiredBeforeMemberDeclaration = new("accessibility-modifier-required", "Accessibility modifier required before member declaration.");
+		MissingParameterTypeSpecification = new("missing-parameter-type", "Type specification required for parameter syntax.");
 
 		// Binding
 		CannotResolveSymbol = new("cannot-resolve-symbol", "Cannot resolve symbol.");

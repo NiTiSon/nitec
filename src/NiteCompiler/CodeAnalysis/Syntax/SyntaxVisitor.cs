@@ -28,6 +28,7 @@ public abstract class SyntaxVisitor
 
 	public virtual void VisitModuleDeclaration(ModuleDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual void VisitFunctionDeclaration(FunctionDeclarationSyntax declaration) => DefaultVisit(declaration);
+	public virtual void VisitParameter(ParameterSyntax parameter) => DefaultVisit(parameter);
 	public virtual void VisitBlockFunctionBody(BlockFunctionBodySyntax body) => DefaultVisit(body);
 	public virtual void VisitEmptyFunctionBody(EmptyFunctionBodySyntax body) => DefaultVisit(body);
 	public virtual void VisitTypeDeclaration(TypeDeclarationSyntax declaration) => DefaultVisit(declaration);
@@ -70,6 +71,7 @@ public abstract class SyntaxVisitor<TResult>
 
 	public virtual TResult? VisitModuleDeclaration(ModuleDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual TResult? VisitFunctionDeclaration(FunctionDeclarationSyntax declaration) => DefaultVisit(declaration);
+	public virtual TResult? VisitParameter(ParameterSyntax parameter) => DefaultVisit(parameter);
 	public virtual TResult? VisitBlockFunctionBody(BlockFunctionBodySyntax body) => DefaultVisit(body);
 	public virtual TResult? VisitEmptyFunctionBody(EmptyFunctionBodySyntax body) => DefaultVisit(body);
 	public virtual TResult? VisitTypeDeclaration(TypeDeclarationSyntax declaration) => DefaultVisit(declaration);

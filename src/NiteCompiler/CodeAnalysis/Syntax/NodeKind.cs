@@ -193,14 +193,14 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	private const uint CategoryFlag = 0x00_00__F0_00u;
 	public static readonly NodeKind None = Reg(0, "<none>");
 	public static readonly NodeKind SyntaxList = Reg(1, "<syntax-list>");
-	public static readonly NodeKind CompilationUnit = Reg(2, "<compilation-unit>");
+	public static readonly NodeKind CompilationUnit = Reg(2, "compilation-unit");
 	public static readonly NodeKind Token = Reg(3, "<token>");
 	public static readonly NodeKind Trivia = Reg(4, "<trivia>");
 
 	private const uint Body = 0x00_00__10_00;
-	public static readonly NodeKind EmptyTypeBody = Reg(Body + 1, "<empty-type-body>");
-	public static readonly NodeKind TypeBody = Reg(Body + 2, "<type-body>");
-	public static readonly NodeKind ErrorTypeBody = Reg(Body + 3, "<error-type-body>");
+	public static readonly NodeKind EmptyTypeBody = Reg(Body + 1, "empty-type-body");
+	public static readonly NodeKind TypeBody = Reg(Body + 2, "type-body");
+	public static readonly NodeKind ErrorTypeBody = Reg(Body + 3, "error-type-body");
 	public static readonly NodeKind EmptyFunctionBody = Reg(Body + 4, "<empty-function-body>");
 	public static readonly NodeKind FunctionBlockBody = Reg(Body + 5, "<function-block-body>");
 	public static readonly NodeKind ErrorFunctionBody = Reg(Body + 6, "<error-function-body>");
@@ -209,6 +209,8 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind ModuleDeclaration = Reg(Item + 1, "module-declaration");
 	public static readonly NodeKind FunctionDeclaration = Reg(Item + 2, "function-declaration");
 	public static readonly NodeKind TypeDeclaration = Reg(Item + 3, "type-declaration");
+	public static readonly NodeKind Parameter = Reg(Item + 4, "parameter");
+	public static readonly NodeKind GenericParameter = Reg(Item + 4, "generic-parameter");
 
 	private const uint Expression = 0x00_00__20_00;
 	private const uint BinaryFlag = 0x00_01__00_00;
