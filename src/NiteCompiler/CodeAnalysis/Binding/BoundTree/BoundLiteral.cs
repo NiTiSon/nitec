@@ -6,10 +6,10 @@ namespace NiteCompiler.CodeAnalysis.Binding.BoundTree;
 internal sealed class BoundLiteral : BoundExpression
 {
 	public override BoundKind Kind => BoundKind.Literal;
-	public object ConstantValue { get; }
+	public ConstantValue ConstantValue { get; }
 	public override TypeSymbol Type { get; }
 
-	public BoundLiteral(SyntaxNode syntax, object constantValue, TypeSymbol type) : base(syntax)
+	public BoundLiteral(SyntaxNode syntax, ConstantValue constantValue, TypeSymbol type) : base(syntax)
 	{
 		ConstantValue = constantValue;
 		Type = type;

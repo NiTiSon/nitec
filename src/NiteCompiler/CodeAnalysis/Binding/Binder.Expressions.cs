@@ -86,6 +86,7 @@ internal partial class Binder
 
 		TypeSymbol? i32 = Compilation.GetSpecialType(SpecialType.StdNumericsSInt32);
 		Debug.Assert(i32 != null);
-		return new BoundLiteral(syntax, (int)value.Value.U64, i32);
+		ConstantValue i32Value = ConstantValue.Create((int)value.Value.U64);
+		return new BoundLiteral(syntax, i32Value, i32);
 	}
 }
