@@ -164,7 +164,7 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	{
 		if (_names.TryGetValue(value, out string? name))
 		{
-			Debug.WriteLine("TokenKind: " + value + " (" + name + ") is already registered.");
+			Debug.WriteLine("NokenKind: " + value + " (" + name + ") is already registered.");
 		}
 	}
 
@@ -210,7 +210,7 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind FunctionDeclaration = Reg(Item + 2, "function-declaration");
 	public static readonly NodeKind TypeDeclaration = Reg(Item + 3, "type-declaration");
 	public static readonly NodeKind Parameter = Reg(Item + 4, "parameter");
-	public static readonly NodeKind GenericParameter = Reg(Item + 4, "generic-parameter");
+	public static readonly NodeKind GenericParameter = Reg(Item + 5, "generic-parameter");
 
 	private const uint Expression = 0x00_00__20_00;
 	private const uint BinaryFlag = 0x00_01__00_00;

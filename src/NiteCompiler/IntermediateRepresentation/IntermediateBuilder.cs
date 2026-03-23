@@ -59,11 +59,11 @@ internal sealed class IntermediateBuilder
 		//   $3 = load i32 760
 		//   br if.after
 		// if.else
-		//   $3 = load i32 69
+		//   $4 = load i32 69
 		//   br if.after
 		// if.after
-		//   $4 = phi [$3 if.then], [$4 if.else]
-		//   ret $4
+		//   $5 = phi [$3 if.then], [$4 if.else]
+		//   ret $5
 		return BuildBlock(block);
 	}
 
