@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using System.IO;
+﻿using System.IO;
+using NiteCompiler.CodeAnalysis.Symbols;
 
 namespace NiteCompiler.Metadata;
 
@@ -7,13 +7,12 @@ internal sealed class FunctionDeclarationMetadata : MetadataEntry
 {
 	public MetadataId ContainerId { get; }
 	public uint NameId { get; }
-	public byte[]? Body { get; }
+	public FunctionBody? Body { get; set; }
 
-	public FunctionDeclarationMetadata(MetadataId id, MetadataId containerId, uint nameId, byte[]? compiledBody = null) : base(id)
+	public FunctionDeclarationMetadata(MetadataId id, FunctionSymbol function, MetadataId containerId, uint nameId) : base(id, function)
 	{
 		ContainerId = containerId;
 		NameId = nameId;
-		Body = compiledBody;
 	}
 
 	public override void Write(BinaryWriter writer)
@@ -22,8 +21,8 @@ internal sealed class FunctionDeclarationMetadata : MetadataEntry
 		writer.Write(NameId);
 		if (Body != null)
 		{
-			writer.Write7BitEncodedInt(Body.Length);
-			writer.Write(Body);
+			writer.Write7BitEncodedInt(Body.IrBytes.Length);
+			writer.Write(Body.IrBytes.AsSpan());
 		}
 	}
 }

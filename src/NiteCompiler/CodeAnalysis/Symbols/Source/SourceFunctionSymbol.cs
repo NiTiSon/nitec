@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Binding;
+using NiteCompiler.CodeAnalysis.Binding.BoundTree;
 using NiteCompiler.CodeAnalysis.Syntax;
 
 namespace NiteCompiler.CodeAnalysis.Symbols.Source;

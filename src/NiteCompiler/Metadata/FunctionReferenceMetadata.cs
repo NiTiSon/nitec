@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using NiteCompiler.CodeAnalysis.Symbols;
 
 namespace NiteCompiler.Metadata;
 
@@ -7,7 +8,7 @@ internal sealed class FunctionReferenceMetadata : MetadataEntry
 	public MetadataId ContainerId { get; }
 	public uint NameId { get; }
 
-	public FunctionReferenceMetadata(MetadataId id, MetadataId containerId, uint nameId) : base(id)
+	public FunctionReferenceMetadata(MetadataId id, FunctionSymbol function, MetadataId containerId, uint nameId) : base(id, function)
 	{
 		ContainerId = containerId;
 		NameId = nameId;

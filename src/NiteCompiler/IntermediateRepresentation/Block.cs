@@ -1,19 +1,12 @@
 using System.Collections.Generic;
 
-namespace NiteCompiler.MIR;
+namespace NiteCompiler.IntermediateRepresentation;
 
-public abstract class Block
+internal abstract class Block
 {
-	public readonly BlockId Id;
-
-	protected Block(BlockId id)
-	{
-		Id = id;
-	}
-
 	public abstract IReadOnlyList<Block> Successors { get; }
 	public abstract IReadOnlyList<Block> Predecessors { get; }
-	public abstract IReadOnlyList<object> Instructions { get; }
+	public abstract IReadOnlyList<Instruction> Instructions { get; }
 
 	public bool IsUnreachable => Predecessors.Count == 0;
 }

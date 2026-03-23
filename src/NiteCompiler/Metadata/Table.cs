@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using NiteCompiler.CodeAnalysis.Symbols;
 
 namespace NiteCompiler.Metadata;
 
@@ -25,6 +27,13 @@ internal sealed class Table
 		int rawId = unchecked((int)id.Value - 1);
 
 		return _entries[rawId];
+	}
+
+	public MetadataEntry? Get(Symbol symbol)
+	{
+		Debug.Assert(symbol != null);
+
+		return _entries.FirstOrDefault(t => t.OriginatedFromSymbol == symbol);
 	}
 
 	public MetadataEntry Add(Func<MetadataId, MetadataEntry> init)

@@ -1,22 +1,25 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
-using System.Runtime.CompilerServices;
 using CommunityToolkit.Diagnostics;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.Compilation;
+using NiteCompiler.Compiler;
 
 namespace NiteCompiler.Metadata;
 
 internal sealed class MetadataLibraryBuilder : SymbolVisitor<MetadataEntry?, MetadataEntry?>
 {
+	private readonly NiteCompilation _compilation;
 	internal const int FormatVersion = 1;
 
 	private readonly Table?[] _tables;
 	private readonly StringTable _stringTable;
-	private uint libraryNameId;
+	private uint _libraryNameId;
 
-	private MetadataLibraryBuilder()
+	private MetadataLibraryBuilder(NiteCompilation compilation)
 	{
+		_compilation = compilation;
 		_tables = new Table?[MetadataKind.Count];
 		_stringTable = new();
 	}
@@ -37,13 +40,14 @@ internal sealed class MetadataLibraryBuilder : SymbolVisitor<MetadataEntry?, Met
 	{
 		Guard.CanWrite(library);
 
-		MetadataLibraryBuilder builder = new();
+		MetadataLibraryBuilder builder = new(compilation);
 		builder.Visit(compilation.SourceLibrary, null);
+		FunctionCompiler.CompileBodies(compilation, builder);
 
 		using BinaryWriter writer = new(library);
 		writer.Write(['n', 'l', 'i', 'b']);
 		writer.Write((ushort)FormatVersion);
-		writer.Write(builder.libraryNameId);
+		writer.Write(builder._libraryNameId);
 		Span<byte> reserved = stackalloc byte[6 + 16];
 		writer.Write(reserved);
 		builder._stringTable.Write(writer);
@@ -55,7 +59,7 @@ internal sealed class MetadataLibraryBuilder : SymbolVisitor<MetadataEntry?, Met
 
 	public override MetadataEntry? VisitLibrary(LibrarySymbol lib, MetadataEntry? container)
 	{
-		libraryNameId = _stringTable.AddOrGet(lib.Name);
+		_libraryNameId = _stringTable.AddOrGet(lib.Name);
 		return lib.GlobalModule.Accept(this, null);
 	}
 
@@ -66,11 +70,11 @@ internal sealed class MetadataLibraryBuilder : SymbolVisitor<MetadataEntry?, Met
 		MetadataEntry module;
 		if (library == null)
 		{
-			module = GetTable(MetadataKind.ModuleDeclaration).Add((id) => new ModuleDeclarationMetadata(id, nameId));
+			module = GetTable(MetadataKind.ModuleDeclaration).Add((id) => new ModuleDeclarationMetadata(id, symbol, nameId));
 		}
 		else
 		{
-			module = GetTable(MetadataKind.ModuleReference).Add((id) => new ModuleReferenceMetadata(id, library.Id, nameId));
+			module = GetTable(MetadataKind.ModuleReference).Add((id) => new ModuleReferenceMetadata(id, symbol, library.Id, nameId));
 		}
 
 		foreach (Symbol member in symbol.GetMembers())
@@ -90,9 +94,10 @@ internal sealed class MetadataLibraryBuilder : SymbolVisitor<MetadataEntry?, Met
 
 	public override MetadataEntry VisitType(TypeSymbol symbol, MetadataEntry? container)
 	{
+		Debug.Assert(container != null);
 		uint nameId = _stringTable.AddOrGet(symbol.Name);
 
-		MetadataEntry type = GetTable(MetadataKind.TypeDeclaration).Add((id) => new TypeDeclarationMetadata(id, container!.Id, nameId));
+		MetadataEntry type = GetTable(MetadataKind.TypeDeclaration).Add((id) => new TypeDeclarationMetadata(id, symbol, container!.Id, nameId));
 
 		foreach (Symbol member in symbol.GetMembers())
 		{
@@ -100,5 +105,20 @@ internal sealed class MetadataLibraryBuilder : SymbolVisitor<MetadataEntry?, Met
 		}
 
 		return type;
+	}
+
+	public override MetadataEntry VisitFunction(FunctionSymbol symbol, MetadataEntry? container)
+	{
+		Debug.Assert(container != null);
+		uint nameId = _stringTable.AddOrGet(symbol.Name);
+
+		MetadataEntry function =
+			GetTable(MetadataKind.FunctionDeclaration).Add((id) => new FunctionDeclarationMetadata(id, symbol, container.Id, nameId));
+
+		return function;
+	}
+
+	public void SetFunctionBody(FunctionSymbol function, FunctionBody emittedBody)
+	{
 	}
 }

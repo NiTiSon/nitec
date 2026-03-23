@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Threading;
 using NiteCompiler.CodeAnalysis.Binding;
@@ -7,25 +8,33 @@ using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Symbols.Source;
 using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
+using NiteCompiler.IntermediateRepresentation;
+using NiteCompiler.Metadata;
 
 namespace NiteCompiler.Compiler;
 
 internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 {
 	private readonly NiteCompilation _compilation;
+	private readonly MetadataLibraryBuilder? _metadataBuilder;
 	private readonly Predicate<Symbol>? _filter;
 	private readonly CancellationToken _cancellationToken;
 
-	private FunctionCompiler(NiteCompilation compilation, Predicate<Symbol>? filter = null, CancellationToken cancellationToken = default)
+	private FunctionCompiler(
+		NiteCompilation compilation,
+		MetadataLibraryBuilder? metadataBuilder = null,
+		Predicate<Symbol>? filter = null,
+		CancellationToken cancellationToken = default)
 	{
 		_compilation = compilation;
+		_metadataBuilder = metadataBuilder;
 		_filter = filter;
 		_cancellationToken = cancellationToken;
 	}
 
-	public static void CompileBodies(NiteCompilation compilation)
+	public static void CompileBodies(NiteCompilation compilation, MetadataLibraryBuilder? metadataBuilder)
 	{
-		FunctionCompiler compiler = new(compilation);
+		FunctionCompiler compiler = new(compilation, metadataBuilder);
 
 		compiler.CompileModule(compilation.SourceLibrary.GlobalModule);
 	}
@@ -62,7 +71,7 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 		return BindFunctionBody(symbol);
 	}
 
-	private static BoundBlock? BindFunctionBody(FunctionSymbol function)
+	private BoundBlock? BindFunctionBody(FunctionSymbol function)
 	{
 		if (function is SourceFunctionSymbol sourceFunction)
 		{
@@ -74,23 +83,40 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 			Binder? bodyBinder = sourceFunction.TryGetBodyBinder();
 			if (bodyBinder != null)
 			{
-				BoundNode methodBody = bodyBinder.BindFunctionBody(sourceFunction.Syntax, []);
+				BoundNode functionBody = bodyBinder.BindFunctionBody(sourceFunction.Syntax, []);
 
-				if (methodBody.Kind == BoundKind.FunctionBody)
+				BoundBlock body;
+				if (functionBody.Kind == BoundKind.FunctionBody)
 				{
-					var nonConstructor = (BoundFunctionBody)methodBody;
-					BoundBlock body = nonConstructor.BlockBody;
+					var nonConstructor = (BoundFunctionBody)functionBody;
+					body = nonConstructor.BlockBody;
 					Debug.Assert(body != null);
-					return body;
 				}
 				else
 				{
 					throw new NotImplementedException();
 				}
+
+				if (!functionBody.HasErrors)
+				{
+					var emittedBody = GenerateBody(function, body);
+
+					_metadataBuilder!.SetFunctionBody(function, emittedBody);
+				}
+
+				return body;
 			}
 		}
 
 		throw new UnreachableException();
+	}
+
+	private FunctionBody GenerateBody(FunctionSymbol symbol,
+		BoundBlock block)
+	{
+		byte[] ir = IntermediateBuilder.Compile(_compilation, symbol, block, _metadataBuilder!);
+
+		return new FunctionBody([..ir]);
 	}
 
 	private static bool PassesFilter(Predicate<Symbol>? filter, Symbol symbol)

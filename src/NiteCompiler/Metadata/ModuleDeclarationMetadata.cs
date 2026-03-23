@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using NiteCompiler.CodeAnalysis.Symbols;
 
 namespace NiteCompiler.Metadata;
 
@@ -6,7 +7,7 @@ internal sealed class ModuleDeclarationMetadata : MetadataEntry
 {
 	public uint NameId { get; }
 
-	public ModuleDeclarationMetadata(MetadataId id, uint nameId) : base(id)
+	public ModuleDeclarationMetadata(MetadataId id, ModuleSymbol module, uint nameId) : base(id, module)
 	{
 		NameId = nameId;
 	}

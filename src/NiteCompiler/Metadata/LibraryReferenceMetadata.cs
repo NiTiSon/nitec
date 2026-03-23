@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using NiteCompiler.CodeAnalysis.Symbols;
 
 namespace NiteCompiler.Metadata;
 
@@ -6,7 +7,7 @@ internal sealed class LibraryReferenceMetadata : MetadataEntry
 {
 	public uint NameId { get; }
 
-	public LibraryReferenceMetadata(MetadataId id, uint nameId) : base(id)
+	public LibraryReferenceMetadata(MetadataId id, LibrarySymbol library, uint nameId) : base(id, library)
 	{
 		NameId = nameId;
 	}
