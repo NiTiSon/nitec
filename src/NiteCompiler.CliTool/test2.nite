@@ -3,7 +3,7 @@
 module test::the_second::aaa_2;
 
 public abc(x: i32) -> i32 {
-	return 3 + 2;
+	return 3 + 2 + 45;
 	/*
 	let x: i32 = 1;
 	return x += x = (((((!~+(-3) * 2 / 3 % 4) + 5) - 6)

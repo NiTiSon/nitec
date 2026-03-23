@@ -1,3 +1,8 @@
-﻿namespace NiteCompiler.IntermediateRepresentation;
+﻿using System.IO;
 
-internal abstract class Instruction;
+namespace NiteCompiler.IntermediateRepresentation;
+
+internal abstract class Instruction
+{
+	public abstract void Emit(BinaryWriter writer);
+}

@@ -1,0 +1,32 @@
+﻿namespace NiteCompiler.IntermediateRepresentation;
+
+internal enum Bytecode : byte
+{
+	None = 0,
+	LoadU8  = 0b0001,
+	LoadU16 = 0b0010,
+	LoadU32 = 0b0011,
+	LoadU64 = 0b0100,
+	LoadF32 = 0b0101,
+	LoadF64 = 0b0110,
+	UNUSED1 = 0b0111,
+	UNUSED2 = 0b0111,
+	LoadS8  = 0b1001,
+	LoadS16 = 0b1010,
+	LoadS32 = 0b1011,
+	LoadS64 = 0b1100,
+	Add = 0x10,
+	Sub = 0x11,
+	Mul = 0x12,
+	Div = 0x13,
+	Mod = 0x14,
+	And = 0x15,
+	Or = 0x16,
+	Xor = 0x17,
+	Not = 0x18,
+	Negate = 0x19,
+
+	Ret = 0xFD,
+	RetVoid = 0xFE,
+	TwoByteInstruction = 0xFF,
+}

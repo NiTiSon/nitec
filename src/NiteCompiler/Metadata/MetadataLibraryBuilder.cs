@@ -120,5 +120,6 @@ internal sealed class MetadataLibraryBuilder : SymbolVisitor<MetadataEntry?, Met
 
 	public void SetFunctionBody(FunctionSymbol function, FunctionBody emittedBody)
 	{
+		(GetTable(MetadataKind.FunctionDeclaration).Get(function) as FunctionDeclarationMetadata)!.Body = emittedBody;
 	}
 }

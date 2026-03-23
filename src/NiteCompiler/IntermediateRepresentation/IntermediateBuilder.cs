@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Reflection.Metadata.Ecma335;
+using LLVMSharp;
 using NiteCompiler.CodeAnalysis.Binding.BoundTree;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.Compilation;
@@ -11,6 +15,7 @@ internal sealed class IntermediateBuilder
 {
 	private readonly NiteCompilation _compilation;
 	private readonly FunctionSymbol _function;
+	private List<BasicBlock> _blocks = [];
 	private int _nextValueId;
 
 	private IntermediateBuilder(NiteCompilation compilation, FunctionSymbol function)
@@ -24,10 +29,17 @@ internal sealed class IntermediateBuilder
 	{
 		IntermediateBuilder builder = new(compilation, function);
 
-		Block entryBlock = builder.Build(block, metadata);
+		using MemoryStream mem = new();
+		using BinaryWriter writer = new(mem);
 
-		// Turn all blocks into byte sequence
-		return [];
+		// TODO: Walk for each block
+		Block entryBlock = builder.Build(block, metadata);
+		foreach (Instruction instruction in entryBlock.Instructions)
+		{
+			instruction.Emit(writer);
+		}
+
+		return mem.ToArray();
 	}
 
 	private Value GetValue()
@@ -67,7 +79,7 @@ internal sealed class IntermediateBuilder
 		return BuildBlock(block);
 	}
 
-	private Block BuildBlock(BoundBlock boundBlock)
+	private SimpleBlock BuildBlock(BoundBlock boundBlock)
 	{
 		SimpleBlock block = new();
 		foreach (BoundStatement statement in boundBlock.Statements)
