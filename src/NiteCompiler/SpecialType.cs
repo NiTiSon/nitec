@@ -20,7 +20,7 @@ public enum SpecialType : byte
 	StdVoid = 12,
 	StdNeverReturn = 13,
 	StdBoolean = 14,
-	Count,
+	// Change SpecialTypeExtensions.Count if add new special types
 }
 
 internal static class SpecialTypeExtensions
@@ -57,6 +57,8 @@ internal static class SpecialTypeExtensions
 
 	extension(SpecialType self)
 	{
+		public static SpecialType Count => SpecialType.StdBoolean + 1;
+
 		public static SpecialType GetSpecialTypeFromFullName(string fullName)
 		{
 			Map.TryGetValue(fullName, out SpecialType result);

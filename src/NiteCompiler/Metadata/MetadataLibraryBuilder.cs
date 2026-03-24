@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using CommunityToolkit.Diagnostics;
 using NiteCompiler.CodeAnalysis.Symbols;
+using NiteCompiler.CodeAnalysis.Symbols.Source;
 using NiteCompiler.Compilation;
 using NiteCompiler.Compiler;
 
@@ -10,9 +11,9 @@ namespace NiteCompiler.Metadata;
 
 internal sealed class MetadataLibraryBuilder : SymbolVisitor<MetadataEntry?, MetadataEntry?>
 {
-	private readonly NiteCompilation _compilation;
 	internal const int FormatVersion = 1;
 
+	private readonly NiteCompilation _compilation;
 	private readonly Table?[] _tables;
 	private readonly StringTable _stringTable;
 	private uint _libraryNameId;
@@ -97,7 +98,7 @@ internal sealed class MetadataLibraryBuilder : SymbolVisitor<MetadataEntry?, Met
 		Debug.Assert(container != null);
 		uint nameId = _stringTable.AddOrGet(symbol.Name);
 
-		MetadataEntry type = GetTable(MetadataKind.TypeDeclaration).Add((id) => new TypeDeclarationMetadata(id, symbol, container!.Id, nameId));
+		MetadataEntry type = GetTable(MetadataKind.TypeDeclaration).Add((id) => new TypeDeclarationMetadata(id, symbol, container.Id, nameId));
 
 		foreach (Symbol member in symbol.GetMembers())
 		{
@@ -120,6 +121,7 @@ internal sealed class MetadataLibraryBuilder : SymbolVisitor<MetadataEntry?, Met
 
 	public void SetFunctionBody(FunctionSymbol function, FunctionBody emittedBody)
 	{
+		Debug.Assert(function is SourceFunctionSymbol);
 		(GetTable(MetadataKind.FunctionDeclaration).Get(function) as FunctionDeclarationMetadata)!.Body = emittedBody;
 	}
 }

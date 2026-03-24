@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using NiteCompiler.CodeAnalysis.Symbols;
+using NiteCompiler.CodeAnalysis.Syntax;
 
 namespace NiteCompiler.Metadata;
 
@@ -12,6 +13,18 @@ internal abstract class MetadataEntry
 	{
 		this.Id = id;
 		OriginatedFromSymbol = originatedFromSymbol;
+	}
+
+	protected static TypeMetadataFlags CreateFlags(TypeSymbol type)
+	{
+		TypeMetadataFlags result = 0;
+
+		if (type.SpecialType != SpecialType.None)
+		{
+			result |= TypeMetadataFlags.IsSpecialType;
+		}
+
+		return result;
 	}
 
 	public abstract void Write(BinaryWriter writer);
