@@ -58,23 +58,23 @@ internal sealed class MergedTypeDeclaration : MergedItemDeclaration
 
 	protected override ImmutableArray<Declaration> GetDeclarationMembers()
 	{
-		return ImmutableArray<Declaration>.CastUp(Children);
+		return ImmutableArray<Declaration>.CastUp(Members);
 	}
 
-	public new ImmutableArray<MergedTypeDeclaration> Children
+	public new ImmutableArray<MergedTypeDeclaration> Members
 	{
 		get
 		{
 			if (field.IsDefault)
 			{
-				ImmutableInterlocked.InterlockedInitialize(ref field, MakeChildren());
+				ImmutableInterlocked.InterlockedInitialize(ref field, MakeMembers());
 			}
 
 			return field;
 		}
 	}
 
-	private ImmutableArray<MergedTypeDeclaration> MakeChildren()
+	private ImmutableArray<MergedTypeDeclaration> MakeMembers()
 	{
 		return [];
 		// TODO: Currently ain't no types as members of other type
