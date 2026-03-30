@@ -1,4 +1,4 @@
-using System;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
@@ -10,24 +10,31 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 internal abstract partial class Binder
 {
 	protected NiteCompilation Compilation { get; }
-	protected readonly DiagnosticBag _diagnostics;
 
 	public Binder? Parent { get; }
+	public BinderFlags Flags { get; }
 
 	public virtual Symbol? ContainingMember => null;
 
 	protected Binder(NiteCompilation compilation)
 	{
 		Compilation = compilation;
-		_diagnostics = [];
 	}
 
 	protected Binder(Binder parent)
 	{
 		Compilation = parent.Compilation;
 		Parent = parent;
-		_diagnostics = parent._diagnostics;
 	}
+
+	protected Binder(Binder parent, BinderFlags flags)
+	{
+		Compilation = parent.Compilation;
+		Parent = parent;
+		Flags = flags;
+	}
+
+	public virtual ImmutableArray<LocalVariableSymbol> Locals => [];
 
 	/// <summary>
 	/// Some nodes have special binders for their contents (like Blocks)
@@ -36,14 +43,5 @@ internal abstract partial class Binder
 	{
 		Debug.Assert(Parent != null);
 		return Parent.GetBinder(node);
-	}
-
-	internal void LookupSymbolsSimpleName(
-		LookupResult result,
-		Symbol? qualifier,
-		string name,
-		LookupOptions options)
-	{
-		throw new NotImplementedException();
 	}
 }

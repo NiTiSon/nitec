@@ -9,14 +9,22 @@ internal enum CompletionPart
 {
 	None = 0,
 	Attributes = 1 << 0,
-	MembersCompleted = 1 << 2,
+	MembersCompleted = 1 << 3,
 	All = (1 << 3) - 1,
 
 	// Modules
 	NameToMembersMap = 1 << 1,
+
+	// Functions
+	Parameters = 1 << 1,
+
+	Type = 1 << 2,
+
 	ModuleSymbolAll = NameToMembersMap | MembersCompleted,
 	LibrarySymbolAll = MembersCompleted,
 	TypeSymbolAll = MembersCompleted,
+	FunctionSymbolAll = Type | Parameters,
+	ParameterSymbolAll = Type,
 }
 
 internal static class CompletionPartExtensions

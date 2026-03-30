@@ -10,7 +10,7 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal partial class Binder
 {
-	public virtual BoundNode BindFunctionBody(SyntaxNode syntax, DiagnosticBag diagnostics)
+	public virtual BoundNode BindFunctionBody(SyntaxNode syntax, BindingDiagnosticBag diagnostics)
 	{
 		switch (syntax)
 		{
@@ -31,12 +31,12 @@ internal partial class Binder
 	}
 
 	private BoundNode BindFunctionBody(FunctionDeclarationSyntax function, FunctionBodySyntax body,
-		DiagnosticBag diagnostics)
+		BindingDiagnosticBag diagnostics)
 	{
 		return new BoundFunctionBody(function, (BoundBlock)BindMethodBodyStatement(body, diagnostics));
 	}
 
-	private BoundNode BindMethodBodyStatement(FunctionBodySyntax syntax, DiagnosticBag diagnostics)
+	private BoundNode BindMethodBodyStatement(FunctionBodySyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		switch (syntax)
 		{
@@ -54,7 +54,7 @@ internal partial class Binder
 		return new BoundBlock(semicolon, []);
 	}
 
-	private BoundStatement BindStatement(StatementSyntax syntax, DiagnosticBag diagnostics)
+	private BoundStatement BindStatement(StatementSyntax syntax, BindingDiagnosticBag diagnostics, bool embedded = false)
 	{
 		NodeKind kind = syntax.Kind;
 
@@ -78,10 +78,30 @@ internal partial class Binder
 			return BindReturn((ReturnStatementSyntax)syntax, diagnostics);
 		}
 
+		if (kind == NodeKind.IfStatement)
+		{
+			return BindIf((IfStatementSyntax)syntax, diagnostics);
+		}
+
 		throw new ArgumentException($"Unexpected syntax kind: {kind}");
 	}
 
-	private BoundReturn BindReturn(ReturnStatementSyntax syntax, DiagnosticBag diagnostics)
+	private BoundIfStatement BindIf(IfStatementSyntax syntax, BindingDiagnosticBag diagnostics)
+	{
+		// TODO: BindBooleanExpression
+		BoundExpression condition = BindValue(syntax.Condition, diagnostics, BindValueKind.RValue);
+		BoundStatement then = BindStatement(syntax.ThenStatement, diagnostics, embedded: true);
+
+		BoundStatement? @else = null;
+		if (syntax.ElseClause is not null)
+		{
+			@else = BindStatement(syntax.ElseClause.ElseStatement, diagnostics, embedded: true);
+		}
+
+		return new BoundIfStatement(syntax, condition, then, @else);
+	}
+
+	private BoundReturn BindReturn(ReturnStatementSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		BoundExpression? arg = null;
 
@@ -93,7 +113,7 @@ internal partial class Binder
 		return new BoundReturn(syntax, arg);
 	}
 
-	private BoundBlock BindBlock(BlockStatementSyntax syntax, DiagnosticBag diagnostics)
+	private BoundBlock BindBlock(BlockStatementSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		var binder = GetBinder(syntax);
 		Debug.Assert(binder != null);
@@ -101,7 +121,7 @@ internal partial class Binder
 		return binder.BindBlockParts(syntax, diagnostics);
 	}
 
-	private BoundBlock BindBlockParts(BlockStatementSyntax syntax, DiagnosticBag diagnostics)
+	private BoundBlock BindBlockParts(BlockStatementSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		var syntaxStatements = syntax.Statements;
 		int statementCount = syntaxStatements.Count;
@@ -117,19 +137,19 @@ internal partial class Binder
 		return new BoundBlock(syntax, [..boundStatements]);
 	}
 
-	private BoundExpressionStatement BindExpressionStatement(ExpressionStatementSyntax syntax, DiagnosticBag diagnostics)
+	private BoundExpressionStatement BindExpressionStatement(ExpressionStatementSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		throw new NotImplementedException();
 	}
 
-	private BoundExpressionStatement BindExpressionStatement(ExpressionSyntax syntax, DiagnosticBag diagnostics)
+	private BoundExpressionStatement BindExpressionStatement(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		BoundExpression expression = BindRValueWithoutTargetType(syntax, diagnostics);
 
 		return new BoundExpressionStatement(syntax, expression);
 	}
 
-	private BoundStatement BindEmptyStatement(EmptyStatementSyntax syntax, DiagnosticBag diagnostics)
+	private BoundStatement BindEmptyStatement(EmptyStatementSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		throw new NotImplementedException();
 	}

@@ -262,7 +262,7 @@ public sealed partial class NiteParser
 		if (current.TKind == TokenKind.IdentifierOrKeyword)
 		{
 			string identifier = (current as IdentifierOrKeywordToken)!.Identifier;
-			return new(_syntaxTree, current, identifier);
+			return new IdentifierNameSyntax(_syntaxTree, current, identifier);
 		}
 
 		// TODO: Escaped `identifier`

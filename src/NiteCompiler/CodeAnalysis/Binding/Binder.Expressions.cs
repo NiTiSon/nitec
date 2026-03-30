@@ -1,5 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using NiteCompiler.CodeAnalysis.Binding.BoundTree;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
@@ -22,12 +26,34 @@ internal partial class Binder
 		Variable = 4 << ValueKindInsignificantBits,
 	}
 
-	private BoundExpression BindExpression(ExpressionSyntax syntax, DiagnosticBag diagnostics, bool invoked, bool indexed)
+	private BoundBadExpression BadExpression(SyntaxNode syntax)
+	{
+		return BadExpression(syntax, LookupResultKind.Empty, []);
+	}
+
+	private BoundBadExpression BadExpression(SyntaxNode syntax, LookupResultKind resultKind, ImmutableArray<Symbol> symbols)
+	{
+		return new BoundBadExpression(syntax,
+			resultKind,
+			symbols,
+			ImmutableArray<BoundExpression>.Empty,
+			CreateErrorType());
+	}
+
+	internal TypeSymbol CreateErrorType(string name = "")
+	{
+		return new ErrorTypeSymbol(Compilation, name, arity: 0, errorInfo: null, unreported: false);
+	}
+
+	private BoundExpression BindExpression(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics, bool invoked, bool indexed)
 	{
 		switch (syntax)
 		{
 			case LiteralExpressionSyntax literal:
 				return BindLiteralConstant(literal, diagnostics);
+
+			case AssignmentExpressionSyntax assignment:
+				return BindAssignmentExpression(assignment, diagnostics);
 
 			// case UnaryExpressionSyntax unary:
 			// 	return BindUnaryExpression(unary, diagnostics);
@@ -38,12 +64,15 @@ internal partial class Binder
 			case ParenthesizedExpressionSyntax paren:
 				return BindExpression(paren.Expression, diagnostics, invoked: false, indexed: false);
 
+			case SimpleNameSyntax name:
+				return BindIdentifier(name, invoked, indexed, diagnostics);
+
 			default:
 				throw new Exception($"Unexpected syntax node {syntax.Kind}");
 		}
 	}
 
-	private BoundExpression BindBinaryExpression(BinaryExpressionSyntax syntax, DiagnosticBag diagnostics)
+	private BoundExpression BindBinaryExpression(BinaryExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		var left = BindRValueWithoutTargetType(syntax.Left, diagnostics);
 		var right = BindRValueWithoutTargetType(syntax.Right, diagnostics);
@@ -56,7 +85,7 @@ internal partial class Binder
 		throw new NotImplementedException();
 	}
 
-	private BoundExpression CheckValue(BoundExpression expression, BindValueKind valueKind, DiagnosticBag diagnostics)
+	private BoundExpression CheckValue(BoundExpression expression, BindValueKind valueKind, BindingDiagnosticBag diagnostics)
 	{
 		var actual = expression.ValueKind;
 
@@ -68,25 +97,162 @@ internal partial class Binder
 		return expression;
 	}
 
-	private BoundExpression BindValue(ExpressionSyntax syntax, DiagnosticBag diagnostics, BindValueKind valueKind)
+	private BoundExpression BindValue(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics, BindValueKind valueKind)
 	{
 		var result = this.BindExpression(syntax, diagnostics, invoked: false, indexed: false);
 		return CheckValue(result, valueKind, diagnostics);
 	}
 
-	private BoundExpression BindRValueWithoutTargetType(ExpressionSyntax syntax, DiagnosticBag diagnostics)
+	private BoundExpression BindLValueWithoutTargetType(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
+	{
+		return BindValue(syntax, diagnostics, BindValueKind.LValue);
+	}
+
+	private BoundExpression BindRValueWithoutTargetType(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		return BindValue(syntax, diagnostics, BindValueKind.RValue);
 	}
 
-	private BoundLiteral BindLiteralConstant(LiteralExpressionSyntax syntax, DiagnosticBag diagnostics)
+	private BoundLiteral BindLiteralConstant(LiteralExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		NumberToken? value = syntax.Token as NumberToken;
 		Debug.Assert(value != null);
 
-		TypeSymbol? i32 = Compilation.GetSpecialType(SpecialType.StdNumericsSInt32);
-		Debug.Assert(i32 != null);
+		TypeSymbol i32 = GetSpecialType(SpecialType.StdNumericsSInt32, diagnostics);
 		ConstantValue i32Value = ConstantValue.Create((int)value.Value.U64);
 		return new BoundLiteral(syntax, i32Value, i32);
+	}
+
+	private BoundExpression BindIdentifier(SimpleNameSyntax name, bool invoked, bool indexed,
+		BindingDiagnosticBag diagnostics)
+	{
+		LookupResult result = LookupResult.GetInstance();
+		string identifierName = name.GetName();
+		LookupIdentifier(result, name, invoked);
+
+		BoundExpression boundExpression;
+		if (result.Kind == LookupResultKind.Empty)
+		{
+			// Not found
+			boundExpression = BadExpression(name);
+		}
+		else
+		{
+			List<Symbol> group = [];
+			Symbol? symbol = GetSymbolOrFunctionGroup(result, name, identifierName, arity: 0, group,  diagnostics, out bool isError);
+
+			if (symbol is null) // function group
+			{
+				Debug.Assert(group.Count > 0);
+
+				throw new NotImplementedException();
+			}
+			else
+			{
+				boundExpression = BindNonFunction(name, symbol, diagnostics, result.Kind, indexed, isError);
+			}
+		}
+
+		result.Free();
+		return boundExpression;
+	}
+
+	private BoundExpression BindNonFunction(SimpleNameSyntax name, Symbol symbol, BindingDiagnosticBag diagnostics, LookupResultKind resultKind, bool indexed, bool wasError)
+	{
+		switch (symbol.Kind)
+		{
+			case SymbolKind.LocalVariable:
+				return new BoundLocal(name, (LocalVariableSymbol)symbol);
+				break;
+			default:
+				throw new UnreachableException();
+		}
+	}
+
+	private Symbol? GetSymbolOrFunctionGroup(LookupResult result, SyntaxNode node, string identifierName, int arity, List<Symbol> methodGroup, BindingDiagnosticBag diagnostics, out bool wasError)
+	{
+		Debug.Assert(methodGroup.Count == 0);
+		wasError = false;
+
+		Symbol? other = null;
+		foreach (var symbol in result.Symbols)
+		{
+			var kind = symbol.Kind;
+			if (methodGroup.Count > 0)
+			{
+				var existingKind = methodGroup[0].Kind;
+				if (existingKind != kind)
+				{
+					if ((existingKind == SymbolKind.Function) ||
+					    ((existingKind == SymbolKind.Property) && (kind != SymbolKind.Function)))
+					{
+						other = symbol;
+						continue;
+					}
+
+					other = methodGroup[0];
+					methodGroup.Clear();
+				}
+			}
+
+			if (kind is SymbolKind.Function or SymbolKind.Property)
+			{
+				methodGroup.Add(symbol);
+			}
+			else
+			{
+				other = symbol;
+			}
+		}
+
+		Debug.Assert(methodGroup.Count != 0 || other != null);
+
+		if ((methodGroup.Count > 0) &&
+		    IsFunctionGroup(methodGroup))
+		{
+			if ((methodGroup[0].Kind == SymbolKind.Function) || other == null)
+			{
+				if (result.Error != null)
+				{
+					// TODO: Error(diagnostics, result.Error, node);
+					wasError = (result.Error.Severity == DiagnosticSeverity.Error);
+				}
+
+				return null;
+			}
+		}
+
+		methodGroup.Clear();
+		return ResultSymbol(result, identifierName, arity, node, diagnostics, out wasError, null);
+	}
+
+	private static bool IsFunctionGroup(List<Symbol> members)
+	{
+		Debug.Assert(members.Count > 0);
+
+		var member = members[0];
+
+		// Members should be a consistent type.
+		Debug.Assert(members.All(m => m.Kind == member.Kind));
+
+		switch (member.Kind)
+		{
+			case SymbolKind.Function:
+				return true;
+
+			// case SymbolKind.Property:
+			// 	Debug.Assert(members.All(m => !m.IsIndexer()));
+			//
+			// 	foreach (PropertySymbol property in members)
+			// 	{
+			// 		if (property.IsIndexedProperty)
+			// 		{
+			// 			return true;
+			// 		}
+			// 	}
+			// 	return false;
+			default:
+				throw new UnreachableException();
+		}
 	}
 }

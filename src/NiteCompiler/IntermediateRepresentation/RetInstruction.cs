@@ -4,6 +4,8 @@ namespace NiteCompiler.IntermediateRepresentation;
 
 internal sealed class RetInstruction(Value? value) : Instruction
 {
+	public override bool IsBranch => true;
+
 	public Value? Value { get; } = value;
 
 	public override void Emit(BinaryWriter writer)

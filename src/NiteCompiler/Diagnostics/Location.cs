@@ -18,4 +18,10 @@ public abstract class Location
 		SourceLocation location = new(tree, span);
 		return location;
 	}
+
+	public static Location Create(SyntaxNode node)
+	{
+		SourceLocation location = new(node.Tree, node.Span);
+		return location;
+	}
 }

@@ -167,7 +167,8 @@ public sealed class NiteCompilation
 	{
 		get
 		{
-			return Options.IsCoreLibrary;
+			return _lateinitSpecialTypes == null ||
+			       _lateinitSpecialTypes.AsSpan()[1..].All(t => t != null); // skipping first: always null
 		}
 	}
 

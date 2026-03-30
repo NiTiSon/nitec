@@ -6,6 +6,22 @@ namespace NiteCompiler;
 
 public static class CollectionExtensions
 {
+	extension<T>(ReadOnlySpan<T> span)
+	{
+		public bool All(Predicate<T> condition)
+		{
+			for (int i = 0;  i < span.Length; i++)
+			{
+				if (!condition(span[i]))
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+	}
+
 	extension<T>(List<T> list)
 	{
 		public bool AddNotNull([NotNullWhen(true)] T? item)

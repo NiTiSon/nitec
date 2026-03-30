@@ -24,20 +24,45 @@ internal partial class Binder
 		return kind is { IsBinary: true, IsAssignmentExpression: false };
 	}
 
-	private BoundExpression BindSimpleBinaryOperator(BinaryExpressionSyntax syntax, DiagnosticBag diagnostics,
+	protected static bool IsAssignmentBinaryOperator(NodeKind kind)
+	{
+		if (kind == NodeKind.ConditionalAndExpression)
+		{
+			return false;
+		}
+
+		if (kind == NodeKind.ConditionalOrExpression)
+		{
+			return false;
+		}
+
+		return kind is { IsBinary: true, IsAssignmentExpression: true };
+	}
+
+	private BoundExpression BindSimpleBinaryOperator(BinaryExpressionSyntax syntax, BindingDiagnosticBag diagnostics,
 		BoundExpression left, BoundExpression right)
 	{
 		if (left.Type.SpecialType == SpecialType.StdNumericsSInt32 &&
 		    right.Type.SpecialType == SpecialType.StdNumericsSInt32)
 		{
-			TypeSymbol? i32 = Compilation.GetSpecialType(SpecialType.StdNumericsSInt32);
-			Debug.Assert(i32 != null);
+			TypeSymbol i32 = GetSpecialType(SpecialType.StdNumericsSInt32, diagnostics);
 			BinaryOperatorSignature op = new(BinaryOperatorKind.Addition, i32, i32, i32);
 			return new BoundBinaryExpression(syntax, left, op, right);
 		}
-		else
-		{
-			throw new NotImplementedException();
-		}
+
+		// TODO: Errors
+		BinaryOperatorSignature opErr = new(BinaryOperatorKind.Addition, left.Type, right.Type, CreateErrorType());
+		return new BoundBinaryExpression(syntax, left, opErr, right);
+	}
+
+	private BoundExpression BindAssignmentExpression(AssignmentExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
+	{
+		BoundExpression left = BindLValueWithoutTargetType(syntax.Left, diagnostics);
+		BoundExpression right = BindRValueWithoutTargetType(syntax.Right, diagnostics);
+
+		// TODO: Conversion
+		// TODO: Errors
+
+		return new BoundAssignment(syntax, left, right);
 	}
 }

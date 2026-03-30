@@ -39,12 +39,12 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 	public bool IsPunctuator => (_value & CategoryFlag) == Punctuator;
 	public bool IsKeyword => (_value & CategoryFlag) == Keyword;
 	public bool IsTypeKeyword => (_value & CategoryFlag) == TypeKeyword;
-	public PredefinedType AssociatedPredefinedType
+	public SpecialType AssociatedSpecialType
 	{
 		get
 		{
 			Debug.Assert(IsTypeKeyword);
-			return (PredefinedType)(_value - TypeKeyword);
+			return (SpecialType)(_value - TypeKeyword);
 		}
 	}
 	public bool IsOperator => (_value & CategoryFlag) == Operator;
@@ -307,21 +307,21 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 	public static readonly TokenKind Pure = Reg(Keyword + 23, "pure");
 
 	// Type keywords have they very own unique values
-	public static readonly TokenKind I8 = Reg(TypeKeyword + (uint)PredefinedType.I8, "i8");
-	public static readonly TokenKind I16 = Reg(TypeKeyword + (uint)PredefinedType.I16, "i16");
-	public static readonly TokenKind I32 = Reg(TypeKeyword + (uint)PredefinedType.I32, "i32");
-	public static readonly TokenKind I64 = Reg(TypeKeyword + (uint)PredefinedType.I64, "i64");
+	public static readonly TokenKind I8 = Reg(TypeKeyword + (uint)SpecialType.StdNumericsSInt8, "i8");
+	public static readonly TokenKind I16 = Reg(TypeKeyword + (uint)SpecialType.StdNumericsSInt16, "i16");
+	public static readonly TokenKind I32 = Reg(TypeKeyword + (uint)SpecialType.StdNumericsSInt32, "i32");
+	public static readonly TokenKind I64 = Reg(TypeKeyword + (uint)SpecialType.StdNumericsSInt64, "i64");
 
-	public static readonly TokenKind U8 = Reg(TypeKeyword + (uint)PredefinedType.U8, "u8");
-	public static readonly TokenKind U16 = Reg(TypeKeyword + (uint)PredefinedType.U16, "u16");
-	public static readonly TokenKind U32 = Reg(TypeKeyword + (uint)PredefinedType.U32, "u32");
-	public static readonly TokenKind U64 = Reg(TypeKeyword + (uint)PredefinedType.U64, "u64");
+	public static readonly TokenKind U8 = Reg(TypeKeyword + (uint)SpecialType.StdNumericsUInt8, "u8");
+	public static readonly TokenKind U16 = Reg(TypeKeyword + (uint)SpecialType.StdNumericsUInt16, "u16");
+	public static readonly TokenKind U32 = Reg(TypeKeyword + (uint)SpecialType.StdNumericsUInt32, "u32");
+	public static readonly TokenKind U64 = Reg(TypeKeyword + (uint)SpecialType.StdNumericsUInt64, "u64");
 
-	public static readonly TokenKind F16 = Reg(TypeKeyword + (uint)PredefinedType.F16, "f16");
-	public static readonly TokenKind F32 = Reg(TypeKeyword + (uint)PredefinedType.F32, "f32");
-	public static readonly TokenKind F64 = Reg(TypeKeyword + (uint)PredefinedType.F64, "f64");
-	public static readonly TokenKind Void = Reg(TypeKeyword + (uint)PredefinedType.Void, "void");
-	public static readonly TokenKind Never = Reg(TypeKeyword + (uint)PredefinedType.Never, "!");
+	public static readonly TokenKind F16 = Reg(TypeKeyword + (uint)SpecialType.StdNumericsFloat16, "f16");
+	public static readonly TokenKind F32 = Reg(TypeKeyword + (uint)SpecialType.StdNumericsFloat32, "f32");
+	public static readonly TokenKind F64 = Reg(TypeKeyword + (uint)SpecialType.StdNumericsFloat64, "f64");
+	public static readonly TokenKind Void = Reg(TypeKeyword + (uint)SpecialType.StdVoid, "void");
+	public static readonly TokenKind Never = Reg(TypeKeyword + (uint)SpecialType.StdNeverReturn, "!");
 
 	private const uint Operator = 0x00_00__40_00u;
 	private const uint UnaryFlag = 0x00_01__00_00u;

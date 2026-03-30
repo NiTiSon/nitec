@@ -202,7 +202,7 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 					_ = GetNameToMembersMap();
 					break;
 				case CompletionPart.MembersCompleted:
-					var members = GetMembersUnordered(); // TODO: Replace with GetMembers
+					var members = GetMembers();
 					if (DeclaringCompilation!.LookingForSpecialTypes)
 					{
 						RegisterSpecialTypes();

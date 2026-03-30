@@ -3,13 +3,23 @@ namespace NiteCompiler.CodeAnalysis.Binding.BoundTree;
 internal enum BoundKind
 {
 	None = 0,
+	Move = 1,
+	Copy = 2,
 	Block,
 	Return,
 	ExpressionStatement,
+	IfStatement,
 
 	FunctionBody,
+	VariableDeclaration,
 
 	Literal,
+	Local,
+	Parameter,
 	UnaryExpression,
 	BinaryExpression,
+	CompoundAssignmentExpression,
+	VariableExpression,
+	AssignmentExpression,
+	BadExpression
 }

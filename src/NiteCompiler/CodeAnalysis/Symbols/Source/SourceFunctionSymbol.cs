@@ -1,7 +1,11 @@
+using System;
+using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Threading;
 using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Binding.BoundTree;
 using NiteCompiler.CodeAnalysis.Syntax;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Symbols.Source;
 
@@ -11,6 +15,7 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 	public FunctionDeclarationSyntax Syntax { get; }
 	public override string Name => Syntax.Name.GetName();
 
+	private CompletionPart _state;
 	public SourceFunctionSymbol(Symbol containingSymbol, FunctionDeclarationSyntax syntax)
 	{
 		Debug.Assert(containingSymbol != null);
@@ -32,6 +37,39 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 	public override TResult? Accept<TResult, TArgument>(SymbolVisitor<TResult, TArgument> visitor, TArgument arg) where TResult : default
 	{
 		return visitor.VisitFunction(this, arg);
+	}
+
+	private ImmutableArray<ParameterSymbol> _lateinitParameters;
+	public override ImmutableArray<ParameterSymbol> Parameters
+	{
+		get
+		{
+			if (_lateinitParameters.IsDefault)
+			{
+				Interlocked.CompareExchange(ref _lateinitParameters, MakeParameters(), default);
+			}
+
+			return _lateinitParameters;
+		}
+	}
+
+	private ImmutableArray<ParameterSymbol> MakeParameters()
+	{
+		BindingDiagnosticBag diagnostics = BindingDiagnosticBag.GetInstance();
+		ImmutableArray<ParameterSymbol>.Builder builder = ImmutableArray.CreateBuilder<ParameterSymbol>();
+		BinderFactory factory = DeclaringCompilation!.GetBinderFactory(Syntax.Tree);
+		Binder withGenericsBinder = factory.GetBinder(Syntax.ParameterList);
+		int ordinal = 0;
+		foreach (var parameter in Syntax.ParameterList.Parameters)
+		{
+			TypeSymbol type = withGenericsBinder.BindType(parameter.TypeClause.Type, diagnostics);
+			var parameterSymbol = SourceParameterSymbol.Create(withGenericsBinder, this, type, parameter, ordinal, diagnostics);
+			builder.Add(parameterSymbol);
+			ordinal++;
+		}
+
+		diagnostics.Free();
+		return builder.ToImmutable();
 	}
 
 	private FunctionBodySyntax GetInFunctionSyntaxNode()
@@ -74,5 +112,41 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 
 		Debug.Assert(syntax != null);
 		return inFunctionBinder == null ? null : new ExecutableCodeBinder(syntax, this, inFunctionBinder);
+	}
+
+	internal override void ForceComplete(Predicate<Symbol>? filter, CancellationToken cancellationToken = default)
+	{
+		if (filter?.Invoke(this) == false)
+		{
+			return;
+		}
+
+		while (true)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+
+			var incompletePart = _state.NextIncompletePart;
+			switch (incompletePart)
+			{
+				case CompletionPart.None:
+					return;
+				case CompletionPart.Type:
+					//_ = Return;
+					_state.NotePartComplete(CompletionPart.Type);
+					break;
+				case CompletionPart.Parameters:
+					foreach (var parameter in Parameters)
+					{
+						parameter.ForceComplete(filter: null, cancellationToken);
+					}
+					_state.NotePartComplete(CompletionPart.Parameters);
+					break;
+				default:
+					_state.NotePartComplete(CompletionPart.All & ~CompletionPart.FunctionSymbolAll);
+					break;
+			}
+
+			_state.SpinWaitComplete(incompletePart, cancellationToken);
+		}
 	}
 }

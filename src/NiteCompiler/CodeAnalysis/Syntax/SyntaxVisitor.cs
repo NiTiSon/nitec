@@ -21,13 +21,14 @@ public abstract class SyntaxVisitor
 	public virtual void VisitAssignmentExpression(AssignmentExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitParenthesizedExpression(ParenthesizedExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitLiteralExpression(LiteralExpressionSyntax expression) => DefaultVisit(expression);
-	public virtual void VisitSimpleName(SimpleNameSyntax expression) => DefaultVisit(expression);
+	public virtual void VisitIdentifierName(IdentifierNameSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitEscapedName(SyntaxNode __TODO) => DefaultVisit(__TODO);
 	public virtual void VisitModuleName(ModuleNameSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitPredefinedType(PredefinedTypeSyntax expression) => DefaultVisit(expression);
 
 	public virtual void VisitModuleDeclaration(ModuleDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual void VisitFunctionDeclaration(FunctionDeclarationSyntax declaration) => DefaultVisit(declaration);
+	public virtual void VisitParameterList(ParameterListSyntax list) => DefaultVisit(list);
 	public virtual void VisitParameter(ParameterSyntax parameter) => DefaultVisit(parameter);
 	public virtual void VisitBlockFunctionBody(BlockFunctionBodySyntax body) => DefaultVisit(body);
 	public virtual void VisitEmptyFunctionBody(EmptyFunctionBodySyntax body) => DefaultVisit(body);
@@ -43,6 +44,8 @@ public abstract class SyntaxVisitor
 	public virtual void VisitExpressionStatement(ExpressionStatementSyntax statement) => DefaultVisit(statement);
 	public virtual void VisitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement statement) => DefaultVisit(statement);
 	public virtual void VisitBlockStatement(BlockStatementSyntax statement) => DefaultVisit(statement);
+	public virtual void VisitIfStatement(IfStatementSyntax statement) => DefaultVisit(statement);
+	public virtual void VisitElseClause(ElseClauseSyntax elseClause) => DefaultVisit(elseClause);
 }
 
 public abstract class SyntaxVisitor<TResult>
@@ -64,13 +67,14 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitAssignmentExpression(AssignmentExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitParenthesizedExpression(ParenthesizedExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitLiteralExpression(LiteralExpressionSyntax expression) => DefaultVisit(expression);
-	public virtual TResult? VisitSimpleName(SimpleNameSyntax expression) => DefaultVisit(expression);
+	public virtual TResult? VisitIdentifierName(IdentifierNameSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitEscapedName(SyntaxNode __TODO) => DefaultVisit(__TODO);
 	public virtual TResult? VisitModuleName(ModuleNameSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitPredefinedType(PredefinedTypeSyntax expression) => DefaultVisit(expression);
 
 	public virtual TResult? VisitModuleDeclaration(ModuleDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual TResult? VisitFunctionDeclaration(FunctionDeclarationSyntax declaration) => DefaultVisit(declaration);
+	public virtual TResult? VisitParameterList(ParameterListSyntax list) => DefaultVisit(list);
 	public virtual TResult? VisitParameter(ParameterSyntax parameter) => DefaultVisit(parameter);
 	public virtual TResult? VisitBlockFunctionBody(BlockFunctionBodySyntax body) => DefaultVisit(body);
 	public virtual TResult? VisitEmptyFunctionBody(EmptyFunctionBodySyntax body) => DefaultVisit(body);
@@ -86,4 +90,6 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitExpressionStatement(ExpressionStatementSyntax statement) => DefaultVisit(statement);
 	public virtual TResult? VisitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement statement) => DefaultVisit(statement);
 	public virtual TResult? VisitBlockStatement(BlockStatementSyntax statement) => DefaultVisit(statement);
+	public virtual TResult? VisitIfStatement(IfStatementSyntax statement) => DefaultVisit(statement);
+	public virtual TResult? VisitElseClause(ElseClauseSyntax elseClause) => DefaultVisit(elseClause);
 }

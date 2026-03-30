@@ -4,6 +4,8 @@ namespace NiteCompiler.IntermediateRepresentation;
 
 internal sealed class AddInstruction(Value output, Value left, Value right) : Instruction
 {
+	public override bool IsBranch => false;
+
 	public readonly Value
 		Output = output,
 		Left = left,

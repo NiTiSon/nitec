@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection.Metadata.Ecma335;
-using LLVMSharp;
 using NiteCompiler.CodeAnalysis.Binding.BoundTree;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.Compilation;
@@ -15,7 +13,7 @@ internal sealed class IntermediateBuilder
 {
 	private readonly NiteCompilation _compilation;
 	private readonly FunctionSymbol _function;
-	private List<BasicBlock> _blocks = [];
+	private Dictionary<BoundStatement, SimpleBlock> _blocks = [];
 	private int _nextValueId;
 
 	private IntermediateBuilder(NiteCompilation compilation, FunctionSymbol function)
@@ -32,7 +30,6 @@ internal sealed class IntermediateBuilder
 		using MemoryStream mem = new();
 		using BinaryWriter writer = new(mem);
 
-		// TODO: Walk for each block
 		Block entryBlock = builder.Build(block, metadata);
 		foreach (Instruction instruction in entryBlock.Instructions)
 		{
@@ -42,117 +39,19 @@ internal sealed class IntermediateBuilder
 		return mem.ToArray();
 	}
 
+	public Block Build(BoundBlock block, MetadataLibraryBuilder metadata)
+	{
+		return null!;
+	}
+
 	private Value GetValue()
 	{
 		return new Value(_nextValueId++);
 	}
 
-	public Block Build(BoundBlock block, MetadataLibraryBuilder metadata)
+	private void Link(SimpleBlock from, SimpleBlock to)
 	{
-		/*
-		let a = 4;
-		let b = 9;
-		let c;
-		if a < b {
-			c = 760;
-		} else {
-			c = 69;
-		}
-
-		return c;
-		*/
-
-		// entry:
-		//   $0 = load i32 4
-		//   $1 = load i32 9
-		//   $2 = cmp i32 $0 slt $1
-		//   br i1 $2 if.then, if.else
-		// if.then:
-		//   $3 = load i32 760
-		//   br if.after
-		// if.else
-		//   $4 = load i32 69
-		//   br if.after
-		// if.after
-		//   $5 = phi [$3 if.then], [$4 if.else]
-		//   ret $5
-		return BuildBlock(block);
-	}
-
-	private SimpleBlock BuildBlock(BoundBlock boundBlock)
-	{
-		SimpleBlock block = new();
-		foreach (BoundStatement statement in boundBlock.Statements)
-		{
-			BuildStatement(block, statement);
-		}
-
-		return block;
-	}
-
-	private void BuildStatement(SimpleBlock block, BoundStatement statement)
-	{
-		switch (statement)
-		{
-			case BoundExpressionStatement expr:
-				BuildExpression(block, expr.Expression);
-				break;
-			case BoundReturn @return:
-				BuildReturn(block, @return);
-				break;
-			default:
-				throw new UnreachableException();
-		}
-	}
-
-	private Value BuildExpression(SimpleBlock block, BoundExpression expression)
-	{
-		switch (expression)
-		{
-			case BoundLiteral literal:
-				return BuildLiteral(block, literal);
-			case BoundBinaryExpression binary:
-				return BuildBinaryExpression(block, binary);
-			default:
-				throw new UnreachableException();
-		}
-	}
-
-	private void BuildReturn(SimpleBlock block, BoundReturn @return)
-	{
-		if (@return.Expression == null)
-		{
-			block.Instructions.Add(new RetInstruction(null));
-			return;
-		}
-
-		Value retusa = BuildExpression(block, @return.Expression);
-		block.Instructions.Add(new RetInstruction(retusa));
-	}
-
-	private Value BuildLiteral(SimpleBlock block, BoundLiteral literal)
-	{
-		Value imm = GetValue();
-		LoadImmInstruction load = new(imm, literal.ConstantValue);
-		block.Instructions.Add(load);
-		return imm;
-	}
-
-	private Value BuildBinaryExpression(SimpleBlock block, BoundBinaryExpression binary)
-	{
-		Value lhs = BuildExpression(block, binary.Left);
-		Value rhs = BuildExpression(block, binary.Right);
-		Value result = GetValue();
-		if (binary.Op.CorrespondingFunction == null) // builtin operator for builtin types
-		{
-			// For now only addition
-			AddInstruction add = new(result, lhs, rhs);
-			block.Instructions.Add(add);
-			return result;
-		}
-		else
-		{
-			throw new NotImplementedException("Custom operators not implemented yet.");
-		}
+		from.Successors.Add(to);
+		to.Predecessors.Add(from);
 	}
 }

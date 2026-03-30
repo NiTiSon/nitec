@@ -6,5 +6,10 @@ public enum SymbolKind
 	Library = 1,
 	Module = 2,
 	Type = 3,
-	Function = 4,
+	Field = 4,
+	Property = 5,
+	Function = 6,
+	Parameter = 7,
+	GenericParameter = 8,
+	LocalVariable = 9,
 }

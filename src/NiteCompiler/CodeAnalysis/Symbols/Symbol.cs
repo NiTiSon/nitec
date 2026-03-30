@@ -41,6 +41,7 @@ public abstract class Symbol
 	}
 
 	public virtual string Name => string.Empty;
+	public virtual int Arity => 0;
 
 	public abstract string ToDisplayString();
 

@@ -18,6 +18,10 @@ public sealed partial class NiteParser
 		{
 			return ParseLocalVariableDeclarationStatement();
 		}
+		else if (Current.TKind == TokenKind.If)
+		{
+			return ParseIfStatement();
+		}
 		else
 		{
 			return ParseExpressionStatement();
@@ -105,5 +109,30 @@ public sealed partial class NiteParser
 		}
 
 		return new(_syntaxTree, name, typeClause, valueClause);
+	}
+
+	private IfStatementSyntax ParseIfStatement()
+	{
+		Token ifToken = MatchToken(TokenKind.If);
+
+		ExpressionSyntax conditionExpression = ParseExpression();
+
+		StatementSyntax thenStatement = ParseStatement();
+		ElseClauseSyntax? elseClause = null;
+		if (Current.TKind == TokenKind.Else)
+		{
+			elseClause = ParseElseClause();
+		}
+
+		return new IfStatementSyntax(_syntaxTree, ifToken, conditionExpression, thenStatement, elseClause);
+	}
+
+	private ElseClauseSyntax ParseElseClause()
+	{
+		Token elseToken = MatchToken(TokenKind.Else);
+
+		StatementSyntax elseStatement = ParseStatement();
+
+		return new ElseClauseSyntax(_syntaxTree, elseToken, elseStatement);
 	}
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
@@ -69,6 +70,43 @@ public partial class NiteParser
 	{
 		SimpleNameSyntax name = ParseSimpleName();
 
+		ParameterListSyntax parameters = ParseParameterList();
+
+		TypeClause? typeClause = null;
+		if (Current.TKind == TokenKind.Retusa)
+		{
+			Token retusa = PeekAndAdvance();
+			TypeSyntax type = ParseType();
+			typeClause = new(_syntaxTree, retusa, type);
+		}
+
+		FunctionBodySyntax body = ParseFunctionBody();
+
+		return new FunctionDeclarationSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree), parameters, name, typeClause, body);
+	}
+
+	private ParameterSyntax ParseParameter()
+	{
+		SimpleNameSyntax name = ParseSimpleName();
+
+		TypeClause? typeClause = null;
+		if (Current.TKind == TokenKind.Colon)
+		{
+			Token colon = PeekAndAdvance();
+			TypeSyntax type = ParseType();
+			typeClause = new(_syntaxTree, colon, type);
+		}
+		else
+		{
+			typeClause = new(_syntaxTree, name.GetTokens().First(), name);
+			_diagnostics.ReportMissingParameterTypeSpecification(name.Location);
+		}
+
+		return new ParameterSyntax(_syntaxTree, name, typeClause);
+	}
+
+	private ParameterListSyntax ParseParameterList()
+	{
 		Token openParenToken = MatchToken(TokenKind.OpenParen);
 		SyntaxList<ParameterSyntax>.Builder parameters = new();
 		while (Current.TKind != TokenKind.CloseParen ||
@@ -87,38 +125,7 @@ public partial class NiteParser
 			}
 		}
 		Token closeParenToken = MatchToken(TokenKind.CloseParen);
-
-		TypeClause? typeClause = null;
-		if (Current.TKind == TokenKind.Retusa)
-		{
-			Token retusa = PeekAndAdvance();
-			TypeSyntax type = ParseType();
-			typeClause = new(_syntaxTree, retusa, type);
-		}
-
-		FunctionBodySyntax body = ParseFunctionBody();
-
-		return new FunctionDeclarationSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree), parameters.Build(_syntaxTree), name, typeClause, body);
-	}
-
-	private ParameterSyntax ParseParameter()
-	{
-		SimpleNameSyntax name = ParseSimpleName();
-
-		TypeClause? typeClause = null;
-		if (Current.TKind == TokenKind.Colon)
-		{
-			Token colon = PeekAndAdvance();
-			TypeSyntax type = ParseType();
-			typeClause = new(_syntaxTree, colon, type);
-		}
-		else
-		{
-			typeClause = new(_syntaxTree, name.IdentifierToken, name);
-			_diagnostics.ReportMissingParameterTypeSpecification(name.Location);
-		}
-
-		return new ParameterSyntax(_syntaxTree, name, typeClause);
+		return new ParameterListSyntax(_syntaxTree, openParenToken, parameters.Build(_syntaxTree), closeParenToken);
 	}
 
 	private FunctionBodySyntax ParseFunctionBody()

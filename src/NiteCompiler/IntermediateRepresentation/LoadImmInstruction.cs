@@ -5,6 +5,8 @@ namespace NiteCompiler.IntermediateRepresentation;
 
 internal class LoadImmInstruction(Value output, ConstantValue constant) : Instruction
 {
+	public override bool IsBranch => false;
+
 	public readonly Value Output = output;
 	public readonly ConstantValue Constant = constant;
 

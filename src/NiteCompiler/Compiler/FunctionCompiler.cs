@@ -83,7 +83,8 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 			Binder? bodyBinder = sourceFunction.TryGetBodyBinder();
 			if (bodyBinder != null)
 			{
-				BoundNode functionBody = bodyBinder.BindFunctionBody(sourceFunction.Syntax, []);
+				var diagnosticBag = BindingDiagnosticBag.GetInstance();
+				BoundNode functionBody = bodyBinder.BindFunctionBody(sourceFunction.Syntax, diagnosticBag);
 
 				BoundBlock body;
 				if (functionBody.Kind == BoundKind.FunctionBody)
@@ -104,6 +105,7 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 					_metadataBuilder!.SetFunctionBody(function, emittedBody);
 				}
 
+				diagnosticBag.Free();
 				return body;
 			}
 		}

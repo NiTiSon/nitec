@@ -215,7 +215,7 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	private const uint Expression = 0x00_00__20_00;
 	private const uint BinaryFlag = 0x00_01__00_00;
 	private const uint AssignmentFlag = 0x00_02__00_00;
-	public static readonly NodeKind SimpleNameExpression = Reg(Expression + 1, "simple-name-expression");
+	public static readonly NodeKind IdentifierName = Reg(Expression + 1, "identifier-name-expression");
 	public static readonly NodeKind EscapedNameExpression = Reg(Expression + 2, "escaped-name-expression");
 	public static readonly NodeKind ModuleNameExpression = Reg(Expression + 3, "module-name-expression");
 	public static readonly NodeKind TrueLiteralExpression = Reg(Expression + 4, "true-literal-expression");
@@ -272,10 +272,13 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind EmptyStatement = Reg(Statement + 2, "empty-statement");
 	public static readonly NodeKind BlockStatement = Reg(Statement + 3, "block-statement");
 	public static readonly NodeKind ReturnStatement = Reg(Statement + 4, "return-statement");
-	public static readonly NodeKind LocalVariableDeclarationStatement = Reg(Statement + 5, "local-variable-declaration-statement");
+	public static readonly NodeKind IfStatement = Reg(Statement + 5, "if-statement");
+	public static readonly NodeKind LocalVariableDeclarationStatement = Reg(Statement + 6, "local-variable-declaration-statement");
 
 	private const uint Other = 0x00_00_F0_00;
 	public static readonly NodeKind EqualsValueClause = Reg(Other + 1, "<equals-value-clause>");
 	public static readonly NodeKind TypeClause = Reg(Other + 2, "<type-clause>");
-	public static readonly NodeKind LocalVariableDeclarator = Reg(Other + 3, "<local-variable-declarator>");
+	public static readonly NodeKind ElseClause = Reg(Other + 3, "<else-clause>");
+	public static readonly NodeKind LocalVariableDeclarator = Reg(Other + 4, "<local-variable-declarator>");
+	public static readonly NodeKind ParameterList = Reg(Other + 5, "<parameter-list>");
 }

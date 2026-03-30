@@ -9,6 +9,10 @@ internal abstract class BoundExpression : BoundNode
 	{
 	}
 
+	protected BoundExpression(SyntaxNode syntax, bool hasErrors) : base(syntax, hasErrors)
+	{
+	}
+
 	public abstract TypeSymbol Type { get; }
 	public abstract Binder.BindValueKind ValueKind { get; }
 }
