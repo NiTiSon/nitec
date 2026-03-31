@@ -1,6 +1,8 @@
-﻿namespace NiteCompiler.IntermediateRepresentation.ControlFlow;
+﻿using NiteCompiler.CodeAnalysis.Binding;
 
-internal sealed class ControlFlowGraphBuilder
+namespace NiteCompiler.IntermediateRepresentation.ControlFlow;
+
+internal sealed class ControlFlowGraphBuilder : BoundVisitor
 {
 
 }

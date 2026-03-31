@@ -1,6 +1,6 @@
 using NiteCompiler.CodeAnalysis.Syntax;
 
-namespace NiteCompiler.CodeAnalysis.Binding.BoundTree;
+namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal sealed class BoundReturn : BoundStatement
 {
@@ -10,5 +10,10 @@ internal sealed class BoundReturn : BoundStatement
 	public BoundReturn(SyntaxNode syntax, BoundExpression? expression, bool hasErrors = false) : base(syntax, hasErrors)
 	{
 		Expression = expression;
+	}
+
+	public override void Accept(BoundVisitor visitor)
+	{
+		visitor.VisitReturn(this);
 	}
 }

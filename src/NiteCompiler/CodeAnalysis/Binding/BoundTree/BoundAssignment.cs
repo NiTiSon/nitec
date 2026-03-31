@@ -1,12 +1,16 @@
 ﻿using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 
-namespace NiteCompiler.CodeAnalysis.Binding.BoundTree;
+namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal sealed class BoundAssignment : BoundExpression
 {
 	public BoundExpression Left { get; }
 	public BoundExpression Right { get; }
+
+	public override BoundKind Kind => BoundKind.AssignmentExpression;
+	public override TypeSymbol Type => Left.Type;
+	public override Binder.BindValueKind ValueKind => Binder.BindValueKind.RValue;
 
 	public BoundAssignment(SyntaxNode syntax, BoundExpression left, BoundExpression right) : base(syntax)
 	{
@@ -14,7 +18,8 @@ internal sealed class BoundAssignment : BoundExpression
 		Right = right;
 	}
 
-	public override BoundKind Kind => BoundKind.AssignmentExpression;
-	public override TypeSymbol Type => Left.Type;
-	public override Binder.BindValueKind ValueKind => Binder.BindValueKind.RValue;
+	public override void Accept(BoundVisitor visitor)
+	{
+		visitor.VisitAssignment(this);
+	}
 }

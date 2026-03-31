@@ -1,7 +1,7 @@
 ﻿using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 
-namespace NiteCompiler.CodeAnalysis.Binding.BoundTree;
+namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal sealed class BoundLocal : BoundExpression
 {
@@ -15,4 +15,9 @@ internal sealed class BoundLocal : BoundExpression
 	public override BoundKind Kind => BoundKind.Local;
 	public override TypeSymbol Type => Local.Type;
 	public override Binder.BindValueKind ValueKind => Binder.BindValueKind.LValue;
+
+	public override void Accept(BoundVisitor visitor)
+	{
+		visitor.VisitLocal(this);
+	}
 }

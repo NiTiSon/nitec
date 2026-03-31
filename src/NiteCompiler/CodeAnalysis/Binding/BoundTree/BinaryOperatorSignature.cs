@@ -1,7 +1,7 @@
 using System;
 using NiteCompiler.CodeAnalysis.Symbols;
 
-namespace NiteCompiler.CodeAnalysis.Binding.BoundTree;
+namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal struct BinaryOperatorSignature : IEquatable<BinaryOperatorSignature>
 {

@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 using NiteCompiler.CodeAnalysis.Syntax;
 
-namespace NiteCompiler.CodeAnalysis.Binding.BoundTree;
+namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal sealed class BoundBlock : BoundStatement
 {
@@ -12,5 +12,10 @@ internal sealed class BoundBlock : BoundStatement
 	public BoundBlock(SyntaxNode syntax, ImmutableArray<BoundStatement> statements) : base(syntax)
 	{
 		Statements = statements;
+	}
+
+	public override void Accept(BoundVisitor visitor)
+	{
+		visitor.VisitBlock(this);
 	}
 }

@@ -1,6 +1,6 @@
 ﻿using NiteCompiler.CodeAnalysis.Syntax;
 
-namespace NiteCompiler.CodeAnalysis.Binding.BoundTree;
+namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal sealed class BoundIfStatement : BoundStatement
 {
@@ -14,5 +14,10 @@ internal sealed class BoundIfStatement : BoundStatement
 		Condition = condition;
 		ThenStatement = thenStatement;
 		ElseStatement = elseStatement;
+	}
+
+	public override void Accept(BoundVisitor visitor)
+	{
+		visitor.VisitIfStatement(this);
 	}
 }

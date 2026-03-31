@@ -1,4 +1,4 @@
-﻿using NiteCompiler.CodeAnalysis.Binding.BoundTree;
+﻿using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.Compilation;
 using NiteCompiler.Metadata;

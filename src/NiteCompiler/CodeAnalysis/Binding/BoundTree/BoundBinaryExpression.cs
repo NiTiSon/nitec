@@ -1,7 +1,7 @@
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 
-namespace NiteCompiler.CodeAnalysis.Binding.BoundTree;
+namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal sealed class BoundBinaryExpression : BoundExpression
 {
@@ -10,6 +10,7 @@ internal sealed class BoundBinaryExpression : BoundExpression
 	public BoundExpression Right { get; }
 
 	public override BoundKind Kind => BoundKind.BinaryExpression;
+	public override Binder.BindValueKind ValueKind => Binder.BindValueKind.RValue;
 	public override TypeSymbol Type => Op.ReturnType;
 
 	public BoundBinaryExpression(SyntaxNode syntax, BoundExpression left, BinaryOperatorSignature op, BoundExpression right)
@@ -20,5 +21,8 @@ internal sealed class BoundBinaryExpression : BoundExpression
 		Right = right;
 	}
 
-	public override Binder.BindValueKind ValueKind => Binder.BindValueKind.RValue;
+	public override void Accept(BoundVisitor visitor)
+	{
+		visitor.VisitBinaryExpression(this);
+	}
 }

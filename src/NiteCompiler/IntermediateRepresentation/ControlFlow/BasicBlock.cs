@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using NiteCompiler.CodeAnalysis.Binding.BoundTree;
+using NiteCompiler.CodeAnalysis.Binding;
 
 namespace NiteCompiler.IntermediateRepresentation.ControlFlow;
 

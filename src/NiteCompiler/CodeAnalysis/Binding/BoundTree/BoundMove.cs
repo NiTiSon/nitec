@@ -1,6 +1,6 @@
 ﻿using NiteCompiler.CodeAnalysis.Symbols;
 
-namespace NiteCompiler.CodeAnalysis.Binding.BoundTree;
+namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal sealed class BoundMove(BoundExpression expression) : BoundExpression(expression.Syntax)
 {
@@ -8,4 +8,9 @@ internal sealed class BoundMove(BoundExpression expression) : BoundExpression(ex
 	public override BoundKind Kind => BoundKind.Move;
 	public override TypeSymbol Type => Operand.Type;
 	public override Binder.BindValueKind ValueKind => Operand.ValueKind;
+
+	public override void Accept(BoundVisitor visitor)
+	{
+		visitor.VisitMove(this);
+	}
 }
