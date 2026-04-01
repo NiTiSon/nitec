@@ -1,13 +1,14 @@
 ﻿using System.IO;
 using NiteCompiler.CodeAnalysis;
+using NiteCompiler.IntermediateRepresentation.Ssa;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
-internal class LoadImmInstruction(Value output, ConstantValue constant) : Instruction
+internal class LoadImmInstruction(SsaTemp output, ConstantValue constant) : Instruction
 {
 	public override bool IsBranch => false;
 
-	public readonly Value Output = output;
+	public readonly SsaTemp Output = output;
 	public readonly ConstantValue Constant = constant;
 
 	public override void Emit(BinaryWriter writer)

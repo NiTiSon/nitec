@@ -1,9 +1,9 @@
 ﻿namespace NiteCompiler.CodeAnalysis.Symbols;
 
-public abstract class LocalVariableSymbol : Symbol
+public abstract class LocalVariableSymbol : LocalVariableOrParameterSymbol
 {
 	public override SymbolKind Kind => SymbolKind.LocalVariable;
-	public abstract TypeSymbol Type { get; }
+	public abstract override TypeSymbol Type { get; }
 
 	public override void Accept(SymbolVisitor visitor)
 	{

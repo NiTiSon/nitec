@@ -45,7 +45,7 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 		{
 			if (_lateinitParameters.IsDefault)
 			{
-				Interlocked.CompareExchange(ref _lateinitParameters, MakeParameters(), default);
+				ImmutableInterlocked.InterlockedCompareExchange(ref _lateinitParameters, MakeParameters(), default);
 			}
 
 			return _lateinitParameters;

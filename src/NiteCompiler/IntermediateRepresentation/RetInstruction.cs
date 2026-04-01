@@ -1,23 +1,26 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using NiteCompiler.IntermediateRepresentation.Ssa;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
-internal sealed class RetInstruction(Value? value) : Instruction
+internal sealed class RetInstruction(SsaValue? value) : Instruction
 {
 	public override bool IsBranch => true;
 
-	public Value? Value { get; } = value;
+	public SsaValue? Value { get; } = value;
 
 	public override void Emit(BinaryWriter writer)
 	{
-		if (Value == null)
-		{
-			writer.Write((byte)Bytecode.RetVoid);
-		}
-		else
-		{
-			writer.Write((byte)Bytecode.Ret);
-			writer.Write7BitEncodedInt(Value.Id);
-		}
+		throw new NotImplementedException();
+		// if (Value == null)
+		// {
+		// 	writer.Write((byte)Bytecode.RetVoid);
+		// }
+		// else
+		// {
+		// 	writer.Write((byte)Bytecode.Ret);
+		// 	writer.Write7BitEncodedInt(Value.Id);
+		// }
 	}
 }

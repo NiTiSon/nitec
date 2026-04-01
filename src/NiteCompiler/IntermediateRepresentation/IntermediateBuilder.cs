@@ -1,6 +1,8 @@
 ﻿using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.Compilation;
+using NiteCompiler.IntermediateRepresentation.ControlFlow;
+using NiteCompiler.IntermediateRepresentation.Ssa;
 using NiteCompiler.Metadata;
 
 namespace NiteCompiler.IntermediateRepresentation;
@@ -19,19 +21,11 @@ internal sealed class IntermediateBuilder
 	public static byte[] Compile(NiteCompilation compilation, FunctionSymbol function, BoundBlock block,
 		MetadataLibraryBuilder metadata)
 	{
+		IntermediateBuilder builder = new IntermediateBuilder(compilation, function);
+		ControlFlowGraph cfg = ControlFlowGraphBuilder.Build(block);
+
+		var ssa = SsaBuilder.Build(cfg, function);
 
 		return [];
-		// IntermediateBuilder builder = new(compilation, function);
-		//
-		// using MemoryStream mem = new();
-		// using BinaryWriter writer = new(mem);
-		//
-		// Block entryBlock = builder.Build(block, metadata);
-		// foreach (Instruction instruction in entryBlock.Instructions)
-		// {
-		// 	instruction.Emit(writer);
-		// }
-		//
-		// return mem.ToArray();
 	}
 }

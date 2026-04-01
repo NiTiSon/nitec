@@ -19,6 +19,6 @@ internal abstract class BoundVisitor
 	public virtual void VisitIfStatement(BoundIfStatement ifStatement) => DefaultVisit(ifStatement);
 	public virtual void VisitLiteral(BoundLiteral literal) => DefaultVisit(literal);
 	public virtual void VisitLocal(BoundLocal local) => DefaultVisit(local);
-	public virtual void VisitMove(BoundMove move) => DefaultVisit(move);
+	public virtual void VisitParameter(BoundParameter parameter) => DefaultVisit(parameter);
 	public virtual void VisitReturn(BoundReturn returnStatement) => DefaultVisit(returnStatement);
 }

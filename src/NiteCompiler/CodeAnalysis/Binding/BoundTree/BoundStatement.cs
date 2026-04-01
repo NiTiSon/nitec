@@ -7,4 +7,6 @@ internal abstract class BoundStatement : BoundNode
 	protected BoundStatement(SyntaxNode syntax, bool hasErrors = false) : base(syntax, hasErrors)
 	{
 	}
+
+	public bool CompilerGenerated { get; init; }
 }
