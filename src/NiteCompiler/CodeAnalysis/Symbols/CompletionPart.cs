@@ -10,7 +10,7 @@ internal enum CompletionPart
 	None = 0,
 	Attributes = 1 << 0,
 	MembersCompleted = 1 << 3,
-	All = (1 << 3) - 1,
+	All = (1 << 4) - 1,
 
 	// Modules
 	NameToMembersMap = 1 << 1,
