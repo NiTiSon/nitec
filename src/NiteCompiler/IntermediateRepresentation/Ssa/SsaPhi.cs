@@ -27,7 +27,7 @@ internal sealed class SsaPhi
 		foreach (var (block, value) in Inputs)
 		{
 			writer.Write('[');
-			writer.Write(block.Id);
+			writer.Write(block.Name);
 			writer.Write(", ");
 			value.Write(writer);
 			writer.Write(']');

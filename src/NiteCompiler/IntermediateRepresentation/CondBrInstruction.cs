@@ -27,6 +27,6 @@ internal sealed class CondBrInstruction : Instruction
 	{
 		writer.Write("cond br ");
 		Condition.Write(writer);
-		writer.Write($" {ThenBlock.Id}, {ElseBlock.Id}");
+		writer.Write($" {ThenBlock.Name}, {ElseBlock.Name}");
 	}
 }

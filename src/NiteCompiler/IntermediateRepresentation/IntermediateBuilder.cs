@@ -29,7 +29,7 @@ internal sealed class IntermediateBuilder
 
 		foreach (var (basicBlock, ssaBlock) in ssa.Blocks)
 		{
-			Console.WriteLine($"{basicBlock.Id}:");
+			Console.WriteLine($"{basicBlock.Name}:");
 			foreach (SsaPhi phi in ssaBlock.Phis)
 			{
 				Console.Write("  ");

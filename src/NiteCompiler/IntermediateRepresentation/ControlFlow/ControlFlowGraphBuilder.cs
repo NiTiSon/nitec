@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using NiteCompiler.CodeAnalysis.Binding;
 
@@ -15,24 +16,22 @@ internal sealed class ControlFlowGraphBuilder : BoundVisitor
 	public static ControlFlowGraph Build(BoundBlock body)
 	{
 		ControlFlowGraphBuilder builder = new();
-		BasicBlock entry = builder.NewBlock();
+		BasicBlock entry = builder.NewBlock("entry");
 		builder._current = entry;
 
 		builder.Visit(body);
 
-		BasicBlock exit = builder.NewBlock();
+		Debug.Assert(builder._current.Terminator == null);
 
-		if (builder._current.Terminator == null)
-		{
-			Connect(builder._current, exit);
-		}
-
+		builder.RemoveUnreachableBlocks(entry);
 		return new ControlFlowGraph(entry, builder._blocks.ToArray());
 	}
 
-	private BasicBlock NewBlock()
+	private BasicBlock NewBlock(string? name = null)
 	{
-		var block = new BasicBlock(_blocks.Count);
+		name ??= "";
+		name += _blocks.Count;
+		var block = new BasicBlock(name);
 		_blocks.Add(block);
 		return block;
 	}
@@ -43,6 +42,51 @@ internal sealed class ControlFlowGraphBuilder : BoundVisitor
 		to.Predecessors.Add(from);
 
 		from.Terminator ??= new BranchTerminator(node: null, to);
+	}
+
+	private static HashSet<BasicBlock> ComputeReachable(BasicBlock entry)
+	{
+		var visited = new HashSet<BasicBlock>();
+		var stack = new Stack<BasicBlock>();
+
+		stack.Push(entry);
+
+		while (stack.Count > 0)
+		{
+			var block = stack.Pop();
+
+			if (!visited.Add(block))
+				continue;
+
+			foreach (var succ in block.Successors)
+				stack.Push(succ);
+		}
+
+		return visited;
+	}
+
+	private void RemoveUnreachableBlocks(BasicBlock entry)
+	{
+		HashSet<BasicBlock> reachable = ComputeReachable(entry);
+
+		for (int i = _blocks.Count - 1; i >= 0; i--)
+		{
+			BasicBlock block = _blocks[i];
+
+			if (reachable.Contains(block)) continue;
+
+			foreach (BasicBlock predecessor in block.Predecessors)
+			{
+				predecessor.Successors.Remove(block);
+			}
+
+			foreach (BasicBlock successor in block.Successors)
+			{
+				successor.Predecessors.Remove(block);
+			}
+
+			_blocks.RemoveAt(i);
+		}
 	}
 
 	public override void VisitExpressionStatement(BoundExpressionStatement statement)
@@ -62,14 +106,14 @@ internal sealed class ControlFlowGraphBuilder : BoundVisitor
 	{
 		_current.Terminator = new ReturnTerminator(returnStatement);
 
-		_current = NewBlock();
+		_current = NewBlock("return.after");
 	}
 
 	public override void VisitIfStatement(BoundIfStatement node)
 	{
-		BasicBlock thenBlock = NewBlock();
-		BasicBlock? elseBlock = node.ElseStatement != null ? NewBlock() : null;
-		BasicBlock mergeBlock = NewBlock();
+		BasicBlock thenBlock = NewBlock("if.then");
+		BasicBlock? elseBlock = node.ElseStatement != null ? NewBlock("if.else") : null;
+		BasicBlock mergeBlock = NewBlock("if.merge");
 
 		BasicBlock entry = _current;
 
