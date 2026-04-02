@@ -162,8 +162,14 @@ public sealed class NiteCompilation
 	{
 		get
 		{
-			return _lateinitSpecialTypes == null ||
-			       _lateinitSpecialTypes.AsSpan()[1..].All(t => t != null); // skipping first: always null
+			if (_lateinitSpecialTypes == null) return true;
+
+			for (int i = 1; i < _lateinitSpecialTypes.Length; i++)
+			{
+				if (_lateinitSpecialTypes[i] == null) return true;
+			}
+
+			return false;
 		}
 	}
 
@@ -176,6 +182,7 @@ public sealed class NiteCompilation
 		}
 
 		_lateinitSpecialTypes[(int)type.SpecialType] = type;
+		Debug.Assert(LookingForSpecialTypes);
 	}
 
 	public TypeSymbol? GetSpecialType(SpecialType type)
