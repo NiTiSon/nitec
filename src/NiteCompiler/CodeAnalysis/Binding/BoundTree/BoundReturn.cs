@@ -12,6 +12,8 @@ internal sealed class BoundReturn : BoundStatement
 		Expression = expression;
 	}
 
+	public override bool IsBranchStatement => true;
+
 	public override void Accept(BoundVisitor visitor)
 	{
 		visitor.VisitReturn(this);

@@ -21,4 +21,13 @@ internal sealed class AddInstruction(SsaTemp output, SsaValue left, SsaValue rig
 		// writer.Write7BitEncodedInt(right.Id);
 		// writer.Write7BitEncodedInt(right.Id);
 	}
+
+	public override void Write(TextWriter writer)
+	{
+		Output.Write(writer);
+		writer.Write(" = add ");
+		Left.Write(writer);
+		writer.Write(", ");
+		Right.Write(writer);
+	}
 }

@@ -23,4 +23,17 @@ internal sealed class RetInstruction(SsaValue? value) : Instruction
 		// 	writer.Write7BitEncodedInt(Value.Id);
 		// }
 	}
+
+	public override void Write(TextWriter writer)
+	{
+		if (Value == null)
+		{
+			writer.Write("ret void");
+		}
+		else
+		{
+			writer.Write("ret ");
+			Value.Write(writer);
+		}
+	}
 }

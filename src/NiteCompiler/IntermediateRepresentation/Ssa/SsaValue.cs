@@ -1,4 +1,5 @@
-﻿using NiteCompiler.CodeAnalysis.Symbols;
+﻿using System.IO;
+using NiteCompiler.CodeAnalysis.Symbols;
 
 namespace NiteCompiler.IntermediateRepresentation.Ssa;
 
@@ -10,4 +11,6 @@ internal abstract class SsaValue
 	{
 		Type = type;
 	}
+
+	public abstract void Write(TextWriter writer);
 }

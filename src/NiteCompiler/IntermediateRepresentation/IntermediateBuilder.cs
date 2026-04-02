@@ -1,4 +1,5 @@
-﻿using NiteCompiler.CodeAnalysis.Binding;
+﻿using System;
+using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.Compilation;
 using NiteCompiler.IntermediateRepresentation.ControlFlow;
@@ -25,6 +26,23 @@ internal sealed class IntermediateBuilder
 		ControlFlowGraph cfg = ControlFlowGraphBuilder.Build(block);
 
 		var ssa = SsaBuilder.Build(cfg, function);
+
+		foreach (var (basicBlock, ssaBlock) in ssa.Blocks)
+		{
+			Console.WriteLine($"{basicBlock.Id}:");
+			foreach (SsaPhi phi in ssaBlock.Phis)
+			{
+				Console.Write("  ");
+				phi.Write(Console.Out);
+				Console.WriteLine();
+			}
+			foreach (Instruction instruction in ssaBlock.Instructions)
+			{
+				Console.Write("  ");
+				instruction.Write(Console.Out);
+				Console.WriteLine();
+			}
+		}
 
 		return [];
 	}

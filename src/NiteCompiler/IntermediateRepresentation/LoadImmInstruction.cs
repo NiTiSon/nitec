@@ -21,4 +21,11 @@ internal class LoadImmInstruction(SsaTemp output, ConstantValue constant) : Inst
 				break;
 		}
 	}
+
+	public override void Write(TextWriter writer)
+	{
+		Output.Write(writer);
+		writer.Write(" = load ");
+		writer.Write(Constant.U32);
+	}
 }

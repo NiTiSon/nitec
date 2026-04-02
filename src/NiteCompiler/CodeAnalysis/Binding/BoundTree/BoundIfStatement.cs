@@ -16,6 +16,8 @@ internal sealed class BoundIfStatement : BoundStatement
 		ElseStatement = elseStatement;
 	}
 
+	public override bool IsBranchStatement => true;
+
 	public override void Accept(BoundVisitor visitor)
 	{
 		visitor.VisitIfStatement(this);

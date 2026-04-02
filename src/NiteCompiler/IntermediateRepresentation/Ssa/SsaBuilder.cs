@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Symbols;
@@ -36,7 +37,9 @@ internal sealed class SsaBuilder
 
 		InsertPhiNodes(cfg, defs);
 
-		Rename(cfg.Entry, ssa);
+		InitializeParameters(function);
+
+		Rename(cfg.Entry, cfg.DominatorTree, ssa);
 
 		return ssa;
 	}
@@ -103,11 +106,166 @@ internal sealed class SsaBuilder
 		return result;
 	}
 
+	private void InitializeParameters(FunctionSymbol function)
+	{
+		foreach (ParameterSymbol parameter in function.Parameters)
+		{
+			SsaParameter value = new(parameter);
+			_stacks[parameter].Push(value);
+		}
+	}
+
 	private void InsertPhiNodes(ControlFlowGraph cfg, Dictionary<LocalVariableOrParameterSymbol, HashSet<BasicBlock>> defs)
 	{
 	}
 
-	private void Rename(BasicBlock cfgEntry, SsaFunction function)
+	private void Rename(
+		BasicBlock block,
+		IReadOnlyDictionary<BasicBlock, List<BasicBlock>> domTree,
+		SsaFunction function)
 	{
+		var snapshot = SaveStacks();
+
+		var ssaBlock = function.Blocks[block];
+
+		// 1. Handle phi nodes (future-proof)
+		foreach (var phi in ssaBlock.Phis)
+		{
+			var temp = NewTemp(phi.Type);
+			phi.Result = temp;
+			_stacks[phi.Variable].Push(temp);
+		}
+
+		// 2. Rewrite all statements
+		foreach (var stmt in block.Statements)
+		{
+			RewriteStatement(stmt, ssaBlock);
+		}
+		Debug.Assert(block.Terminator is not null);
+		{
+			RewriteTerminator(block.Terminator, ssaBlock);
+		}
+
+		// 3. Fill phi arguments of successors
+		foreach (var succ in block.Successors)
+		{
+			var succBlock = function.Blocks[succ];
+
+			foreach (var phi in succBlock.Phis)
+			{
+				var value = _stacks[phi.Variable].Peek();
+				phi.Inputs.Add(block, value);
+			}
+		}
+
+		// 4. Recurse dominator children
+		foreach (var child in domTree[block])
+		{
+			Rename(child, domTree, function);
+		}
+
+		// 5. Restore stacks
+		RestoreStacks(snapshot);
+	}
+
+	private void RewriteTerminator(ControlFlowTerminator terminator, SsaBlock block)
+	{
+		switch (terminator)
+		{
+			case ConditionalBranchTerminator condBr:
+				SsaValue cond = RewriteExpression(condBr.Condition, block);
+				block.Instructions.Add(new CondBrInstruction(cond, condBr.Then, condBr.ElseOrMerged));
+				break;
+			case ReturnTerminator ret:
+				if (ret.Expression != null)
+				{
+					SsaValue retValue = RewriteExpression(ret.Expression, block);
+					block.Instructions.Add(new RetInstruction(retValue));
+				}
+				else
+				{
+					block.Instructions.Add(new RetInstruction(null));
+				}
+				break;
+			default:
+				throw new UnreachableException($"RewriteTerminator({terminator.GetType()})");
+		}
+	}
+
+	private void RewriteStatement(BoundStatement statement, SsaBlock block)
+	{
+		switch (statement)
+		{
+			case BoundExpressionStatement es:
+				RewriteExpression(es.Expression, block);
+				break;
+
+			default:
+				throw new UnreachableException($"RewriteStatement({statement.GetType()})");
+		}
+	}
+
+	private SsaValue RewriteExpression(BoundExpression expression, SsaBlock block)
+	{
+		return expression switch
+		{
+			BoundLiteral lit => EmitLiteral(lit, block),
+			BoundBinaryExpression bin => EmitBinaryExpression(bin, block),
+
+			_ => throw new UnreachableException($"RewriteExpression({expression.GetType()})")
+		};
+	}
+
+	private SsaValue EmitLiteral(BoundLiteral literal, SsaBlock block)
+	{
+		switch (literal.Type.SpecialType)
+		{
+			case SpecialType.StdNumericsSInt32:
+				SsaTemp output = NewTemp(literal.Type);
+				LoadImmInstruction imm = new(output, literal.ConstantValue);
+				block.Instructions.Add(imm);
+				return output;
+			default:
+				throw new UnreachableException($"EmitLiteral({literal.GetType()})");
+		}
+	}
+
+	private SsaValue EmitBinaryExpression(BoundBinaryExpression binary, SsaBlock block)
+	{
+		if (binary.Op.CorrespondingFunction is not null) // user-defined operator
+		{
+
+		}
+
+		Debug.Assert(binary.Type.SpecialType == SpecialType.StdNumericsSInt32);
+
+		SsaValue lhs = RewriteExpression(binary.Left, block);
+		SsaValue rhs = RewriteExpression(binary.Right, block);
+		SsaTemp result = NewTemp(binary.Type);
+
+		block.Instructions.Add(new AddInstruction(result, lhs, rhs));
+		return result;
+	}
+
+	private Dictionary<LocalVariableOrParameterSymbol, int> SaveStacks()
+	{
+		Dictionary<LocalVariableOrParameterSymbol, int> snapshot = new();
+
+		foreach (var (k, v) in _stacks)
+		{
+			snapshot[k] = v.Count;
+		}
+
+		return snapshot;
+	}
+
+	private void RestoreStacks(Dictionary<LocalVariableOrParameterSymbol, int> snapshot)
+	{
+		foreach (var (k, count) in snapshot)
+		{
+			var stack = _stacks[k];
+			while (stack.Count > count)
+				stack.Pop();
+		}
 	}
 }

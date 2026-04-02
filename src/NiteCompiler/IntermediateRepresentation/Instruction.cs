@@ -6,4 +6,5 @@ internal abstract class Instruction
 {
 	public abstract bool IsBranch { get; }
 	public abstract void Emit(BinaryWriter writer);
+	public abstract void Write(TextWriter writer);
 }

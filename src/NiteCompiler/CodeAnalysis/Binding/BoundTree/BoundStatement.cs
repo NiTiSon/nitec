@@ -4,9 +4,11 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal abstract class BoundStatement : BoundNode
 {
-	protected BoundStatement(SyntaxNode syntax, bool hasErrors = false) : base(syntax, hasErrors)
+	protected BoundStatement(SyntaxNode? syntax, bool hasErrors = false) : base(syntax, hasErrors)
 	{
 	}
+
+	public virtual bool IsBranchStatement => false;
 
 	public bool CompilerGenerated { get; init; }
 }

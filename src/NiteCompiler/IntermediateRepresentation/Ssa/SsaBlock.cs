@@ -7,7 +7,7 @@ internal sealed class SsaBlock
 {
 	public BasicBlock ControlFlowBlock { get; }
 	public List<SsaPhi> Phis { get; } = [];
-	public List<SsaInstruction> Instructions { get; } = [];
+	public List<Instruction> Instructions { get; } = [];
 
 	public SsaBlock(BasicBlock controlFlowBlock)
 	{

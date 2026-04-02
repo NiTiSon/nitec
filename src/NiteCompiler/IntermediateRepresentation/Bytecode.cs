@@ -26,9 +26,10 @@ internal enum Bytecode : byte
 	Not = 0x18,
 	Negate = 0x19,
 
-	BrCond = 0xFB,
-	Br = 0xFC,
-	Ret = 0xFD,
-	RetVoid = 0xFE,
+	BrCond = 0xFA,
+	Br = 0xFB,
+	Ret = 0xFC,
+	RetVoid = 0xFD,
+	Label = 0xFE,
 	TwoByteInstruction = 0xFF,
 }

@@ -1,8 +1,14 @@
-﻿using NiteCompiler.CodeAnalysis.Symbols;
+﻿using System.IO;
+using NiteCompiler.CodeAnalysis.Symbols;
 
 namespace NiteCompiler.IntermediateRepresentation.Ssa;
 
 internal sealed class SsaTemp(TypeSymbol type, int id) : SsaValue(type)
 {
 	public int Id { get; } = id;
+
+	public override void Write(TextWriter writer)
+	{
+		writer.Write($"%{id}");
+	}
 }
