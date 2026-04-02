@@ -1,9 +1,9 @@
 #!bin/nite
 
-module test::the_second::aaa_2;
+module test;
 
 public is_2(x: i32) -> i32 {
-	if x == 2 {
+	if 2 == 2 {
 		return 2i32;
 	} else {
 		return 0;
@@ -22,11 +22,3 @@ module std::numerics;
 
 public type SInt32;
 public type Float32;
-
-/*
-
-public runtime_alloc_array<T>(size: usize) -> *[u8];
-public runtime_resize_array<T>(old: **[u8], new_size: usize);
-public runtime_free_array<T>(array: *[u8]);
-
-*/

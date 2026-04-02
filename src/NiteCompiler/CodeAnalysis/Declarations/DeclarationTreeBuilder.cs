@@ -37,7 +37,17 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 		ModuleNameSyntax name = declaration.Name;
 		SyntaxNode currentNode = declaration;
 
-		var parts = name.Parts;
+		// module x; x -> should reference whole declaration syntax
+		// module x::y; x -> should reference only name x; y -> should reference whole declaration syntax
+		if (name.Parts.Count == 1)
+		{
+			return new SingleModuleDeclaration(
+				name: name.Parts[0].GetName(),
+				syntax: declaration.CreateReference(),
+				nameLocation: (name.Parts[0].Location as SourceLocation)!,
+				members: members);
+		}
+		SyntaxList<SimpleNameSyntax> parts = name.Parts;
 		for (int i = parts.Count - 1; i > 0; i--)
 		{
 			var part = parts[i];
