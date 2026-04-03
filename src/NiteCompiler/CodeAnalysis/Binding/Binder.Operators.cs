@@ -1,6 +1,7 @@
 using System;
 using System.Data.SqlTypes;
 using System.Diagnostics;
+using NiteCompiler.CodeAnalysis.Binding.Operators;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Diagnostics;
@@ -9,6 +10,55 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal partial class Binder
 {
+	protected static bool IsSimpleUnaryOperator(NodeKind kind)
+	{
+		if (kind == NodeKind.AddressOfExpression)
+		{
+			return false;
+		}
+
+		if (kind == NodeKind.DereferencingExpression)
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	private BoundExpression BindSimpleUnaryOperator(UnaryExpressionSyntax syntax, BindingDiagnosticBag diagnostics, BoundExpression expression)
+	{
+		UnaryOperatorKind operatorKind = syntax.Kind.UnaryOperator;
+		UnaryOperatorSignature? resultOperator = null;
+		if (expression.Type.SpecialType != SpecialType.None)
+		{
+			var result = ArrayBuilder<UnaryOperatorSignature>.GetInstance();
+			Compilation.BuiltInOperators.GetOperators(operatorKind, result);
+
+			if (result.Any())
+			{
+				foreach (UnaryOperatorSignature candidate in result)
+				{
+					if (candidate.InputType == expression.Type)
+					{
+						resultOperator = candidate;
+						break;
+					}
+				}
+			}
+
+			result.Free();
+		}
+
+		// builtin operators can be built with null return type if returning type is not registered
+		if (resultOperator?.ReturnType == null)
+		{
+			resultOperator = null;
+		}
+
+		resultOperator ??= new(operatorKind, expression.Type, CreateErrorType());
+		return new BoundUnaryExpression(syntax, resultOperator.Value, expression);
+	}
+
 	protected static bool IsSimpleBinaryOperator(NodeKind kind)
 	{
 		if (kind == NodeKind.ConditionalAndExpression)

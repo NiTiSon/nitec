@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using NiteCompiler.CodeAnalysis.Binding;
+using NiteCompiler.CodeAnalysis.Binding.Operators;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
@@ -33,6 +34,20 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 		{
 			Debug.Assert(IsExpression);
 			return (Precedence)((_value & PrecedenceMask) >> PrecedenceShift);
+		}
+	}
+
+	internal UnaryOperatorKind UnaryOperator
+	{
+		get
+		{
+			if (Equals(UnaryAddExpression)) return UnaryOperatorKind.Plus;
+			if (Equals(UnarySubtractExpression)) return UnaryOperatorKind.Negate;
+			if (Equals(UnaryLogicalNotExpression)) return UnaryOperatorKind.LogicalNot;
+			if (Equals(UnaryTildeExpression)) return UnaryOperatorKind.BitwiseNot;
+			if (Equals(UnaryCircumflexExpression)) return UnaryOperatorKind.Circumflex;
+
+			throw new UnreachableException();
 		}
 	}
 

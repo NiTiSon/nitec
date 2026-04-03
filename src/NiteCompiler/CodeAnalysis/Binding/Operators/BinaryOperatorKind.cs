@@ -1,9 +1,10 @@
 using NiteCompiler.CodeAnalysis.Syntax;
 
-namespace NiteCompiler.CodeAnalysis.Binding;
+namespace NiteCompiler.CodeAnalysis.Binding.Operators;
 
 internal enum BinaryOperatorKind
 {
+	Error = 0,
 	Addition,
 	Subtraction,
 	Multiplication,
@@ -22,4 +23,12 @@ internal enum BinaryOperatorKind
 	Xor,
 	Or,
 	Tilde
+}
+
+internal static class BinaryOperatorKindExtensions
+{
+	extension(BinaryOperatorKind kind)
+	{
+		public int ToIndex() => (int)kind - 1;
+	}
 }

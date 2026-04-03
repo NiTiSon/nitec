@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using NiteCompiler.CodeAnalysis.Binding;
+using NiteCompiler.CodeAnalysis.Binding.Operators;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.IntermediateRepresentation.ControlFlow;
 
@@ -204,8 +205,9 @@ internal sealed class SsaBuilder
 	{
 		return expression switch
 		{
-			BoundLiteral lit => EmitLiteral(lit, block),
-			BoundBinaryExpression bin => EmitBinaryExpression(bin, block),
+			BoundLiteral literal => EmitLiteral(literal, block),
+			BoundUnaryExpression unary => EmitUnaryExpression(unary, block),
+			BoundBinaryExpression binary => EmitBinaryExpression(binary, block),
 
 			_ => throw new UnreachableException($"RewriteExpression({expression.GetType()})")
 		};
@@ -223,6 +225,30 @@ internal sealed class SsaBuilder
 			default:
 				throw new UnreachableException($"EmitLiteral({literal.GetType()})");
 		}
+	}
+
+	private SsaValue EmitUnaryExpression(BoundUnaryExpression unary, SsaBlock block)
+	{
+		if (unary.Op.CorrespondingFunction is not null) // user-defined operator
+		{
+			throw new NotImplementedException("call instruction is not implemented yet");
+		}
+
+		SsaValue value = RewriteExpression(unary.Expression, block);
+
+		if (unary.Op.Kind == UnaryOperatorKind.Plus)
+		{
+			// +expr is a nope operation, no need to allocate new value
+			return value;
+		}
+
+		SsaTemp result = NewTemp(unary.Type);
+		UnaryInstruction instruction = unary.Op.Kind switch
+		{
+			UnaryOperatorKind.Negate => new NegInstruction(result, value)
+		};
+		block.Instructions.Add(instruction);
+		return result;
 	}
 
 	private SsaValue EmitBinaryExpression(BoundBinaryExpression binary, SsaBlock block)

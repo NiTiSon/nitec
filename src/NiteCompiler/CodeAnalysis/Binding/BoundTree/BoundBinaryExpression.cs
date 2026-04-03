@@ -1,3 +1,4 @@
+using NiteCompiler.CodeAnalysis.Binding.Operators;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 

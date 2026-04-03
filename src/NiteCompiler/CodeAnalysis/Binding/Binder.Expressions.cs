@@ -54,9 +54,9 @@ internal partial class Binder
 			case AssignmentExpressionSyntax assignment:
 				return BindAssignmentExpression(assignment, diagnostics);
 
-			// case UnaryExpressionSyntax unary:
-			// 	return BindUnaryExpression(unary, diagnostics);
-			//
+			case UnaryExpressionSyntax unary:
+				return BindUnaryExpression(unary, diagnostics);
+
 			case BinaryExpressionSyntax binary:
 				return BindBinaryExpression(binary, diagnostics);
 
@@ -67,8 +67,20 @@ internal partial class Binder
 				return BindIdentifier(name, invoked, indexed, diagnostics);
 
 			default:
-				throw new Exception($"Unexpected syntax node {syntax.Kind}");
+				throw new UnreachableException($"BindExpression({syntax.Kind})");
 		}
+	}
+
+	private BoundExpression BindUnaryExpression(UnaryExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
+	{
+		var expression = BindRValueWithoutTargetType(syntax.Expression, diagnostics);
+
+		if (IsSimpleUnaryOperator(syntax.Kind))
+		{
+			return BindSimpleUnaryOperator(syntax, diagnostics, expression);
+		}
+
+		throw new NotImplementedException("Pointer operators are not implemented yet.");
 	}
 
 	private BoundExpression BindBinaryExpression(BinaryExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
@@ -81,7 +93,7 @@ internal partial class Binder
 			return BindSimpleBinaryOperator(syntax, diagnostics, left, right);
 		}
 
-		throw new NotImplementedException();
+		throw new NotImplementedException("Operators && and || not implemented yet.");
 	}
 
 	private BoundExpression CheckValue(BoundExpression expression, BindValueKind valueKind, BindingDiagnosticBag diagnostics)
