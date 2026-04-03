@@ -41,16 +41,17 @@ internal partial class Binder
 	private BoundExpression BindSimpleBinaryOperator(BinaryExpressionSyntax syntax, BindingDiagnosticBag diagnostics,
 		BoundExpression left, BoundExpression right)
 	{
+		BinaryOperatorKind operatorKind = syntax.Kind.BinaryOperator;
 		if (left.Type.SpecialType == SpecialType.StdNumericsSInt32 &&
 		    right.Type.SpecialType == SpecialType.StdNumericsSInt32)
 		{
 			TypeSymbol i32 = GetSpecialType(SpecialType.StdNumericsSInt32, diagnostics);
-			BinaryOperatorSignature op = new(BinaryOperatorKind.Addition, i32, i32, i32);
+			BinaryOperatorSignature op = new(operatorKind, i32, i32, i32);
 			return new BoundBinaryExpression(syntax, left, op, right);
 		}
 
 		// TODO: Errors
-		BinaryOperatorSignature opErr = new(BinaryOperatorKind.Addition, left.Type, right.Type, CreateErrorType());
+		BinaryOperatorSignature opErr = new(operatorKind, left.Type, right.Type, CreateErrorType());
 		return new BoundBinaryExpression(syntax, left, opErr, right);
 	}
 

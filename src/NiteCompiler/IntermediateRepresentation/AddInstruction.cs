@@ -4,14 +4,9 @@ using NiteCompiler.IntermediateRepresentation.Ssa;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
-internal sealed class AddInstruction(SsaTemp output, SsaValue left, SsaValue right) : Instruction
+internal sealed class AddInstruction(SsaTemp output, SsaValue left, SsaValue right) : BinaryInstruction(output, left, right)
 {
-	public override bool IsBranch => false;
-
-	public readonly SsaTemp Output = output;
-	public readonly SsaValue
-		Left = left,
-		Right = right;
+	protected override string Mnemonic => "add";
 
 	public override void Emit(BinaryWriter writer)
 	{
@@ -20,14 +15,5 @@ internal sealed class AddInstruction(SsaTemp output, SsaValue left, SsaValue rig
 		// writer.Write7BitEncodedInt(output.Id);
 		// writer.Write7BitEncodedInt(right.Id);
 		// writer.Write7BitEncodedInt(right.Id);
-	}
-
-	public override void Write(TextWriter writer)
-	{
-		Output.Write(writer);
-		writer.Write(" = add ");
-		Left.Write(writer);
-		writer.Write(", ");
-		Right.Write(writer);
 	}
 }

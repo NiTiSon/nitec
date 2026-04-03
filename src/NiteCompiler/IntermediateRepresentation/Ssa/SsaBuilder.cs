@@ -243,7 +243,14 @@ internal sealed class SsaBuilder
 		SsaValue rhs = RewriteExpression(binary.Right, block);
 		SsaTemp result = NewTemp(binary.Type);
 
-		block.Instructions.Add(new AddInstruction(result, lhs, rhs));
+		BinaryInstruction instruction = binary.Op.Kind switch
+		{
+			BinaryOperatorKind.Addition => new AddInstruction(result, lhs, rhs),
+			BinaryOperatorKind.Equal => new CmpEqInstruction(result, lhs, rhs),
+			_ => throw new UnreachableException($"EmitBinaryExpression({binary.Op.Kind})")
+		};
+
+		block.Instructions.Add(instruction);
 		return result;
 	}
 
