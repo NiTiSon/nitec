@@ -128,7 +128,6 @@ internal sealed class SsaBuilder
 
 		var ssaBlock = function.Blocks[block];
 
-		// 1. Handle phi nodes (future-proof)
 		foreach (var phi in ssaBlock.Phis)
 		{
 			var temp = NewTemp(phi.Type);
@@ -136,35 +135,31 @@ internal sealed class SsaBuilder
 			_stacks[phi.Variable].Push(temp);
 		}
 
-		// 2. Rewrite all statements
-		foreach (var stmt in block.Statements)
+		foreach (BoundStatement statement in block.Statements)
 		{
-			RewriteStatement(stmt, ssaBlock);
+			RewriteStatement(statement, ssaBlock);
 		}
 		Debug.Assert(block.Terminator is not null);
 		{
 			RewriteTerminator(block.Terminator, ssaBlock);
 		}
 
-		// 3. Fill phi arguments of successors
-		foreach (var succ in block.Successors)
+		foreach (BasicBlock successor in block.Successors)
 		{
-			var succBlock = function.Blocks[succ];
+			SsaBlock successorSsa = function.Blocks[successor];
 
-			foreach (var phi in succBlock.Phis)
+			foreach (var phi in successorSsa.Phis)
 			{
 				var value = _stacks[phi.Variable].Peek();
 				phi.Inputs.Add(block, value);
 			}
 		}
 
-		// 4. Recurse dominator children
-		foreach (var child in domTree[block])
+		foreach (BasicBlock child in domTree[block])
 		{
 			Rename(child, domTree, function);
 		}
 
-		// 5. Restore stacks
 		RestoreStacks(snapshot);
 	}
 
@@ -234,10 +229,8 @@ internal sealed class SsaBuilder
 	{
 		if (binary.Op.CorrespondingFunction is not null) // user-defined operator
 		{
-
+			throw new NotImplementedException("call instruction is not implemented yet");
 		}
-
-		Debug.Assert(binary.Type.SpecialType == SpecialType.StdNumericsSInt32);
 
 		SsaValue lhs = RewriteExpression(binary.Left, block);
 		SsaValue rhs = RewriteExpression(binary.Right, block);

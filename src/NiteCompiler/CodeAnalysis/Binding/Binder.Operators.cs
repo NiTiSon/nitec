@@ -1,4 +1,5 @@
 using System;
+using System.Data.SqlTypes;
 using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
@@ -42,17 +43,35 @@ internal partial class Binder
 		BoundExpression left, BoundExpression right)
 	{
 		BinaryOperatorKind operatorKind = syntax.Kind.BinaryOperator;
-		if (left.Type.SpecialType == SpecialType.StdNumericsSInt32 &&
-		    right.Type.SpecialType == SpecialType.StdNumericsSInt32)
+		BinaryOperatorSignature? resultOperator = null;
+		if (left.Type.SpecialType != SpecialType.None && right.Type.SpecialType != SpecialType.None)
 		{
-			TypeSymbol i32 = GetSpecialType(SpecialType.StdNumericsSInt32, diagnostics);
-			BinaryOperatorSignature op = new(operatorKind, i32, i32, i32);
-			return new BoundBinaryExpression(syntax, left, op, right);
+			var result = ArrayBuilder<BinaryOperatorSignature>.GetInstance();
+			Compilation.BuiltInOperators.GetOperators(operatorKind, result);
+
+			if (result.Any())
+			{
+				foreach (BinaryOperatorSignature candidate in result)
+				{
+					if (candidate.LeftType == left.Type && candidate.RightType == right.Type)
+					{
+						resultOperator = candidate;
+						break;
+					}
+				}
+			}
+
+			result.Free();
 		}
 
-		// TODO: Errors
-		BinaryOperatorSignature opErr = new(operatorKind, left.Type, right.Type, CreateErrorType());
-		return new BoundBinaryExpression(syntax, left, opErr, right);
+		// builtin operators can be built with null return type if returning type is not registered
+		if (resultOperator?.ReturnType == null)
+		{
+			resultOperator = null;
+		}
+
+		resultOperator ??= new(operatorKind, left.Type, right.Type, CreateErrorType());
+		return new BoundBinaryExpression(syntax, left, resultOperator.Value, right);
 	}
 
 	private BoundExpression BindAssignmentExpression(AssignmentExpressionSyntax syntax, BindingDiagnosticBag diagnostics)

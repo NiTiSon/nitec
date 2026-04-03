@@ -28,6 +28,19 @@ public sealed partial class NiteCompilation
 	public DiagnosticBag Diagnostics { get; } = [];
 	internal SourceLibrarySymbol SourceLibrary { get; }
 
+	internal BuiltInOperators BuiltInOperators
+	{
+		get
+		{
+			if (field == null)
+			{
+				Interlocked.CompareExchange(ref field, new BuiltInOperators(this), null);
+			}
+
+			return field;
+		}
+	}
+
 	private NiteCompilation(
 		string libraryName,
 		ImmutableArray<SyntaxTree> syntaxTrees,
@@ -133,7 +146,7 @@ public sealed partial class NiteCompilation
 
 	public TypeSymbol? GetSpecialType(SpecialType type)
 	{
-		if (type == SpecialType.None) return null;
+		Debug.Assert(type != SpecialType.None);
 
 		if (type >= SpecialType.Count)
 		{
