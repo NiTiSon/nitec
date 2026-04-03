@@ -8,7 +8,7 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 internal sealed class LookupResult
 {
 	public LookupResultKind Kind { get; private set; }
-	public List<Symbol> Symbols { get; }
+	public ArrayBuilder<Symbol> Symbols { get; }
 	public Diagnostic? Error { get; private set; }
 
 	private readonly ObjectPool<LookupResult> _pool;
@@ -19,7 +19,7 @@ internal sealed class LookupResult
 	{
 		_pool = pool;
 		Kind = LookupResultKind.Empty;
-		Symbols = [];
+		Symbols = ArrayBuilder<Symbol>.GetInstance();
 		Error = null;
 	}
 
@@ -43,7 +43,8 @@ internal sealed class LookupResult
 
 	public void Free()
 	{
-		this.Clear();
+		Clear();
+		Symbols.Free();
 		_pool.Free(this);
 	}
 

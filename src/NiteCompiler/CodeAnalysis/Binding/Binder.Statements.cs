@@ -125,7 +125,7 @@ internal partial class Binder
 		var syntaxStatements = syntax.Statements;
 		int statementCount = syntaxStatements.Count;
 
-		List<BoundStatement> boundStatements = new List<BoundStatement>(statementCount);
+		var boundStatements = ArrayBuilder<BoundStatement>.GetInstance(statementCount);
 
 		for (int i = 0; i < statementCount; i++)
 		{
@@ -133,7 +133,7 @@ internal partial class Binder
 			boundStatements.Add(boundStatement);
 		}
 
-		return new BoundBlock(syntax, [..boundStatements]);
+		return new BoundBlock(syntax, boundStatements.ToImmutableAndFree());
 	}
 
 	private BoundExpressionStatement BindExpressionStatement(ExpressionStatementSyntax syntax, BindingDiagnosticBag diagnostics)

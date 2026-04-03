@@ -23,7 +23,7 @@ public sealed class SourceLines : IEnumerable<TextLine>
 	{
 		Source = source ?? throw new ArgumentNullException(nameof(source));
 
-		var lines = new List<TextLine>(capacity: 32);
+		var lines = ArrayBuilder<TextLine>.GetInstance(32);
 
 		int start = 0;
 		for (int i = 0; i < Source.Length;)
@@ -44,7 +44,7 @@ public sealed class SourceLines : IEnumerable<TextLine>
 		if (start < Source.Length)
 			lines.Add(new TextLine(lines.Count, start, Source.Length - start));
 
-		_lines = lines.ToArray();
+		_lines = lines.ToArrayAndFree();
 	}
 
 	public TextLine GetLineByIndex(int lineIndex)

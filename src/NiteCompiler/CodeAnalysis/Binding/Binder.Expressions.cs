@@ -137,7 +137,7 @@ internal partial class Binder
 		}
 		else
 		{
-			List<Symbol> group = [];
+			var group = ArrayBuilder<Symbol>.GetInstance();
 			Symbol? symbol = GetSymbolOrFunctionGroup(result, name, identifierName, arity: 0, group,  diagnostics, out bool isError);
 
 			if (symbol is null) // function group
@@ -150,6 +150,7 @@ internal partial class Binder
 			{
 				boundExpression = BindNonFunction(name, symbol, diagnostics, result.Kind, indexed, isError);
 			}
+			group.Free();
 		}
 
 		result.Free();
@@ -168,13 +169,13 @@ internal partial class Binder
 		}
 	}
 
-	private Symbol? GetSymbolOrFunctionGroup(LookupResult result, SyntaxNode node, string identifierName, int arity, List<Symbol> methodGroup, BindingDiagnosticBag diagnostics, out bool wasError)
+	private Symbol? GetSymbolOrFunctionGroup(LookupResult result, SyntaxNode node, string identifierName, int arity, ArrayBuilder<Symbol> methodGroup, BindingDiagnosticBag diagnostics, out bool wasError)
 	{
 		Debug.Assert(methodGroup.Count == 0);
 		wasError = false;
 
 		Symbol? other = null;
-		foreach (var symbol in result.Symbols)
+		foreach (Symbol symbol in result.Symbols)
 		{
 			var kind = symbol.Kind;
 			if (methodGroup.Count > 0)
@@ -183,7 +184,7 @@ internal partial class Binder
 				if (existingKind != kind)
 				{
 					if ((existingKind == SymbolKind.Function) ||
-					    ((existingKind == SymbolKind.Property) && (kind != SymbolKind.Function)))
+					    (existingKind == SymbolKind.Property && kind != SymbolKind.Function))
 					{
 						other = symbol;
 						continue;
@@ -225,7 +226,7 @@ internal partial class Binder
 		return ResultSymbol(result, identifierName, arity, node, diagnostics, out wasError, null);
 	}
 
-	private static bool IsFunctionGroup(List<Symbol> members)
+	private static bool IsFunctionGroup(ArrayBuilder<Symbol> members)
 	{
 		Debug.Assert(members.Count > 0);
 

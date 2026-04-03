@@ -1,14 +1,14 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Runtime.InteropServices.Marshalling;
 
 namespace NiteCompiler;
 
 [DebuggerDisplay("Count = {Count,nq}")]
 [DebuggerTypeProxy(typeof(ArrayBuilder<>.DebuggerProxy))]
-public sealed class ArrayBuilder<T>
+public sealed class ArrayBuilder<T> : ICollection<T>
 {
 	private const int PooledArrayLengthLimit = 64;
 	private static readonly ObjectPool<ArrayBuilder<T>> Pool = CreatePool();
@@ -83,6 +83,26 @@ public sealed class ArrayBuilder<T>
 	public void Add(T item)
 	{
 		_builder.Add(item);
+	}
+
+	public void AddRange<U>(ArrayBuilder<U> items) where U : T
+	{
+		_builder.AddRange(items._builder);
+	}
+
+	public void AddRange(params ImmutableArray<T> items)
+	{
+		_builder.AddRange(items);
+	}
+
+	public void AddRange(IEnumerable<T> items)
+	{
+		_builder.AddRange(items);
+	}
+
+	public void AddRange(params T[] items)
+	{
+		_builder.AddRange(items);
 	}
 
 	public void Insert(int index, T item)
@@ -268,6 +288,17 @@ public sealed class ArrayBuilder<T>
 		Free();
 		return result;
 	}
+
+	IEnumerator IEnumerable.GetEnumerator()
+	{
+		return _builder.GetEnumerator();
+	}
+
+	public IEnumerator<T> GetEnumerator()
+	{
+		return _builder.GetEnumerator();
+	}
+
 	public void Free()
 	{
 		var pool = _pool;
