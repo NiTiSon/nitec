@@ -198,6 +198,9 @@ public sealed partial class NiteCompilation
 
 	public void EmitNiteLibrary(Stream stream)
 	{
-		MetadataLibraryBuilder.Translate(this, stream);
+		BindingDiagnosticBag diagnostics = BindingDiagnosticBag.GetInstance();
+		MetadataLibraryBuilder.Translate(this, stream, diagnostics);
+
+		diagnostics.Free();
 	}
 }

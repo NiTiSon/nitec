@@ -16,24 +16,27 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 {
 	private readonly NiteCompilation _compilation;
 	private readonly MetadataLibraryBuilder? _metadataBuilder;
+	private readonly BindingDiagnosticBag _diagnostics;
 	private readonly Predicate<Symbol>? _filter;
 	private readonly CancellationToken _cancellationToken;
 
 	private FunctionCompiler(
 		NiteCompilation compilation,
+		BindingDiagnosticBag diagnostics,
 		MetadataLibraryBuilder? metadataBuilder = null,
 		Predicate<Symbol>? filter = null,
 		CancellationToken cancellationToken = default)
 	{
 		_compilation = compilation;
 		_metadataBuilder = metadataBuilder;
+		_diagnostics = diagnostics;
 		_filter = filter;
 		_cancellationToken = cancellationToken;
 	}
 
-	public static void CompileBodies(NiteCompilation compilation, MetadataLibraryBuilder? metadataBuilder)
+	public static void CompileBodies(NiteCompilation compilation, BindingDiagnosticBag diagnostics, MetadataLibraryBuilder? metadataBuilder)
 	{
-		FunctionCompiler compiler = new(compilation, metadataBuilder);
+		FunctionCompiler compiler = new(compilation, diagnostics, metadataBuilder);
 
 		compiler.CompileModule(compilation.SourceLibrary.GlobalModule);
 	}
@@ -67,10 +70,10 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 			return null;
 		}
 
-		return BindFunctionBody(symbol);
+		return BindFunctionBody(symbol, _diagnostics);
 	}
 
-	private BoundBlock? BindFunctionBody(FunctionSymbol function)
+	private BoundBlock? BindFunctionBody(FunctionSymbol function, BindingDiagnosticBag diagnostics)
 	{
 		if (function is SourceFunctionSymbol sourceFunction)
 		{
@@ -82,8 +85,7 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 			Binder? bodyBinder = sourceFunction.TryGetBodyBinder();
 			if (bodyBinder != null)
 			{
-				var diagnosticBag = BindingDiagnosticBag.GetInstance();
-				BoundNode functionBody = bodyBinder.BindFunctionBody(sourceFunction.Syntax, diagnosticBag);
+				BoundNode functionBody = bodyBinder.BindFunctionBody(sourceFunction.Syntax, diagnostics);
 
 				BoundBlock body;
 				if (functionBody.Kind == BoundKind.FunctionBody)
@@ -103,8 +105,7 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 
 					_metadataBuilder!.SetFunctionBody(function, emittedBody);
 				}
-
-				diagnosticBag.Free();
+				
 				return body;
 			}
 		}
@@ -112,8 +113,7 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 		throw new UnreachableException();
 	}
 
-	private FunctionBody GenerateBody(FunctionSymbol symbol,
-		BoundBlock block)
+	private FunctionBody GenerateBody(FunctionSymbol symbol, BoundBlock block)
 	{
 		byte[] ir = IntermediateBuilder.Compile(_compilation, symbol, block, _metadataBuilder!);
 

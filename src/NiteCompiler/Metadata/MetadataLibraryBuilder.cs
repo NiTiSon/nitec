@@ -6,6 +6,7 @@ using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Symbols.Source;
 using NiteCompiler.Compilation;
 using NiteCompiler.Compiler;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.Metadata;
 
@@ -37,13 +38,13 @@ internal sealed class MetadataLibraryBuilder : SymbolVisitor<MetadataEntry?, Met
 		return table;
 	}
 
-	public static void Translate(NiteCompilation compilation, Stream library)
+	public static bool Translate(NiteCompilation compilation, Stream library, BindingDiagnosticBag diagnostics)
 	{
 		Guard.CanWrite(library);
 
 		MetadataLibraryBuilder builder = new(compilation);
 		builder.Visit(compilation.SourceLibrary, null);
-		FunctionCompiler.CompileBodies(compilation, builder);
+		FunctionCompiler.CompileBodies(compilation, diagnostics, builder);
 
 		using BinaryWriter writer = new(library);
 		writer.Write(['n', 'l', 'i', 'b']);
@@ -56,6 +57,8 @@ internal sealed class MetadataLibraryBuilder : SymbolVisitor<MetadataEntry?, Met
 		{
 			table?.Write(writer);
 		}
+
+		return diagnostics.Diagnostics.HasAnyErrors;
 	}
 
 	public override MetadataEntry? VisitLibrary(LibrarySymbol lib, MetadataEntry? container)
