@@ -6,7 +6,7 @@
     },
     "<input>": {
       "commandName": "Project",
-      "commandLineArgs": "test2.nite --corelib --output-kind=nitis_lib --emit nitis-bc syntax-tree"
+      "commandLineArgs": "test2.nite -k executable"
     }
   }
 }

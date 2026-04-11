@@ -3,19 +3,19 @@ namespace NiteCompiler.CliTool;
 public enum OutputKind
 {
 	/// <summary>
-	/// <c>.nlib`</c> format with full metadata.
+	/// <c>.nlib</c> format with full metadata.
 	/// </summary>
-	nitis_lib,
+	NiTiSLibrary,
 	/// <summary>
 	/// Native dynamic linking library.
 	/// </summary>
-	shared,
+	SharedLibrary,
 	/// <summary>
 	/// Native static library.
 	/// </summary>
-	@static,
+	StaticLibrary,
 	/// <summary>
 	/// Executable file.
 	/// </summary>
-	exec,
+	Executable,
 }

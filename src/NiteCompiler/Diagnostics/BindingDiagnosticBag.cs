@@ -32,4 +32,10 @@ internal sealed class BindingDiagnosticBag
 			return _bag;
 		}
 	}
+
+	public DiagnosticBag? ToBagAndFree()
+	{
+		Free();
+		return _bag;
+	}
 }

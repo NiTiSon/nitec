@@ -12,79 +12,36 @@ using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CliTool;
 
-public static class Program
+public static class CliTool
 {
-	public static void Main(string[] args)
+	private static void Main(string[] args)
 	{
-		#if DEBUG
-		Console.WriteLine("[DEBUG] Input arguments: [" + string.Join(", ", args) + "]");
-		Stopwatch stopwatch = Stopwatch.StartNew();
-		#if TRACE
 		Trace.Listeners.Add(new ConsoleTraceListener());
-		#endif
-		#endif
-
 		Console.OutputEncoding = Encoding.UTF8;
 
-		Argument<FileInfo[]> inputArgument = new("sources")
-		{
-			Description = "Input source files.",
-		};
-		Option<string> libraryNameOption = new("-n", "--name")
-		{
-			Description = "Name of library.",
-		};
-		Option<string> outputNameOption = new("-o", "--output")
-		{
-			Description = "Path of the output file.",
-		};
-		Option<bool> coreLibraryOption = new("--corelib")
-		{
-			Description = "Marks current library as core library.\nAllows compiler to resolve special types within current library.\nAllows not any dependency.",
-		};
-		Option<OutputKind> outputKindOption = new("--output-kind")
-		{
-			DefaultValueFactory = (_) => OutputKind.exec,
-			Description = "Determines output format."
-		};
-		Option<string[]> emitOption = new("--emit")
-		{
-			Arity = ArgumentArity.OneOrMore,
-			AllowMultipleArgumentsPerToken = true
-		};
-		emitOption.AcceptOnlyFromAmong("syntax-tree", "nitis-bc", "llvm-bc", "llvm");
-
-
 		RootCommand rootCommand = new("Nite CLI compiler tool.");
-		rootCommand.Arguments.Add(inputArgument);
-		rootCommand.Options.Add(libraryNameOption);
-		rootCommand.Options.Add(outputNameOption);
-		rootCommand.Options.Add(coreLibraryOption);
-		rootCommand.Options.Add(outputKindOption);
-		rootCommand.Options.Add(emitOption);
+		Options.ConfigureCompileCommand(rootCommand);
 
-		rootCommand.SetAction(
-			result => Compile(
-				libraryName: result.GetValue(libraryNameOption),
-				outputName: result.GetValue(outputNameOption),
-				sources: result.GetValue(inputArgument),
-				outputKind: result.GetValue(outputKindOption),
-				emitOptions: result.GetValue(emitOption),
-				isCoreLibrary: result.GetValue(coreLibraryOption)));
+		rootCommand.SetAction(Compile);
 
 		ParseResult parseResult = rootCommand.Parse(args);
 		parseResult.Configuration.EnableDefaultExceptionHandler = false;
 		parseResult.Invoke();
+	}
 
-		foreach (ParseError parseError in parseResult.Errors)
+	private static void Compile(ParseResult result)
+	{
+		foreach (ParseError parseError in result.Errors)
 		{
 			Console.Error.WriteLine(parseError.Message);
 		}
 
-		#if DEBUG
-		stopwatch.Stop();
-		Console.WriteLine("[DEBUG] Compilation time: {0:g}", stopwatch.Elapsed);
-		#endif
+		FileInfo[]? inputFiles = result.GetValue(Options.Input);
+		FileInfo[]? dependencies = result.GetValue(Options.Dependencies);
+		string? libraryName = result.GetValue(Options.LibraryName);
+		string? outputPath = result.GetValue(Options.OutputPath);
+
+		// Compile(inputFiles, dependencies, libraryName);
 	}
 
 	private static void Compile(string? libraryName,
@@ -150,11 +107,11 @@ public static class Program
 
 		switch (outputKind)
 		{
-			case OutputKind.nitis_lib:
+			case OutputKind.NiTiSLibrary:
 			{
 				outputName ??= $"{libraryName}.nlib";
 				using FileStream stream = new(outputName, FileMode.Create, FileAccess.Write);
-				compilation.EmitNiteLibrary(stream);
+				compilation.EmitNiteLibrary(stream, out _);
 				compilation.EmitLLVMModule();
 				break;
 			}
@@ -165,6 +122,24 @@ public static class Program
 			}
 		}
 
+	}
+
+	private static string ReplaceForbiddenFileNameCharacters(string fileName, char replacement = ' ')
+	{
+		Span<char> newFileName = stackalloc char[fileName.Length];
+		fileName.CopyTo(newFileName);
+		foreach (char forbidden in Path.GetInvalidFileNameChars())
+		{
+			for (int i = 0; i < fileName.Length; i++)
+			{
+				if (fileName[i] == forbidden)
+				{
+					newFileName[i] = replacement;
+				}
+			}
+		}
+
+		return newFileName.ToString();
 	}
 
 	private static void WriteDiagnostic(Diagnostic diagnostic)
@@ -257,7 +232,7 @@ public static class Program
 	{
 		HashSet<FileInfo> verified = new(files.Length, FileInfoFullNameComparer.Instance);
 
-		bool hasDuplicates = !files.All(file => verified.Add(file));
+		bool hasDuplicates = !files.All(verified.Add);
 		if (hasDuplicates) files = verified.ToArray();
 		return hasDuplicates;
 	}

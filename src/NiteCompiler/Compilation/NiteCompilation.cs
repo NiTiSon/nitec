@@ -186,7 +186,7 @@ public sealed partial class NiteCompilation
 
 		module.Verify(LLVMVerifierFailureAction.LLVMReturnStatusAction);
 
-		var targetTriple = "x86_64-unknown-windows";
+		var targetTriple = LLVMTargetRef.DefaultTriple;
 
 		LLVMTargetRef target = LLVMTargetRef.GetTargetFromTriple(targetTriple);
 		LLVMTargetMachineRef targetMachine = target.CreateTargetMachine(
@@ -196,11 +196,11 @@ public sealed partial class NiteCompilation
 		targetMachine.EmitToFile(module, "add.o", LLVMCodeGenFileType.LLVMObjectFile);
 	}
 
-	public void EmitNiteLibrary(Stream stream)
+	public void EmitNiteLibrary(Stream stream, out DiagnosticBag? resultDiagnostics)
 	{
 		BindingDiagnosticBag diagnostics = BindingDiagnosticBag.GetInstance();
 		MetadataLibraryBuilder.Translate(this, stream, diagnostics);
 
-		diagnostics.Free();
+		resultDiagnostics = diagnostics.ToBagAndFree();
 	}
 }
