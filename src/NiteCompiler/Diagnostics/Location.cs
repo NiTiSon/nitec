@@ -11,7 +11,7 @@ public abstract class Location
 	[NotNullIfNotNull(nameof(Span))]
 	public virtual SyntaxTree? SyntaxTree => null;
 	public virtual TextSpan? Span => null;
-	public virtual string? Filename => SyntaxTree?.Filename;
+	public virtual string? Filename => SyntaxTree?.FilePath;
 
 	public static Location Create(SyntaxTree tree, TextSpan span)
 	{

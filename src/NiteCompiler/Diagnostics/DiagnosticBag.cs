@@ -52,6 +52,14 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		}
 	}
 
+	public void AddRange(IEnumerable<Diagnostic> diagnostics)
+	{
+		foreach (var diagnostic in diagnostics)
+		{
+			Add(diagnostic);
+		}
+	}
+
 	public void DrainInto(DiagnosticBag diagnostics)
 	{
 		diagnostics.AddRange(_diagnostics.ToArray());
@@ -69,6 +77,21 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 	}
 
 	// REPORTS
+	public void ReportFileDoesNotExists(string path)
+	{
+		Add(DiagnosticDescriptor.FileDoesNotExist, [], path);
+	}
+
+	public void ReportHaveNoPrivilegesToReadFile(string path)
+	{
+		Add(DiagnosticDescriptor.HaveNoPrivilegesToReadFile, [], path);
+	}
+
+	public void ReportUnableToOpenFile(string path)
+	{
+		Add(DiagnosticDescriptor.UnableToOpenFile, [], path);
+	}
+
 	public void ReportDuplicateSourceFiles()
 	{
 		Add(DiagnosticDescriptor.DuplicateSourceFiles, []);

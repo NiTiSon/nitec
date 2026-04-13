@@ -10,7 +10,7 @@ namespace NiteCompiler.CodeAnalysis.Text;
 /// Span of text.
 /// </summary>
 [DataContract]
-public readonly struct TextSpan : IEquatable<TextSpan>
+public readonly struct TextSpan : IEquatable<TextSpan>, IComparable<TextSpan>, IComparable
 {
 	[DataMember(Order = 0)] public readonly int Start;
 	[DataMember(Order = 1)] public readonly int Length;
@@ -81,6 +81,19 @@ public readonly struct TextSpan : IEquatable<TextSpan>
 		return obj is TextSpan other && Equals(other);
 	}
 
+	public int CompareTo(object? obj)
+	{
+		if (obj is null) return 1;
+		return obj is TextSpan other ? CompareTo(other) : throw new ArgumentException($"Object must be of type {nameof(TextSpan)}");
+	}
+
+	public int CompareTo(TextSpan other)
+	{
+		var startComparison = Start.CompareTo(other.Start);
+		if (startComparison != 0) return startComparison;
+		return Length.CompareTo(other.Length);
+	}
+
 	public override int GetHashCode()
 	{
 		return HashCode.Combine(Start, Length);
@@ -94,5 +107,25 @@ public readonly struct TextSpan : IEquatable<TextSpan>
 	public static bool operator !=(TextSpan left, TextSpan right)
 	{
 		return !(left == right);
+	}
+
+	public static bool operator <(TextSpan left, TextSpan right)
+	{
+		return left.CompareTo(right) < 0;
+	}
+
+	public static bool operator >(TextSpan left, TextSpan right)
+	{
+		return left.CompareTo(right) > 0;
+	}
+
+	public static bool operator <=(TextSpan left, TextSpan right)
+	{
+		return left.CompareTo(right) <= 0;
+	}
+
+	public static bool operator >=(TextSpan left, TextSpan right)
+	{
+		return left.CompareTo(right) >= 0;
 	}
 }

@@ -68,35 +68,13 @@ public sealed partial class NiteCompilation
 	}
 
 	public static NiteCompilation Create(
-		string? libraryName,
-		IEnumerable<FileInfo>? sourceFiles,
-		IEnumerable<Dependency>? dependencies,
-		NiteCompilationOptions? options)
-	{
-		var sources = ImmutableArray.CreateBuilder<SyntaxTree>();
-		options ??= NiteCompilationOptions.Default;
-		foreach (var sourceFile in sourceFiles ?? [])
-		{
-			SyntaxTree syntaxTree = SyntaxTree.FromFile(sourceFile, options);
-			sources.Add(syntaxTree);
-		}
-
-		return Create(libraryName, sources.ToImmutableArray(), dependencies, options);
-	}
-
-	private static NiteCompilation Create(
-		string? libraryName,
+		string libraryName,
 		IEnumerable<SyntaxTree>? sourceFiles,
 		IEnumerable<Dependency>? dependencies,
 		NiteCompilationOptions options)
 	{
 		ImmutableArray<SyntaxTree> syntaxTrees = sourceFiles?.ToImmutableArray() ?? [];
 		ImmutableArray<Dependency> dependenciesArray = dependencies?.ToImmutableArray() ?? [];
-
-		if (libraryName is null && !syntaxTrees.IsEmpty)
-		{
-			libraryName = Path.GetFileNameWithoutExtension(syntaxTrees[0].Filename);
-		}
 
 		libraryName ??= FallbackLibraryName;
 		return new NiteCompilation(libraryName, syntaxTrees, dependenciesArray, options);
@@ -114,7 +92,7 @@ public sealed partial class NiteCompilation
 			}
 		}
 
-		throw new KeyNotFoundException($"SyntaxTree is not used within this compilation: '{tree.Filename ?? "empty-filepath"}'");
+		throw new KeyNotFoundException($"SyntaxTree is not used within this compilation: '{tree.FilePath ?? "empty-filepath"}'");
 	}
 
 	internal bool LookingForSpecialTypes

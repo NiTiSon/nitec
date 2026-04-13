@@ -4,6 +4,9 @@ namespace NiteCompiler.Diagnostics;
 public partial class DiagnosticDescriptor
 {
 	public static readonly DiagnosticDescriptor
+		FileDoesNotExist,
+		HaveNoPrivilegesToReadFile,
+		UnableToOpenFile,
 		DuplicateSourceFiles,
 		DependenciesInCoreLibrary,
 		NotTerminatedMultilineComment,
@@ -26,8 +29,10 @@ public partial class DiagnosticDescriptor
 	static DiagnosticDescriptor()
 	{
 		// Compilation
-		DuplicateSourceFiles = new("duplicate-source-files",
-			"Input files contains duplicates.", DiagnosticSeverity.Warning);
+		FileDoesNotExist = new("file-not-found", "File '{0}' does not exist.");
+		HaveNoPrivilegesToReadFile = new("have-no-privileges-to-read-file", "Process have not enough privileges to read file '{0}'.");
+		UnableToOpenFile = new("unable-to-open-file", "Unable to open the file '{0}'.");
+		DuplicateSourceFiles = new("duplicate-source-files", "Input files contains duplicates.");
 		DependenciesInCoreLibrary = new("dependencies-in-core-lib", "Core library can't have any dependencies.");
 
 		// Lexing

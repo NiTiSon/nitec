@@ -12,7 +12,7 @@ public class NiteLexerTests
 	private static Token LexSingle(string text)
 	{
 		DiagnosticBag diagnostics = [];
-		SyntaxTree tree = SyntaxTree.FromText(text, NiteCompilationOptions.Default, filename: "<tests>");
+		SyntaxTree tree = SyntaxTree.ParseText(text, null, NiteCompilationOptions.Default);
 		NiteLexer lexer = new(tree, NiteCompilationOptions.Default, diagnostics);
 		return lexer.Lex();
 	}
@@ -47,7 +47,7 @@ public class NiteLexerTests
 	public void Lex_EndOfFile_ReturnsEofToken()
 	{
 		DiagnosticBag diagnostics = [];
-		SyntaxTree tree = SyntaxTree.FromText(string.Empty, NiteCompilationOptions.Default, "<test>");
+		SyntaxTree tree = SyntaxTree.ParseText(string.Empty, null, NiteCompilationOptions.Default);
 		NiteLexer lexer = new(tree, NiteCompilationOptions.Default, diagnostics);
 		Token token = lexer.Lex();
 

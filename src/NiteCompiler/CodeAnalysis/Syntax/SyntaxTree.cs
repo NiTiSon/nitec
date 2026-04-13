@@ -18,35 +18,29 @@ public sealed class SyntaxTree
 	public SourceText Text { get; }
 	public CompilationUnitSyntax Root { get; private set; } = null!;
 	public DiagnosticBag Diagnostics { get; } = [];
-	public string? Filename { get; }
+	public string? FilePath { get; }
 
-	private SyntaxTree(SourceText text, string? filename)
+	private SyntaxTree(SourceText text, string? filePath)
 	{
 		Text = text;
-		Filename = filename;
+		FilePath = filePath;
 	}
 
-	public static SyntaxTree FromFile(FileInfo file, NiteCompilationOptions options)
+	public static SyntaxTree ParseText(string text, string? path, NiteCompilationOptions options,
+		CancellationToken cancellationToken = default)
 	{
-		string text = File.ReadAllText(file.FullName);
-		return Create(text, options, file.FullName);
+		return ParseText(SourceText.FromText(text), path, options, cancellationToken);
 	}
 
-	public static SyntaxTree FromText(string text, NiteCompilationOptions options, string? filename)
+	public static SyntaxTree ParseText(SourceText text, string? path, NiteCompilationOptions options, CancellationToken cancellationToken = default)
 	{
-		return Create(text, options, filename);
-	}
-
-	public static SyntaxTree Create(string text, NiteCompilationOptions options, string? filename)
-	{
-		StringText sourceText = new(text);
-		SyntaxTree syntaxTree = new(sourceText, filename);
+		SyntaxTree syntaxTree = new(text, path);
 
 		NiteLexer lexer = new(syntaxTree, options, syntaxTree.Diagnostics);
 		NiteParser parser = new(lexer, syntaxTree, syntaxTree.Diagnostics);
 
-		CompilationUnitSyntax unit = parser.Parse();
-		syntaxTree.Root = unit;
+		CompilationUnitSyntax root = parser.Parse();
+		syntaxTree.Root = root;
 
 		return syntaxTree;
 	}
