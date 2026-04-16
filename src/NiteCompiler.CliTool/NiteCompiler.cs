@@ -56,6 +56,7 @@ public static class NiteCompiler
 		string? target, string[] targetFeatures)
 	{
 		DiagnosticBag diagnostics = [];
+		outputPath ??= Environment.CurrentDirectory;
 
 		//Debug.Assert(outputPath != null && outputKind == OutputKind.None);
 		SyntaxTree?[] trees = new SyntaxTree[sources.Length];
@@ -102,11 +103,10 @@ public static class NiteCompiler
 		switch (outputKind)
 		{
 			case OutputKind.NiTiSLibrary:
-				FileStream fs = new(outputPath, FileMode.Create, FileAccess.Write);
+			case OutputKind.Executable:
+				FileStream fs = new("./out.nlib", FileMode.Create, FileAccess.Write);
 				compilation.EmitNiteLibrary(fs, out var bag);
 
-				break;
-			case OutputKind.Executable:
 				break;
 			default:
 				throw new NotSupportedException();

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Binding.Operators;
 using NiteCompiler.CodeAnalysis.Symbols;
@@ -208,6 +207,7 @@ internal sealed class SsaBuilder
 			BoundLiteral literal => EmitLiteral(literal, block),
 			BoundUnaryExpression unary => EmitUnaryExpression(unary, block),
 			BoundBinaryExpression binary => EmitBinaryExpression(binary, block),
+			BoundAssignment assignment => EmitAssignmentExpression(assignment, block),
 
 			_ => throw new UnreachableException($"RewriteExpression({expression.GetType()})")
 		};
@@ -245,7 +245,9 @@ internal sealed class SsaBuilder
 		SsaTemp result = NewTemp(unary.Type);
 		UnaryInstruction instruction = unary.Op.Kind switch
 		{
-			UnaryOperatorKind.Negate => new NegInstruction(result, value)
+			UnaryOperatorKind.Negate => new NegInstruction(result, value),
+			UnaryOperatorKind.BitwiseNot or UnaryOperatorKind.LogicalNot => new NotInstruction(result, value),
+			_ => throw new UnreachableException($"EmitUnaryExpression({unary.Op.Kind})")
 		};
 		block.Instructions.Add(instruction);
 		return result;
@@ -265,12 +267,30 @@ internal sealed class SsaBuilder
 		BinaryInstruction instruction = binary.Op.Kind switch
 		{
 			BinaryOperatorKind.Addition => new AddInstruction(result, lhs, rhs),
+			BinaryOperatorKind.Subtraction => new SubInstruction(result, lhs, rhs),
+			BinaryOperatorKind.Multiplication => new MulInstruction(result, lhs, rhs),
+			BinaryOperatorKind.Division => new DivInstruction(result, lhs, rhs),
+			BinaryOperatorKind.Modulo => new ModInstruction(result, lhs, rhs),
+			BinaryOperatorKind.LeftArithmeticShift => new SalInstruction(result, lhs, rhs),
+			BinaryOperatorKind.RightArithmeticShift => new SarInstruction(result, lhs, rhs),
+			BinaryOperatorKind.RightUnsignedShift => new ShrInstruction(result, lhs, rhs),
 			BinaryOperatorKind.Equal => new CmpEqInstruction(result, lhs, rhs),
+			BinaryOperatorKind.NotEqual => new CmpNeqInstruction(result, lhs, rhs),
+			BinaryOperatorKind.And => new AndInstruction(result, lhs, rhs),
+			BinaryOperatorKind.Xor => new XorInstruction(result, lhs, rhs),
+			BinaryOperatorKind.Or => new OrInstruction(result, lhs, rhs),
+			// tilde is never a builtin operator: no underlying instruction, only an invokable function
 			_ => throw new UnreachableException($"EmitBinaryExpression({binary.Op.Kind})")
 		};
 
 		block.Instructions.Add(instruction);
 		return result;
+	}
+
+	private SsaValue EmitAssignmentExpression(BoundAssignment assignment, SsaBlock block)
+	{
+		SsaValue right = RewriteExpression(assignment.Right, block);
+		throw new NotImplementedException("store instruction is not implemented yet");
 	}
 
 	private Dictionary<LocalVariableOrParameterSymbol, int> SaveStacks()

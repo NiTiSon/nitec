@@ -139,7 +139,7 @@ public sealed partial class NiteParser
 
 		Precedence newPrecedence = operatorExpressionKind.Precedence;
 
-		#if TRACE
+		#if TRACE && false
 		Console.WriteLine($"opKind={operatorExpressionKind} newPrec={(int)newPrecedence} prec={(int)precedence} isRight={operatorExpressionKind.IsRightAssociative}");
 		#endif
 

@@ -115,11 +115,11 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 			{
 				return BinaryOperatorKind.And;
 			}
-			if (Equals(BitwiseOrAssignmentExpression) || Equals(BitwiseOrAssignmentExpression))
+			if (Equals(BitwiseOrExpression) || Equals(BitwiseOrAssignmentExpression))
 			{
 				return BinaryOperatorKind.Or;
 			}
-			if (Equals(BitwiseXorAssignmentExpression) || Equals(BitwiseXorAssignmentExpression))
+			if (Equals(BitwiseXorExpression) || Equals(BitwiseXorAssignmentExpression))
 			{
 				return BinaryOperatorKind.Xor;
 			}
