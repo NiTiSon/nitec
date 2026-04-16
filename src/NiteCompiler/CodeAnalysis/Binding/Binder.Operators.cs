@@ -134,4 +134,46 @@ internal partial class Binder
 
 		return new BoundAssignment(syntax, left, right);
 	}
+
+	private BoundExpression BindCompoundAssignmentExpression(AssignmentExpressionSyntax syntax,
+		BindingDiagnosticBag diagnostics)
+	{
+		BoundExpression left = BindValue(syntax.Left, diagnostics, BindValueKind.LValue);
+		BoundExpression right = BindValue(syntax.Right, diagnostics, BindValueKind.RValue);
+
+		if (left.HasErrors || right.HasErrors)
+		{
+			return new BoundCompoundAssignment(syntax, BinaryOperatorSignature.Error, left, right, hasErrors: true);
+		}
+
+		BinaryOperatorKind operatorKind = syntax.Kind.BinaryOperator;
+		BinaryOperatorSignature? resultOperator = null;
+		if (left.Type.SpecialType != SpecialType.None && right.Type.SpecialType != SpecialType.None)
+		{
+			var result = ArrayBuilder<BinaryOperatorSignature>.GetInstance();
+			Compilation.BuiltInOperators.GetOperators(operatorKind, result);
+
+			if (result.Any())
+			{
+				foreach (BinaryOperatorSignature candidate in result)
+				{
+					if (candidate.LeftType == left.Type && candidate.RightType == right.Type)
+					{
+						resultOperator = candidate;
+						break;
+					}
+				}
+			}
+
+			result.Free();
+		}
+
+		if (resultOperator?.ReturnType == null)
+		{
+			resultOperator = null;
+		}
+
+		resultOperator ??= new(operatorKind, left.Type, right.Type, CreateErrorType());
+		return new BoundCompoundAssignment(syntax, resultOperator.Value, left, right);
+	}
 }

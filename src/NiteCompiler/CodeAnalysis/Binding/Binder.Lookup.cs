@@ -6,6 +6,16 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal partial class Binder
 {
+	internal SingleLookupResult CheckViability(Symbol symbol, int arity, LookupOptions options, TypeSymbol? accessThroughType, bool diagnose)
+	{
+		if (options.HasFlag(LookupOptions.ModulesOrTypesOnly) && symbol is not (ModuleSymbol or TypeSymbol))
+		{
+			return LookupResult.Empty();
+		}
+
+		return LookupResult.Viable(symbol);
+	}
+
 	private void LookupIdentifier(LookupResult result, SimpleNameSyntax node, bool invoked)
 	{
 		LookupIdentifier(result, name: node.GetName(), 0/*node.Arity*/, invoked);

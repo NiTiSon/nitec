@@ -28,14 +28,14 @@ internal sealed class SsaBuilder
 			ssa.Blocks[block] = new SsaBlock(block);
 		}
 
-		foreach (var v in CollectAllVariables(cfg, function)) // also collects parameters
+		foreach (var v in CollectAllVariablesAndParameters(cfg, function))
 		{
 			_stacks[v] = new Stack<SsaValue>();
 		}
 
 		var defs = CollectDefinitions(cfg);
 
-		InsertPhiNodes(cfg, defs);
+		InsertPhiNodes(cfg, defs, ssa);
 
 		InitializeParameters(function);
 
@@ -46,7 +46,7 @@ internal sealed class SsaBuilder
 
 	private SsaTemp NewTemp(TypeSymbol typeOf) => new(typeOf, _tempId++);
 
-	private IEnumerable<LocalVariableOrParameterSymbol> CollectAllVariables(ControlFlowGraph cfg, FunctionSymbol function)
+	private IEnumerable<LocalVariableOrParameterSymbol> CollectAllVariablesAndParameters(ControlFlowGraph cfg, FunctionSymbol function)
 	{
 		HashSet<LocalVariableOrParameterSymbol> set = [];
 
@@ -115,8 +115,44 @@ internal sealed class SsaBuilder
 		}
 	}
 
-	private void InsertPhiNodes(ControlFlowGraph cfg, Dictionary<LocalVariableOrParameterSymbol, HashSet<BasicBlock>> defs)
+	private void InsertPhiNodes(ControlFlowGraph cfg,
+		Dictionary<LocalVariableOrParameterSymbol, HashSet<BasicBlock>> defs, SsaFunction ssa)
 	{
+		var df = cfg.DominanceFrontier;
+
+		foreach (var (variable, defBlocks) in defs)
+		{
+			Queue<BasicBlock> worklist = new(defBlocks);
+			HashSet<BasicBlock> hasAlready = [];
+
+			while (worklist.Count > 0)
+			{
+				BasicBlock block = worklist.Dequeue();
+
+				if (!df.TryGetValue(block, out var frontier))
+					continue;
+
+				foreach (var y in frontier)
+				{
+					if (hasAlready.Contains(y))
+						continue;
+
+					SsaBlock ssaBlock = ssa.Blocks[y];
+
+					SsaPhi phi = new(variable);
+					ssaBlock.Phis.Add(phi);
+
+					hasAlready.Add(y);
+
+					// If this block does not define the variable,
+					// propagate further
+					if (!defBlocks.Contains(y))
+					{
+						worklist.Enqueue(y);
+					}
+				}
+			}
+		}
 	}
 
 	private void Rename(
@@ -182,6 +218,9 @@ internal sealed class SsaBuilder
 					block.Instructions.Add(new RetInstruction(null));
 				}
 				break;
+			case BranchTerminator br:
+				block.Instructions.Add(new BrInstruction(br.Target));
+				break;
 			default:
 				throw new UnreachableException($"RewriteTerminator({terminator.GetType()})");
 		}
@@ -208,6 +247,9 @@ internal sealed class SsaBuilder
 			BoundUnaryExpression unary => EmitUnaryExpression(unary, block),
 			BoundBinaryExpression binary => EmitBinaryExpression(binary, block),
 			BoundAssignment assignment => EmitAssignmentExpression(assignment, block),
+			BoundCompoundAssignment compoundAssignment => throw new InvalidOperationException("Unlowered BoundTree is passed to the SsaBuilder."),
+			BoundParameter parameter => EmitParameter(parameter, block),
+			BoundLocal local => EmitLocal(local, block),
 
 			_ => throw new UnreachableException($"RewriteExpression({expression.GetType()})")
 		};
@@ -217,7 +259,7 @@ internal sealed class SsaBuilder
 	{
 		switch (literal.Type.SpecialType)
 		{
-			case SpecialType.StdNumericsSInt32:
+			case >= SpecialType.StdNumericsSInt8 and <= SpecialType.StdNumericsFloat64:
 				SsaTemp output = NewTemp(literal.Type);
 				LoadImmInstruction imm = new(output, literal.ConstantValue);
 				block.Instructions.Add(imm);
@@ -276,6 +318,10 @@ internal sealed class SsaBuilder
 			BinaryOperatorKind.RightUnsignedShift => new ShrInstruction(result, lhs, rhs),
 			BinaryOperatorKind.Equal => new CmpEqInstruction(result, lhs, rhs),
 			BinaryOperatorKind.NotEqual => new CmpNeqInstruction(result, lhs, rhs),
+			BinaryOperatorKind.Greater => new CmpGtInstruction(result, lhs, rhs),
+			BinaryOperatorKind.Less => new CmpLtInstruction(result, lhs, rhs),
+			BinaryOperatorKind.GreaterOrEqual => new CmpGeInstruction(result, lhs, rhs),
+			BinaryOperatorKind.LessOrEqual => new CmpLeInstruction(result, lhs, rhs),
 			BinaryOperatorKind.And => new AndInstruction(result, lhs, rhs),
 			BinaryOperatorKind.Xor => new XorInstruction(result, lhs, rhs),
 			BinaryOperatorKind.Or => new OrInstruction(result, lhs, rhs),
@@ -290,7 +336,30 @@ internal sealed class SsaBuilder
 	private SsaValue EmitAssignmentExpression(BoundAssignment assignment, SsaBlock block)
 	{
 		SsaValue right = RewriteExpression(assignment.Right, block);
-		throw new NotImplementedException("store instruction is not implemented yet");
+
+		LocalVariableOrParameterSymbol symbol = assignment.Left switch
+		{
+			BoundLocal local => local.Local,
+			BoundParameter param => param.Parameter,
+			_ => throw new UnreachableException($"EmitAssignmentExpression({assignment.Left.GetType()})")
+		};
+
+		// SsaTemp temp = NewTemp(symbol.Type);
+		// block.Instructions.Add(new CopyInstruction(temp, right));
+
+		_stacks[symbol].Push(right);
+
+		return right;
+	}
+
+	private SsaValue EmitParameter(BoundParameter parameter, SsaBlock block)
+	{
+		return ReadLocal(parameter.Parameter);
+	}
+
+	private SsaValue EmitLocal(BoundLocal local, SsaBlock block)
+	{
+		return ReadLocal(local.Local);
 	}
 
 	private Dictionary<LocalVariableOrParameterSymbol, int> SaveStacks()
@@ -313,5 +382,15 @@ internal sealed class SsaBuilder
 			while (stack.Count > count)
 				stack.Pop();
 		}
+	}
+
+	private SsaValue ReadLocal(LocalVariableOrParameterSymbol symbol)
+	{
+		if (!_stacks.TryGetValue(symbol, out var stack) || stack.Count == 0)
+		{
+			throw new InvalidOperationException($"'{symbol.Name}' is not initialized in current state => invalid bound tree or critical errors during SSA-translation. This is compiler error!");
+		}
+
+		return stack.Peek();
 	}
 }

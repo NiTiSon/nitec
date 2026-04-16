@@ -3,7 +3,7 @@ using NiteCompiler.Compilation;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
 
-internal sealed class BlockBinder : Binder
+internal sealed class BlockBinder : LocalScopeBinder
 {
 	private readonly BlockStatementSyntax _block;
 

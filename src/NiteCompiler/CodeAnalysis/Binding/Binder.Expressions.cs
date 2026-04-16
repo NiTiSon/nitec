@@ -52,7 +52,12 @@ internal partial class Binder
 				return BindLiteralConstant(literal, diagnostics);
 
 			case AssignmentExpressionSyntax assignment:
-				return BindAssignmentExpression(assignment, diagnostics);
+				if (assignment.Kind == NodeKind.AssignmentExpression)
+				{
+					return BindAssignmentExpression(assignment, diagnostics);
+				}
+
+				return BindCompoundAssignmentExpression(assignment, diagnostics);
 
 			case UnaryExpressionSyntax unary:
 				return BindUnaryExpression(unary, diagnostics);
@@ -176,6 +181,8 @@ internal partial class Binder
 			case SymbolKind.LocalVariable:
 				return new BoundLocal(name, (LocalVariableSymbol)symbol);
 				break;
+			case SymbolKind.Parameter:
+				return new BoundParameter(name, (ParameterSymbol)symbol);
 			default:
 				throw new UnreachableException();
 		}

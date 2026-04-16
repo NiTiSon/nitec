@@ -56,6 +56,14 @@ internal sealed class LookupResult
 		Error = other.Error;
 	}
 
+	internal void SetFrom(SingleLookupResult other)
+	{
+		Kind = other.Kind;
+		Symbols.Clear();
+		if (other.Symbol is not null) Symbols.Add(other.Symbol);
+		Error = other.Error;
+	}
+
 	internal void MergeEqual(LookupResult other)
 	{
 		if (Kind > other.Kind)
@@ -76,8 +84,38 @@ internal sealed class LookupResult
 		}
 	}
 
+	internal void MergeEqual(SingleLookupResult other)
+	{
+		if (Kind > other.Kind)
+		{
+			return;
+		}
+		else if (other.Kind > Kind)
+		{
+			SetFrom(other);
+		}
+		else if (Kind != LookupResultKind.Viable)
+		{
+			return;
+		}
+		else
+		{
+			Symbols.Add(other.Symbol!);
+		}
+	}
+
 	/// <summary>
 	/// Return the single symbol if there is exactly one, otherwise null.
 	/// </summary>
 	internal Symbol? SingleSymbolOrDefault => (Symbols.Count == 1) ? Symbols[0] : null;
+
+	public static SingleLookupResult Empty()
+	{
+		return new SingleLookupResult(LookupResultKind.Empty, null, null);
+	}
+
+	public static SingleLookupResult Viable(Symbol result)
+	{
+		return new SingleLookupResult(LookupResultKind.Viable, result, null);
+	}
 }

@@ -138,12 +138,7 @@ internal partial class Binder
 
 	private BoundExpressionStatement BindExpressionStatement(ExpressionStatementSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
-		throw new NotImplementedException();
-	}
-
-	private BoundExpressionStatement BindExpressionStatement(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
-	{
-		BoundExpression expression = BindRValueWithoutTargetType(syntax, diagnostics);
+		BoundExpression expression = BindExpression(syntax.Expression, diagnostics, false, false);
 
 		return new BoundExpressionStatement(syntax, expression);
 	}
