@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using NiteCompiler.CodeAnalysis.Binding.Pure;
 using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
 
@@ -49,6 +50,8 @@ public abstract class Symbol
 	public abstract TResult? Accept<TResult>(SymbolVisitor<TResult> visitor);
 	public abstract TResult? Accept<TResult, TArgument>(SymbolVisitor<TResult, TArgument> visitor, TArgument arg);
 
+	public virtual Pureness Pureness => Pureness.None;
+	public bool IsPure => Pureness != Pureness.None;
 	public virtual bool IsExtern => false;
 	public virtual bool IsStatic => false;
 
