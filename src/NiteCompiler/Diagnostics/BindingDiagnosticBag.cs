@@ -35,7 +35,9 @@ internal sealed class BindingDiagnosticBag
 
 	public DiagnosticBag? ToBagAndFree()
 	{
-		Free();
-		return _bag;
+		var bag = _bag;
+		_bag = null;
+		BagPool.Free(this);
+		return bag;
 	}
 }
