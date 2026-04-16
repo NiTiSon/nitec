@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.IntermediateRepresentation.ControlFlow;
 
@@ -24,14 +25,22 @@ internal sealed class SsaPhi
 
 		Result.Write(writer);
 		writer.Write($" = phi ");
-		foreach (var (block, value) in Inputs)
+		var keyValuePairs = Inputs.ToArray();
+		for (int i = 0; i < keyValuePairs.Length; i++)
 		{
+			BasicBlock block = keyValuePairs.ElementAt(i).Key;
+			SsaValue value = keyValuePairs.ElementAt(i).Value;
+
 			writer.Write('[');
 			writer.Write(block.Name);
 			writer.Write(", ");
 			value.Write(writer);
 			writer.Write(']');
+
+			if (i + 1 != keyValuePairs.Length)
+			{
+				writer.Write(", ");
+			}
 		}
-		writer.Write(';');
 	}
 }
