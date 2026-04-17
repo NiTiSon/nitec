@@ -156,7 +156,6 @@ public sealed partial class NiteParser
 		{
 			const string msg = "!!! TryExpandExpression@NiteParser.Expressions.cs !!! INVALID BEHAVIOUR";
 			Debug.Fail(msg);
-			Console.Error.WriteLine(msg);
 		}
 
 		if (operatorToken.TKind.IsAssignmentOperator)

@@ -19,6 +19,8 @@ internal abstract class BoundVisitor
 	public virtual void VisitExpressionStatement(BoundExpressionStatement statement) => DefaultVisit(statement);
 	public virtual void VisitFunctionBody(BoundFunctionBody functionBody) => DefaultVisit(functionBody);
 	public virtual void VisitIfStatement(BoundIfStatement ifStatement) => DefaultVisit(ifStatement);
+	public virtual void VisitLoopStatement(BoundLoopStatement loopStatement) => DefaultVisit(loopStatement);
+	public virtual void VisitWhileStatement(BoundWhileStatement whileStatement) => DefaultVisit(whileStatement);
 	public virtual void VisitLiteral(BoundLiteral literal) => DefaultVisit(literal);
 	public virtual void VisitLocal(BoundLocal local) => DefaultVisit(local);
 	public virtual void VisitParameter(BoundParameter parameter) => DefaultVisit(parameter);

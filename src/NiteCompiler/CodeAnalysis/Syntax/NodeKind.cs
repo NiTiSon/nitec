@@ -288,7 +288,11 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind BlockStatement = Reg(Statement + 3, "block-statement");
 	public static readonly NodeKind ReturnStatement = Reg(Statement + 4, "return-statement");
 	public static readonly NodeKind IfStatement = Reg(Statement + 5, "if-statement");
-	public static readonly NodeKind LocalVariableDeclarationStatement = Reg(Statement + 6, "local-variable-declaration-statement");
+	public static readonly NodeKind LoopStatement = Reg(Statement + 6, "loop-statement");
+	public static readonly NodeKind WhileStatement = Reg(Statement + 7, "while-statement");
+	public static readonly NodeKind ForStatement = Reg(Statement + 8, "for-statement");
+	public static readonly NodeKind DoWhileStatement = Reg(Statement + 9, "do-while-statement");
+	public static readonly NodeKind LocalVariableDeclarationStatement = Reg(Statement + 100, "local-variable-declaration-statement");
 
 	private const uint Other = 0x00_00_F0_00;
 	public static readonly NodeKind EqualsValueClause = Reg(Other + 1, "<equals-value-clause>");

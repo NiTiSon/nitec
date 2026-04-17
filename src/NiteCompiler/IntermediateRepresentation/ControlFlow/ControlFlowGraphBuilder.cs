@@ -89,6 +89,12 @@ internal sealed class ControlFlowGraphBuilder : BoundVisitor
 		}
 	}
 
+	protected override void DefaultVisit(BoundNode node)
+	{
+		Debug.WriteLine($"CfgBuilder.DefaultVisit({node.Kind})");
+		base.DefaultVisit(node);
+	}
+
 	public override void VisitExpressionStatement(BoundExpressionStatement statement)
 	{
 		_current.Statements.Add(statement);
@@ -106,7 +112,7 @@ internal sealed class ControlFlowGraphBuilder : BoundVisitor
 	{
 		_current.Terminator = new ReturnTerminator(returnStatement);
 
-		_current = NewBlock("return.after");
+		_current = NewBlock("return.after"); // anything after return is unreachable
 	}
 
 	public override void VisitIfStatement(BoundIfStatement node)
@@ -137,8 +143,65 @@ internal sealed class ControlFlowGraphBuilder : BoundVisitor
 			}
 		}
 
-		entry.Terminator = new ConditionalBranchTerminator(node, thenBlock, elseOrMerged: elseBlock ?? mergeBlock);
+		entry.Terminator = new ConditionalBranchTerminator(node.Condition, thenBlock, @else: elseBlock ?? mergeBlock);
 
 		_current = mergeBlock;
+	}
+
+	public override void VisitLoopStatement(BoundLoopStatement loopStatement)
+	{
+		BasicBlock bodyBlock = NewBlock("loop.body");
+		BasicBlock afterBlock = NewBlock("loop.after");
+
+		BasicBlock entry = _current;
+
+		Connect(_current, bodyBlock);
+
+		_current = bodyBlock;
+		Visit(loopStatement.Body);
+		if (_current.Terminator == null)
+		{
+			Connect(_current, bodyBlock);
+		}
+
+		entry.Terminator = new BranchTerminator(loopStatement, bodyBlock);
+
+		_current = afterBlock;
+	}
+
+	public override void VisitWhileStatement(BoundWhileStatement whileStatement)
+	{
+		// while.entry:
+		//  %2 = cmp eq %0 %1
+		//  cond br %2 while.body
+		// while.body:
+		//  ...
+		//  br while.entry
+		// while.after:
+		//  ...
+		BasicBlock entryBlock = NewBlock("while.entry");
+		BasicBlock bodyBlock = NewBlock("while.body");
+		BasicBlock afterBlock = NewBlock("while.after");
+
+		BasicBlock outer = _current;
+		Connect(_current, entryBlock);
+
+		// entry
+		_current = entryBlock;
+		Visit(whileStatement.Condition);
+		_current.Terminator = new ConditionalBranchTerminator(whileStatement.Condition, bodyBlock, afterBlock);
+		Connect(_current, bodyBlock);
+		Connect(_current, afterBlock);
+
+		// body
+		_current = bodyBlock;
+		Visit(whileStatement.Body);
+		if (_current.Terminator == null)
+		{
+			_current.Terminator = new BranchTerminator(whileStatement, entryBlock);
+		}
+
+		// after
+		_current = afterBlock;
 	}
 }

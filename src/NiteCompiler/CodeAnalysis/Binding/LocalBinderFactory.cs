@@ -55,7 +55,7 @@ internal sealed class LocalBinderFactory : SyntaxVisitor
 
 		Add(node, blockBinder);
 
-		var prev = _enclosing;
+		Binder outer = _enclosing;
 		_enclosing = blockBinder;
 
 		foreach (var stmt in node.Statements)
@@ -63,7 +63,7 @@ internal sealed class LocalBinderFactory : SyntaxVisitor
 			Visit(stmt);
 		}
 
-		_enclosing = prev;
+		_enclosing = outer;
 	}
 
 	public override void VisitExpressionStatement(ExpressionStatementSyntax node)
@@ -96,6 +96,26 @@ internal sealed class LocalBinderFactory : SyntaxVisitor
 				break;
 			}
 		}
+	}
+
+	public override void VisitLoopStatement(LoopStatementSyntax statement)
+	{
+		Binder loopBinder = new LoopBinder(_enclosing, statement);
+		Add(statement, loopBinder);
+
+		Binder outer = _enclosing;
+		_enclosing = loopBinder;
+
+		Visit(statement.Body);
+
+		_enclosing = outer;
+	}
+
+	public override void VisitWhileStatement(WhileStatementSyntax statement)
+	{
+		Binder enclosing = _enclosing;
+		Visit(statement.Condition, enclosing);
+		VisitPossibleEmbeddedStatement(statement.Body, enclosing);
 	}
 
 	public override void VisitReturnStatement(ReturnStatementSyntax node)

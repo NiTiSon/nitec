@@ -100,16 +100,24 @@ public static class NiteCompiler
 		var compilation = NiteCompilation.Create(libraryName, trees!, null, options);
 		compilation.Diagnostics.DrainInto(diagnostics);
 
-		switch (outputKind)
+		try
 		{
-			case OutputKind.NiTiSLibrary:
-			case OutputKind.Executable:
-				FileStream fs = new("./out.nlib", FileMode.Create, FileAccess.Write);
-				compilation.EmitNiteLibrary(fs, out var bag);
+			switch (outputKind)
+			{
+				case OutputKind.NiTiSLibrary:
+				case OutputKind.Executable:
+					FileStream fs = new("./out.nlib", FileMode.Create, FileAccess.Write);
+					compilation.EmitNiteLibrary(fs, out var bag);
 
-				break;
-			default:
-				throw new NotSupportedException();
+					break;
+				default:
+					throw new NotSupportedException();
+			}
+		}
+		catch (Exception exception)
+		{
+			Debug.WriteLine("Compiler unwanted exception :(");
+			diagnostics.ReportInternalCompilerError(exception);
 		}
 
 		if (!diagnostics.IsEmpty)

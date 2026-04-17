@@ -149,7 +149,7 @@ internal partial class Binder
 		BoundExpression boundExpression;
 		if (result.Kind == LookupResultKind.Empty)
 		{
-			// Not found
+			diagnostics.Diagnostics.ReportUnresolvedSymbol(name.Location);
 			boundExpression = BadExpression(name);
 		}
 		else
@@ -233,7 +233,7 @@ internal partial class Binder
 			{
 				if (result.Error != null)
 				{
-					// TODO: Error(diagnostics, result.Error, node);
+					diagnostics.Diagnostics.Add(result.Error);
 					wasError = (result.Error.Severity == DiagnosticSeverity.Error);
 				}
 

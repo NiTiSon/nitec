@@ -9,6 +9,10 @@ internal enum BoundKind
 	Return,
 	ExpressionStatement,
 	IfStatement,
+	LoopStatement,
+	WhileStatement,
+	ForStatement,
+	DoWhileStatement,
 
 	FunctionBody,
 	VariableDeclaration,

@@ -176,4 +176,9 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 	{
 		Add(DiagnosticDescriptor.MissingParameterTypeSpecification, [location]);
 	}
+
+	public void ReportInternalCompilerError(Exception exception)
+	{
+		Add(DiagnosticDescriptor.InternalError, [], exception);
+	}
 }

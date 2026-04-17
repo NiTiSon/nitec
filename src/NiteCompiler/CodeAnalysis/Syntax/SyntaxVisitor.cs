@@ -45,6 +45,8 @@ public abstract class SyntaxVisitor
 	public virtual void VisitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement statement) => DefaultVisit(statement);
 	public virtual void VisitBlockStatement(BlockStatementSyntax statement) => DefaultVisit(statement);
 	public virtual void VisitIfStatement(IfStatementSyntax statement) => DefaultVisit(statement);
+	public virtual void VisitLoopStatement(LoopStatementSyntax statement) => DefaultVisit(statement);
+	public virtual void VisitWhileStatement(WhileStatementSyntax statement) => DefaultVisit(statement);
 	public virtual void VisitElseClause(ElseClauseSyntax elseClause) => DefaultVisit(elseClause);
 }
 
@@ -91,5 +93,7 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement statement) => DefaultVisit(statement);
 	public virtual TResult? VisitBlockStatement(BlockStatementSyntax statement) => DefaultVisit(statement);
 	public virtual TResult? VisitIfStatement(IfStatementSyntax statement) => DefaultVisit(statement);
+	public virtual TResult? VisitLoopStatement(LoopStatementSyntax statement) => DefaultVisit(statement);
+	public virtual TResult? VisitWhileStatement(WhileStatementSyntax statement) => DefaultVisit(statement);
 	public virtual TResult? VisitElseClause(ElseClauseSyntax elseClause) => DefaultVisit(elseClause);
 }

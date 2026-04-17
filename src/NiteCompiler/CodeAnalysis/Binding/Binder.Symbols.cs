@@ -14,8 +14,11 @@ internal partial class Binder
 		Debug.Assert(type != SpecialType.None);
 		TypeSymbol? special = Compilation.GetSpecialType(type);
 
-		// TODO: Also add error module creation
-		special ??= CreateErrorType(type.ToFullName()!);
+		if (special == null)
+		{
+			diagnostics.Diagnostics.ReportUnresolvedPredefinedType(type.ToFullName()!);
+			special = CreateErrorType(type.ToFullName()!);
+		}
 
 		return special;
 	}

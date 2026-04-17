@@ -205,7 +205,7 @@ internal sealed class SsaBuilder
 		{
 			case ConditionalBranchTerminator condBr:
 				SsaValue cond = RewriteExpression(condBr.Condition, block);
-				block.Instructions.Add(new CondBrInstruction(cond, condBr.Then, condBr.ElseOrMerged));
+				block.Instructions.Add(new CondBrInstruction(cond, condBr.Then, condBr.Else));
 				break;
 			case ReturnTerminator ret:
 				if (ret.Expression != null)

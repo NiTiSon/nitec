@@ -5,13 +5,13 @@ namespace NiteCompiler.IntermediateRepresentation.ControlFlow;
 internal sealed class ConditionalBranchTerminator : ControlFlowTerminator
 {
 	public BasicBlock Then { get; }
-	public BasicBlock ElseOrMerged { get; }
+	public BasicBlock Else { get; }
 	public BoundExpression Condition { get; }
 
-	public ConditionalBranchTerminator(BoundIfStatement node, BasicBlock then, BasicBlock elseOrMerged) : base(node)
+	public ConditionalBranchTerminator(BoundExpression condition, BasicBlock then, BasicBlock @else) : base(condition)
 	{
 		Then = then;
-		ElseOrMerged = elseOrMerged;
-		Condition = node.Condition;
+		Else = @else;
+		Condition = condition;
 	}
 }

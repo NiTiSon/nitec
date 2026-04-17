@@ -82,6 +82,16 @@ internal partial class Binder
 			return BindIf((IfStatementSyntax)syntax, diagnostics);
 		}
 
+		if (kind == NodeKind.LoopStatement)
+		{
+			return BindLoop((LoopStatementSyntax)syntax, diagnostics);
+		}
+
+		if (kind == NodeKind.WhileStatement)
+		{
+			return BindWhile((WhileStatementSyntax)syntax, diagnostics);
+		}
+
 		throw new ArgumentException($"Unexpected syntax kind: {kind}");
 	}
 
@@ -146,5 +156,20 @@ internal partial class Binder
 	private BoundStatement BindEmptyStatement(EmptyStatementSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		throw new NotImplementedException();
+	}
+
+	private BoundLoopStatement BindLoop(LoopStatementSyntax syntax, BindingDiagnosticBag diagnostics)
+	{
+		BoundStatement body = BindStatement(syntax.Body, diagnostics, embedded: true);
+
+		return new BoundLoopStatement(syntax, body);
+	}
+
+	private BoundWhileStatement BindWhile(WhileStatementSyntax syntax, BindingDiagnosticBag diagnostics)
+	{
+		BoundExpression condition = BindRValueWithoutTargetType(syntax.Condition, diagnostics);
+		BoundStatement body = BindStatement(syntax.Body, diagnostics, embedded: true);
+
+		return new BoundWhileStatement(syntax, condition, body);
 	}
 }

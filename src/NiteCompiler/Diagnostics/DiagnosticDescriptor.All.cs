@@ -23,7 +23,8 @@ public partial class DiagnosticDescriptor
 		IntegralConstantTooLarge,
 		IntegralValueCantBeSigned,
 		IntegralValueIsGreaterThanMaxValue,
-		IntegralValueIsSmallerThanMinValue
+		IntegralValueIsSmallerThanMinValue,
+		InternalError
 		;
 
 	static DiagnosticDescriptor()
@@ -63,5 +64,7 @@ public partial class DiagnosticDescriptor
 			"Integral value is greater than max value of specified type.");
 		IntegralValueIsSmallerThanMinValue = new("integral-value-is-smaller-than-min-value",
 			"Integral value is smaller than min value of specified type.");
+
+		InternalError = new("internal-error", "Critical internal compiler error. Please report this to the nitec developer.\n{0}.");
 	}
 }

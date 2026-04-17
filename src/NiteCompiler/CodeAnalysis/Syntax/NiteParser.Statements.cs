@@ -1,3 +1,4 @@
+using System;
 using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
@@ -22,6 +23,22 @@ public sealed partial class NiteParser
 		{
 			return ParseIfStatement();
 		}
+		else if (Current.TKind == TokenKind.Loop)
+		{
+			return ParseLoopStatement();
+		}
+		else if (Current.TKind == TokenKind.While)
+		{
+			return ParseWhileStatement();
+		}
+		// else if (Current.TKind == TokenKind.For)
+		// {
+		// 	return ParseForStatement();
+		// }
+		// else if (Current.TKind == TokenKind.Do)
+		// {
+		// 	return ParseDoWhileStatement();
+		// }
 		else
 		{
 			return ParseExpressionStatement();
@@ -135,4 +152,37 @@ public sealed partial class NiteParser
 
 		return new ElseClauseSyntax(_syntaxTree, elseToken, elseStatement);
 	}
+
+	private LoopStatementSyntax ParseLoopStatement()
+	{
+		Token loopToken = MatchToken(TokenKind.Loop);
+
+		StatementSyntax body = ParseStatement();
+
+		return new LoopStatementSyntax(_syntaxTree, loopToken, body);
+	}
+
+	private WhileStatementSyntax ParseWhileStatement()
+	{
+		Token @while = MatchToken(TokenKind.While);
+
+		ExpressionSyntax condition = ParseExpression();
+		StatementSyntax body = ParseStatement();
+
+		return new WhileStatementSyntax(_syntaxTree, @while, condition, body);
+	}
+
+	// private ForStatementSyntax ParseForStatement()
+	// {
+	// 	Token @for = MatchToken(TokenKind.For);
+	//
+	// 	throw new NotImplementedException();
+	// }
+	//
+	// private DoWhileStatementSyntax ParseDoWhileStatement()
+	// {
+	// 	Token @do = MatchToken(TokenKind.Do);
+	//
+	// 	throw new NotImplementedException();
+	// }
 }
