@@ -157,7 +157,7 @@ internal sealed class ControlFlowGraph
 						continue;
 
 					// if d is dominated by another dominator → not immediate
-					if (dom[d].Contains(other))
+					if (dom[other].Contains(d))
 					{
 						isImmediate = false;
 						break;

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -7,7 +8,7 @@ using NiteCompiler.CodeAnalysis.Binding;
 namespace NiteCompiler.IntermediateRepresentation.ControlFlow;
 
 [DebuggerDisplay("{DebuggerDisplay(),nq}")]
-internal sealed class BasicBlock(string name)
+internal sealed class BasicBlock(string name) : IEquatable<BasicBlock>
 {
 	public string? Name { get; } = name;
 	public List<BoundStatement> Statements { get; } = [];
@@ -15,6 +16,21 @@ internal sealed class BasicBlock(string name)
 
 	public List<BasicBlock> Predecessors { get; } = [];
 	public List<BasicBlock> Successors { get; } = [];
+
+	public override bool Equals(object? obj)
+	{
+		return obj is BasicBlock other && Equals(other);
+	}
+
+	public bool Equals(BasicBlock? other)
+	{
+		return ReferenceEquals(this, other);
+	}
+
+	public override int GetHashCode()
+	{
+		return Statements.GetHashCode() ^ Predecessors.GetHashCode() ^ Successors.GetHashCode();
+	}
 
 	private string DebuggerDisplay()
 	{
