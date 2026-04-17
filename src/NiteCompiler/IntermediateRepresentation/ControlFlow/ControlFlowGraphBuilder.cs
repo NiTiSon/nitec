@@ -150,23 +150,28 @@ internal sealed class ControlFlowGraphBuilder : BoundVisitor
 
 	public override void VisitLoopStatement(BoundLoopStatement loopStatement)
 	{
-		BasicBlock bodyBlock = NewBlock("loop.body");
-		BasicBlock afterBlock = NewBlock("loop.after");
+		BasicBlock header = NewBlock("loop.entry");
+		BasicBlock body = NewBlock("loop.body");
+		BasicBlock after = NewBlock("loop.after");
 
-		BasicBlock entry = _current;
+		Connect(_current, header);
 
-		Connect(_current, bodyBlock);
+		// header → body
+		header.Terminator = new BranchTerminator(loopStatement, body);
+		Connect(header, body);
 
-		_current = bodyBlock;
+		// body
+		_current = body;
 		Visit(loopStatement.Body);
+
 		if (_current.Terminator == null)
 		{
-			Connect(_current, bodyBlock);
+			// back-edge to header (NOT body!)
+			_current.Terminator = new BranchTerminator(loopStatement, header);
+			Connect(_current, header);
 		}
 
-		entry.Terminator = new BranchTerminator(loopStatement, bodyBlock);
-
-		_current = afterBlock;
+		_current = after;
 	}
 
 	public override void VisitWhileStatement(BoundWhileStatement whileStatement)
