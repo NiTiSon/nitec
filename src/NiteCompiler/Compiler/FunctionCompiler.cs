@@ -34,17 +34,19 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 		_cancellationToken = cancellationToken;
 	}
 
-	public static void CompileBodies(NiteCompilation compilation, BindingDiagnosticBag diagnostics, MetadataLibraryBuilder? metadataBuilder)
+	public static void CompileBodies(NiteCompilation compilation, BindingDiagnosticBag diagnostics,
+		MetadataLibraryBuilder? metadataBuilder, CancellationToken cancellationToken = default)
 	{
 		FunctionCompiler compiler = new(compilation, diagnostics, metadataBuilder);
 
-		compiler.CompileModule(compilation.SourceLibrary.GlobalModule);
+		compiler.CompileModule(compilation.SourceLibrary.GlobalModule, cancellationToken);
 	}
 
-	private void CompileModule(ModuleSymbol symbol)
+	private void CompileModule(ModuleSymbol symbol, CancellationToken cancellationToken = default)
 	{
 		foreach (var s in symbol.GetMembersUnordered())
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			s.Accept(this, null);
 		}
 	}
@@ -105,7 +107,7 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 
 					_metadataBuilder!.SetFunctionBody(function, emittedBody);
 				}
-				
+
 				return body;
 			}
 		}

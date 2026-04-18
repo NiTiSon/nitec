@@ -12,7 +12,17 @@ namespace NiteCompiler.Diagnostics;
 [DebuggerStepThrough]
 public class DiagnosticBag : IEnumerable<Diagnostic>
 {
-	private readonly ConcurrentBag<Diagnostic> _diagnostics = [];
+	private readonly ConcurrentBag<Diagnostic> _diagnostics;
+
+	public DiagnosticBag()
+	{
+		_diagnostics = [];
+	}
+
+	public DiagnosticBag(IEnumerable<Diagnostic> diagnostics)
+	{
+		_diagnostics = new ConcurrentBag<Diagnostic>(diagnostics);
+	}
 
 	public bool IsEmpty => _diagnostics.IsEmpty;
 	public bool HasAnyErrors => _diagnostics.Any(t => t.Severity == DiagnosticSeverity.Error);

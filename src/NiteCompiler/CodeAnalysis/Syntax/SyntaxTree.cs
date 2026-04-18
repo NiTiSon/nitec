@@ -17,7 +17,7 @@ public sealed class SyntaxTree
 {
 	public SourceText Text { get; }
 	public CompilationUnitSyntax Root { get; private set; } = null!;
-	public DiagnosticBag Diagnostics { get; } = [];
+	private DiagnosticBag Diagnostics { get; } = [];
 	public string? FilePath { get; }
 
 	private SyntaxTree(SourceText text, string? filePath)
@@ -92,6 +92,11 @@ public sealed class SyntaxTree
 			if (!descended)
 				return null;
 		}
+	}
+
+	public IEnumerable<Diagnostic> GetDiagnostics(CancellationToken cancellationToken = default)
+	{
+		return Diagnostics;
 	}
 
 	public void Emit(TextWriter writer)

@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.Compilation;
 
@@ -13,4 +15,10 @@ public sealed record NiteCompilationOptions
 	public DateTime CompilationTime { get; set; } = DateTime.Now;
 	public bool ConcurrentBuild { get; set; }
 	public bool DeterministicBuild { get; set; }
+
+	public Diagnostic? FilterDiagnostic(Diagnostic diagnostic, CancellationToken cancellationToken = default)
+	{
+		// TODO: Implement -wae-, -wae+, etc.
+		return diagnostic;
+	}
 }

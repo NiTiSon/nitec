@@ -49,10 +49,6 @@ public sealed partial class NiteCompilation
 	{
 		SyntaxTrees = syntaxTrees;
 		Options = options;
-		foreach (SyntaxTree tree in syntaxTrees)
-		{
-			tree.Diagnostics.DrainInto(Diagnostics);
-		}
 
 		if (Options.IsCoreLibrary && !dependencies.IsEmpty)
 		{
