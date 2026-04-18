@@ -38,17 +38,47 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 		return visitor.VisitFunction(this, arg);
 	}
 
-	private ImmutableArray<ParameterSymbol> _lateinitParameters;
+	public override TypeSymbol ReturnType
+	{
+		get
+		{
+			if (field == null)
+			{
+				Interlocked.CompareExchange(ref field, MakeReturnType(), null);
+			}
+
+			return field;
+		}
+	}
+
+	private TypeSymbol MakeReturnType()
+	{
+		BindingDiagnosticBag diagnostics = BindingDiagnosticBag.GetInstance();
+
+		BinderFactory factory = DeclaringCompilation!.GetBinderFactory(Syntax.Tree);
+
+		if (Syntax.TypeClause == null) // void
+		{
+			TypeSymbol @void = (TypeSymbol)factory.GetBinder(Syntax).BindVoidType(diagnostics);
+			return @void;
+		}
+		Binder withGenericsBinder = factory.GetBinder(Syntax.TypeClause);
+		TypeSymbol result = withGenericsBinder.BindType(Syntax.TypeClause.Type, diagnostics);
+
+		diagnostics.Free();
+		return result;
+	}
+
 	public override ImmutableArray<ParameterSymbol> Parameters
 	{
 		get
 		{
-			if (_lateinitParameters.IsDefault)
+			if (field.IsDefault)
 			{
-				ImmutableInterlocked.InterlockedCompareExchange(ref _lateinitParameters, MakeParameters(), default);
+				ImmutableInterlocked.InterlockedCompareExchange(ref field, MakeParameters(), default);
 			}
 
-			return _lateinitParameters;
+			return field;
 		}
 	}
 
@@ -130,7 +160,7 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 				case CompletionPart.None:
 					return;
 				case CompletionPart.Type:
-					//_ = Return;
+					_ = ReturnType;
 					_state.NotePartComplete(CompletionPart.Type);
 					break;
 				case CompletionPart.Parameters:

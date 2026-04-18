@@ -265,7 +265,7 @@ internal sealed class SsaBuilder
 				block.Instructions.Add(imm);
 				return output;
 			default:
-				throw new UnreachableException($"EmitLiteral({literal.GetType()})");
+				throw new UnreachableException($"EmitLiteral({literal.Type})");
 		}
 	}
 

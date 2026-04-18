@@ -100,6 +100,7 @@ public static class NiteCompiler
 		var compilation = NiteCompilation.Create(libraryName, trees!, null, options);
 		compilation.Diagnostics.DrainInto(diagnostics);
 
+		DiagnosticBag? resultingDiagnostics = null;
 		try
 		{
 			switch (outputKind)
@@ -107,7 +108,7 @@ public static class NiteCompiler
 				case OutputKind.NiTiSLibrary:
 				case OutputKind.Executable:
 					FileStream fs = new("./out.nlib", FileMode.Create, FileAccess.Write);
-					compilation.EmitNiteLibrary(fs, out var bag);
+					compilation.EmitNiteLibrary(fs, out resultingDiagnostics);
 
 					break;
 				default:
@@ -118,6 +119,10 @@ public static class NiteCompiler
 		{
 			Debug.WriteLine("Compiler unwanted exception :(");
 			diagnostics.ReportInternalCompilerError(exception);
+		}
+		finally
+		{
+			resultingDiagnostics?.DrainInto(diagnostics);
 		}
 
 		if (!diagnostics.IsEmpty)

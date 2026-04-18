@@ -6,7 +6,9 @@ public abstract class FunctionSymbol : Symbol
 {
 	public sealed override SymbolKind Kind => SymbolKind.Function;
 
+	public abstract TypeSymbol ReturnType { get; }
 	public abstract ImmutableArray<ParameterSymbol> Parameters { get; }
+
 
 	public override string ToDisplayString()
 	{

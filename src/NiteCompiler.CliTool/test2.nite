@@ -3,11 +3,7 @@
 module test;
 
 public simple_func(x: i32) -> i32 {
-	if x == 2 {
-		x = 1;
-	}
-
-	return x;
+	return x + 1;
 }
 
 module std::numerics;

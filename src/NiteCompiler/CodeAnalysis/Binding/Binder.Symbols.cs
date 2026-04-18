@@ -23,6 +23,10 @@ internal partial class Binder
 		return special;
 	}
 
+	public Symbol BindVoidType(BindingDiagnosticBag diagnostics)
+	{
+		return GetSpecialType(SpecialType.StdVoid, diagnostics);
+	}
 
 	public Symbol BindPredefinedType(PredefinedTypeSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
