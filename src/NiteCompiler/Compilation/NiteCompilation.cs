@@ -22,6 +22,7 @@ public sealed partial class NiteCompilation
 	private const string FallbackLibraryName = "unnamed-library";
 
 	internal DeclarationTable Declarations { get; }
+	internal MergedModuleDeclaration MergedRoot => Declarations.GetMergedRoot(this);
 
 	public ImmutableArray<SyntaxTree> SyntaxTrees { get; }
 	public NiteCompilationOptions Options { get; }
@@ -57,10 +58,7 @@ public sealed partial class NiteCompilation
 
 		Declarations = new(syntaxTrees);
 
-		SourceLibrary = new(this, Declarations.GetMergedRoot(this), libraryName);
-		SourceLibrary.ForceComplete(null);
-
-		_ = 0x3; // breakpoint
+		SourceLibrary = new(this, libraryName);
 	}
 
 	public static NiteCompilation Create(

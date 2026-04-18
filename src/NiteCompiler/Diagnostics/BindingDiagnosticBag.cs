@@ -36,6 +36,8 @@ internal sealed class BindingDiagnosticBag
 		}
 	}
 
+	public bool IsEmpty => _bag == null || _bag.IsEmpty;
+
 	public void Add(Diagnostic diagnostic)
 	{
 		Diagnostics.Add(diagnostic);

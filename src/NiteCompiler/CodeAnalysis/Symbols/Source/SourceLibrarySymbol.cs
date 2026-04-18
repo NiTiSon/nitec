@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using NiteCompiler.CodeAnalysis.Declarations;
 using NiteCompiler.Compilation;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Symbols.Source;
 
@@ -11,16 +12,36 @@ internal sealed class SourceLibrarySymbol : LibrarySymbol
 	public override string Name { get; }
 	public override Symbol? ContainingSymbol => null;
 
-	public override SourceModuleSymbol GlobalModule { get; }
-	public override NiteCompilation? DeclaringCompilation { get; }
+	public override SourceModuleSymbol GlobalModule
+	{
+		get
+		{
+			if (field == null)
+			{
+				var diagnostics = BindingDiagnosticBag.GetInstance();
+				SourceModuleSymbol globalModule = new(
+					this, this,
+					DeclaringCompilation.MergedRoot,
+					diagnostics);
+
+				if (Interlocked.CompareExchange(ref field, globalModule, null) == null)
+				{
+					AddDeclarationDiagnostics(diagnostics);
+				}
+
+				diagnostics.Free();
+			}
+
+			return field;
+		}
+	}
+	public override NiteCompilation DeclaringCompilation { get; }
 
 	private CompletionPart _state;
-	public SourceLibrarySymbol(NiteCompilation compilation, MergedModuleDeclaration rootModule, string name)
+	public SourceLibrarySymbol(NiteCompilation compilation, string name)
 	{
 		Name = name;
 		DeclaringCompilation = compilation;
-
-		GlobalModule = new(this, rootModule, MetadataFacts.GlobalModuleInternalName);
 	}
 
 	internal override void ForceComplete(Predicate<Symbol>? filter, CancellationToken cancellationToken = default)

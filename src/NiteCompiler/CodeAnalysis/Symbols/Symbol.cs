@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading;
 using NiteCompiler.CodeAnalysis.Binding.Pure;
 using NiteCompiler.Compilation;
@@ -65,4 +66,15 @@ public abstract class Symbol
 		}
 	}
 	internal virtual bool HasComplete(CompletionPart part) => true;
+
+	internal virtual void AddDeclarationDiagnostics(BindingDiagnosticBag diagnostics)
+	{
+		if (!diagnostics.IsEmpty)
+		{
+			NiteCompilation? compilation = DeclaringCompilation;
+			Debug.Assert(compilation != null);
+
+			compilation.DeclarationDiagnostics.AddRange(diagnostics.Diagnostics);
+		}
+	}
 }

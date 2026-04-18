@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Declarations;
 

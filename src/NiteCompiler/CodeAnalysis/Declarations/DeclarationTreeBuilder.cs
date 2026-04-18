@@ -37,6 +37,7 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 		ModuleNameSyntax name = declaration.Name;
 		SyntaxNode currentNode = declaration;
 
+		// TODO: Change syntax of ModuleName from list to the recursive
 		// module x; x -> should reference whole declaration syntax
 		// module x::y; x -> should reference only name x; y -> should reference whole declaration syntax
 		if (name.Parts.Count == 1)
@@ -45,7 +46,8 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 				name: name.Parts[0].GetName(),
 				syntax: declaration.CreateReference(),
 				nameLocation: (name.Parts[0].Location as SourceLocation)!,
-				members: members);
+				members: members,
+				diagnostics: []);
 		}
 		SyntaxList<SimpleNameSyntax> parts = name.Parts;
 		for (int i = parts.Count - 1; i > 0; i--)
@@ -56,7 +58,8 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 				name: part.GetName(),
 				syntax: currentNode.CreateReference(),
 				nameLocation: (part.Location as SourceLocation)!,
-				members: members);
+				members: members,
+				diagnostics: []);
 
 			members = [module];
 			currentNode = part;
@@ -66,7 +69,8 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 			declaration.Name.Parts[0].GetName(),
 			syntax: declaration.Name.Parts[0].CreateReference(),
 			nameLocation: (name.Location as SourceLocation)!,
-			members);
+			members: members,
+			diagnostics: []);
 	}
 
 	private ImmutableArray<SingleItemDeclaration> VisitModuleMembers(SyntaxNode node, SyntaxList<ItemSyntax> members)
@@ -97,7 +101,8 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 			declaration.Name.GetName(),
 			syntax: declaration.CreateReference(),
 			nameLocation: (name.Location as SourceLocation)!,
-			members);
+			members: members,
+			diagnostics: []);
 	}
 
 	private ImmutableArray<SingleItemDeclaration> VisitModuleMembers(SyntaxNode node, SyntaxList<MemberSyntax>? members)

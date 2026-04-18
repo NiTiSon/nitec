@@ -7,40 +7,33 @@ using System.Linq;
 using System.Threading;
 using NiteCompiler.CodeAnalysis.Declarations;
 using NiteCompiler.CodeAnalysis.Syntax;
+using NiteCompiler.Compilation;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Symbols.Source;
 
 internal sealed class SourceModuleSymbol : ModuleSymbol
 {
-	public MergedModuleDeclaration Declaration { get; }
+	public MergedModuleDeclaration MergedDeclaration { get; }
 	public override string Name { get; }
 	public override Symbol ContainingSymbol { get; }
 
-	public override SourceLibrarySymbol ContainingLibrary
-	{
-		get
-		{
-			if (ContainingSymbol is SourceLibrarySymbol lib)
-			{
-				return lib;
-			}
-
-			if (ContainingSymbol is SourceModuleSymbol module)
-			{
-				return module.ContainingLibrary;
-			}
-
-			throw new UnreachableException("Wrong containing symbol.");
-		}
-	}
+	public override SourceLibrarySymbol ContainingLibrary { get; }
 
 	private CompletionPart _state;
 
-	public SourceModuleSymbol(Symbol containing, MergedModuleDeclaration declaration, string name)
+	public SourceModuleSymbol(SourceLibrarySymbol containingLibrary, Symbol containing,
+		MergedModuleDeclaration mergedDeclaration, BindingDiagnosticBag diagnostics)
 	{
-		Declaration = declaration;
+		ContainingLibrary = containingLibrary;
 		ContainingSymbol = containing;
-		Name = name;
+		MergedDeclaration = mergedDeclaration;
+		Name = mergedDeclaration.Name;
+
+		foreach (var singleDeclaration in mergedDeclaration.Declarations)
+		{
+			diagnostics.AddRange(singleDeclaration.Diagnostics);
+		}
 	}
 
 	private ImmutableArray<Symbol> _lateinitMembersUnordered;
@@ -66,9 +59,12 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 	{
 		if (_lateinitNameToMembersMap == null)
 		{
-			if (Interlocked.CompareExchange(ref _lateinitNameToMembersMap, MakeNameToMembersMap(), null) == null)
+			var diagnostics = BindingDiagnosticBag.GetInstance();
+			if (Interlocked.CompareExchange(ref _lateinitNameToMembersMap, MakeNameToMembersMap(diagnostics), null) == null)
 			{
 				bool wasSetThisThread = _state.NotePartComplete(CompletionPart.NameToMembersMap);
+				AddDeclarationDiagnostics(diagnostics);
+
 				Debug.Assert(wasSetThisThread);
 			}
 		}
@@ -76,12 +72,12 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 		return _lateinitNameToMembersMap;
 	}
 
-	private Dictionary<string, ImmutableArray<Symbol>> MakeNameToMembersMap()
+	private Dictionary<string, ImmutableArray<Symbol>> MakeNameToMembersMap(BindingDiagnosticBag diagnostics)
 	{
-		Dictionary<string, ImmutableArray<Symbol>> result = new(capacity: Declaration.Members.Length);
-		foreach (var declaration in Declaration.Members)
+		Dictionary<string, ImmutableArray<Symbol>> result = new(capacity: MergedDeclaration.Members.Length);
+		foreach (var declaration in MergedDeclaration.Members)
 		{
-			Symbol symbol = BuildSymbol(declaration);
+			Symbol symbol = BuildSymbol(declaration, diagnostics);
 
 			if (!result.TryGetValue(symbol.Name, out var existing))
 			{
@@ -93,7 +89,7 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 			}
 		}
 
-		foreach (var declaration in Declaration.Declarations)
+		foreach (var declaration in MergedDeclaration.Declarations)
 		{
 			SyntaxNode moduleSyntax = declaration.SyntaxReference.GetSyntax();
 
@@ -103,7 +99,7 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 				{
 					if (memberSyntax.Kind == NodeKind.TypeDeclaration) continue;
 
-					Symbol symbol = BuildSymbol(memberSyntax);
+					Symbol symbol = BuildSymbol(memberSyntax, diagnostics);
 
 					if (!result.TryGetValue(symbol.Name, out var existing))
 					{
@@ -122,7 +118,7 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 					if (memberSyntax.Kind == NodeKind.ModuleDeclaration ||
 					    memberSyntax.Kind == NodeKind.TypeDeclaration) continue;
 
-					Symbol symbol = BuildSymbol(memberSyntax);
+					Symbol symbol = BuildSymbol(memberSyntax, diagnostics);
 
 					if (!result.TryGetValue(symbol.Name, out var existing))
 					{
@@ -139,12 +135,12 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 		return result;
 	}
 
-	private Symbol BuildSymbol(Declaration declaration)
+	private Symbol BuildSymbol(Declaration declaration, BindingDiagnosticBag diagnostics)
 	{
 		switch (declaration.Kind)
 		{
 			case DeclarationKind.Module:
-				return new SourceModuleSymbol(this, (MergedModuleDeclaration)declaration, declaration.Name);
+				return new SourceModuleSymbol(ContainingLibrary, this, (MergedModuleDeclaration)declaration, diagnostics);
 			case DeclarationKind.Type:
 				return new SourceTypeSymbol(this, (MergedTypeDeclaration)declaration);
 
@@ -153,7 +149,7 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 		}
 	}
 
-	private Symbol BuildSymbol(SyntaxNode syntax)
+	private Symbol BuildSymbol(SyntaxNode syntax, BindingDiagnosticBag diagnostics)
 	{
 		if (syntax.Kind == NodeKind.FunctionDeclaration)
 		{

@@ -6,16 +6,18 @@ namespace NiteCompiler.CodeAnalysis.Declarations;
 
 internal sealed class SingleTypeDeclaration : SingleItemDeclaration
 {
-	private readonly ImmutableArray<SingleItemDeclaration> _children;
+	private readonly ImmutableArray<SingleItemDeclaration> _members;
 	public override DeclarationKind Kind => DeclarationKind.Type;
 
-	public SingleTypeDeclaration(string name, SyntaxReference syntax, SourceLocation nameLocation, ImmutableArray<SingleItemDeclaration> children) : base(name, syntax, nameLocation)
+	public SingleTypeDeclaration(string name, SyntaxReference syntax, SourceLocation nameLocation,
+		ImmutableArray<SingleItemDeclaration> members, ImmutableArray<Diagnostic> diagnostics)
+		: base(name, syntax, nameLocation, diagnostics)
 	{
-		_children = children;
+		_members = members;
 	}
 
 	protected override ImmutableArray<SingleItemDeclaration> GetModuleOrTypeDeclarationMembers()
 	{
-		return _children;
+		return _members;
 	}
 }
