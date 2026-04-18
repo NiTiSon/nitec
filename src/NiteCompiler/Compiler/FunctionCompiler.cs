@@ -105,7 +105,7 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 				{
 					var emittedBody = GenerateBody(function, body);
 
-					_metadataBuilder!.SetFunctionBody(function, emittedBody);
+					_metadataBuilder?.SetFunctionBody(function, emittedBody);
 				}
 
 				return body;

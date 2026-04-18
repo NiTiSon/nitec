@@ -26,7 +26,6 @@ public sealed partial class NiteCompilation
 
 	public ImmutableArray<SyntaxTree> SyntaxTrees { get; }
 	public NiteCompilationOptions Options { get; }
-	public DiagnosticBag Diagnostics { get; } = [];
 	internal SourceLibrarySymbol SourceLibrary { get; }
 
 	internal BuiltInOperators BuiltInOperators
@@ -46,14 +45,15 @@ public sealed partial class NiteCompilation
 		string libraryName,
 		ImmutableArray<SyntaxTree> syntaxTrees,
 		ImmutableArray<Dependency> dependencies,
-		NiteCompilationOptions options)
+		NiteCompilationOptions options,
+		DiagnosticBag diagnostics)
 	{
 		SyntaxTrees = syntaxTrees;
 		Options = options;
 
 		if (Options.IsCoreLibrary && !dependencies.IsEmpty)
 		{
-			Diagnostics.ReportDependenciesInCoreLibrary();
+			diagnostics.ReportDependenciesInCoreLibrary();
 		}
 
 		Declarations = new(syntaxTrees);
@@ -65,13 +65,14 @@ public sealed partial class NiteCompilation
 		string libraryName,
 		IEnumerable<SyntaxTree>? sourceFiles,
 		IEnumerable<Dependency>? dependencies,
-		NiteCompilationOptions options)
+		NiteCompilationOptions options,
+		DiagnosticBag diagnostics)
 	{
 		ImmutableArray<SyntaxTree> syntaxTrees = sourceFiles?.ToImmutableArray() ?? [];
 		ImmutableArray<Dependency> dependenciesArray = dependencies?.ToImmutableArray() ?? [];
 
 		libraryName ??= FallbackLibraryName;
-		return new NiteCompilation(libraryName, syntaxTrees, dependenciesArray, options);
+		return new NiteCompilation(libraryName, syntaxTrees, dependenciesArray, options, diagnostics);
 	}
 
 	internal int GetSyntaxTreeOrdinal(SyntaxTree tree)

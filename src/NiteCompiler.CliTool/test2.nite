@@ -3,12 +3,11 @@
 module test;
 
 public simple_func(x: i32) -> i32 {
-	return x;
+	return x + 1;
 }
 
 module std::numerics;
 
-public type SInt32;
 public type Float32;
 
 module std;

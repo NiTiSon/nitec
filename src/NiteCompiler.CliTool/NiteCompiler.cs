@@ -97,32 +97,42 @@ public static class NiteCompiler
 			libraryName = Path.GetFileNameWithoutExtension(name) ?? "a"; // ah
 		}
 
-		var compilation = NiteCompilation.Create(libraryName, trees!, null, options);
-		compilation.Diagnostics.DrainInto(diagnostics);
+		var compilation = NiteCompilation.Create(libraryName, trees!, null, options, diagnostics);
+		var parseDiagnostics = compilation.GetParseDiagnostics();
+		var declarationDiagnostics = compilation.GetDeclarationDiagnostics();
+		var compilationDiagnostics = compilation.GetFunctionBodyDiagnostics();
+		diagnostics.AddRange(parseDiagnostics);
+		diagnostics.AddRange(declarationDiagnostics);
+		diagnostics.AddRange(compilationDiagnostics);
 
-		DiagnosticBag? resultingDiagnostics = null;
-		try
+		if (parseDiagnostics.Any(d => d.Severity != DiagnosticSeverity.Error) &&
+		    declarationDiagnostics.Any(d => d.Severity != DiagnosticSeverity.Error) &&
+		    compilationDiagnostics.Any(d => d.Severity != DiagnosticSeverity.Error))
 		{
-			switch (outputKind)
+			DiagnosticBag? resultingDiagnostics = null;
+			try
 			{
-				case OutputKind.NiTiSLibrary:
-				case OutputKind.Executable:
-					FileStream fs = new("./out.nlib", FileMode.Create, FileAccess.Write);
-					compilation.EmitNiteLibrary(fs, out resultingDiagnostics);
+				switch (outputKind)
+				{
+					case OutputKind.NiTiSLibrary:
+					case OutputKind.Executable:
+						FileStream fs = new("./out.nlib", FileMode.Create, FileAccess.Write);
+						compilation.EmitNiteLibrary(fs, out resultingDiagnostics);
 
-					break;
-				default:
-					throw new NotSupportedException();
+						break;
+					default:
+						throw new NotSupportedException();
+				}
 			}
-		}
-		catch (Exception exception)
-		{
-			Debug.WriteLine("Compiler unwanted exception :(");
-			diagnostics.ReportInternalCompilerError(exception);
-		}
-		finally
-		{
-			resultingDiagnostics?.DrainInto(diagnostics);
+			catch (Exception exception)
+			{
+				Debug.WriteLine("Compiler unwanted exception :(");
+				diagnostics.ReportInternalCompilerError(exception);
+			}
+			finally
+			{
+				resultingDiagnostics?.DrainInto(diagnostics);
+			}
 		}
 
 		if (!diagnostics.IsEmpty)
