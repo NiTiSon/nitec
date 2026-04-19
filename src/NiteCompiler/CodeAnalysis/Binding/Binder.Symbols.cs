@@ -9,35 +9,26 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal partial class Binder
 {
-	private TypeSymbol GetSpecialType(SpecialType type, BindingDiagnosticBag diagnostics)
+	public TypeSymbol GetSpecialType(SpecialType specialType)
 	{
-		Debug.Assert(type != SpecialType.None);
-		TypeSymbol? special = Compilation.GetSpecialType(type);
-
-		if (special == null)
-		{
-			diagnostics.Diagnostics.ReportUnresolvedPredefinedType(type.ToFullName()!);
-			special = CreateErrorType(type.ToFullName()!);
-		}
-
-		return special;
+		return Compilation.GetSpecialType(specialType);
 	}
 
-	public Symbol BindVoidType(BindingDiagnosticBag diagnostics)
+	public Symbol BindVoidType()
 	{
-		return GetSpecialType(SpecialType.StdVoid, diagnostics);
+		return GetSpecialType(SpecialType.StdVoid);
 	}
 
-	public Symbol BindPredefinedType(PredefinedTypeSyntax syntax, BindingDiagnosticBag diagnostics)
+	public Symbol BindPredefinedType(PredefinedTypeSyntax syntax)
 	{
-		return GetSpecialType(syntax.TypeKeyword.TKind.AssociatedSpecialType, diagnostics);
+		return GetSpecialType(syntax.TypeKeyword.TKind.AssociatedSpecialType);
 	}
 
 	public Symbol BindModuleOrTypeSymbol(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		if (syntax.Kind == NodeKind.PredefinedType)
 		{
-			return BindPredefinedType((PredefinedTypeSyntax)syntax, diagnostics);
+			return BindPredefinedType((PredefinedTypeSyntax)syntax);
 		}
 
 		throw new NotImplementedException();

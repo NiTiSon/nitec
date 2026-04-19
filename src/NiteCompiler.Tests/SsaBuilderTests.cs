@@ -56,7 +56,7 @@ public class SsaBuilderTests
 	private static SsaFunction BuildSsa(string source, string functionName)
 	{
 		SyntaxTree tree = SyntaxTree.ParseText(source, "test.nite", NiteCompilationOptions.Default);
-		NiteCompilation compilation = NiteCompilation.Create("test", [tree], null, NiteCompilationOptions.Default);
+		var compilation = NiteCompilation.Create("test", [tree], null, NiteCompilationOptions.Default, []);
 
 		ModuleSymbol module = compilation.SourceLibrary.GlobalModule.GetNestedModule("test")!;
 		FunctionSymbol function = module.GetMembersUnordered().OfType<FunctionSymbol>().Single(f => f.Name == functionName);

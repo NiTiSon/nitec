@@ -41,7 +41,7 @@ internal partial class Binder
 
 	internal TypeSymbol CreateErrorType(string name = "")
 	{
-		return new ErrorTypeSymbol(Compilation, name, arity: 0, errorInfo: null, unreported: false);
+		return new ErrorTypeSymbol(Compilation, SpecialType.None, name, arity: 0, errorInfo: null, unreported: false);
 	}
 
 	private BoundExpression BindExpression(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics, bool invoked, bool indexed)
@@ -134,7 +134,7 @@ internal partial class Binder
 		NumberToken? value = syntax.Token as NumberToken;
 		Debug.Assert(value != null);
 
-		TypeSymbol i32 = GetSpecialType(SpecialType.StdNumericsSInt32, diagnostics);
+		TypeSymbol i32 = GetSpecialType(SpecialType.StdNumericsSInt32);
 		ConstantValue i32Value = ConstantValue.Create((int)value.Value.U64);
 		return new BoundLiteral(syntax, i32Value, i32);
 	}

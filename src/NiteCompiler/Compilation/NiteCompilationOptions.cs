@@ -13,7 +13,7 @@ public sealed record NiteCompilationOptions
 	public DocumentationMode DocumentationMode { get; set; } = DocumentationMode.Parse;
 	public NiteVersion LanguageVersion { get; set; } = NiteVersion.LastStable;
 	public DateTime CompilationTime { get; set; } = DateTime.Now;
-	public bool ConcurrentBuild { get; set; }
+	public bool ConcurrentBuild { get; set; } = true;
 	public bool DeterministicBuild { get; set; }
 
 	public Diagnostic? FilterDiagnostic(Diagnostic diagnostic, CancellationToken cancellationToken = default)

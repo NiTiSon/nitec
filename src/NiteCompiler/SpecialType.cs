@@ -69,9 +69,9 @@ internal static class SpecialTypeExtensions
 			return result;
 		}
 
-		public string? ToFullName()
+		public string ToFullName()
 		{
-			return (string?)Names[(int)self];
+			return (string?)Names[(int)self]!;
 		}
 	}
 }

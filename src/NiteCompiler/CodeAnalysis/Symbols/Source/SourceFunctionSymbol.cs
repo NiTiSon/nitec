@@ -59,7 +59,7 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 
 		if (Syntax.TypeClause == null) // void
 		{
-			TypeSymbol @void = (TypeSymbol)factory.GetBinder(Syntax).BindVoidType(diagnostics);
+			TypeSymbol @void = (TypeSymbol)factory.GetBinder(Syntax).BindVoidType();
 			return @void;
 		}
 		Binder withGenericsBinder = factory.GetBinder(Syntax.TypeClause);

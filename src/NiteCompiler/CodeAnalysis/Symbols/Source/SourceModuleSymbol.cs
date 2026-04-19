@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using NiteCompiler.CodeAnalysis.Declarations;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Compilation;
@@ -196,21 +197,39 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 			{
 				case CompletionPart.NameToMembersMap:
 					_ = GetNameToMembersMap();
-					break;
-				case CompletionPart.MembersCompleted:
-					var members = GetMembers();
 					if (DeclaringCompilation!.LookingForSpecialTypes)
 					{
 						RegisterSpecialTypes();
 					}
+					break;
+				case CompletionPart.MembersCompleted:
+					var members = GetMembers();
 
 					bool allCompleted = true;
 
-					// TODO: Concurrency
-					foreach (var member in members)
+					if (DeclaringCompilation!.Options.ConcurrentBuild)
 					{
-						ForceCompleteMemberConditionally(filter, member, cancellationToken);
-						allCompleted = allCompleted && member.HasComplete(CompletionPart.All);
+						Parallel.For(0, members.Length, i =>
+						{
+							ForceCompleteMemberConditionally(filter, members[i], cancellationToken);
+						}, cancellationToken);
+
+						foreach (var member in members)
+						{
+							if (!member.HasComplete(CompletionPart.All))
+							{
+								allCompleted = false;
+								break;
+							}
+						}
+					}
+					else
+					{
+						foreach (var member in members)
+						{
+							ForceCompleteMemberConditionally(filter, member, cancellationToken);
+							allCompleted = allCompleted && member.HasComplete(CompletionPart.All);
+						}
 					}
 
 					if (allCompleted)

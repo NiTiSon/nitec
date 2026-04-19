@@ -9,16 +9,17 @@ internal enum CompletionPart
 {
 	None = 0,
 	Attributes = 1 << 0,
+	Type = 1 << 1,
 	MembersCompleted = 1 << 3,
 	All = (1 << 4) - 1,
 
 	// Modules
 	NameToMembersMap = 1 << 1,
+	//+ MembersCompleted
 
 	// Functions
-	Parameters = 1 << 1,
-
-	Type = 1 << 2,
+	//: Type
+	Parameters = 1 << 2,
 
 	ModuleSymbolAll = NameToMembersMap | MembersCompleted,
 	LibrarySymbolAll = MembersCompleted,

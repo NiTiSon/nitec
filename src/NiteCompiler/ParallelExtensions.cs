@@ -12,13 +12,13 @@ internal static class ParallelExtensions
 	extension(Parallel)
 	{
 		/// <inheritdoc cref="Parallel.For(int, int, Action{int})"/>
-		public static void For(int fromInclusive, int toExclusive, Action<int> body, CancellationToken cancellationToken)
+		public static ParallelLoopResult For(int fromInclusive, int toExclusive, Action<int> body, CancellationToken cancellationToken)
 		{
 			var parallelOptions = cancellationToken.CanBeCanceled
 				? new ParallelOptions { CancellationToken = cancellationToken, MaxDegreeOfParallelism = Environment.ProcessorCount }
 				: DefaultParallelOptions;
 
-			Parallel.For(fromInclusive, toExclusive, parallelOptions, Wrapper);
+			return Parallel.For(fromInclusive, toExclusive, parallelOptions, Wrapper);
 
 			void Wrapper(int i)
 			{

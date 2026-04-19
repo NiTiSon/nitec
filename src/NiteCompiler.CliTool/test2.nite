@@ -6,10 +6,12 @@ public simple_func(x: i32) -> i32 {
 	return x + 1;
 }
 
-module std::numerics;
-
-public type Float32;
-
 module std;
 
 public type Boolean;
+public type NeverReturn;
+
+module std::numerics;
+
+public type Float32;
+public type SInt32;

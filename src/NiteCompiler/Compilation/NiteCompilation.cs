@@ -114,19 +114,35 @@ public sealed partial class NiteCompilation
 		}
 
 		_lateinitSpecialTypes[(int)type.SpecialType] = type;
-		Debug.Assert(LookingForSpecialTypes);
 	}
 
-	public TypeSymbol? GetSpecialType(SpecialType type)
+	public TypeSymbol GetSpecialType(SpecialType type)
 	{
-		Debug.Assert(type != SpecialType.None);
-
-		if (type >= SpecialType.Count)
+		if (type == SpecialType.None || (int)SpecialType.Count <= (int)type)
 		{
-			throw new InvalidEnumArgumentException(nameof(type), (int)type, typeof(SpecialType));
+			throw new ArgumentOutOfRangeException(nameof(type), $"Unexpected SpecialType: '{type}'.");
 		}
 
-		return _lateinitSpecialTypes?[(int)type];
+		TypeSymbol result;
+		if (IsMissingType(type))
+		{
+			string fullName = type.ToFullName();
+			DeclarationDiagnostics.ReportUnresolvedPredefinedType(fullName);
+
+			result = new ErrorTypeSymbol(this, type, fullName, 0, null, unreported: false);
+		}
+		else
+		{
+			result = _lateinitSpecialTypes![(int)type]!;
+		}
+
+		Debug.Assert(result.SpecialType == type);
+		return result;
+	}
+
+	private bool IsMissingType(SpecialType type)
+	{
+		return _lateinitSpecialTypes?[(int)type] == null;
 	}
 
 	public void EmitObjectFile() => throw new NotImplementedException();
