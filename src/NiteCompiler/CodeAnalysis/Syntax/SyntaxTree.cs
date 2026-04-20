@@ -51,7 +51,11 @@ public sealed class SyntaxTree
 	{
 		Debug.Assert(syntaxNode != null);
 		Debug.Assert(syntaxNode.Tree == this);
-		_parentMap ??= new();
+
+		if (_parentMap == null)
+		{
+			Interlocked.CompareExchange(ref _parentMap, new(), null);
+		}
 
 		lock (_parentMap)
 		{
