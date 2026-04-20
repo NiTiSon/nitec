@@ -162,20 +162,27 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 		}
 	}
 
-	private void RegisterSpecialTypes()
+	internal void ForceCompleteSpecialTypes()
 	{
-		foreach (var array in _lateinitNameToMembersMap!.Values)
+		if (!DeclaringCompilation!.LookingForSpecialTypes)
 		{
-			foreach (var member in array)
-			{
-				if (member is TypeSymbol type && type.SpecialType != SpecialType.None)
-				{
-					DeclaringCompilation!.RegisterSpecialType(type);
+			return;
+		}
 
-					if (!DeclaringCompilation!.LookingForSpecialTypes)
-					{
-						return;
-					}
+		foreach (Symbol member in GetMembersUnordered())
+		{
+			if (member is SourceModuleSymbol module)
+			{
+				module.ForceCompleteSpecialTypes();
+			}
+
+			if (member is TypeSymbol type && type.SpecialType != SpecialType.None)
+			{
+				DeclaringCompilation!.RegisterSpecialType(type);
+
+				if (!DeclaringCompilation!.LookingForSpecialTypes)
+				{
+					return;
 				}
 			}
 		}
@@ -197,10 +204,6 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 			{
 				case CompletionPart.NameToMembersMap:
 					_ = GetNameToMembersMap();
-					if (DeclaringCompilation!.LookingForSpecialTypes)
-					{
-						RegisterSpecialTypes();
-					}
 					break;
 				case CompletionPart.MembersCompleted:
 					var members = GetMembers();

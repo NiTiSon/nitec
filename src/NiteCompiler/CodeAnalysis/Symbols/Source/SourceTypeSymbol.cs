@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Threading;
 using NiteCompiler.CodeAnalysis.Declarations;
+using NiteCompiler.Compilation;
 
 namespace NiteCompiler.CodeAnalysis.Symbols.Source;
 
@@ -9,6 +11,7 @@ internal sealed class SourceTypeSymbol : TypeSymbol
 {
 	public MergedTypeDeclaration Declaration { get; }
 	public override ContainerSymbol ContainingSymbol { get; }
+	public override NiteCompilation DeclaringCompilation => ContainingSymbol.DeclaringCompilation!;
 
 	public override string Name => Declaration.Name;
 

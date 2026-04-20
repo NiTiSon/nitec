@@ -61,6 +61,7 @@ internal sealed class SourceLibrarySymbol : LibrarySymbol
 				case CompletionPart.None:
 					return;
 				case CompletionPart.MembersCompleted:
+					GlobalModule.ForceCompleteSpecialTypes();
 					GlobalModule.ForceComplete(null, cancellationToken);
 
 					_state.NotePartComplete(CompletionPart.MembersCompleted);
