@@ -233,7 +233,10 @@ public static class NiteCompiler
 			_ => throw new ArgumentException(null, nameof(diagnostic))
 		};
 
-		// Header
+		// the amount of additional lines
+		const int contextLines = 1;
+
+		// header
 		Console.ForegroundColor = foreColor;
 		Console.Write($"{type}[{diagnostic.Id}]");
 		Console.ResetColor();
@@ -242,13 +245,13 @@ public static class NiteCompiler
 		if (diagnostic.Locations.Length == 0) return;
 
 		var locationsGroupedBySource = diagnostic.Locations
-			.Sort((l, r) => l.Span?.CompareTo(r.Span) ?? -1)
+			.OrderBy(l => l.Span!.Value.Start)
 			.GroupBy(d => d.SyntaxTree)
 			.Select(g => (SyntaxTree: g.Key, Locations: g.ToArray()));
 
 		foreach (var group in locationsGroupedBySource)
 		{
-			if (group.SyntaxTree is null) continue; // If SyntaxTree is null, then locations is definitely not within text files
+			if (group.SyntaxTree is null) continue; // if SyntaxTree is null, then locations is definitely not within text files
 
 			var source = group.SyntaxTree.Text;
 			var lines = source.Lines;
@@ -260,21 +263,24 @@ public static class NiteCompiler
 			foreach (var location in group.Locations)
 			{
 				TextSpan span = location.Span!.Value;
-				TextLine begin = lines.GetLineByCharacterPosition(location.Span!.Value.End)!.Value;
-				TextLine end = lines.GetLineByCharacterPosition(location.Span!.Value.End)!.Value;
+				TextLine startLine = lines.GetLineByCharacterPosition(location.Span!.Value.Start)!.Value;
+				TextLine endLine = lines.GetLineByCharacterPosition(location.Span!.Value.End)!.Value;
+				int windowStart = Math.Max(0, startLine.Index - contextLines);
+				int windowEnd = Math.Min(lines.Count - 1, endLine.Index + contextLines);
 
-				Console.WriteLine($"{new string(' ', gutterWidth - 1)}--> {location.Filename ?? "<ommited filename>"}:{begin.HumanReadableLineNumber}:{begin.GetColumnIndex(span.Start) + 1}");
-				Console.WriteLine(new string(' ', gutterWidth) + "|");
+				Console.WriteLine($"{new string(' ', gutterWidth - 1)}--> {location.Filename ?? "<ommited filename>"}:{startLine.HumanReadableLineNumber}:{startLine.GetColumnIndex(span.Start) + 1}");
+				// Console.WriteLine(new string(' ', gutterWidth) + "|");
 
-				for (int i = begin.Index; i <= end.Index && i < source.Lines.Count; i++)
+				for (int i = windowStart; i <= windowEnd; i++)
 				{
-					TextLine current = source.Lines.GetLineByIndex(i);
-					string lineNum = current.HumanReadableLineNumber.ToString().PadLeft(gutterWidth - 1);
+					TextLine line = lines.GetLineByIndex(i);
+					string lineNum = line.HumanReadableLineNumber.ToString().PadLeft(gutterWidth - 1);
 
-					// avoid IndexOutOfRange if line is empty (EOF after newline)
 					string text = string.Empty;
-					if (current.LineSpan.End <= source.Length && current.LineSpan.Start < source.Length)
-						text = source.GetText(current.LineSpan).TrimEnd('\n', '\r');
+					if (line.LineSpan.End <= source.Length && line.LineSpan.Start < source.Length)
+					{
+						text = source.GetText(line.LineSpan).TrimEnd('\r', '\n');
+					}
 
 					Console.Write(lineNum);
 					Console.Write(" | ");
@@ -285,19 +291,34 @@ public static class NiteCompiler
 						continue;
 					}
 
-					int startOffset = 0;
-					int endOffset = text.Length;
+					bool isErrorLine = i >= startLine.Index && i <= endLine.Index;
 
-					if (i == begin.Index)
-						startOffset = Math.Clamp(span.Start - current.Position, 0, text.Length);
-					if (i == end.Index)
-						endOffset = Math.Clamp(span.End - current.Position, startOffset, text.Length);
+					if (!isErrorLine)
+					{
+						Console.WriteLine(text.Replace("\t", "    "));
+						continue;
+					}
 
-					Console.Write(text[..startOffset]);
+					int highlightStart = 0;
+					int highlightEnd = text.Length;
+
+					if (i == startLine.Index)
+					{
+						highlightStart = Math.Clamp(span.Start - line.Position, 0, text.Length);
+					}
+
+					if (i == endLine.Index)
+					{
+						highlightEnd = Math.Clamp(span.End - line.Position, highlightStart, text.Length);
+					}
+
+					Console.Write(text[..highlightStart].Replace("\t", "    "));
+
 					Console.ForegroundColor = foreColor;
-					Console.Write(text[startOffset..endOffset]);
+					Console.Write(text[highlightStart..highlightEnd].Replace("\t", "    "));
 					Console.ResetColor();
-					Console.WriteLine(text[endOffset..]);
+
+					Console.WriteLine(text[highlightEnd..].Replace("\t", "    "));
 				}
 			}
 		}
