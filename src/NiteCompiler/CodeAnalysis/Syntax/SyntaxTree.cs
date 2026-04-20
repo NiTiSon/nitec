@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -52,16 +53,19 @@ public sealed class SyntaxTree
 		Debug.Assert(syntaxNode.Tree == this);
 		_parentMap ??= new();
 
-		ref SyntaxNode? parent = ref CollectionsMarshal.GetValueRefOrAddDefault(_parentMap, syntaxNode, out bool exists);
+		lock (_parentMap)
+		{
+			ref SyntaxNode? parent = ref CollectionsMarshal.GetValueRefOrAddDefault(_parentMap, syntaxNode, out bool exists);
 
-		if (exists)
-		{
-			return parent;
-		}
-		else
-		{
-			parent = GetParentSlow(syntaxNode);
-			return parent;
+			if (exists)
+			{
+				return parent;
+			}
+			else
+			{
+				parent = GetParentSlow(syntaxNode);
+				return parent;
+			}
 		}
 	}
 
