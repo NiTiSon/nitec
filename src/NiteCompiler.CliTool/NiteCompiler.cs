@@ -263,7 +263,7 @@ public static class NiteCompiler
 				TextLine begin = lines.GetLineByCharacterPosition(location.Span!.Value.End)!.Value;
 				TextLine end = lines.GetLineByCharacterPosition(location.Span!.Value.End)!.Value;
 
-				Console.WriteLine($"{new string(' ', gutterWidth - 1)}--> filename:{begin.HumanReadableLineNumber}:{begin.GetColumnIndex(span.Start) + 1}");
+				Console.WriteLine($"{new string(' ', gutterWidth - 1)}--> {location.Filename ?? "<ommited filename>"}:{begin.HumanReadableLineNumber}:{begin.GetColumnIndex(span.Start) + 1}");
 				Console.WriteLine(new string(' ', gutterWidth) + "|");
 
 				for (int i = begin.Index; i <= end.Index && i < source.Lines.Count; i++)

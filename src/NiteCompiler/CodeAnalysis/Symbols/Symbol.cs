@@ -45,7 +45,7 @@ public abstract class Symbol
 	public virtual string Name => string.Empty;
 	public virtual int Arity => 0;
 
-	public abstract string ToDisplayString();
+	public abstract string ToDisplayString(SymbolFormat format = SymbolFormat.Default);
 
 	public abstract void Accept(SymbolVisitor visitor);
 	public abstract TResult? Accept<TResult>(SymbolVisitor<TResult> visitor);

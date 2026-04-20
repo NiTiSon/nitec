@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 
 namespace NiteCompiler.Diagnostics;
@@ -200,6 +201,11 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 	public void ReportWrongReturnExpressionType(Location location)
 	{
 		Add(DiagnosticDescriptor.WrongReturnExpressionType, [location]);
+	}
+
+	public void ReportCannotImplicitlyConvert(Location location, TypeSymbol from, TypeSymbol to)
+	{
+		Add(DiagnosticDescriptor.CannotImplicitlyConvert, [location], from.ToDisplayString(SymbolFormat.UseNiteKeywords), to.ToDisplayString(SymbolFormat.UseNiteKeywords));
 	}
 
 	public void ReportInternalCompilerError(Exception exception)

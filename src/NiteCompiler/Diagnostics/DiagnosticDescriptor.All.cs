@@ -23,6 +23,7 @@ public partial class DiagnosticDescriptor
 		MustReturnValue,
 		CannotReturnValue,
 		WrongReturnExpressionType,
+		CannotImplicitlyConvert,
 		IntegralConstantTooLarge,
 		IntegralValueCantBeSigned,
 		IntegralValueIsGreaterThanMaxValue,
@@ -62,7 +63,8 @@ public partial class DiagnosticDescriptor
 		MustReturnValue = new("must-return", "Return statement must return a value.");
 		CannotReturnValue = new("cannot-return", "Return statement cannot return a value.");
 		WrongReturnExpressionType = new("wrong-return-expression",
-			"Return statement expression type is not convertable to the function return type");
+			"Return statement expression type is not convertable to the function return type.");
+		CannotImplicitlyConvert = new("cannot-implicitly-convert", "Cannot implicitly cast type '{0}' to the '{1}'.");
 
 		// Value checking
 		IntegralConstantTooLarge = new("integral-constant-too-large", "Integral constant too large.");

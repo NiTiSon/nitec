@@ -129,6 +129,20 @@ internal partial class Binder
 		return BindValue(syntax, diagnostics, BindValueKind.RValue);
 	}
 
+	private BoundExpression BindBooleanExpression(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
+	{
+		BoundExpression result = BindExpression(syntax, diagnostics, false, false);
+
+		if (result.Type.SpecialType != SpecialType.StdBoolean)
+		{
+			diagnostics.Diagnostics.ReportCannotImplicitlyConvert(syntax.Location, result.Type, GetSpecialType(SpecialType.StdBoolean));
+
+			// TODO: Wrap expression in wrong conversion with hasError = true
+		}
+
+		return result;
+	}
+
 	private BoundLiteral BindLiteralConstant(LiteralExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		NumberToken? value = syntax.Token as NumberToken;

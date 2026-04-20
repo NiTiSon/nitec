@@ -8,7 +8,7 @@ public abstract class ModuleSymbol : ContainerSymbol
 
 	public bool IsGlobalModule => ContainingSymbol is not ModuleSymbol;
 
-	public override string ToDisplayString()
+	public override string ToDisplayString(SymbolFormat format = SymbolFormat.Default)
 	{
 		if (ContainingSymbol is ModuleSymbol parentModule && !parentModule.IsGlobalModule) // do not include <global> into display string
 		{

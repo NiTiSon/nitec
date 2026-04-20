@@ -10,7 +10,7 @@ public abstract class FunctionSymbol : Symbol
 	public abstract ImmutableArray<ParameterSymbol> Parameters { get; }
 
 
-	public override string ToDisplayString()
+	public override string ToDisplayString(SymbolFormat format = SymbolFormat.Default)
 	{
 		string separator = (ContainingSymbol is TypeSymbol && !IsStatic) ? "." : "::";
 		return $"{ContainingSymbol!.ToDisplayString()}{separator}{Name}";

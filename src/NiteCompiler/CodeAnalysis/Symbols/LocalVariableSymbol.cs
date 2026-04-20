@@ -20,7 +20,7 @@ public abstract class LocalVariableSymbol : LocalVariableOrParameterSymbol
 		return visitor.VisitLocalVariable(this, arg);
 	}
 
-	public override string ToDisplayString()
+	public override string ToDisplayString(SymbolFormat format = SymbolFormat.Default)
 	{
 		return Name;
 	}

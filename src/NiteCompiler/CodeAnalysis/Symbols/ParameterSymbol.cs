@@ -21,7 +21,7 @@ public abstract class ParameterSymbol : LocalVariableOrParameterSymbol
 		return visitor.VisitParameter(this, arg);
 	}
 
-	public override string ToDisplayString()
+	public override string ToDisplayString(SymbolFormat format = SymbolFormat.Default)
 	{
 		return Name;
 	}

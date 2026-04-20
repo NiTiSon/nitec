@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
 public abstract class TypeSymbol : ContainerSymbol
@@ -9,8 +11,9 @@ public abstract class TypeSymbol : ContainerSymbol
 	public bool IsVoidType => SpecialType == SpecialType.StdVoid;
 	public bool IsErrorType => this is IErrorType;
 
-	public override string ToDisplayString()
+	public override string ToDisplayString(SymbolFormat format = SymbolFormat.Default)
 	{
+		Debug.Assert(format.IsValid);
 		if (ContainingSymbol is LibrarySymbol)
 		{
 			return Name;

@@ -7,7 +7,7 @@ public abstract class LibrarySymbol : Symbol
 	public override LibrarySymbol? ContainingLibrary => null;
 	public abstract ModuleSymbol GlobalModule { get; }
 
-	public override string ToDisplayString()
+	public override string ToDisplayString(SymbolFormat format = SymbolFormat.Default)
 	{
 		return Name;
 	}

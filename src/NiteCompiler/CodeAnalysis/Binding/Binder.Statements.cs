@@ -112,7 +112,7 @@ internal partial class Binder
 	private BoundIfStatement BindIf(IfStatementSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		// TODO: BindBooleanExpression
-		BoundExpression condition = BindValue(syntax.Condition, diagnostics, BindValueKind.RValue);
+		BoundExpression condition = BindBooleanExpression(syntax.Condition, diagnostics);
 		BoundStatement then = BindStatement(syntax.ThenStatement, diagnostics, embedded: true);
 
 		BoundStatement? @else = null;
@@ -212,7 +212,7 @@ internal partial class Binder
 
 	private BoundWhileStatement BindWhile(WhileStatementSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
-		BoundExpression condition = BindRValueWithoutTargetType(syntax.Condition, diagnostics);
+		BoundExpression condition = BindBooleanExpression(syntax.Condition, diagnostics);
 		BoundStatement body = BindStatement(syntax.Body, diagnostics, embedded: true);
 
 		return new BoundWhileStatement(syntax, condition, body);
