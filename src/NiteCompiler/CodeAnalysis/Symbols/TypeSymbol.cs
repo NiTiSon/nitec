@@ -6,7 +6,8 @@ public abstract class TypeSymbol : ContainerSymbol
 
 	public virtual SpecialType SpecialType => SpecialType.None;
 
-	public bool IsVoid => SpecialType == SpecialType.StdVoid;
+	public bool IsVoidType => SpecialType == SpecialType.StdVoid;
+	public bool IsErrorType => this is IErrorType;
 
 	public override string ToDisplayString()
 	{

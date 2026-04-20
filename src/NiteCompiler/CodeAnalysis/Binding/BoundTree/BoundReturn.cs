@@ -5,7 +5,7 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 internal sealed class BoundReturn : BoundStatement
 {
 	public BoundExpression? Expression { get; }
-	public override BoundKind Kind => BoundKind.Return;
+	public override BoundKind Kind => BoundKind.ReturnStatement;
 
 	public BoundReturn(SyntaxNode syntax, BoundExpression? expression, bool hasErrors = false) : base(syntax, hasErrors)
 	{

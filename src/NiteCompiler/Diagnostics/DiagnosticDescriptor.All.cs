@@ -20,6 +20,9 @@ public partial class DiagnosticDescriptor
 		OnlyTopLevelModuleDeclarationsAreAllowed,
 		AccessibilityModifierRequiredBeforeMemberDeclaration,
 		MissingParameterTypeSpecification,
+		MustReturnValue,
+		CannotReturnValue,
+		WrongReturnExpressionType,
 		IntegralConstantTooLarge,
 		IntegralValueCantBeSigned,
 		IntegralValueIsGreaterThanMaxValue,
@@ -56,6 +59,10 @@ public partial class DiagnosticDescriptor
 		OnlyTopLevelModuleDeclarationsAreAllowed = new("only-top-level-module-declarations-are-allowed", "Only top-level module declarations are allowed.");
 
 		// Type Checking
+		MustReturnValue = new("must-return", "Return statement must return a value.");
+		CannotReturnValue = new("cannot-return", "Return statement cannot return a value.");
+		WrongReturnExpressionType = new("wrong-return-expression",
+			"Return statement expression type is not convertable to the function return type");
 
 		// Value checking
 		IntegralConstantTooLarge = new("integral-constant-too-large", "Integral constant too large.");

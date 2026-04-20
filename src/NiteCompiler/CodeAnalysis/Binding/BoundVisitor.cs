@@ -16,6 +16,7 @@ internal abstract class BoundVisitor
 	public virtual void VisitBinaryExpression(BoundBinaryExpression binaryExpression) => DefaultVisit(binaryExpression);
 	public virtual void VisitBlock(BoundBlock block) => DefaultVisit(block);
 	public virtual void VisitCopy(BoundCopy copy) => DefaultVisit(copy);
+	public virtual void VisitEmptyStatement(BoundEmptyStatement statement) => DefaultVisit(statement);
 	public virtual void VisitExpressionStatement(BoundExpressionStatement statement) => DefaultVisit(statement);
 	public virtual void VisitFunctionBody(BoundFunctionBody functionBody) => DefaultVisit(functionBody);
 	public virtual void VisitIfStatement(BoundIfStatement ifStatement) => DefaultVisit(ifStatement);

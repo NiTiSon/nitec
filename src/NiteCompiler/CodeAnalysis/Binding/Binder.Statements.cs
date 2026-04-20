@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Diagnostics;
 
@@ -9,6 +10,19 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal partial class Binder
 {
+	protected TypeSymbol GetCurrentReturnType()
+	{
+		if (ContainingMember is FunctionSymbol symbol)
+		{
+			TypeSymbol returnType = symbol.ReturnType;
+
+			return returnType;
+		}
+
+		return null!;
+	}
+
+
 	public virtual BoundNode BindFunctionBody(SyntaxNode syntax, BindingDiagnosticBag diagnostics)
 	{
 		switch (syntax)
@@ -113,13 +127,44 @@ internal partial class Binder
 	private BoundReturn BindReturn(ReturnStatementSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		BoundExpression? arg = null;
+		TypeSymbol retType = GetCurrentReturnType();
+		bool hasErrors = false;
 
-		if (syntax.Expression != null)
+		if (syntax.Expression != null) arg = BindExpression(syntax.Expression, diagnostics, false, false);
+
+		// TODO[NOT-CRITICAL]: add NeverReturn case
+		if (retType.IsVoidType) // func -> void
 		{
-			arg = BindValue(syntax.Expression, diagnostics, BindValueKind.RValue);
+			if (arg != null) // return EXPR;
+			{
+				diagnostics.Diagnostics.ReportCannotReportValue(arg.Syntax!.Location);
+				hasErrors = true;
+			}
+		}
+		else // func -> any_type_not_void
+		{
+			if (arg == null) // return void;
+			{
+				diagnostics.Diagnostics.ReportMustReturnValue(syntax.Location);
+				hasErrors = true;
+			}
+			else // return EXPR;
+			{
+				// TODO: Conversion
+				if (arg.Type != retType)
+				{
+					diagnostics.Diagnostics.ReportWrongReturnExpressionType(arg.Syntax!.Location);
+					hasErrors = true;
+				}
+			}
 		}
 
-		return new BoundReturn(syntax, arg);
+		if (arg != null)
+		{
+			hasErrors |= arg.HasErrors || arg.Type.IsErrorType;
+		}
+
+		return new BoundReturn(syntax, arg, hasErrors);
 	}
 
 	private BoundBlock BindBlock(BlockStatementSyntax syntax, BindingDiagnosticBag diagnostics)
@@ -155,7 +200,7 @@ internal partial class Binder
 
 	private BoundStatement BindEmptyStatement(EmptyStatementSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
-		throw new NotImplementedException();
+		return new BoundEmptyStatement(syntax);
 	}
 
 	private BoundLoopStatement BindLoop(LoopStatementSyntax syntax, BindingDiagnosticBag diagnostics)

@@ -3,10 +3,11 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 internal enum BoundKind
 {
 	None = 0,
-	Move = 1,
-	Copy = 2,
+	Move,
+	Copy,
 	Block,
-	Return,
+	EmptyStatement,
+	ReturnStatement,
 	ExpressionStatement,
 	IfStatement,
 	LoopStatement,

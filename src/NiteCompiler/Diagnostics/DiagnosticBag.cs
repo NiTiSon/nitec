@@ -187,6 +187,21 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.MissingParameterTypeSpecification, [location]);
 	}
 
+	public void ReportMustReturnValue(Location location)
+	{
+		Add(DiagnosticDescriptor.MustReturnValue, [location]);
+	}
+
+	public void ReportCannotReportValue(Location location)
+	{
+		Add(DiagnosticDescriptor.CannotReturnValue, [location]);
+	}
+
+	public void ReportWrongReturnExpressionType(Location location)
+	{
+		Add(DiagnosticDescriptor.WrongReturnExpressionType, [location]);
+	}
+
 	public void ReportInternalCompilerError(Exception exception)
 	{
 		Add(DiagnosticDescriptor.InternalError, [], exception);

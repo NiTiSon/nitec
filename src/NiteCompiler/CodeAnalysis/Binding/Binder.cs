@@ -14,7 +14,14 @@ internal abstract partial class Binder
 	public Binder? Parent { get; }
 	public BinderFlags Flags { get; }
 
-	public virtual Symbol? ContainingMember => null;
+	public virtual Symbol? ContainingMember
+	{
+		get
+		{
+			Debug.Assert(Parent != null);
+			return Parent.ContainingMember;
+		}
+	}
 
 	protected Binder(NiteCompilation compilation)
 	{
