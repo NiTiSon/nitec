@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.IntermediateRepresentation.ControlFlow;
 

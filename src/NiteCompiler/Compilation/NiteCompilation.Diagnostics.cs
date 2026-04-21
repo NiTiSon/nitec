@@ -82,7 +82,7 @@ public partial class NiteCompilation
 		return GetDiagnostics(CompilationStage.Compile, false, symbolFilter: null, cancellationToken);
 	}
 
-	private ImmutableArray<Diagnostic> GetDiagnostics(CompilationStage stage, bool includeEarlierStages,
+	internal ImmutableArray<Diagnostic> GetDiagnostics(CompilationStage stage, bool includeEarlierStages,
 		Predicate<Symbol>? symbolFilter = null, CancellationToken cancellationToken = default)
 	{
 		DiagnosticBag bag = new();

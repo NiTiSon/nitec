@@ -3,19 +3,20 @@
 module test;
 
 public simple_func(x: i32) -> i32 {
-	if x == 2 {
-		return 1;
-	}
+   	loop {
+   		x = x + 1;
 
-	return 0;
+   		if (x == 50) return 1;
+   	}
 }
 
-public simple_func2(x: i32) -> i32 { return 1; }
+public simple_func2(x: i32) -> bool { return true; }
 
 module std;
 
 public type Boolean;
 public type NeverReturn;
+public type Void;
 
 module std::numerics;
 

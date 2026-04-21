@@ -103,7 +103,7 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 
 				if (!functionBody.HasErrors)
 				{
-					var emittedBody = GenerateBody(function, body);
+					var emittedBody = GenerateBody(function, diagnostics, body);
 
 					_metadataBuilder?.SetFunctionBody(function, emittedBody);
 				}
@@ -115,9 +115,9 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 		throw new UnreachableException();
 	}
 
-	private FunctionBody GenerateBody(FunctionSymbol symbol, BoundBlock block)
+	private FunctionBody GenerateBody(FunctionSymbol symbol, BindingDiagnosticBag diagnostics, BoundBlock block)
 	{
-		byte[] ir = IntermediateBuilder.Compile(_compilation, symbol, block, _metadataBuilder!);
+		byte[] ir = IntermediateBuilder.Compile(_compilation, symbol, block, diagnostics, _metadataBuilder);
 
 		return new FunctionBody([..ir]);
 	}

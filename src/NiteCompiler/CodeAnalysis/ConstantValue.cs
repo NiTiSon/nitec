@@ -6,6 +6,7 @@ internal abstract class ConstantValue
 {
 	public abstract SpecialType SpecialType { get; }
 
+	public virtual bool Bool => throw new InvalidOperationException();
 	public virtual sbyte S8 => throw new InvalidOperationException();
 	public virtual byte U8 => throw new InvalidOperationException();
 	public virtual short S16 => S8;
@@ -17,6 +18,11 @@ internal abstract class ConstantValue
 
 	public virtual float F32 => throw new InvalidOperationException();
 	public virtual double F64 => throw new InvalidOperationException();
+
+	public static ConstantValue Create(bool value)
+	{
+		return value ? ValueBoolean.True : ValueBoolean.False;
+	}
 
 	public static ConstantValue Create(int value)
 	{
@@ -41,5 +47,17 @@ internal abstract class ConstantValue
 
 		public override uint U32 => value;
 		public override int S32 => unchecked((int)value);
+	}
+
+	private sealed class ValueBoolean : ConstantValue
+	{
+		public static readonly ValueBoolean True = new(true);
+		public static readonly ValueBoolean False = new(false);
+		private readonly bool _value;
+
+		private ValueBoolean(bool value) { _value = value; }
+
+		public override SpecialType SpecialType => SpecialType.StdBoolean;
+		public override bool Bool => _value;
 	}
 }

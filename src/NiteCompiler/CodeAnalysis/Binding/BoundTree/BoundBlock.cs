@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Linq;
 using NiteCompiler.CodeAnalysis.Syntax;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
@@ -9,7 +10,8 @@ internal sealed class BoundBlock : BoundStatement
 
 	public override BoundKind Kind => BoundKind.Block;
 
-	public BoundBlock(SyntaxNode syntax, ImmutableArray<BoundStatement> statements) : base(syntax)
+	public BoundBlock(SyntaxNode syntax, ImmutableArray<BoundStatement> statements, bool hasErrors = false)
+		: base(syntax, hasErrors || statements.Any(t => t.HasErrors))
 	{
 		Statements = statements;
 	}

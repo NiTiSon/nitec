@@ -55,6 +55,9 @@ internal static class SyntaxFacts
 			case "void":
 				info.Kind = TokenKind.Void;
 				return;
+			case "bool":
+				info.Kind = TokenKind.Boolean;
+				return;
 			case "true":
 				info.Kind = TokenKind.True;
 				return;

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -50,7 +51,7 @@ internal partial class BinderFactory
 		private NiteCompilation Compilation => _factory._compilation;
 		private SyntaxTree SyntaxTree => _factory._syntaxTree;
 		private SeniorBinder SeniorBinder => _factory._seniorBinder;
-		private Dictionary<BinderCache, Binder> BinderCache => _factory._binderCache;
+		private ConcurrentDictionary<BinderCache, Binder> BinderCache => _factory._binderCache;
 
 		protected override Binder DefaultVisit(SyntaxNode parent)
 		{

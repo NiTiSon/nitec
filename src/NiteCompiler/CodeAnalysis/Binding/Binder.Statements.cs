@@ -153,7 +153,7 @@ internal partial class Binder
 				// TODO: Conversion
 				if (arg.Type != retType)
 				{
-					diagnostics.Diagnostics.ReportWrongReturnExpressionType(arg.Syntax!.Location);
+					diagnostics.Diagnostics.ReportWrongReturnExpressionType(arg.Syntax!.Location, arg.Type, retType);
 					hasErrors = true;
 				}
 			}

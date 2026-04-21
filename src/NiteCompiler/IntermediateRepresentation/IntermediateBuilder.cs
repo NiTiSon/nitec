@@ -2,6 +2,7 @@
 using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.Compilation;
+using NiteCompiler.Diagnostics;
 using NiteCompiler.IntermediateRepresentation.ControlFlow;
 using NiteCompiler.IntermediateRepresentation.Ssa;
 using NiteCompiler.Metadata;
@@ -20,30 +21,41 @@ internal sealed class IntermediateBuilder
 	}
 
 	public static byte[] Compile(NiteCompilation compilation, FunctionSymbol function, BoundBlock block,
-		MetadataLibraryBuilder metadata)
+		BindingDiagnosticBag diagnostics, MetadataLibraryBuilder? metadata)
 	{
+		// TODO[API infrastructure wrongity]: IntermediateCompiler shouldn't report report about code validity
+		// Verification of code should be made in previous stage, and we should invoke IntermediateBuilder only
+		// when try to compile intermediate code for NLib file, not when just verify code!!!
 		IntermediateBuilder builder = new IntermediateBuilder(compilation, function);
-		ControlFlowGraph cfg = ControlFlowGraphBuilder.Build(block);
+		ControlFlowGraph cfg = builder.CreateControlFlowGraph(block, diagnostics);
 
-		var ssa = SsaBuilder.Build(cfg, function);
-
-		foreach (var (basicBlock, ssaBlock) in ssa.Blocks)
+		if (!diagnostics.Diagnostics.HasAnyErrors && metadata != null)
 		{
-			Console.WriteLine($"{basicBlock.Name}:");
-			foreach (SsaPhi phi in ssaBlock.Phis)
+			var ssa = SsaBuilder.Build(cfg, function);
+
+			foreach (var (basicBlock, ssaBlock) in ssa.Blocks)
 			{
-				Console.Write("  ");
-				phi.Write(Console.Out);
-				Console.WriteLine();
-			}
-			foreach (Instruction instruction in ssaBlock.Instructions)
-			{
-				Console.Write("  ");
-				instruction.Write(Console.Out);
-				Console.WriteLine();
+				Console.WriteLine($"{basicBlock.Name}:");
+				foreach (SsaPhi phi in ssaBlock.Phis)
+				{
+					Console.Write("  ");
+					phi.Write(Console.Out);
+					Console.WriteLine();
+				}
+				foreach (Instruction instruction in ssaBlock.Instructions)
+				{
+					Console.Write("  ");
+					instruction.Write(Console.Out);
+					Console.WriteLine();
+				}
 			}
 		}
 
 		return [];
+	}
+
+	private ControlFlowGraph CreateControlFlowGraph(BoundBlock body, BindingDiagnosticBag diagnostics)
+	{
+		return ControlFlowGraphBuilder.Build(_function, body, diagnostics);
 	}
 }

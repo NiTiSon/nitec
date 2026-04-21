@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Symbols;
@@ -13,7 +14,7 @@ internal sealed partial class BinderFactory
 	private readonly NiteCompilation _compilation;
 	private readonly SyntaxTree _syntaxTree;
 	private readonly SeniorBinder _seniorBinder;
-	private readonly Dictionary<BinderCache, Binder> _binderCache;
+	private readonly ConcurrentDictionary<BinderCache, Binder> _binderCache;
 
 	private static readonly ObjectPool<Visitor> sharedBinderFactoryVisitorPool = new(static () => new Visitor(), 64);
 

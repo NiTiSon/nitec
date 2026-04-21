@@ -65,12 +65,13 @@ public class SsaBuilderTests
 		ExecutableCodeBinder binder = sourceFunction.TryGetBodyBinder()!;
 		BindingDiagnosticBag diagnostics = BindingDiagnosticBag.GetInstance();
 
+		Assert.That(compilation.GetDiagnostics(CompilationStage.Compile, includeEarlierStages: true).Any(t => t.Severity == DiagnosticSeverity.Error), Is.False);
 		try
 		{
 			BoundFunctionBody functionBody = (BoundFunctionBody)binder.BindFunctionBody(sourceFunction.Syntax, diagnostics);
 			Assert.That(diagnostics.Diagnostics, Is.Empty);
 
-			ControlFlowGraph cfg = ControlFlowGraphBuilder.Build(functionBody.BlockBody);
+			ControlFlowGraph cfg = ControlFlowGraphBuilder.Build(function, functionBody.BlockBody, diagnostics);
 			return SsaBuilder.Build(cfg, function);
 		}
 		finally

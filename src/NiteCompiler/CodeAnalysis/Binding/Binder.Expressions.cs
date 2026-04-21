@@ -145,9 +145,40 @@ internal partial class Binder
 
 	private BoundLiteral BindLiteralConstant(LiteralExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
+		if (syntax.Kind == NodeKind.FalseLiteralExpression || syntax.Kind == NodeKind.TrueLiteralExpression)
+		{
+			return BindBooleanLiteralConstant(syntax, diagnostics);
+		}
+
+		if (syntax.Kind == NodeKind.NumberLiteralExpression)
+		{
+			return BindNumericLiteralExpression(syntax, diagnostics);
+		}
+
+		throw new UnreachableException($"BindLiteralConstant({syntax.Kind})");
+	}
+
+	private BoundLiteral BindBooleanLiteralConstant(LiteralExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
+	{
+		Debug.Assert(syntax.Kind == NodeKind.FalseLiteralExpression ||
+		             syntax.Kind == NodeKind.TrueLiteralExpression);
+
+		TypeSymbol booleanType = GetSpecialType(SpecialType.StdBoolean);
+		if (syntax.Kind == NodeKind.FalseLiteralExpression)
+		{
+			return new BoundLiteral(syntax, ConstantValue.Create(false), booleanType);
+		}
+
+		return new BoundLiteral(syntax, ConstantValue.Create(true), booleanType);
+	}
+
+	private BoundLiteral BindNumericLiteralExpression(LiteralExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
+	{
+		Debug.Assert(syntax.Kind == NodeKind.NumberLiteralExpression);
 		NumberToken? value = syntax.Token as NumberToken;
 		Debug.Assert(value != null);
 
+		// TODO: Fully implement
 		TypeSymbol i32 = GetSpecialType(SpecialType.StdNumericsSInt32);
 		ConstantValue i32Value = ConstantValue.Create((int)value.Value.U64);
 		return new BoundLiteral(syntax, i32Value, i32);

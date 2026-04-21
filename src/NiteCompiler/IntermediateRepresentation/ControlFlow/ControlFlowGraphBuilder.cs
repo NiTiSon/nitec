@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using NiteCompiler.CodeAnalysis.Binding;
+using NiteCompiler.CodeAnalysis.Symbols;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.IntermediateRepresentation.ControlFlow;
 
@@ -13,7 +15,7 @@ internal sealed class ControlFlowGraphBuilder : BoundVisitor
 
 	private ControlFlowGraphBuilder() { }
 
-	public static ControlFlowGraph Build(BoundBlock body)
+	public static ControlFlowGraph Build(FunctionSymbol function, BoundBlock body, BindingDiagnosticBag diagnostics)
 	{
 		ControlFlowGraphBuilder builder = new();
 		BasicBlock entry = builder.NewBlock("entry");
@@ -21,10 +23,28 @@ internal sealed class ControlFlowGraphBuilder : BoundVisitor
 
 		builder.Visit(body);
 
-		Debug.Assert(builder._current.Terminator == null);
-
 		builder.RemoveUnreachableBlocks(entry);
-		return new ControlFlowGraph(entry, builder._blocks.ToArray());
+		if (function.ReturnType.IsVoidType)
+		{
+			foreach (BasicBlock bb in builder._blocks)
+			{
+				// return; statement can be omitted
+				bb.Terminator ??= new ReturnTerminator(null);
+			}
+		}
+		else
+		{
+			foreach (BasicBlock bb in builder._blocks)
+			{
+				if (bb.Terminator == null)
+				{
+					diagnostics.Diagnostics.ReportMissingReturnStatement(body.Syntax!.GetTokens().Last().Location);
+				}
+			}
+		}
+
+		ControlFlowGraph cfg = new(entry, builder._blocks.ToArray());
+		return cfg;
 	}
 
 	private BasicBlock NewBlock(string? name = null)

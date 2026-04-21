@@ -198,9 +198,16 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.CannotReturnValue, [location]);
 	}
 
-	public void ReportWrongReturnExpressionType(Location location)
+	public void ReportWrongReturnExpressionType(Location location, TypeSymbol expressionType, TypeSymbol returnType)
 	{
-		Add(DiagnosticDescriptor.WrongReturnExpressionType, [location]);
+		Add(DiagnosticDescriptor.WrongReturnExpressionType, [location],
+			expressionType.ToDisplayString(SymbolFormat.UseNiteKeywords),
+			returnType.ToDisplayString(SymbolFormat.UseNiteKeywords));
+	}
+
+	public void ReportMissingReturnStatement(Location location)
+	{
+		Add(DiagnosticDescriptor.MissingReturnStatement, [location]);
 	}
 
 	public void ReportCannotImplicitlyConvert(Location location, TypeSymbol from, TypeSymbol to)
