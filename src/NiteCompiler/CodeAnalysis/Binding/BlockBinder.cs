@@ -1,3 +1,6 @@
+using System.Collections.Immutable;
+using System.Diagnostics;
+using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Compilation;
 
@@ -11,4 +14,22 @@ internal sealed class BlockBinder : LocalScopeBinder
 	{
 		_block = block;
 	}
+
+	protected override ImmutableArray<LocalVariableSymbol> BuildLocals()
+	{
+		return BuildLocals(this, _block.Statements);
+	}
+
+
+	internal override ImmutableArray<LocalVariableSymbol> GetDeclaredLocalsForScope(SyntaxNode scopeDesignator)
+	{
+		if (ScopeDesignator == scopeDesignator)
+		{
+			return Locals;
+		}
+
+		throw new UnreachableException();
+	}
+
+	internal override SyntaxNode ScopeDesignator => _block;
 }

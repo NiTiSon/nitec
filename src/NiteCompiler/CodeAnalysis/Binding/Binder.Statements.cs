@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Symbols;
+using NiteCompiler.CodeAnalysis.Symbols.Source;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Diagnostics;
 
@@ -64,31 +65,26 @@ internal partial class Binder
 
 	private BoundNode BindSemicolonAsEmptyBlock(Token semicolon)
 	{
-		return new BoundBlock(semicolon, []);
+		return new BoundBlock(semicolon, [], []);
 	}
 
 	private BoundStatement BindStatement(StatementSyntax syntax, BindingDiagnosticBag diagnostics, bool embedded = false)
 	{
 		NodeKind kind = syntax.Kind;
 
-		if (kind == NodeKind.BlockStatement)
-		{
-			return BindBlock((BlockStatementSyntax)syntax, diagnostics);
-		}
-
 		if (kind == NodeKind.ExpressionStatement)
 		{
 			return BindExpressionStatement((ExpressionStatementSyntax)syntax, diagnostics);
 		}
 
-		if (kind == NodeKind.EmptyStatement)
-		{
-			return BindEmptyStatement((EmptyStatementSyntax)syntax, diagnostics);
-		}
-
 		if (kind == NodeKind.ReturnStatement)
 		{
 			return BindReturn((ReturnStatementSyntax)syntax, diagnostics);
+		}
+
+		if (kind == NodeKind.LocalVariableDeclarationStatement)
+		{
+			return BindLocalVariableDeclaration((LocalVariableDeclarationStatement)syntax, diagnostics);
 		}
 
 		if (kind == NodeKind.IfStatement)
@@ -106,7 +102,71 @@ internal partial class Binder
 			return BindWhile((WhileStatementSyntax)syntax, diagnostics);
 		}
 
-		throw new ArgumentException($"Unexpected syntax kind: {kind}");
+		if (kind == NodeKind.BlockStatement)
+		{
+			return BindBlock((BlockStatementSyntax)syntax, diagnostics);
+		}
+
+		if (kind == NodeKind.EmptyStatement)
+		{
+			return BindEmptyStatement((EmptyStatementSyntax)syntax, diagnostics);
+		}
+
+		throw new UnreachableException($"BindStatement({kind})");
+	}
+
+	private BoundStatement BindLocalVariableDeclaration(LocalVariableDeclarationStatement syntax,
+		BindingDiagnosticBag diagnostics)
+	{
+		return BindLocalVariableDeclarator(syntax.Declarator, diagnostics);
+	}
+
+	private BoundStatement BindLocalVariableDeclarator(LocalVariableDeclarator declarator,
+		BindingDiagnosticBag diagnostics)
+	{
+		SourceLocalVariableSymbol local = LocateDeclaredLocalVariableSymbol(declarator, diagnostics);
+
+		BoundExpression? initializer = null;
+		if (declarator.EqualsValueClause != null)
+		{
+			initializer = BindExpression(declarator.EqualsValueClause.Expression, diagnostics, false, false);
+		}
+
+		TypeSymbol? declaredType = null;
+		if (declarator.TypeClause is not null)
+		{
+			declaredType = BindType(declarator.TypeClause.Type, diagnostics);
+		}
+
+		if (declaredType == null && initializer == null) // It's called: try to guess type or DIE 💀☠️🪦
+		{
+			diagnostics.Diagnostics.ReportImplicitlyTypedVariableMustBeInitialized(declarator.Name.Location);
+
+				return new BoundLocalVariableDeclarationStatement(declarator, local, null, hasErrors: true);
+		}
+
+		if (declaredType != null && initializer != null)
+		{
+			if (initializer.Type != declaredType)
+			{
+				diagnostics.Diagnostics.ReportCannotImplicitlyConvert(initializer.Syntax!.Location, initializer.Type, declaredType);
+
+				return new BoundLocalVariableDeclarationStatement(declarator, local, initializer, hasErrors: true);
+			}
+		}
+
+		bool hasErrors = (initializer?.HasErrors ?? false) || local.Type.IsErrorType;
+
+		return new BoundLocalVariableDeclarationStatement(declarator, local, initializer, hasErrors);
+	}
+
+	private SourceLocalVariableSymbol LocateDeclaredLocalVariableSymbol(LocalVariableDeclarator declarator,
+		BindingDiagnosticBag diagnostics)
+	{
+		SimpleNameSyntax identifier = declarator.Name;
+		SourceLocalVariableSymbol localSymbol = LookupLocalVariable(identifier);
+		Debug.Assert(localSymbol != null);
+		return localSymbol;
 	}
 
 	private BoundIfStatement BindIf(IfStatementSyntax syntax, BindingDiagnosticBag diagnostics)
@@ -188,7 +248,9 @@ internal partial class Binder
 			boundStatements.Add(boundStatement);
 		}
 
-		return new BoundBlock(syntax, boundStatements.ToImmutableAndFree());
+		var locals = GetDeclaredLocalsForScope(syntax);
+
+		return new BoundBlock(syntax, locals, boundStatements.ToImmutableAndFree());
 	}
 
 	private BoundExpressionStatement BindExpressionStatement(ExpressionStatementSyntax syntax, BindingDiagnosticBag diagnostics)

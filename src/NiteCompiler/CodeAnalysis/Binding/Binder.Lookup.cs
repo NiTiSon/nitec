@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Symbols;
+using NiteCompiler.CodeAnalysis.Symbols.Source;
 using NiteCompiler.CodeAnalysis.Syntax;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
@@ -36,6 +37,12 @@ internal partial class Binder
 		// }
 
 		LookupSymbolsWithFallback(result, name, arity, options: options);
+	}
+
+	internal virtual SourceLocalVariableSymbol LookupLocalVariable(SimpleNameSyntax nameSyntax)
+	{
+		Debug.Assert(Parent != null);
+		return Parent.LookupLocalVariable(nameSyntax);
 	}
 
 	private Binder LookupSymbolsWithFallback(LookupResult result, string name, int arity, LookupOptions options)

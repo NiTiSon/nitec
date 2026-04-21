@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Reflection;
 using System.Threading;
+using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Diagnostics;
 

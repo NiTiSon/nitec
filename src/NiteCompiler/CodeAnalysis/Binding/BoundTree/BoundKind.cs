@@ -16,7 +16,7 @@ internal enum BoundKind
 	DoWhileStatement,
 
 	FunctionBody,
-	VariableDeclaration,
+	VariableDeclarationStatement,
 
 	Literal,
 	Local,

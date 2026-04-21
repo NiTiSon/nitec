@@ -18,6 +18,7 @@ public partial class DiagnosticDescriptor
 		AmbiguousReference,
 		FieldMustHaveEitherTypeClauseOrDefaultValue,
 		OnlyTopLevelModuleDeclarationsAreAllowed,
+		ImplicitlyTypedVariableMustBeInitialized,
 		AccessibilityModifierRequiredBeforeMemberDeclaration,
 		MissingParameterTypeSpecification,
 		MustReturnValue,
@@ -59,6 +60,7 @@ public partial class DiagnosticDescriptor
 		AmbiguousReference = new("ambiguous-reference", "Ambiguous reference:\n{0}.");
 		FieldMustHaveEitherTypeClauseOrDefaultValue = new("field-unresolvable-type", "Field must have either type clause or default value.");
 		OnlyTopLevelModuleDeclarationsAreAllowed = new("only-top-level-module-declarations-are-allowed", "Only top-level module declarations are allowed.");
+		ImplicitlyTypedVariableMustBeInitialized = new("variable-must-be-initialized", "Implicitly typed variable must be initialized.");
 
 		// Type Checking
 		MustReturnValue = new("must-return", "Return statement must return a value.");

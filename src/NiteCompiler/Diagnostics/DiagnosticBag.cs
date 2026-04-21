@@ -178,6 +178,11 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.OnlyTopLevelModuleDeclarationsAreAllowed, [location]);
 	}
 
+	public void ReportImplicitlyTypedVariableMustBeInitialized(Location location)
+	{
+		Add(DiagnosticDescriptor.ImplicitlyTypedVariableMustBeInitialized, [location]);
+	}
+
 	public void ReportAccessibilityModifierRequiredBeforeMemberDeclaration(Location location)
 	{
 		Add(DiagnosticDescriptor.AccessibilityModifierRequiredBeforeMemberDeclaration, [location]);

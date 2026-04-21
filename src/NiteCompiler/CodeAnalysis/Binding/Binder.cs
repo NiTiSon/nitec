@@ -51,4 +51,12 @@ internal abstract partial class Binder
 		Debug.Assert(Parent != null);
 		return Parent.GetBinder(node);
 	}
+
+	internal virtual ImmutableArray<LocalVariableSymbol> GetDeclaredLocalsForScope(SyntaxNode scopeDesignator)
+	{
+		Debug.Assert(Parent != null);
+		return Parent.GetDeclaredLocalsForScope(scopeDesignator);
+	}
+
+	internal virtual SyntaxNode? ScopeDesignator => null;
 }

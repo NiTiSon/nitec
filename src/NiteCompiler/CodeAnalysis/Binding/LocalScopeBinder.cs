@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Symbols;
+using NiteCompiler.CodeAnalysis.Symbols.Source;
+using NiteCompiler.CodeAnalysis.Syntax;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
 
@@ -62,6 +65,17 @@ internal class LocalScopeBinder : Binder
 		return map;
 	}
 
+	internal override SourceLocalVariableSymbol LookupLocalVariable(SimpleNameSyntax nameSyntax)
+	{
+		string identifier = nameSyntax.GetName();
+		LocalVariableSymbol? result = null;
+		if (LocalsMap != null && LocalsMap.TryGetValue(identifier, out result))
+		{
+			return (SourceLocalVariableSymbol)result;
+		}
+
+		return base.LookupLocalVariable(nameSyntax);
+	}
 
 	internal override void LookupSymbolsInSingleBinder(LookupResult result, string name, int arity, LookupOptions options,
 		Binder originalBinder, bool diagnose)
@@ -76,5 +90,55 @@ internal class LocalScopeBinder : Binder
 				result.MergeEqual(originalBinder.CheckViability(localSymbol, arity, options, null, diagnose));
 			}
 		}
+	}
+
+	protected ImmutableArray<LocalVariableSymbol> BuildLocals(Binder enclosingBinder, SyntaxList<StatementSyntax> statements)
+	{
+#if DEBUG
+		Binder currentBinder = enclosingBinder;
+
+		while (true)
+		{
+			if (this == currentBinder)
+			{
+				break;
+			}
+
+			currentBinder = currentBinder.Parent!;
+		}
+#endif
+		var builder = ArrayBuilder<LocalVariableSymbol>.GetInstance();
+
+		foreach (StatementSyntax statement in statements)
+		{
+			BuildLocals(enclosingBinder, statement, builder);
+		}
+
+		return builder.ToImmutableAndFree();
+	}
+
+	private void BuildLocals(Binder enclosingBinder, StatementSyntax statement, ArrayBuilder<LocalVariableSymbol> locals)
+	{
+		if (statement.Kind == NodeKind.LocalVariableDeclarationStatement)
+		{
+			Binder localDeclarationBinder = enclosingBinder.GetBinder(statement) ?? enclosingBinder;
+			var declaration = (LocalVariableDeclarationStatement)statement;
+
+			var localSymbol = MakeLocalVariable(declaration, declaration.Declarator, localDeclarationBinder);
+			locals.Add(localSymbol);
+		}
+	}
+
+	private LocalVariableSymbol MakeLocalVariable(LocalVariableDeclarationStatement syntax,
+		LocalVariableDeclarator declarator, Binder? initializerBinder = null)
+	{
+		Debug.Assert(Parent != null);
+
+		string name = syntax.Declarator.Name.GetName();
+		Location nameLocation = syntax.Declarator.Name.Location;
+		SyntaxReference reference = syntax.Declarator.CreateReference();
+
+		return new SourceLocalVariableSymbol(ContainingMember, this, declarator.TypeClause,
+			declarator.EqualsValueClause, initializerBinder, isAssignable: true, name, nameLocation, reference);
 	}
 }
