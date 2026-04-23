@@ -33,6 +33,7 @@ internal sealed class IntermediateBuilder
 		{
 			var ssa = SsaBuilder.Build(cfg, function);
 
+			Console.WriteLine(function.ToDisplayString());
 			foreach (var (basicBlock, ssaBlock) in ssa.Blocks)
 			{
 				Console.WriteLine($"{basicBlock.Name}:");

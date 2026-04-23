@@ -11,7 +11,7 @@ public simple_func(x: i32) -> i32 {
    	}
 }
 
-public simple_func2(x: i32) -> bool { return true; }
+public simple_func2(x: i32) -> bool { return 1; }
 
 module std;
 

@@ -66,7 +66,7 @@ public partial class DiagnosticDescriptor
 		MustReturnValue = new("must-return", "Return statement must return a value.");
 		CannotReturnValue = new("cannot-return", "Return statement cannot return a value.");
 		WrongReturnExpressionType = new("wrong-return-expression",
-			"Return statement expression type '{0}' is not implicitly convertable to the function return type {1}.");
+			"Return statement expression type '{0}' is not implicitly convertable to the function return type '{1}'.");
 		MissingReturnStatement = new("missing-return", "Return statement is required.");
 		CannotImplicitlyConvert = new("cannot-implicitly-convert", "Cannot implicitly cast type '{0}' to the '{1}'.");
 

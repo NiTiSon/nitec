@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using NiteCompiler.CodeAnalysis;
 using NiteCompiler.IntermediateRepresentation.Ssa;
 
@@ -26,13 +27,22 @@ internal class LoadImmInstruction(SsaTemp output, ConstantValue constant) : Inst
 	{
 		Output.Write(writer);
 		writer.Write(" = load ");
-		if (Output.Type.SpecialType == SpecialType.StdBoolean)
+		SpecialType specialType = Output.Type.SpecialType;
+		if (specialType == SpecialType.StdBoolean)
 		{
 			writer.Write(Constant.Bool ? "true" : "false");
 		}
 		else
 		{
-			writer.Write(Constant.U32);
+			if (specialType.IsSignedIntegral)
+			{
+				writer.Write(Constant.S64);
+			}
+			else
+			{
+				Debug.Assert(specialType.IsUnsignedIntegral);
+				writer.Write(Constant.U64);
+			}
 		}
 	}
 }

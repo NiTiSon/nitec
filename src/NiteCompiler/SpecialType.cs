@@ -73,5 +73,24 @@ internal static class SpecialTypeExtensions
 		{
 			return (string?)Names[(int)self]!;
 		}
+
+		public bool IsSignedIntegral =>
+			self is SpecialType.StdNumericsSInt8
+				or SpecialType.StdNumericsSInt16
+				or SpecialType.StdNumericsSInt32
+				or SpecialType.StdNumericsSInt64
+				or SpecialType.StdNumericsSNativeInt;
+
+		public bool IsUnsignedIntegral =>
+			self is SpecialType.StdNumericsUInt8
+				or SpecialType.StdNumericsUInt16
+				or SpecialType.StdNumericsUInt32
+				or SpecialType.StdNumericsUInt64
+				or SpecialType.StdNumericsUNativeInt;
+
+		public bool IsFloat =>
+			self is SpecialType.StdNumericsFloat16
+				or SpecialType.StdNumericsFloat32
+				or SpecialType.StdNumericsFloat64;
 	}
 }

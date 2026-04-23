@@ -31,22 +31,22 @@ internal abstract class ConstantValue
 
 	private sealed class ValueI32 : ConstantValue
 	{
-		private uint value;
+		private readonly uint _value;
 
 		public ValueI32(int value)
 		{
-			this.value = unchecked((uint)value);
+			this._value = unchecked((uint)value);
 		}
 
 		public ValueI32(uint value)
 		{
-			this.value = value;
+			this._value = value;
 		}
 
 		public override SpecialType SpecialType => SpecialType.StdNumericsSInt32;
 
-		public override uint U32 => value;
-		public override int S32 => unchecked((int)value);
+		public override uint U32 => _value;
+		public override int S32 => unchecked((int)_value);
 	}
 
 	private sealed class ValueBoolean : ConstantValue
