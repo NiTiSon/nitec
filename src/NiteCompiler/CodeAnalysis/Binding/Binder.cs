@@ -4,6 +4,7 @@ using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
+using NiteCompiler.IntermediateRepresentation.ControlFlow;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
 
@@ -44,7 +45,7 @@ internal abstract partial class Binder
 	public virtual ImmutableArray<LocalVariableSymbol> Locals => [];
 
 	/// <summary>
-	/// Some nodes have special binders for their contents (like Blocks)
+	/// Some nodes have special binders for their contents (like Blocks).
 	/// </summary>
 	public virtual Binder? GetBinder(SyntaxNode node)
 	{
