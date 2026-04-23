@@ -3,7 +3,7 @@
 module test;
 
 public simple_func(x: i32) -> i32 {
-   	let y = 2;
+   	// let y = 2;
    	loop {
    		x = x + 1;
 

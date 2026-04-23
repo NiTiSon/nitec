@@ -26,6 +26,13 @@ internal class LoadImmInstruction(SsaTemp output, ConstantValue constant) : Inst
 	{
 		Output.Write(writer);
 		writer.Write(" = load ");
-		writer.Write(Constant.U32);
+		if (Output.Type.SpecialType == SpecialType.StdBoolean)
+		{
+			writer.Write(Constant.Bool ? "true" : "false");
+		}
+		else
+		{
+			writer.Write(Constant.U32);
+		}
 	}
 }

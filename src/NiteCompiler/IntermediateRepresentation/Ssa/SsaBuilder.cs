@@ -259,13 +259,18 @@ internal sealed class SsaBuilder
 	{
 		switch (literal.Type.SpecialType)
 		{
-			case >= SpecialType.StdNumericsSInt8 and <= SpecialType.StdNumericsFloat64:
+			case (>= SpecialType.StdNumericsSInt8 and <= SpecialType.StdNumericsFloat64)
+				or SpecialType.StdBoolean:
+			{
 				SsaTemp output = NewTemp(literal.Type);
 				LoadImmInstruction imm = new(output, literal.ConstantValue);
 				block.Instructions.Add(imm);
 				return output;
+			}
+			case not SpecialType.None:
+				throw new ArgumentException($"Imposible literal type: {literal.Type.SpecialType}");
 			default:
-				throw new UnreachableException($"EmitLiteral({literal.Type})");
+				throw new UnreachableException($"EmitLiteral({literal.Type.ToDisplayString()})");
 		}
 	}
 

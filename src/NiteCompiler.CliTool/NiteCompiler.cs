@@ -105,9 +105,9 @@ public static class NiteCompiler
 		diagnostics.AddRange(declarationDiagnostics);
 		diagnostics.AddRange(compilationDiagnostics);
 
-		if (parseDiagnostics.Any(d => d.Severity != DiagnosticSeverity.Error) &&
-		    declarationDiagnostics.Any(d => d.Severity != DiagnosticSeverity.Error) &&
-		    compilationDiagnostics.Any(d => d.Severity != DiagnosticSeverity.Error))
+		if (parseDiagnostics.All(d => d.Severity != DiagnosticSeverity.Error) &&
+		    declarationDiagnostics.All(d => d.Severity != DiagnosticSeverity.Error) &&
+		    compilationDiagnostics.All(d => d.Severity != DiagnosticSeverity.Error))
 		{
 			DiagnosticBag? resultingDiagnostics = null;
 			try

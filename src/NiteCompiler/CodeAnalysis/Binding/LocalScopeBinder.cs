@@ -132,7 +132,7 @@ internal class LocalScopeBinder : Binder
 	private LocalVariableSymbol MakeLocalVariable(LocalVariableDeclarationStatement syntax,
 		LocalVariableDeclarator declarator, Binder? initializerBinder = null)
 	{
-		Debug.Assert(Parent != null);
+		Debug.Assert(ContainingMember != null);
 
 		string name = syntax.Declarator.Name.GetName();
 		Location nameLocation = syntax.Declarator.Name.Location;
