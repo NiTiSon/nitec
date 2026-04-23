@@ -244,7 +244,8 @@ internal sealed class SsaBuilder
 			case BoundLocalVariableDeclarationStatement var:
 				if (var.Initializer != null)
 				{
-					RewriteExpression(var.Initializer, block);
+					SsaValue value = RewriteExpression(var.Initializer, block);
+					_stacks[var.Local].Push(value);
 				}
 				break;
 			default:
