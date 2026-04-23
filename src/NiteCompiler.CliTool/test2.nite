@@ -3,15 +3,16 @@
 module test;
 
 public simple_func(x: i32) -> i32 {
-   	// let y = 2;
+   	let y = true;
    	loop {
    		x = x + 1;
+   		// y = y | true;
 
    		if (x >= 50) return 1;
    	}
 }
 
-public simple_func2(x: i32) -> bool { return 1; }
+public simple_func2(x: i32) -> bool { return true; }
 
 module std;
 

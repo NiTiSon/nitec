@@ -59,13 +59,10 @@ internal sealed class SsaBuilder
 		{
 			foreach (var stmt in block.Statements)
 			{
-				// TODO: Collect locals declarations
-
-				// if (stmt is BoundExpressionStatement es &&
-				//     es.Expression is BoundAssignment assign)
-				// {
-				// 	set.Add(assign.Target);
-				// }
+				if (stmt is BoundLocalVariableDeclarationStatement var)
+				{
+					set.Add(var.Local);
+				}
 			}
 		}
 
@@ -80,6 +77,17 @@ internal sealed class SsaBuilder
 		{
 			foreach (BoundStatement stmt in block.Statements)
 			{
+				if (stmt is BoundLocalVariableDeclarationStatement varDeclaration)
+				{
+					LocalVariableSymbol var = varDeclaration.Local;
+					if (!result.TryGetValue(var, out HashSet<BasicBlock>? set))
+					{
+						set = [];
+						result[var] = set;
+					}
+					set.Add(block);
+				}
+
 				if (stmt is BoundExpressionStatement { Expression: BoundAssignment assign })
 				{
 					BoundExpression target = assign.Left;
@@ -233,7 +241,12 @@ internal sealed class SsaBuilder
 			case BoundExpressionStatement es:
 				RewriteExpression(es.Expression, block);
 				break;
-
+			case BoundLocalVariableDeclarationStatement var:
+				if (var.Initializer != null)
+				{
+					RewriteExpression(var.Initializer, block);
+				}
+				break;
 			default:
 				throw new UnreachableException($"RewriteStatement({statement.GetType()})");
 		}

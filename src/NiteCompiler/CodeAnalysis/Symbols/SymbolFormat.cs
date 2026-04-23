@@ -6,9 +6,9 @@ namespace NiteCompiler.CodeAnalysis.Symbols;
 public enum SymbolFormat : byte
 {
 	/// <summary>
-	/// Use keywords if possible.
+	/// Use short names for a range of special types if possible.
 	/// </summary>
-	UseNiteKeywords = 1 << 0,
+	PreferShortSpecialTypeName = 1 << 0,
 
 	/// <summary>
 	/// Include [libname] at the beggining.
@@ -38,6 +38,11 @@ public enum SymbolFormat : byte
 	/// Only valid with <see cref="OmitModulePath"/>.
 	/// </remarks>
 	OmitContainer = 1 << 4,
+
+	/// <summary>
+	/// Omit parameter names, leaving only parameter types.
+	/// </summary>
+	OmitParameterNames = 1 << 5,
 
 	Detailed = EmitGlobalModule,
 	Default = 0,

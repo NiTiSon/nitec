@@ -140,7 +140,7 @@ internal partial class BinderFactory
 			return binder;
 		}
 
-		public override Binder? VisitFunctionDeclaration(FunctionDeclarationSyntax declaration)
+		public override Binder VisitFunctionDeclaration(FunctionDeclarationSyntax declaration)
 		{
 			if (!LookupPosition.IsInFunctionDeclaration(_position, declaration))
 			{

@@ -206,8 +206,8 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 	public void ReportWrongReturnExpressionType(Location location, TypeSymbol expressionType, TypeSymbol returnType)
 	{
 		Add(DiagnosticDescriptor.WrongReturnExpressionType, [location],
-			expressionType.ToDisplayString(SymbolFormat.UseNiteKeywords),
-			returnType.ToDisplayString(SymbolFormat.UseNiteKeywords));
+			expressionType.ToDisplayString(SymbolFormat.PreferShortSpecialTypeName),
+			returnType.ToDisplayString(SymbolFormat.PreferShortSpecialTypeName));
 	}
 
 	public void ReportMissingReturnStatement(Location location)
@@ -217,7 +217,7 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 
 	public void ReportCannotImplicitlyConvert(Location location, TypeSymbol from, TypeSymbol to)
 	{
-		Add(DiagnosticDescriptor.CannotImplicitlyConvert, [location], from.ToDisplayString(SymbolFormat.UseNiteKeywords), to.ToDisplayString(SymbolFormat.UseNiteKeywords));
+		Add(DiagnosticDescriptor.CannotImplicitlyConvert, [location], from.ToDisplayString(SymbolFormat.PreferShortSpecialTypeName), to.ToDisplayString(SymbolFormat.PreferShortSpecialTypeName));
 	}
 
 	public void ReportInternalCompilerError(Exception exception)

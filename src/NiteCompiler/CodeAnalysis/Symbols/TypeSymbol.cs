@@ -14,12 +14,32 @@ public abstract class TypeSymbol : ContainerSymbol
 	public override string ToDisplayString(SymbolFormat format = SymbolFormat.Default)
 	{
 		Debug.Assert(format.IsValid);
-		if (ContainingSymbol is LibrarySymbol)
+
+		string? result = null;
+		if (format.HasFlag(SymbolFormat.PreferShortSpecialTypeName) && SpecialType != SpecialType.None)
 		{
-			return Name;
+			result = MetadataFacts.GetMetadataName(SpecialType);
 		}
 
-		return ContainingSymbol!.ToDisplayString() + "::" + Name;
+		if (result == null)
+		{
+			result = Name;
+		}
+		else
+		{
+			return result;
+		}
+
+		if (!format.HasFlag(SymbolFormat.OmitContainer) && ContainingSymbol != null)
+		{
+			result = $"{ContainingSymbol.ToDisplayString(format)}::{result}";
+		}
+		else if (format.HasFlag(SymbolFormat.IncludeLibrary) && ContainingLibrary != null)
+		{
+			result = ContainingLibrary.ToDisplayString(format) + result;
+		}
+
+		return result;
 	}
 
 	public override void Accept(SymbolVisitor visitor)

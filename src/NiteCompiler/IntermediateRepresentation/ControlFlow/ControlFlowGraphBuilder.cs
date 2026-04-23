@@ -115,6 +115,11 @@ internal sealed class ControlFlowGraphBuilder : BoundVisitor
 		base.DefaultVisit(node);
 	}
 
+	public override void VisitLocalVariableDeclarationStatement(BoundLocalVariableDeclarationStatement declaration)
+	{
+		_current.Statements.Add(declaration);
+	}
+
 	public override void VisitExpressionStatement(BoundExpressionStatement statement)
 	{
 		_current.Statements.Add(statement);

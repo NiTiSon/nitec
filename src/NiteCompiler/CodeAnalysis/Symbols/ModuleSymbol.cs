@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
@@ -10,12 +11,37 @@ public abstract class ModuleSymbol : ContainerSymbol
 
 	public override string ToDisplayString(SymbolFormat format = SymbolFormat.Default)
 	{
-		if (ContainingSymbol is ModuleSymbol parentModule && !parentModule.IsGlobalModule) // do not include <global> into display string
+		Debug.Assert(format.IsValid);
+
+		bool includeLibrary = format.HasFlag(SymbolFormat.IncludeLibrary);
+		bool emitGlobal = format.HasFlag(SymbolFormat.EmitGlobalModule);
+		bool omitPath = format.HasFlag(SymbolFormat.OmitModulePath);
+
+		if (IsGlobalModule)
 		{
-			return parentModule.ToDisplayString() + "::" + Name;
+			string? libraryPart = includeLibrary
+				? ContainingLibrary?.ToDisplayString(format)
+				: null;
+
+			if (!emitGlobal)
+			{
+				return libraryPart ?? string.Empty;
+			}
+
+			return libraryPart != null ? $"{libraryPart}{Name}" : Name;
 		}
 
-		return Name;
+		if (omitPath)
+		{
+			return Name;
+		}
+
+		if (ContainingSymbol is ModuleSymbol { IsGlobalModule: true } && !emitGlobal)
+		{
+			return Name;
+		}
+
+		return $"{ContainingSymbol!.ToDisplayString(format)}::{Name}";
 	}
 
 	public override void Accept(SymbolVisitor visitor)

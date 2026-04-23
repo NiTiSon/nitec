@@ -60,7 +60,7 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 
 		_cancellationToken.ThrowIfCancellationRequested();
 
-		CompileModule(symbol);
+		CompileModule(symbol, _cancellationToken);
 
 		return null;
 	}

@@ -44,7 +44,7 @@ internal partial class Binder
 		return new ErrorTypeSymbol(Compilation, SpecialType.None, name, arity: 0, errorInfo: null, unreported: false);
 	}
 
-	private BoundExpression BindExpression(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics, bool invoked, bool indexed)
+	internal BoundExpression BindExpression(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics, bool invoked, bool indexed)
 	{
 		switch (syntax)
 		{

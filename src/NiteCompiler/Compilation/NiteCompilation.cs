@@ -145,6 +145,12 @@ public sealed partial class NiteCompilation
 		return _lateinitSpecialTypes?[(int)type] == null;
 	}
 
+	public FunctionSymbol? GetEntryPoint()
+	{
+		// TODO: Binder.Lookup("main") etc.
+		return null;
+	}
+
 	public void EmitObjectFile() => throw new NotImplementedException();
 	public void EmitAssemblyFile() => throw new NotImplementedException();
 

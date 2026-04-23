@@ -9,7 +9,7 @@ public abstract class LibrarySymbol : Symbol
 
 	public override string ToDisplayString(SymbolFormat format = SymbolFormat.Default)
 	{
-		return Name;
+		return $"[{Name}]";
 	}
 
 	public override void Accept(SymbolVisitor visitor)

@@ -23,6 +23,11 @@ public abstract class ParameterSymbol : LocalVariableOrParameterSymbol
 
 	public override string ToDisplayString(SymbolFormat format = SymbolFormat.Default)
 	{
-		return Name;
+		if (format.HasFlag(SymbolFormat.OmitParameterNames))
+		{
+			return Type.ToDisplayString(format);
+		}
+
+		return $"{Name}: {Type.ToDisplayString(format)}";
 	}
 }

@@ -53,6 +53,19 @@ internal abstract partial class Binder
 		return Parent.GetBinder(node);
 	}
 
+
+#if DEBUG
+	internal Binder[] GetAllBinders()
+	{
+		var binders = ArrayBuilder<Binder>.GetInstance();
+		for (Binder? binder = this; binder != null; binder = binder.Parent)
+		{
+			binders.Add(binder);
+		}
+		return binders.ToArrayAndFree();
+	}
+#endif
+
 	internal virtual ImmutableArray<LocalVariableSymbol> GetDeclaredLocalsForScope(SyntaxNode scopeDesignator)
 	{
 		Debug.Assert(Parent != null);
