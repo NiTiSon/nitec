@@ -65,8 +65,8 @@ internal sealed class BuiltInOperators
 				GetComparingOperatorSignatures(BinaryOperatorKind.GreaterOrEqual),
 				GetComparingOperatorSignatures(BinaryOperatorKind.LessOrEqual),
 				GetBitwiseOperatorSignatures(BinaryOperatorKind.And),
-				GetBitwiseOperatorSignatures(BinaryOperatorKind.Or),
 				GetBitwiseOperatorSignatures(BinaryOperatorKind.Xor),
+				GetBitwiseOperatorSignatures(BinaryOperatorKind.Or),
 				[] // There are no built-in binary tilde operators
 			];
 
