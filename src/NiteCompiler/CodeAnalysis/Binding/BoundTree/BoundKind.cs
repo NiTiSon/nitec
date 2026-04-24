@@ -4,7 +4,6 @@ internal enum BoundKind
 {
 	None = 0,
 	Move,
-	Copy,
 	Block,
 	EmptyStatement,
 	ReturnStatement,

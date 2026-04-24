@@ -47,10 +47,10 @@ internal partial class Binder
 	private BoundNode BindFunctionBody(FunctionDeclarationSyntax function, FunctionBodySyntax body,
 		BindingDiagnosticBag diagnostics)
 	{
-		return new BoundFunctionBody(function, (BoundBlock)BindMethodBodyStatement(body, diagnostics));
+		return new BoundFunctionBody(function, (BoundBlock)BindFunctionBodyStatement(body, diagnostics));
 	}
 
-	private BoundNode BindMethodBodyStatement(FunctionBodySyntax syntax, BindingDiagnosticBag diagnostics)
+	private BoundNode BindFunctionBodyStatement(FunctionBodySyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		switch (syntax)
 		{
