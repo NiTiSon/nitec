@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Text;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
@@ -258,18 +259,31 @@ public sealed partial class NiteParser
 	{
 		Token current = PeekAndAdvance();
 
+		Token identifier;
+		string identifierText;
 		if (current.TKind == TokenKind.IdentifierOrKeyword)
 		{
-			string identifier = (current as IdentifierOrKeywordToken)!.Identifier;
-			return new IdentifierNameSyntax(_syntaxTree, current, identifier);
+			identifier = current;
+			identifierText = (current as IdentifierOrKeywordToken)!.Identifier;
 		}
-
-		if (current.TKind == TokenKind.EscapeIdentifier)
+		else if (current.TKind == TokenKind.EscapeIdentifier)
 		{
 			throw new NotImplementedException("ParseSimpleName(EscapedIdentifier)");
 		}
+		else
+		{
+			throw new UnreachableException($"ParseSimpleName({current.TKind})");
+		}
 
-		throw new UnreachableException($"ParseSimpleName({current.TKind})");
+		if (Current.TKind == TokenKind.Less)
+		{
+			GenericParameterListSyntax generics = ParseGenericParameterList();
+			return new GenericNameSyntax(_syntaxTree, identifier, identifierText, generics);
+		}
+		else
+		{
+			return new IdentifierNameSyntax(_syntaxTree, identifier, identifierText);
+		}
 	}
 
 	private NameSyntax ParseModuleName()
@@ -294,7 +308,8 @@ public sealed partial class NiteParser
 		{
 			if (nameSyntax is not IdentifierNameSyntax)
 			{
-				_diagnostics.ReportGenericsIsNotApplicableOnModuleName(nameSyntax.Location);
+				Location? location = (nameSyntax as GenericNameSyntax)?.Parameters.Location;
+				_diagnostics.ReportGenericsIsNotApplicableOnModuleName(location ?? nameSyntax.Location);
 			}
 		}
 	}

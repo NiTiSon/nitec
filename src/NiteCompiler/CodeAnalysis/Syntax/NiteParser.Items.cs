@@ -11,6 +11,21 @@ public partial class NiteParser
 		return IsPresentedAny(TokenKind.Pure, TokenKind.Static, TokenKind.Const);
 	}
 
+	private GenericParameterListSyntax ParseGenericParameterList()
+	{
+		Token less = MatchToken(TokenKind.Less);
+
+		SyntaxList<GenericParameterSyntax>.Builder builder = new();
+		while (Current.TKind != TokenKind.Greater)
+		{
+			throw new NotImplementedException("Generic parameters is not implemented.");
+		}
+
+		Token greater = MatchToken(TokenKind.Greater);
+
+		return new GenericParameterListSyntax(_syntaxTree, less, builder.Build(_syntaxTree),  greater);
+	}
+
 	public MemberSyntax ParseMember(Token accessibilityToken)
 	{
 		Debug.Assert(accessibilityToken.IsKeyword);
