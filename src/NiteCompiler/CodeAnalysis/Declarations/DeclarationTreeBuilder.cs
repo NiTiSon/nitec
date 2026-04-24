@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.VisualBasic.CompilerServices;
 using NiteCompiler.CodeAnalysis.Syntax;
@@ -25,6 +26,7 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 
 	public override RootModuleDeclaration VisitCompilationUnit(CompilationUnitSyntax node)
 	{
+		Debug.Assert(_syntaxTree.Root == node);
 		ImmutableArray<SingleItemDeclaration> children = VisitModuleMembers(node, node.Items);
 
 		return new RootModuleDeclaration(node.CreateReference(), children);
@@ -34,43 +36,31 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 	{
 		var members = VisitModuleMembers(declaration, SyntaxList<ItemSyntax>.CastUp(declaration.Members));
 
-		ModuleNameSyntax name = declaration.Name;
+		NameSyntax name = declaration.Name;
 		SyntaxNode currentNode = declaration;
 
-		// TODO: Change syntax of ModuleName from list to the recursive
-		// module x; x -> should reference whole declaration syntax
-		// module x::y; x -> should reference only name x; y -> should reference whole declaration syntax
-		if (name.Parts.Count == 1)
+		while (name is PathNameSyntax path)
 		{
-			return new SingleModuleDeclaration(
-				name: name.Parts[0].GetName(),
-				syntax: declaration.CreateReference(),
-				nameLocation: (name.Parts[0].Location as SourceLocation)!,
-				members: members,
-				diagnostics: []);
-		}
-		SyntaxList<SimpleNameSyntax> parts = name.Parts;
-		for (int i = parts.Count - 1; i > 0; i--)
-		{
-			var part = parts[i];
-
-			var module = new SingleModuleDeclaration(
-				name: part.GetName(),
+			SingleModuleDeclaration module = new(
+				name: name.UnqualifiedName.GetName(),
 				syntax: currentNode.CreateReference(),
-				nameLocation: (part.Location as SourceLocation)!,
+				nameLocation: (SourceLocation)path.Right.Location,
 				members: members,
-				diagnostics: []);
+				diagnostics: []
+				);
 
 			members = [module];
-			currentNode = part;
+
+			currentNode = name = path.Left;
 		}
 
 		return new SingleModuleDeclaration(
-			declaration.Name.Parts[0].GetName(),
-			syntax: declaration.Name.Parts[0].CreateReference(),
-			nameLocation: (name.Location as SourceLocation)!,
+			name: name.GetName(),
+			syntax: currentNode.CreateReference(),
+			nameLocation: (SourceLocation)name.Location,
 			members: members,
-			diagnostics: []);
+			diagnostics: []
+		);
 	}
 
 	private ImmutableArray<SingleItemDeclaration> VisitModuleMembers(SyntaxNode node, SyntaxList<ItemSyntax> members)

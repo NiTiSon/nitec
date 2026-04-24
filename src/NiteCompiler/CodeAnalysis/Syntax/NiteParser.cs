@@ -122,7 +122,7 @@ public sealed partial class NiteParser
 
 	private ItemSyntax ParseModuleDeclaration(Token moduleKeyword)
 	{
-		ModuleNameSyntax name = ParseModuleName();
+		NameSyntax name = ParseModuleName();
 		Token semicolon = MatchToken(TokenKind.Semicolon);
 
 		SyntaxList<MemberSyntax>.Builder membersBuilder = new();

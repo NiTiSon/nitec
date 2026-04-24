@@ -225,19 +225,22 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind FunctionDeclaration = Reg(Item + 2, "function-declaration");
 	public static readonly NodeKind TypeDeclaration = Reg(Item + 3, "type-declaration");
 	public static readonly NodeKind Parameter = Reg(Item + 4, "parameter");
-	public static readonly NodeKind GenericParameter = Reg(Item + 5, "generic-parameter");
+	public static readonly NodeKind GenericLifetimeParameter = Reg(Item + 5, "generic-lifetime-parameter");
+	public static readonly NodeKind GenericTypeParameter = Reg(Item + 6, "generic-type-parameter");
+	public static readonly NodeKind GenericValueParameter = Reg(Item + 7, "generic-value-parameter");
 
 	private const uint Expression = 0x00_00__20_00;
 	private const uint BinaryFlag = 0x00_01__00_00;
 	private const uint AssignmentFlag = 0x00_02__00_00;
 	public static readonly NodeKind IdentifierName = Reg(Expression + 1, "identifier-name-expression");
 	public static readonly NodeKind EscapedNameExpression = Reg(Expression + 2, "escaped-name-expression");
-	public static readonly NodeKind ModuleNameExpression = Reg(Expression + 3, "module-name-expression");
-	public static readonly NodeKind TrueLiteralExpression = Reg(Expression + 4, "true-literal-expression");
-	public static readonly NodeKind FalseLiteralExpression = Reg(Expression + 5, "false-literal-expression");
-	public static readonly NodeKind ParenthesizedExpression = Reg(Expression + 6, "parenthesized-expression");
-	public static readonly NodeKind NumberLiteralExpression = Reg(Expression + 7, "number-literal-expression");
-	public static readonly NodeKind PredefinedType = Reg(Expression + 8, "<predefined-type>");
+	public static readonly NodeKind GenericNameExpression = Reg(Expression + 3, "generic-name-expression");
+	public static readonly NodeKind PathNameExpression = Reg(Expression + 4, "path-name-expression");
+	public static readonly NodeKind TrueLiteralExpression = Reg(Expression + 6, "true-literal-expression");
+	public static readonly NodeKind FalseLiteralExpression = Reg(Expression + 7, "false-literal-expression");
+	public static readonly NodeKind ParenthesizedExpression = Reg(Expression + 8, "parenthesized-expression");
+	public static readonly NodeKind NumberLiteralExpression = Reg(Expression + 9, "number-literal-expression");
+	public static readonly NodeKind PredefinedType = Reg(Expression + 10, "<predefined-type>");
 	private const uint Operation = 0x00_00__28_00;
 	public static readonly NodeKind UnaryAddExpression = Reg(Operation + 1, Precedence.Unary, "unary-add-expression");
 	public static readonly NodeKind AddExpression = Reg(Operation + BinaryFlag + 2, Precedence.Additive, "add-expression");
@@ -295,9 +298,10 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind LocalVariableDeclarationStatement = Reg(Statement + 100, "local-variable-declaration-statement");
 
 	private const uint Other = 0x00_00_F0_00;
-	public static readonly NodeKind EqualsValueClause = Reg(Other + 1, "<equals-value-clause>");
-	public static readonly NodeKind TypeClause = Reg(Other + 2, "<type-clause>");
-	public static readonly NodeKind ElseClause = Reg(Other + 3, "<else-clause>");
-	public static readonly NodeKind LocalVariableDeclarator = Reg(Other + 4, "<local-variable-declarator>");
-	public static readonly NodeKind ParameterList = Reg(Other + 5, "<parameter-list>");
+	public static readonly NodeKind EqualsValueClause = Reg(Other + 1, "equals-value-clause");
+	public static readonly NodeKind TypeClause = Reg(Other + 2, "type-clause");
+	public static readonly NodeKind ElseClause = Reg(Other + 3, "else-clause");
+	public static readonly NodeKind LocalVariableDeclarator = Reg(Other + 4, "local-variable-declarator");
+	public static readonly NodeKind ParameterList = Reg(Other + 5, "parameter-list");
+	public static readonly NodeKind GenericParameterList = Reg(Other + 6, "generic-parameter-list");
 }

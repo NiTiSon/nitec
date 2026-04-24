@@ -127,6 +127,9 @@ internal static class SyntaxFacts
 			case "pure":
 				info.Kind = TokenKind.Pure;
 				return;
+			case "interface":
+				info.Kind = TokenKind.Interface;
+				return;
 		}
 	}
 

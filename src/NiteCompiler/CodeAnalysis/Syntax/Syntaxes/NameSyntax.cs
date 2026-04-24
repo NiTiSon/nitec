@@ -6,5 +6,15 @@ public abstract class NameSyntax : TypeSyntax
 
 	public abstract string GetName();
 
-	public virtual string GetFullName() => GetName();
+	public int Arity
+	{
+		get
+		{
+			return 0;
+			//return this is GenericNameSyntax ? ((GenericNameSyntax)this).TypeArgumentList.Arguments.Count : 0;
+		}
+	}
+
+
+	public abstract SimpleNameSyntax UnqualifiedName { get; }
 }

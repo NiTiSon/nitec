@@ -13,6 +13,7 @@ public partial class DiagnosticDescriptor
 		NotTerminatedStringLiteral,
 		ExpectedToken,
 		UnexpectedToken,
+		GenericsIsNotApplicableOnModuleName,
 		CannotResolveSymbol,
 		UnresolvedPredefinedType,
 		AmbiguousReference,
@@ -50,6 +51,7 @@ public partial class DiagnosticDescriptor
 
 		// Parsing
 		UnexpectedToken = new("unexpected-token", "Unexpected token {0}.");
+		GenericsIsNotApplicableOnModuleName = new("generics-not-applicable-on-module-name", "Module name cannot contain any generic parameters.");
 		ExpectedToken = new("expected-token", "Expected token {0}.");
 		AccessibilityModifierRequiredBeforeMemberDeclaration = new("accessibility-modifier-required", "Accessibility modifier required before member declaration.");
 		MissingParameterTypeSpecification = new("missing-parameter-type", "Type specification required for parameter syntax.");

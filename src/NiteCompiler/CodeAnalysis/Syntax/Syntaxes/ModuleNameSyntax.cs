@@ -1,52 +1,40 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public sealed class ModuleNameSyntax : NameSyntax
+public sealed class PathNameSyntax : NameSyntax
 {
-	public SyntaxList<SimpleNameSyntax> Parts { get; }
-	public override NodeKind Kind => NodeKind.ModuleNameExpression;
-	public override TextSpan Span => Parts.Span;
+	public NameSyntax Left { get; }
+	public Token DoubleColon { get; }
+	public SimpleNameSyntax Right { get; }
 
-	public ModuleNameSyntax(SyntaxTree tree, SyntaxList<SimpleNameSyntax> parts) : base(tree)
+	public override NodeKind Kind => NodeKind.PathNameExpression;
+	public override TextSpan Span => TextSpan.FromBounds(Left.Span, Right.Span);
+
+	public PathNameSyntax(SyntaxTree tree, NameSyntax left, Token doubleColon, SimpleNameSyntax right) : base(tree)
 	{
-		Parts = parts;
+		Left = left;
+		DoubleColon = doubleColon;
+		Right = right;
 	}
 
 	public override string GetName()
 	{
-		return Parts[^1].GetName();
+		return Left.GetName() + "::" + Right.GetName();
 	}
 
-	public override string GetFullName()
-	{
-		StringBuilder sb = new();
-		for (int i = 0; i < Parts.Count - 1; i++)
-		{
-			sb.Append(Parts[i].GetFullName());
-			sb.Append("::");
-		}
-		// Last
-		{
-			sb.Append(Parts[^1].GetFullName());
-		}
-		return sb.ToString();
-	}
-
-	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default
-	{
-		return visitor.VisitModuleName(this);
-	}
-
-	public override void Accept(SyntaxVisitor visitor)
-	{
-		visitor.VisitModuleName(this);
-	}
+	public override SimpleNameSyntax UnqualifiedName => Right;
 
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
-		yield return Parts;
+		yield return Left;
+		yield return DoubleColon;
+		yield return Right;
 	}
+
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitPathName(this);
+	public override void Accept(SyntaxVisitor visitor) => visitor.VisitPathName(this);
 }

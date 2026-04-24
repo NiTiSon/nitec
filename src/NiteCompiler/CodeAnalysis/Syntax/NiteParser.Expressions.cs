@@ -264,23 +264,52 @@ public sealed partial class NiteParser
 			return new IdentifierNameSyntax(_syntaxTree, current, identifier);
 		}
 
-		// TODO: Escaped `identifier`
-		throw new NotImplementedException();
+		if (current.TKind == TokenKind.EscapeIdentifier)
+		{
+			throw new NotImplementedException("ParseSimpleName(EscapedIdentifier)");
+		}
+
+		throw new UnreachableException($"ParseSimpleName({current.TKind})");
 	}
 
-	private ModuleNameSyntax ParseModuleName()
+	private NameSyntax ParseModuleName()
 	{
 		// SimpleName (:: SimpleName)*
-		SyntaxList<SimpleNameSyntax>.Builder parts = new();
+		NameSyntax result = ParsePathName();
+		NameSyntax current = result;
+		while (true)
+		{
+			VerifyModulePart(current.UnqualifiedName);
 
-		parts.Add(ParseSimpleName());
+			if (current is PathNameSyntax path)
+			{
+				current = path.Left;
+			}
+			else break;
+		}
+
+		return result;
+
+		void VerifyModulePart(SimpleNameSyntax nameSyntax)
+		{
+			if (nameSyntax is not IdentifierNameSyntax)
+			{
+				_diagnostics.ReportGenericsIsNotApplicableOnModuleName(nameSyntax.Location);
+			}
+		}
+	}
+
+	private NameSyntax ParsePathName()
+	{
+		NameSyntax result = ParseSimpleName();
 
 		while (Current.TKind == TokenKind.DoubleColon)
 		{
-			_ = MatchToken(TokenKind.DoubleColon);
-			parts.Add(ParseSimpleName());
+			Token doubleColon = PeekAndAdvance();
+			SimpleNameSyntax right = ParseSimpleName();
+			result = new PathNameSyntax(_syntaxTree, result, doubleColon, right);
 		}
 
-		return new(_syntaxTree, parts.Build(_syntaxTree));
+		return result;
 	}
 }

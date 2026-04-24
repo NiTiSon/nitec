@@ -25,10 +25,14 @@ public partial class NiteParser
 			Token typeKeyword = PeekAndAdvance();
 			return ParseTypeDeclaration(accessibilityToken, modifiers, typeKeyword);
 		}
-		else
+
+		if (Current.TKind == TokenKind.Interface)
 		{
-			return ParseFunctionDeclaration(accessibilityToken, modifiers);
+			Token interfaceKeyword = PeekAndAdvance();
+			throw new NotImplementedException("Interfaces are not implemented yet.");
 		}
+
+		return ParseFunctionDeclaration(accessibilityToken, modifiers);
 	}
 
 	private TypeDeclarationSyntax ParseTypeDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers,

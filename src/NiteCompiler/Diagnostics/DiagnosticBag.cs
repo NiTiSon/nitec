@@ -133,6 +133,11 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.UnexpectedToken, [source], currentKind);
 	}
 
+	public void ReportGenericsIsNotApplicableOnModuleName(Location location)
+	{
+		Add(DiagnosticDescriptor.GenericsIsNotApplicableOnModuleName, [location]);
+	}
+
 	public void ReportUnresolvedSymbol(Location source)
 	{
 		Add(DiagnosticDescriptor.CannotResolveSymbol, [source]);

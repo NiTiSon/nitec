@@ -112,7 +112,7 @@ internal partial class BinderFactory
 
 				if (usage == NodeUsage.ModuleBody)
 				{
-					resultBinder = MakeModuleBinder(declaration, resultBinder);
+					resultBinder = MakeModuleBinder(declaration, declaration.Name, resultBinder);
 				}
 
 				BinderCache.TryAdd(key, resultBinder);
@@ -121,23 +121,28 @@ internal partial class BinderFactory
 			return resultBinder;
 		}
 
-		private Binder MakeModuleBinder(ModuleDeclarationSyntax declaration, Binder outer)
+		private Binder MakeModuleBinder(SyntaxNode node, NameSyntax name, Binder outer)
 		{
-			Binder binder = outer;
-
-			ModuleSymbol container = Compilation.SourceLibrary.GlobalModule;
-
-			foreach (var namePart in declaration.Name.Parts)
+			if (name is PathNameSyntax path)
 			{
-				var name = namePart.GetName();
-
-				container = container.GetNestedModule(name)!;
-				Debug.Assert(container != null);
-
-				binder = new InContainerBinder(container, binder);
+				outer = MakeModuleBinder(path.Left, path.Left, outer);
+				name = path.Right;
 			}
 
-			return binder;
+			ContainerSymbol container;
+			if (outer is InContainerBinder inContainer)
+			{
+				container = inContainer.ContainingMember;
+			}
+			else
+			{
+				container = Compilation.SourceLibrary.GlobalModule;
+			}
+
+			ModuleSymbol? ns = ((ModuleSymbol)container).GetNestedModule(name.GetName());
+			if (ns == null) return outer;
+
+			return new InContainerBinder(ns, outer);
 		}
 
 		public override Binder VisitFunctionDeclaration(FunctionDeclarationSyntax declaration)

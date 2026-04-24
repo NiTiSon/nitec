@@ -9,7 +9,7 @@ public sealed class ModuleDeclarationSyntax : ItemSyntax
 	internal readonly Token LastToken;
 
 	public Token ModuleKeyword { get; }
-	public ModuleNameSyntax Name { get; }
+	public NameSyntax Name { get; }
 	public Token SemicolonToken { get; }
 	public SyntaxList<MemberSyntax> Members { get; }
 
@@ -27,7 +27,7 @@ public sealed class ModuleDeclarationSyntax : ItemSyntax
 	}
 	public override NodeKind Kind => NodeKind.ModuleDeclaration;
 
-	public ModuleDeclarationSyntax(SyntaxTree tree, Token moduleKeyword, ModuleNameSyntax name, Token semicolon, SyntaxList<MemberSyntax> members) : base(tree)
+	public ModuleDeclarationSyntax(SyntaxTree tree, Token moduleKeyword, NameSyntax name, Token semicolon, SyntaxList<MemberSyntax> members) : base(tree)
 	{
 		ModuleKeyword = moduleKeyword;
 		Name = name;

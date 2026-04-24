@@ -305,6 +305,7 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 	public static readonly TokenKind Static = Reg(Keyword + 21, "static");
 	public static readonly TokenKind Const = Reg(Keyword + 22, "const");
 	public static readonly TokenKind Pure = Reg(Keyword + 23, "pure");
+	public static readonly TokenKind Interface = Reg(Keyword + 24, "interface");
 
 	// Type keywords have they very own unique values
 	public static readonly TokenKind I8 = Reg(TypeKeyword + (uint)SpecialType.StdNumericsSInt8, "i8");

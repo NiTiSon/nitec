@@ -5,14 +5,12 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal sealed class InContainerBinder : Binder
 {
-	private ContainerSymbol _container;
-
-	public override Symbol ContainingMember => _container;
+	public override ContainerSymbol ContainingMember { get; }
 
 	public InContainerBinder(ContainerSymbol container, Binder parent) : base(parent)
 	{
 		Debug.Assert(container != null);
 
-		_container = container;
+		ContainingMember = container;
 	}
 }

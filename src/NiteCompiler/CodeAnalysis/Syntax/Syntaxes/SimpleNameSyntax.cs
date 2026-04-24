@@ -12,6 +12,8 @@ public abstract class SimpleNameSyntax : NameSyntax
 		_name = identifier;
 	}
 
+	public sealed override SimpleNameSyntax UnqualifiedName => this;
+
 	public override string GetName()
 	{
 		return _name;
