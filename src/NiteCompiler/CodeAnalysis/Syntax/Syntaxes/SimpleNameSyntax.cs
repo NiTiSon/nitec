@@ -7,7 +7,7 @@ public abstract class SimpleNameSyntax : NameSyntax
 {
 	private readonly string _name;
 
-	protected SimpleNameSyntax(SyntaxTree tree, string identifier) : base(tree)
+	private protected SimpleNameSyntax(SyntaxTree tree, string identifier) : base(tree)
 	{
 		_name = identifier;
 	}

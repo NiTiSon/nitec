@@ -13,7 +13,7 @@ public sealed class BlockStatementSyntax : StatementSyntax
 	public override NodeKind Kind => NodeKind.BlockStatement;
 	public override TextSpan Span => TextSpan.FromBounds(OpenBrace.Span, CloseBrace.Span);
 
-	public BlockStatementSyntax(SyntaxTree tree, Token openBrace, SyntaxList<StatementSyntax> statements, Token closeBrace) : base(tree)
+	internal BlockStatementSyntax(SyntaxTree tree, Token openBrace, SyntaxList<StatementSyntax> statements, Token closeBrace) : base(tree)
 	{
 		Debug.Assert(openBrace.TKind == TokenKind.OpenBrace);
 		OpenBrace = openBrace;

@@ -10,7 +10,7 @@ public class UnaryExpressionSyntax : ExpressionSyntax
 	public override TextSpan Span => TextSpan.FromBounds(Operator.Span.Start, Expression.Span.End);
 	public override NodeKind Kind { get; }
 
-	public UnaryExpressionSyntax(SyntaxTree tree, Token @operator, ExpressionSyntax expression, NodeKind operatorKind) : base(tree)
+	internal UnaryExpressionSyntax(SyntaxTree tree, Token @operator, ExpressionSyntax expression, NodeKind operatorKind) : base(tree)
 	{
 		Operator = @operator;
 		Expression = expression;

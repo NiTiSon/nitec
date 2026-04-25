@@ -2,7 +2,7 @@
 
 public abstract class GenericParameterSyntax : SyntaxNode
 {
-	protected GenericParameterSyntax(SyntaxTree tree) : base(tree)
+	private protected GenericParameterSyntax(SyntaxTree tree) : base(tree)
 	{
 	}
 }

@@ -12,7 +12,7 @@ public sealed class IfStatementSyntax : StatementSyntax
 	public override TextSpan Span => TextSpan.FromBounds(IfToken.Span, ElseClause?.Span ?? ThenStatement.Span);
 	public override NodeKind Kind => NodeKind.IfStatement;
 
-	public IfStatementSyntax(SyntaxTree tree, Token @if, ExpressionSyntax condition, StatementSyntax thenStatement,
+	internal IfStatementSyntax(SyntaxTree tree, Token @if, ExpressionSyntax condition, StatementSyntax thenStatement,
 		ElseClauseSyntax? elseClause) : base(tree)
 	{
 		IfToken = @if;

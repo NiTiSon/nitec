@@ -11,7 +11,7 @@ public sealed class LoopStatementSyntax : StatementSyntax
 	public override TextSpan Span => TextSpan.FromBounds(LoopKeyword.Span, Body.Span);
 	public override NodeKind Kind => NodeKind.LoopStatement;
 
-	public LoopStatementSyntax(SyntaxTree tree, Token loop, StatementSyntax body) : base(tree)
+	internal LoopStatementSyntax(SyntaxTree tree, Token loop, StatementSyntax body) : base(tree)
 	{
 		LoopKeyword = loop;
 		Body = body;

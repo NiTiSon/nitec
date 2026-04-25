@@ -12,7 +12,7 @@ public sealed class GenericParameterListSyntax : SyntaxNode
 	public override TextSpan Span => TextSpan.FromBounds(OpenToken.Span, CloseToken.Span);
 	public override NodeKind Kind => NodeKind.GenericParameterList;
 
-	public GenericParameterListSyntax(SyntaxTree tree,
+	internal GenericParameterListSyntax(SyntaxTree tree,
 		Token openToken, SyntaxList<GenericParameterSyntax> parameters, Token closeToken) : base(tree)
 	{
 		OpenToken = openToken;

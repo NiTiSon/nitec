@@ -308,7 +308,7 @@ public sealed partial class NiteParser
 		{
 			if (nameSyntax is not IdentifierNameSyntax)
 			{
-				Location? location = (nameSyntax as GenericNameSyntax)?.Parameters.Location;
+				Location? location = (nameSyntax as GenericNameSyntax)?.GenericParameterList.Location;
 				_diagnostics.ReportGenericsIsNotApplicableOnModuleName(location ?? nameSyntax.Location);
 			}
 		}

@@ -12,7 +12,7 @@ public sealed class BlockFunctionBodySyntax : FunctionBodySyntax
 
 	internal override Token ClosingToken => Block.CloseBrace;
 
-	public BlockFunctionBodySyntax(SyntaxTree tree, BlockStatementSyntax block) : base(tree)
+	internal BlockFunctionBodySyntax(SyntaxTree tree, BlockStatementSyntax block) : base(tree)
 	{
 		Block = block;
 	}

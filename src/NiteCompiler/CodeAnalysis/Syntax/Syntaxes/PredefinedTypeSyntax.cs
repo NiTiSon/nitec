@@ -11,7 +11,7 @@ public sealed class PredefinedTypeSyntax : TypeSyntax
 	public override TextSpan Span => TypeKeyword.Span;
 	public override NodeKind Kind => NodeKind.PredefinedType;
 
-	public PredefinedTypeSyntax(SyntaxTree tree, Token typeKeyword) : base(tree)
+	internal PredefinedTypeSyntax(SyntaxTree tree, Token typeKeyword) : base(tree)
 	{
 		Debug.Assert(typeKeyword.IsTypeKeyword);
 		TypeKeyword = typeKeyword;

@@ -9,7 +9,7 @@ public sealed class EmptyFunctionBodySyntax : FunctionBodySyntax
 
 	internal override Token ClosingToken => SemicolonToken;
 
-	public EmptyFunctionBodySyntax(SyntaxTree tree, Token semicolonToken) : base(tree)
+	internal EmptyFunctionBodySyntax(SyntaxTree tree, Token semicolonToken) : base(tree)
 	{
 		SemicolonToken = semicolonToken;
 	}

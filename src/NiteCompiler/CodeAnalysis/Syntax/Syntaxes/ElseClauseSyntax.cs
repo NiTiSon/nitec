@@ -10,7 +10,7 @@ public sealed class ElseClauseSyntax : SyntaxNode
 	public override TextSpan Span => TextSpan.FromBounds(ElseToken.Span, ElseToken.Span);
 	public override NodeKind Kind => NodeKind.ElseClause;
 
-	public ElseClauseSyntax(SyntaxTree tree, Token @else, StatementSyntax elseStatement) : base(tree)
+	internal ElseClauseSyntax(SyntaxTree tree, Token @else, StatementSyntax elseStatement) : base(tree)
 	{
 		ElseToken = @else;
 		ElseStatement = elseStatement;

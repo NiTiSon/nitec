@@ -241,6 +241,8 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind ParenthesizedExpression = Reg(Expression + 8, "parenthesized-expression");
 	public static readonly NodeKind NumberLiteralExpression = Reg(Expression + 9, "number-literal-expression");
 	public static readonly NodeKind PredefinedType = Reg(Expression + 10, "<predefined-type>");
+	public static readonly NodeKind InvocationExpression = Reg(Expression + 11, "invocation-expression");
+	public static readonly NodeKind IndexationExpression = Reg(Expression + 12, "indexation-expression");
 	private const uint Operation = 0x00_00__28_00;
 	public static readonly NodeKind UnaryAddExpression = Reg(Operation + 1, Precedence.Unary, "unary-add-expression");
 	public static readonly NodeKind AddExpression = Reg(Operation + BinaryFlag + 2, Precedence.Additive, "add-expression");
@@ -303,5 +305,8 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind ElseClause = Reg(Other + 3, "else-clause");
 	public static readonly NodeKind LocalVariableDeclarator = Reg(Other + 4, "local-variable-declarator");
 	public static readonly NodeKind ParameterList = Reg(Other + 5, "parameter-list");
-	public static readonly NodeKind GenericParameterList = Reg(Other + 6, "generic-parameter-list");
+	public static readonly NodeKind ArgumentList = Reg(Other + 6, "argument-list");
+	public static readonly NodeKind BracketedArgumentList = Reg(Other + 7, "bracketed-argument-list");
+	public static readonly NodeKind GenericParameterList = Reg(Other + 8, "generic-parameter-list");
+	public static readonly NodeKind GenericArgumentList = Reg(Other + 9, "generic-argument-list");
 }

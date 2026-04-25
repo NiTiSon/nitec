@@ -27,7 +27,7 @@ public sealed class ModuleDeclarationSyntax : ItemSyntax
 	}
 	public override NodeKind Kind => NodeKind.ModuleDeclaration;
 
-	public ModuleDeclarationSyntax(SyntaxTree tree, Token moduleKeyword, NameSyntax name, Token semicolon, SyntaxList<MemberSyntax> members) : base(tree)
+	internal ModuleDeclarationSyntax(SyntaxTree tree, Token moduleKeyword, NameSyntax name, Token semicolon, SyntaxList<MemberSyntax> members) : base(tree)
 	{
 		ModuleKeyword = moduleKeyword;
 		Name = name;

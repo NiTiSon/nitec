@@ -9,7 +9,7 @@ public sealed class IdentifierNameSyntax : SimpleNameSyntax
 	public override NodeKind Kind => NodeKind.IdentifierName;
 	public override TextSpan Span => Identifier.Span;
 
-	public IdentifierNameSyntax(SyntaxTree tree, Token identifier, string identifierText) : base(tree, identifierText)
+	internal IdentifierNameSyntax(SyntaxTree tree, Token identifier, string identifierText) : base(tree, identifierText)
 	{
 		Identifier = identifier;
 	}

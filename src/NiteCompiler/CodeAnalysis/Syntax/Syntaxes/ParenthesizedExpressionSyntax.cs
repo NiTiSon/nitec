@@ -12,7 +12,7 @@ public sealed class ParenthesizedExpressionSyntax : ExpressionSyntax
 	public override TextSpan Span => TextSpan.FromBounds(OpenParenToken.Span.Start, CloseParenToken.Span.End);
 	public override NodeKind Kind => NodeKind.ParenthesizedExpression;
 
-	public ParenthesizedExpressionSyntax(SyntaxTree tree, Token openParen, ExpressionSyntax expression, Token closeParen) : base(tree)
+	internal ParenthesizedExpressionSyntax(SyntaxTree tree, Token openParen, ExpressionSyntax expression, Token closeParen) : base(tree)
 	{
 		OpenParenToken = openParen;
 		Expression = expression;

@@ -12,7 +12,7 @@ public sealed class LocalVariableDeclarationStatement : StatementSyntax
 	public override NodeKind Kind => NodeKind.LocalVariableDeclarationStatement;
 	public override TextSpan Span => TextSpan.FromBounds(DeclarationToken.Span, Declarator.Span);
 
-	public LocalVariableDeclarationStatement(SyntaxTree tree, Token declarationKeyword, LocalVariableDeclarator declarator, Token semicolonToken) : base(tree)
+	internal LocalVariableDeclarationStatement(SyntaxTree tree, Token declarationKeyword, LocalVariableDeclarator declarator, Token semicolonToken) : base(tree)
 	{
 		DeclarationToken = declarationKeyword;
 		Declarator = declarator;

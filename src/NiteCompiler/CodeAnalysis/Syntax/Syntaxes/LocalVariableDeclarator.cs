@@ -19,7 +19,7 @@ public sealed class LocalVariableDeclarator : SyntaxNode
 	}
 	public override NodeKind Kind => NodeKind.LocalVariableDeclarator;
 
-	public LocalVariableDeclarator(SyntaxTree tree, SimpleNameSyntax name, TypeClause? typeClause, EqualsValueClause? equalsValueClause) : base(tree)
+	internal LocalVariableDeclarator(SyntaxTree tree, SimpleNameSyntax name, TypeClause? typeClause, EqualsValueClause? equalsValueClause) : base(tree)
 	{
 		Name = name;
 		TypeClause = typeClause;

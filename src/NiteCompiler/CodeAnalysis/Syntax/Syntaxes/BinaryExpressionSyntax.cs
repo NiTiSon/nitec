@@ -11,7 +11,7 @@ public sealed class BinaryExpressionSyntax : ExpressionSyntax
 	public override TextSpan Span => TextSpan.FromBounds(Left.Span.Start, Right.Span.End);
 	public override NodeKind Kind { get; }
 
-	public BinaryExpressionSyntax(SyntaxTree tree, ExpressionSyntax lhs, Token operatorToken,
+	internal BinaryExpressionSyntax(SyntaxTree tree, ExpressionSyntax lhs, Token operatorToken,
 		ExpressionSyntax rhs, NodeKind operatorExpressionKind) : base(tree)
 	{
 		Left = lhs;

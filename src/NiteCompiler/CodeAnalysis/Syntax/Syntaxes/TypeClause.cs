@@ -11,7 +11,7 @@ public sealed class TypeClause : SyntaxNode
 	public override TextSpan Span => TextSpan.FromBounds(Token.Span, Type.Span);
 	public override NodeKind Kind => NodeKind.TypeClause;
 
-	public TypeClause(SyntaxTree tree, Token token, TypeSyntax type) : base(tree)
+	internal TypeClause(SyntaxTree tree, Token token, TypeSyntax type) : base(tree)
 	{
 		Token = token;
 		Type = type;

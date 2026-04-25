@@ -11,7 +11,7 @@ public sealed class ExpressionStatementSyntax : StatementSyntax
 	public override TextSpan Span => Expression.Span;
 	public override NodeKind Kind => NodeKind.ExpressionStatement;
 
-	public ExpressionStatementSyntax(SyntaxTree tree, ExpressionSyntax expression, Token semicolonToken) : base(tree)
+	internal ExpressionStatementSyntax(SyntaxTree tree, ExpressionSyntax expression, Token semicolonToken) : base(tree)
 	{
 		Debug.Assert(semicolonToken.TKind == TokenKind.Semicolon);
 		SemicolonToken = semicolonToken;

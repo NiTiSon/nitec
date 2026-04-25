@@ -13,7 +13,7 @@ public sealed class ReturnStatementSyntax : StatementSyntax
 	public override NodeKind Kind => NodeKind.ReturnStatement;
 	public override TextSpan Span => TextSpan.FromBounds(ReturnKeyword.Span, SemicolonToken.Span);
 
-	public ReturnStatementSyntax(SyntaxTree tree, Token returnToken, ExpressionSyntax? expression, Token semicolonToken) : base(tree)
+	internal ReturnStatementSyntax(SyntaxTree tree, Token returnToken, ExpressionSyntax? expression, Token semicolonToken) : base(tree)
 	{
 		Debug.Assert(semicolonToken.TKind == TokenKind.Semicolon);
 		SemicolonToken = semicolonToken;

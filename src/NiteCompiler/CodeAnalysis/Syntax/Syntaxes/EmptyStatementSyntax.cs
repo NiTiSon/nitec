@@ -11,7 +11,7 @@ public sealed class EmptyStatementSyntax : StatementSyntax
 	public override TextSpan Span => SemicolonToken.Span;
 	public override NodeKind Kind => NodeKind.EmptyStatement;
 
-	public EmptyStatementSyntax(SyntaxTree tree, Token semicolonToken) : base(tree)
+	internal EmptyStatementSyntax(SyntaxTree tree, Token semicolonToken) : base(tree)
 	{
 		Debug.Assert(semicolonToken.TKind == TokenKind.Semicolon);
 		SemicolonToken = semicolonToken;

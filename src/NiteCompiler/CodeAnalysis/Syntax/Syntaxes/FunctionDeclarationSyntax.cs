@@ -18,7 +18,7 @@ public sealed class FunctionDeclarationSyntax : MemberSyntax
 	public override TextSpan Span => TextSpan.FromBounds(AccessibilityToken.Span, Body.Span);
 	public override NodeKind Kind => NodeKind.FunctionDeclaration;
 
-	public FunctionDeclarationSyntax(SyntaxTree tree, Token accessibilityToken, SyntaxList<Token> modifiers,
+	internal FunctionDeclarationSyntax(SyntaxTree tree, Token accessibilityToken, SyntaxList<Token> modifiers,
 		ParameterListSyntax parameterList, SimpleNameSyntax name, TypeClause? typeClause,
 		FunctionBodySyntax body) : base(tree)
 	{

@@ -18,7 +18,7 @@ public sealed class TypeDeclarationSyntax : MemberSyntax
 	public override TextSpan Span => TextSpan.FromBounds(AccessibilityToken.Span, Body.Span);
 	public override NodeKind Kind => NodeKind.TypeDeclaration;
 
-	public TypeDeclarationSyntax(SyntaxTree tree, Token accessibilityToken, SyntaxList<Token> modifiers, Token typeKeyword, SimpleNameSyntax name, TypeBodySyntax body) : base(tree)
+	internal TypeDeclarationSyntax(SyntaxTree tree, Token accessibilityToken, SyntaxList<Token> modifiers, Token typeKeyword, SimpleNameSyntax name, TypeBodySyntax body) : base(tree)
 	{
 		AccessibilityToken = accessibilityToken;
 		Modifiers = modifiers;

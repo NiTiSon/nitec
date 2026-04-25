@@ -7,24 +7,24 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 public sealed class GenericNameSyntax : SimpleNameSyntax
 {
 	public Token Identifier { get; }
-	public GenericParameterListSyntax Parameters { get; }
+	public GenericParameterListSyntax GenericParameterList { get; } // TODO!!: replace with GenericArgumentListSyntax
 
 	public override NodeKind Kind => NodeKind.GenericNameExpression;
-	public override TextSpan Span => TextSpan.FromBounds(Identifier.Span, Parameters.Span);
+	public override TextSpan Span => TextSpan.FromBounds(Identifier.Span, GenericParameterList.Span);
 
-	public GenericNameSyntax(SyntaxTree tree, Token identifier, string identifierText, GenericParameterListSyntax parameters)
+	internal GenericNameSyntax(SyntaxTree tree, Token identifier, string identifierText, GenericParameterListSyntax genericParameterList)
 		: base(tree, identifierText)
 	{
-		Debug.Assert(parameters != null);
+		Debug.Assert(genericParameterList != null);
 
 		Identifier = identifier;
-		Parameters = parameters;
+		GenericParameterList = genericParameterList;
 	}
 
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return Identifier;
-		yield return Parameters;
+		yield return GenericParameterList;
 	}
 
 	public override void Accept(SyntaxVisitor visitor) => visitor.VisitGenericName(this);

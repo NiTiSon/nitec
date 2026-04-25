@@ -12,7 +12,7 @@ public sealed class WhileStatementSyntax : StatementSyntax
 	public override TextSpan Span => TextSpan.FromBounds(WhileKeyword.Span, Body.Span);
 	public override NodeKind Kind => NodeKind.WhileStatement;
 
-	public WhileStatementSyntax(SyntaxTree tree, Token whileKeyword, ExpressionSyntax condition, StatementSyntax body) : base(tree)
+	internal WhileStatementSyntax(SyntaxTree tree, Token whileKeyword, ExpressionSyntax condition, StatementSyntax body) : base(tree)
 	{
 		WhileKeyword = whileKeyword;
 		Condition = condition;

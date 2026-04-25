@@ -11,7 +11,7 @@ public sealed class MembersTypeBodySyntax : TypeBodySyntax
 
 	internal override Token ClosingToken => CloseBrace;
 
-	public MembersTypeBodySyntax(SyntaxTree tree, Token openBrace, SyntaxList<MemberSyntax> members, Token closeBrace) : base(tree)
+	internal MembersTypeBodySyntax(SyntaxTree tree, Token openBrace, SyntaxList<MemberSyntax> members, Token closeBrace) : base(tree)
 	{
 		OpenBrace = openBrace;
 		Members = members;

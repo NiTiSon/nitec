@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
@@ -14,7 +12,7 @@ public sealed class PathNameSyntax : NameSyntax
 	public override NodeKind Kind => NodeKind.PathNameExpression;
 	public override TextSpan Span => TextSpan.FromBounds(Left.Span, Right.Span);
 
-	public PathNameSyntax(SyntaxTree tree, NameSyntax left, Token doubleColon, SimpleNameSyntax right) : base(tree)
+	internal PathNameSyntax(SyntaxTree tree, NameSyntax left, Token doubleColon, SimpleNameSyntax right) : base(tree)
 	{
 		Left = left;
 		DoubleColon = doubleColon;
