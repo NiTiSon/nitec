@@ -13,4 +13,20 @@ internal sealed class InContainerBinder : Binder
 
 		ContainingMember = container;
 	}
+
+	internal override void LookupSymbolsInSingleBinder(LookupResult result, string name, int arity,
+		LookupOptions options, Binder originalBinder, bool diagnose)
+	{
+		Debug.Assert(result.IsClear);
+
+		foreach (Symbol member in ContainingMember.GetMembers())
+		{
+			if (member.Name != name)
+			{
+				continue;
+			}
+
+			result.MergeEqual(originalBinder.CheckViability(member, arity, options, null, diagnose));
+		}
+	}
 }

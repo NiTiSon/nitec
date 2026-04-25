@@ -44,6 +44,7 @@ public abstract class Symbol
 
 	public virtual string Name => string.Empty;
 	public virtual int Arity => 0;
+	public virtual bool IsErrorSymbol => this is IErrorSymbol;
 
 	public abstract string ToDisplayString(SymbolFormat format = SymbolFormat.Default);
 

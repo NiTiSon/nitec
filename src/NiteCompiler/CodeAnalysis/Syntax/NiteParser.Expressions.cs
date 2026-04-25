@@ -7,6 +7,13 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 
 public sealed partial class NiteParser
 {
+	[Flags]
+	private enum NameOptions
+	{
+		None = 0,
+		InExpression = 1 << 0,
+	}
+
 	private (TokenKind operatorTokenKind, NodeKind operatorExpressionKind) GetExpressionOperatorTokenKindAndExpressionKind()
 	{
 		// If the set of expression continuations is updated here, please review ParseStatementAttributeDeclarations
@@ -58,7 +65,7 @@ public sealed partial class NiteParser
 			return (token1Kind, token1Kind.ToBinaryExpressionKind());
 		}
 
-		// Something that doesn't expand the current expression we're looking at.  Bail out and see if we
+		// something that doesn't expand the current expression we're looking at.  Bail out and see if we
 		// can end with a conditional expression.
 		return (TokenKind.None, NodeKind.None);
 	}
@@ -117,7 +124,7 @@ public sealed partial class NiteParser
 
 		ExpressionSyntax Impl(Precedence implPrecedence)
 		{
-			return ParseExpressionContinued(ParsePrimaryOrUnaryExpression(), implPrecedence);
+			return ParseExpressionContinued(ParsePrimaryOrUnaryExpression(implPrecedence), implPrecedence);
 		}
 	}
 
@@ -150,7 +157,6 @@ public sealed partial class NiteParser
 		if ((newPrecedence == precedence) && !operatorExpressionKind.IsRightAssociative)
 			return null;
 
-		// TODO: Add support for >>, >>>, >>>=
 		Token operatorToken = ConsumeExpressionOperatorToken(operatorTokenKind);
 
 		if (newPrecedence > operatorExpressionKind.Precedence)
@@ -179,28 +185,107 @@ public sealed partial class NiteParser
 		return new(leftOperand.Tree, leftOperand, operatorToken, rhs, operatorExpressionKind);
 	}
 
-	private ExpressionSyntax ParsePrimaryExpression()
+	private ExpressionSyntax ParsePrimaryExpression(Precedence precedence)
 	{
-		NodeKind literalType;
-		if (Current.TKind == TokenKind.OpenParen)
+		// primary expressions:
+		// x, [...], x.y, x(...), x[...]
+		return ParsePostFixExpression(ParsePrimaryExpressionWithoutPostfix(precedence));
+
+		ExpressionSyntax ParsePrimaryExpressionWithoutPostfix(Precedence precedence)
 		{
-			return ParseParenthesizedExpression();
+			TokenKind tokenKind = Current.TKind;
+
+			// TODO: default, sizeof, etc.
+			if (tokenKind == TokenKind.OpenParen)
+			{
+				return ParseParenthesizedExpression();
+			}
+
+			if (tokenKind == TokenKind.IdentifierOrKeyword)
+			{
+				return ParsePathName();
+			}
+
+			if (tokenKind == TokenKind.True ||
+			    tokenKind == TokenKind.False ||
+			    tokenKind == TokenKind.NumberLiteral ||
+			    tokenKind == TokenKind.CharacterLiteral)
+			{
+				Token current = PeekAndAdvance();
+				return new LiteralExpressionSyntax(_syntaxTree, current, current.TKind.ToLiteralExpressionKind());
+			}
+
+			if (tokenKind == TokenKind.OpenBracket)
+			{
+				return ParseCollectionExpression();
+			}
+
+			throw new NotImplementedException();
 		}
 
-		if (Current.TKind == TokenKind.IdentifierOrKeyword)
+		ExpressionSyntax ParsePostFixExpression(ExpressionSyntax expression)
 		{
-			return ParseName();
+			while (true) // postfix
+			{
+				TokenKind tokenKind = Current.TKind;
+				if (tokenKind == TokenKind.OpenParen)
+				{
+					expression = new InvocationExpressionSyntax(_syntaxTree, expression, ParseParenthesizedArgumentList());
+				}
+				else
+				{
+					return expression;
+				}
+			}
 		}
+	}
 
-		if ((literalType = Current.TKind.ToLiteralExpressionKind()) != NodeKind.None)
+	private ArgumentListSyntax ParseParenthesizedArgumentList()
+	{
+		Token openParen = MatchToken(TokenKind.OpenParen);
+		SyntaxList<ExpressionSyntax>.Builder arguments = new();
+		while (true)
 		{
-			return new LiteralExpressionSyntax(Current.Tree, PeekAndAdvance(), literalType);
-		}
+			if (Current.TKind == TokenKind.EndOfFile) break;
 
+			arguments.Add(ParseExpression());
+			if (Current.TKind == TokenKind.Comma)
+			{
+				Advance();
+			}
+
+			if (Current.TKind == TokenKind.CloseParen) break;
+		}
+		Token closeParen = MatchToken(TokenKind.CloseParen);
+		return new(_syntaxTree, openParen, arguments.Build(_syntaxTree), closeParen);
+	}
+
+	private BracketedArgumentListSyntax ParseBracketedArgumentList()
+	{
+		Token openBracket = MatchToken(TokenKind.OpenParen);
+		SyntaxList<ExpressionSyntax>.Builder arguments = new();
+		while (true)
+		{
+			if (Current.TKind == TokenKind.EndOfFile) break;
+
+			arguments.Add(ParseExpression());
+			if (Current.TKind == TokenKind.Comma)
+			{
+				Advance();
+			}
+
+			if (Current.TKind == TokenKind.CloseBracket) break;
+		}
+		Token closeBracket = MatchToken(TokenKind.CloseParen);
+		return new(_syntaxTree, openBracket, arguments.Build(_syntaxTree), closeBracket);
+	}
+
+	private ExpressionSyntax ParseCollectionExpression()
+	{
 		throw new NotImplementedException();
 	}
 
-	private ExpressionSyntax ParsePrimaryOrUnaryExpression()
+	private ExpressionSyntax ParsePrimaryOrUnaryExpression(Precedence precedence)
 	{
 		if (Current.TKind is { IsOperator: true, CanBeUnaryOperator: true })
 		{
@@ -211,7 +296,7 @@ public sealed partial class NiteParser
 			return new UnaryExpressionSyntax(operatorToken.Tree, operatorToken, expression, opKind);
 		}
 
-		return ParsePrimaryExpression();
+		return ParsePrimaryExpression(precedence);
 	}
 
 	private ParenthesizedExpressionSyntax ParseParenthesizedExpression()
@@ -255,7 +340,7 @@ public sealed partial class NiteParser
 		throw new NotImplementedException();
 	}
 
-	private SimpleNameSyntax ParseSimpleName()
+	private SimpleNameSyntax ParseSimpleName(NameOptions options = NameOptions.None)
 	{
 		Token current = PeekAndAdvance();
 

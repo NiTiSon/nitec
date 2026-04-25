@@ -70,6 +70,8 @@ internal partial class Binder
 
 			case SimpleNameSyntax name:
 				return BindIdentifier(name, invoked, indexed, diagnostics);
+			case InvocationExpressionSyntax invocation:
+				return BindInvocation(invocation, diagnostics);
 
 			default:
 				throw new UnreachableException($"BindExpression({syntax.Kind})");

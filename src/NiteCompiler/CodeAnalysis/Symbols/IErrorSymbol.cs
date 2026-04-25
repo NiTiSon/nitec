@@ -1,10 +1,9 @@
 ﻿using System.Collections.Immutable;
-using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
-public interface IErrorType
+public interface IErrorSymbol
 {
 	public Diagnostic? ErrorInfo { get; }
 	public bool Unreported { get; }

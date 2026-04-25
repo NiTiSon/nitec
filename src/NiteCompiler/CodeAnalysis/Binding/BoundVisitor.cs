@@ -14,6 +14,8 @@ internal abstract class BoundVisitor
 	public virtual void VisitCompoundAssignment(BoundCompoundAssignment assignment) => DefaultVisit(assignment);
 	public virtual void VisitUnaryExpression(BoundUnaryExpression unaryExpression) => DefaultVisit(unaryExpression);
 	public virtual void VisitBinaryExpression(BoundBinaryExpression binaryExpression) => DefaultVisit(binaryExpression);
+	public virtual void VisitCall(BoundCall call) => DefaultVisit(call);
+	//public virtual void VisitIndexation(BoundIndexation indexation) => DefaultVisit(indexation);
 	public virtual void VisitBlock(BoundBlock block) => DefaultVisit(block);
 	public virtual void VisitMove(BoundMove move) => DefaultVisit(move);
 	public virtual void VisitEmptyStatement(BoundEmptyStatement statement) => DefaultVisit(statement);

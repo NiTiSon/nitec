@@ -241,8 +241,8 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind ParenthesizedExpression = Reg(Expression + 8, "parenthesized-expression");
 	public static readonly NodeKind NumberLiteralExpression = Reg(Expression + 9, "number-literal-expression");
 	public static readonly NodeKind PredefinedType = Reg(Expression + 10, "<predefined-type>");
-	public static readonly NodeKind InvocationExpression = Reg(Expression + 11, "invocation-expression");
-	public static readonly NodeKind IndexationExpression = Reg(Expression + 12, "indexation-expression");
+	public static readonly NodeKind InvocationExpression = Reg(Expression + 11, Precedence.Primary, "invocation-expression");
+	public static readonly NodeKind IndexationExpression = Reg(Expression + 12, Precedence.Primary, "indexation-expression");
 	private const uint Operation = 0x00_00__28_00;
 	public static readonly NodeKind UnaryAddExpression = Reg(Operation + 1, Precedence.Unary, "unary-add-expression");
 	public static readonly NodeKind AddExpression = Reg(Operation + BinaryFlag + 2, Precedence.Additive, "add-expression");

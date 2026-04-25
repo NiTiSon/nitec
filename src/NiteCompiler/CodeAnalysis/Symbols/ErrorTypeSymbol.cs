@@ -5,7 +5,7 @@ using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
-internal sealed class ErrorTypeSymbol : TypeSymbol, IErrorType
+internal sealed class ErrorTypeSymbol : TypeSymbol, IErrorSymbol
 {
 	public override string Name { get; }
 	public override int Arity { get; }

@@ -22,8 +22,10 @@ internal enum BoundKind
 	Parameter,
 	UnaryExpression,
 	BinaryExpression,
-	CompoundAssignmentExpression,
-	VariableExpression,
 	AssignmentExpression,
+	CompoundAssignmentExpression,
+	InvocationExpression,
+	IndexationExpression,
+	VariableExpression,
 	BadExpression
 }

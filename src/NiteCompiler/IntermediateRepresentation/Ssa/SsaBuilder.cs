@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using LLVMSharp;
 using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Binding.Operators;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.IntermediateRepresentation.ControlFlow;
+using BasicBlock = NiteCompiler.IntermediateRepresentation.ControlFlow.BasicBlock;
 
 namespace NiteCompiler.IntermediateRepresentation.Ssa;
 
@@ -262,6 +264,7 @@ internal sealed class SsaBuilder
 			BoundBinaryExpression binary => EmitBinaryExpression(binary, block),
 			BoundAssignment assignment => EmitAssignmentExpression(assignment, block),
 			BoundCompoundAssignment compoundAssignment => throw new InvalidOperationException("Unlowered BoundTree is passed to the SsaBuilder."),
+			BoundCall call => EmitCall(call, block),
 			BoundParameter parameter => EmitParameter(parameter, block),
 			BoundLocal local => EmitLocal(local, block),
 
@@ -369,6 +372,20 @@ internal sealed class SsaBuilder
 		_stacks[symbol].Push(right);
 
 		return right;
+	}
+
+	private SsaValue EmitCall(BoundCall call, SsaBlock block)
+	{
+		SsaValue ret = NewTemp(call.Type);
+		ArrayBuilder<SsaValue> arguments = ArrayBuilder<SsaValue>.GetInstance();
+		foreach (var arg in call.Arguments)
+		{
+			arguments.Add(RewriteExpression(arg, block));
+		}
+
+		block.Instructions.Add(new CallInstruction(ret, call.Function, arguments.ToImmutableAndFree()));
+
+		return ret;
 	}
 
 	private SsaValue EmitParameter(BoundParameter parameter, SsaBlock block)

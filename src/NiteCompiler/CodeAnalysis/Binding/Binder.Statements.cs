@@ -155,7 +155,7 @@ internal partial class Binder
 			}
 		}
 
-		bool hasErrors = (initializer?.HasErrors ?? false) || local.Type.IsErrorType;
+		bool hasErrors = (initializer?.HasErrors ?? false) || local.Type.IsErrorSymbol;
 
 		return new BoundLocalVariableDeclarationStatement(declarator, local, initializer, hasErrors);
 	}
@@ -221,7 +221,7 @@ internal partial class Binder
 
 		if (arg != null)
 		{
-			hasErrors |= arg.HasErrors || arg.Type.IsErrorType;
+			hasErrors |= arg.HasErrors || arg.Type.IsErrorSymbol;
 		}
 
 		return new BoundReturn(syntax, arg, hasErrors);

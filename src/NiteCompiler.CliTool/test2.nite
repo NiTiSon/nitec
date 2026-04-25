@@ -1,11 +1,9 @@
 #!bin/nite
 
 public simple_func(x: i32) -> i32 {
-   	if simple_func2(x) {
-   		return 1;
-   	}
-
-   	return 2;
+   	let y = simple_func2(x);
+   	if y return 1i32;
+   	else return 0i32;
 }
 
 public simple_func2(x: i32) -> bool { return true; }
