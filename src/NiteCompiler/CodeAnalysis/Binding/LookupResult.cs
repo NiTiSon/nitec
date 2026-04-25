@@ -44,7 +44,7 @@ internal sealed class LookupResult
 	public void Free()
 	{
 		Clear();
-		Symbols.Free();
+		// Symbols.Clear(); reason: object still holds reference to the builder after Free
 		_pool.Free(this);
 	}
 
