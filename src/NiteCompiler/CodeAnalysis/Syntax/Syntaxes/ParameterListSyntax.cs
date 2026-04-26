@@ -5,19 +5,19 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 
 public sealed class ParameterListSyntax : SyntaxNode
 {
-	public Token OpenBrace { get; }
+	public Token OpenParen { get; }
 	public SyntaxList<ParameterSyntax> Parameters { get; }
-	public Token CloseBrace { get; }
+	public Token CloseParen { get; }
 
-	public override TextSpan Span => TextSpan.FromBounds(OpenBrace.Span, CloseBrace.Span);
+	public override TextSpan Span => TextSpan.FromBounds(OpenParen.Span, CloseParen.Span);
 	public override NodeKind Kind => NodeKind.ParameterList;
 
-	internal ParameterListSyntax(SyntaxTree tree, Token openBrace, SyntaxList<ParameterSyntax> parameters, Token closeBrace)
+	internal ParameterListSyntax(SyntaxTree tree, Token openParen, SyntaxList<ParameterSyntax> parameters, Token closeParen)
 		: base(tree)
 	{
-		OpenBrace = openBrace;
+		OpenParen = openParen;
 		Parameters = parameters;
-		CloseBrace = closeBrace;
+		CloseParen = closeParen;
 	}
 
 	public override void Accept(SyntaxVisitor visitor)
@@ -32,8 +32,8 @@ public sealed class ParameterListSyntax : SyntaxNode
 
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
-		yield return OpenBrace;
+		yield return OpenParen;
 		yield return Parameters;
-		yield return CloseBrace;
+		yield return CloseParen;
 	}
 }

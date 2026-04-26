@@ -126,25 +126,39 @@ public partial class NiteParser
 
 	private ParameterListSyntax ParseParameterList()
 	{
-		Token openParenToken = MatchToken(TokenKind.OpenParen);
-		SyntaxList<ParameterSyntax>.Builder parameters = new();
-		while (Current.TKind != TokenKind.CloseParen ||
+		Token openParen = MatchToken(TokenKind.OpenParen);
+
+		var parameterBuilder = ParseCommaSeparatedList(TokenKind.CloseParen, ParseParameter);
+
+		Token closeParen = MatchToken(TokenKind.CloseParen);
+
+		return new ParameterListSyntax(_syntaxTree, openParen, parameterBuilder.Build(_syntaxTree), closeParen);
+	}
+
+	private SyntaxList<T>.Builder ParseCommaSeparatedList<T>(TokenKind terminator, Func<T> parseElement)
+		where T : SyntaxNode
+	{
+		SyntaxList<T>.Builder elements = new();
+
+		while (Current.TKind != terminator &&
 		       Current.TKind != TokenKind.EndOfFile)
 		{
-			ParameterSyntax parameter = ParseParameter();
-			parameters.Add(parameter);
+			elements.Add(parseElement());
 
 			if (Current.TKind == TokenKind.Comma)
 			{
 				Advance();
+
+				if (Current.TKind == terminator) // trailing comma syntax is allowed
+					break;
 			}
 			else
 			{
 				break;
 			}
 		}
-		Token closeParenToken = MatchToken(TokenKind.CloseParen);
-		return new ParameterListSyntax(_syntaxTree, openParenToken, parameters.Build(_syntaxTree), closeParenToken);
+
+		return elements;
 	}
 
 	private FunctionBodySyntax ParseFunctionBody()
