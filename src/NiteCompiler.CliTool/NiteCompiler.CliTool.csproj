@@ -9,7 +9,7 @@
         <LangVersion>14.0</LangVersion>
 	</PropertyGroup>
 
-    <PropertyGroup>
+    <PropertyGroup> <!-- will put libLLVM in output directory -->
         <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
     </PropertyGroup>
 

@@ -7,7 +7,7 @@
         <IsPackable>false</IsPackable>
     </PropertyGroup>
     
-    <PropertyGroup>
+    <PropertyGroup> <!-- will put libLLVM in output directory -->
         <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
     </PropertyGroup>
 
