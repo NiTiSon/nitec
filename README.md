@@ -1,5 +1,15 @@
 # Nite Compiler `nitec` CLI
 
+## Repository Structure
++ `src/NiteCompiler` — The Nite programming language compiler API.
++ `src/NiteCompiler.CliTool` — CLI interface over compiler.
++ `src/NiteCompiler.Tests` — Test project for compiler public and internal API.
+
+---
+
+> [!WARN]
+> The following is under development and can be (*definitely will be*) changed.
+
 ## Nlib format
 Nlib format is used for packages:
 ```
