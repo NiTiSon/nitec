@@ -2,6 +2,7 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
+        <AssemblyName>nitec</AssemblyName>
 
 		<PackAsTool>true</PackAsTool>
 		<ToolCommandName>nitec</ToolCommandName>

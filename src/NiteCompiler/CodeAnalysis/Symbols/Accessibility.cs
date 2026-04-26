@@ -3,6 +3,10 @@ namespace NiteCompiler;
 public enum Accessibility : byte
 {
 	/// <summary>
+	/// The accessibility is not a property of member.
+	/// </summary>
+	None = 0,
+	/// <summary>
 	/// Member always accessible.
 	/// </summary>
 	Public,

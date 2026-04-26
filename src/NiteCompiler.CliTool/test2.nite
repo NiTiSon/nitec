@@ -14,7 +14,9 @@ public simple_func2(x: i32) -> bool {
 	return false;
 }
 
-public unreachable_function() -> void {}
+public _loop() {
+	loop {}
+}
 
 module std;
 
