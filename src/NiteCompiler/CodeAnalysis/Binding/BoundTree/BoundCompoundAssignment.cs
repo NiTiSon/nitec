@@ -1,4 +1,5 @@
 ﻿using NiteCompiler.CodeAnalysis.Binding.Operators;
+using NiteCompiler.CodeAnalysis.Binding.Pure;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 
@@ -10,6 +11,25 @@ internal sealed class BoundCompoundAssignment : BoundExpression
 	public BinaryOperatorSignature Op { get; }
 	public BoundExpression Right { get; }
 
+	public override BoundKind Kind => BoundKind.CompoundAssignmentExpression;
+
+
+	public override Pureness Pureness
+	{
+		get
+		{
+			Pureness pureness = Pureness.Pure;
+
+			pureness += Left.Pureness;
+			if (Op.CorrespondingFunction != null)
+			{
+				pureness += Op.CorrespondingFunction.Pureness;
+			}
+			pureness += Right.Pureness;
+
+			return pureness;
+		}
+	}
 	public BoundCompoundAssignment(SyntaxNode syntax, BinaryOperatorSignature op,
 		BoundExpression left, BoundExpression right, bool hasErrors = false) : base(syntax, hasErrors)
 	{
@@ -18,7 +38,6 @@ internal sealed class BoundCompoundAssignment : BoundExpression
 		Right = right;
 	}
 
-	public override BoundKind Kind => BoundKind.CompoundAssignmentExpression;
 
 	public override void Accept(BoundVisitor visitor)
 	{

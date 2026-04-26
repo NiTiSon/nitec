@@ -1,5 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Linq;
+using System.Linq.Expressions;
+using NiteCompiler.CodeAnalysis.Binding.Pure;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 
@@ -9,6 +11,22 @@ internal sealed class BoundCall : BoundExpression
 {
 	public FunctionSymbol Function { get; }
 	public ImmutableArray<BoundExpression> Arguments { get; }
+
+	public override Pureness Pureness
+	{
+		get
+		{
+			Pureness pureness = Pureness.Pure;
+
+			pureness += Function.Pureness;
+			foreach (var arg in Arguments)
+			{
+				pureness += arg.Pureness;
+			}
+
+			return pureness;
+		}
+	}
 
 	public BoundCall(InvocationExpressionSyntax syntax, FunctionSymbol function,
 		ImmutableArray<BoundExpression> arguments, bool hasErrors = false)

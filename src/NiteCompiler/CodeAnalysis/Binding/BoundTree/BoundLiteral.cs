@@ -1,3 +1,4 @@
+using NiteCompiler.CodeAnalysis.Binding.Pure;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 
@@ -9,6 +10,7 @@ internal sealed class BoundLiteral : BoundExpression
 	public ConstantValue ConstantValue { get; }
 	public override TypeSymbol Type { get; }
 	public override Binder.BindValueKind ValueKind => Binder.BindValueKind.RValue;
+	public override Pureness Pureness => Pureness.Pure; // i assume all literals are pure
 
 	public BoundLiteral(SyntaxNode syntax, ConstantValue constantValue, TypeSymbol type) : base(syntax)
 	{

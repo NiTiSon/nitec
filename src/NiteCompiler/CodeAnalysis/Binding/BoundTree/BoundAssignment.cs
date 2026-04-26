@@ -1,4 +1,5 @@
-﻿using NiteCompiler.CodeAnalysis.Symbols;
+﻿using NiteCompiler.CodeAnalysis.Binding.Pure;
+using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
@@ -10,6 +11,18 @@ internal sealed class BoundAssignment : BoundExpression
 
 	public override BoundKind Kind => BoundKind.AssignmentExpression;
 	public override TypeSymbol Type => Left.Type;
+
+	public override Pureness Pureness
+	{
+		get
+		{
+			Pureness pureness = Pureness.Pure;
+			pureness += Left.Pureness;
+			pureness += Right.Pureness;
+
+			return pureness;
+		}
+	}
 	public override Binder.BindValueKind ValueKind => Binder.BindValueKind.RValue;
 
 	public BoundAssignment(SyntaxNode syntax, BoundExpression left, BoundExpression right) : base(syntax)

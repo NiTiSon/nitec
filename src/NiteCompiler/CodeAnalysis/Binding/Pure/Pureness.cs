@@ -10,10 +10,21 @@ public enum Pureness
 	/// <summary>
 	/// The expression or symbol is pure only with determined target.
 	/// </summary>
-	TargetSpecific = 1,
+	TargetPure = 1,
 
 	/// <summary>
 	/// The expression or symbol is pure.
 	/// </summary>
-	Full = 2,
+	Pure = 2,
+}
+
+public static class PurenessExtensions
+{
+	extension(Pureness pureness)
+	{
+		public void operator +=(Pureness other)
+		{
+			pureness = (Pureness)int.Min((int)pureness, (int)other);
+		}
+	}
 }

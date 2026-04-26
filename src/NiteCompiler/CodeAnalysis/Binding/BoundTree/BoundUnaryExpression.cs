@@ -1,4 +1,5 @@
 ﻿using NiteCompiler.CodeAnalysis.Binding.Operators;
+using NiteCompiler.CodeAnalysis.Binding.Pure;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 
@@ -11,6 +12,23 @@ internal sealed class BoundUnaryExpression : BoundExpression
 
 	public override BoundKind Kind => BoundKind.UnaryExpression;
 	public override Binder.BindValueKind ValueKind => Binder.BindValueKind.RValue;
+
+	public override Pureness Pureness
+	{
+		get
+		{
+			Pureness pureness = Pureness.Pure;
+
+			pureness += Expression.Pureness;
+			if (Op.CorrespondingFunction != null)
+			{
+				pureness += Op.CorrespondingFunction.Pureness;
+			}
+
+			return pureness;
+		}
+	}
+
 	public override TypeSymbol Type => Op.ReturnType;
 
 	public BoundUnaryExpression(SyntaxNode syntax, UnaryOperatorSignature op, BoundExpression expression)

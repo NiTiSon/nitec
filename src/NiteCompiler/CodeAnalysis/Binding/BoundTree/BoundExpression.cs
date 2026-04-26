@@ -1,3 +1,4 @@
+using NiteCompiler.CodeAnalysis.Binding.Pure;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 
@@ -14,5 +15,6 @@ internal abstract class BoundExpression : BoundNode
 	}
 
 	public abstract TypeSymbol Type { get; }
+	public abstract Pureness Pureness { get; }
 	public abstract Binder.BindValueKind ValueKind { get; }
 }
