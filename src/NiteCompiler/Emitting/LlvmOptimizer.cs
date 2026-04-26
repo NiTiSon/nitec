@@ -24,7 +24,9 @@ internal static class LlvmOptimizer
 
 			if (error != null)
 			{
-				string? message = Marshal.PtrToStringUTF8((nint)LLVM.GetErrorMessage(error));
+				sbyte* pError = LLVM.GetErrorMessage(error);
+				string? message = Marshal.PtrToStringUTF8((nint)pError);
+				LLVM.DisposeErrorMessage(pError);
 				Debug.WriteLine(message);
 			}
 		}

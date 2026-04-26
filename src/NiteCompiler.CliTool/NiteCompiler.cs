@@ -49,6 +49,59 @@ public static class NiteCompiler
 			null, []);
 	}
 
+	private static unsafe void EmitObjectFile(LLVMModuleRef module, string outputPath)
+	{
+		LLVM.InitializeAllTargetInfos();
+		LLVM.InitializeAllTargets();
+		LLVM.InitializeAllTargetMCs();
+		LLVM.InitializeAllAsmParsers();
+		LLVM.InitializeAllAsmPrinters();
+
+		string triple = LLVMTargetRef.DefaultTriple;
+		module.Target = triple;
+
+		LLVMTargetRef target = LLVMTargetRef.GetTargetFromTriple(triple);
+
+		LLVMTargetMachineRef targetMachine =
+			target.CreateTargetMachine(
+				triple,
+				"generic",
+				"",
+				LLVMCodeGenOptLevel.LLVMCodeGenLevelDefault,
+				LLVMRelocMode.LLVMRelocDefault,
+				LLVMCodeModel.LLVMCodeModelDefault);
+
+		LLVMTargetDataRef dataLayout = targetMachine.CreateTargetDataLayout();
+		LLVM.SetModuleDataLayout(module, dataLayout); // no safe realization?
+
+		if (!targetMachine.TryEmitToFile(module, outputPath, LLVMCodeGenFileType.LLVMObjectFile, out string message))
+			throw new Exception($"Emit error: {message}");
+	}
+
+	private static void LinkExecutable(string objPath, string outputPath)
+	{
+		Process process = new()
+		{
+			StartInfo = new ProcessStartInfo
+			{
+				FileName = "clang",
+				Arguments = $"{objPath} -Wl,/subsystem:windows -o {outputPath}",
+				RedirectStandardError = true,
+				RedirectStandardOutput = true,
+				UseShellExecute = false
+			}
+		};
+
+		process.Start();
+		process.WaitForExit();
+
+		if (process.ExitCode != 0)
+		{
+			string error = process.StandardError.ReadToEnd();
+			throw new Exception($"Linking failed: {error}");
+		}
+	}
+
 	private static void Compile(FileInfo[] sources, FileInfo[] dependencies, NiteCompilationOptions options,
 		OutputKind outputKind, string? outputPath, string? libraryName,
 		string? target, string[] targetFeatures)
@@ -120,9 +173,9 @@ public static class NiteCompiler
 					}
 					case OutputKind.Executable:
 					{
-						FileStream fs = new("./out.exe", FileMode.Create, FileAccess.Write);
-						LLVMModuleRef llvmModule = compilation.EmitLlvmModule(out resultingDiagnostics);
-						llvmModule.PrintToFile("./out.ll");
+						LLVMModuleRef llvmModule = compilation.GetLlvmModule(out resultingDiagnostics);
+						EmitObjectFile(llvmModule, "out.obj");
+						LinkExecutable("out.obj", "out.exe");
 						break;
 					}
 					default:

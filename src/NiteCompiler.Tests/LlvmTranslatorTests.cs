@@ -34,7 +34,7 @@ public class LlvmTranslatorTests
 		NiteCompilation compilation = CreateCompilation(source);
 		Assert.That(compilation.GetDiagnostics(CompilationStage.Compile, includeEarlierStages: true), Is.Empty);
 
-		using LLVMModuleRef module = compilation.EmitLlvmModule(out DiagnosticBag? llvmDiagnostics);
+		using LLVMModuleRef module = compilation.GetLlvmModule(out DiagnosticBag? llvmDiagnostics);
 
 		Assert.That(llvmDiagnostics?.HasAnyErrors ?? false, Is.False);
 

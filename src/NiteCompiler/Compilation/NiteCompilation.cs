@@ -151,10 +151,7 @@ public sealed partial class NiteCompilation
 		return null;
 	}
 
-	public void EmitObjectFile() => throw new NotImplementedException();
-	public void EmitAssemblyFile() => throw new NotImplementedException();
-
-	public LLVMModuleRef EmitLlvmModule(out DiagnosticBag? resultDiagnostics)
+	public LLVMModuleRef GetLlvmModule(out DiagnosticBag? resultDiagnostics)
 	{
 		BindingDiagnosticBag diagnostics = BindingDiagnosticBag.GetInstance();
 		LLVMModuleRef module = LlvmTranslator.Translate([SourceLibrary], GetEntryPoint(), diagnostics);

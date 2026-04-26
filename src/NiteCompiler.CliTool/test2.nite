@@ -1,5 +1,9 @@
 #!bin/nite
 
+public main() -> i32 {
+	return 42;
+}
+
 public simple_func(x: i32) -> i32 {
    	let y = simple_func2(x);
    	if y return 1i32;
