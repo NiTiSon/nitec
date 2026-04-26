@@ -1,6 +1,9 @@
 <Solution>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
     <File Path="SpellingExclusions.dic" />
     <File Path="src/Directory.Build.props" />
   </Folder>
