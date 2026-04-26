@@ -20,7 +20,7 @@ public enum Pureness
 
 public static class PurenessExtensions
 {
-	extension(Pureness pureness)
+	extension(ref Pureness pureness)
 	{
 		public void operator +=(Pureness other)
 		{
