@@ -1,15 +1,13 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Security.AccessControl;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using LLVMSharp.Interop;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.CodeAnalysis.Text;
 using NiteCompiler.Compilation;
@@ -47,7 +45,7 @@ public static class NiteCompiler
 		string? outputPath = result.GetValue(Options.OutputPath);
 
 		Compile(inputFiles, dependencies, NiteCompilationOptions.Default,
-			OutputKind.Executable, null, null,
+			OutputKind.Executable, outputPath, libraryName,
 			null, []);
 	}
 
@@ -115,18 +113,25 @@ public static class NiteCompiler
 				switch (outputKind)
 				{
 					case OutputKind.NiTiSLibrary:
-					case OutputKind.Executable:
+					{
 						FileStream fs = new("./out.nlib", FileMode.Create, FileAccess.Write);
 						compilation.EmitNiteLibrary(fs, out resultingDiagnostics);
-
 						break;
+					}
+					case OutputKind.Executable:
+					{
+						FileStream fs = new("./out.exe", FileMode.Create, FileAccess.Write);
+						LLVMModuleRef llvmModule = compilation.EmitLlvmModule(out resultingDiagnostics);
+						llvmModule.PrintToFile("./out.ll");
+						break;
+					}
 					default:
 						throw new NotSupportedException();
 				}
 			}
 			catch (Exception exception)
 			{
-				Debug.WriteLine("Compiler unwanted exception :(");
+				Console.Error.WriteLine("=== COMPILER INTERNAL ERROR, THAT'S NOT YOUR MISTAKE ===");
 				diagnostics.ReportInternalCompilerError(exception);
 			}
 			finally

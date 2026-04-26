@@ -14,10 +14,13 @@ public abstract class FunctionSymbol : Symbol
 	public override string ToDisplayString(SymbolFormat format = SymbolFormat.Default)
 	{
 		string separator = (ContainingSymbol is TypeSymbol && !IsStatic) ? "." : "::";
-		string result = $"{ContainingSymbol!.ToDisplayString()}{separator}{Name}";
+		string result = $"{ContainingSymbol!.ToDisplayString(format)}{separator}{Name}";
 
 		result += $"({string.Join(", ", Parameters.Select(t => t.ToDisplayString(format)))})";
-		result += $" -> {ReturnType.ToDisplayString(format)}";
+		if (!format.HasFlag(SymbolFormat.OmitReturnType))
+		{
+			result += $" -> {ReturnType.ToDisplayString(format)}";
+		}
 		return result;
 	}
 }

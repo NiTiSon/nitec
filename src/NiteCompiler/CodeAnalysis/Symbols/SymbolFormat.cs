@@ -40,11 +40,17 @@ public enum SymbolFormat : byte
 	OmitContainer = 1 << 4,
 
 	/// <summary>
+	/// Omit return parameter of function.
+	/// </summary>
+	OmitReturnType = 1 << 5,
+
+	/// <summary>
 	/// Omit parameter names, leaving only parameter types.
 	/// </summary>
 	OmitParameterNames = 1 << 5,
 
 	Detailed = EmitGlobalModule,
+	Metadata = IncludeLibrary | EmitGlobalModule | OmitParameterNames | OmitReturnType,
 	Default = 0,
 }
 
