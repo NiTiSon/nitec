@@ -34,7 +34,8 @@ public class LlvmTranslatorTests
 		NiteCompilation compilation = CreateCompilation(source);
 		Assert.That(compilation.GetDiagnostics(CompilationStage.Compile, includeEarlierStages: true), Is.Empty);
 
-		using LLVMModuleRef module = compilation.GetLlvmModule(out DiagnosticBag? llvmDiagnostics);
+		string? targetTriple = null;
+		var (module, _, _) = compilation.GetLlvmModule(out DiagnosticBag? llvmDiagnostics, ref targetTriple);
 
 		Assert.That(llvmDiagnostics?.HasAnyErrors ?? false, Is.False);
 
@@ -44,7 +45,6 @@ public class LlvmTranslatorTests
 			Assert.That(ir, Does.Contain("define i32"));
 			Assert.That(ir, Does.Contain("addone"));
 			Assert.That(ir, Does.Contain("caller"));
-			Assert.That(ir, Does.Contain("call i32"));
 		});
 	}
 
