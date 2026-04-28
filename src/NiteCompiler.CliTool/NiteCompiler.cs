@@ -49,43 +49,24 @@ public static class NiteCompiler
 			null, []);
 	}
 
-	private static unsafe void EmitObjectFile(LLVMModuleRef module, string outputPath)
+	private static unsafe void EmitObjectFile(LLVMModuleRef module, LLVMTargetMachineRef targetMachine,
+		LLVMTargetDataRef targetData, string outputPath)
 	{
-		LLVM.InitializeAllTargetInfos();
-		LLVM.InitializeAllTargets();
-		LLVM.InitializeAllTargetMCs();
-		LLVM.InitializeAllAsmParsers();
-		LLVM.InitializeAllAsmPrinters();
-
-		string triple = LLVMTargetRef.DefaultTriple;
-		module.Target = triple;
-
-		LLVMTargetRef target = LLVMTargetRef.GetTargetFromTriple(triple);
-
-		LLVMTargetMachineRef targetMachine =
-			target.CreateTargetMachine(
-				triple,
-				"generic",
-				"",
-				LLVMCodeGenOptLevel.LLVMCodeGenLevelDefault,
-				LLVMRelocMode.LLVMRelocDefault,
-				LLVMCodeModel.LLVMCodeModelDefault);
-
-		LLVMTargetDataRef dataLayout = targetMachine.CreateTargetDataLayout();
-		LLVM.SetModuleDataLayout(module, dataLayout); // no safe realization?
+		LLVM.SetModuleDataLayout(module, targetData); // no safe realization?
 
 		if (!targetMachine.TryEmitToFile(module, outputPath, LLVMCodeGenFileType.LLVMObjectFile, out string message))
 			throw new Exception($"Emit error: {message}");
 	}
 
-	private static void LinkExecutable(string objPath, string outputPath)
+	private static void LinkExecutable(string objPath, string targetTriple, string outputPath)
 	{
+		bool isMsvc = targetTriple.Contains("MSVC", StringComparison.CurrentCultureIgnoreCase);
 		Process process = new()
 		{
 			StartInfo = new ProcessStartInfo
 			{
-				FileName = "clang",
-				Arguments = $"{objPath} -Wl,/subsystem:windows -o {outputPath}",
+				FileName = isMsvc ? "clang-cl" : "clang",
+				Arguments = $"{objPath} -o {outputPath} /link /subsystem:console",
 				RedirectStandardError = true,
 				RedirectStandardOutput = true,
 				UseShellExecute = false
@@ -104,7 +85,7 @@ public static class NiteCompiler
 
 	private static void Compile(FileInfo[] sources, FileInfo[] dependencies, NiteCompilationOptions options,
 		OutputKind outputKind, string? outputPath, string? libraryName,
-		string? target, string[] targetFeatures)
+		string? targetTriple, string[] targetFeatures)
 	{
 		DiagnosticBag diagnostics = [];
 		outputPath ??= Environment.CurrentDirectory;
@@ -173,9 +154,9 @@ public static class NiteCompiler
 					}
 					case OutputKind.Executable:
 					{
-						LLVMModuleRef llvmModule = compilation.GetLlvmModule(out resultingDiagnostics);
-						EmitObjectFile(llvmModule, "out.obj");
-						LinkExecutable("out.obj", "out.exe");
+						var (module, machine, dataLayout) = compilation.GetLlvmModule(out resultingDiagnostics, ref targetTriple);
+						EmitObjectFile(module, machine, dataLayout, "out.obj");
+						LinkExecutable("out.obj", targetTriple, "out.exe");
 						break;
 					}
 					default:

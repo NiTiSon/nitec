@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using LLVMSharp.Interop;
@@ -151,13 +152,41 @@ public sealed partial class NiteCompilation
 		return null;
 	}
 
-	public LLVMModuleRef GetLlvmModule(out DiagnosticBag? resultDiagnostics)
+	public (LLVMModuleRef, LLVMTargetMachineRef, LLVMTargetDataRef) GetLlvmModule(out DiagnosticBag? resultDiagnostics, [NotNull] ref string? targetTriple)
 	{
+		LLVM.InitializeAllTargetInfos();
+		LLVM.InitializeAllTargets();
+		LLVM.InitializeAllTargetMCs();
+		LLVM.InitializeAllAsmParsers();
+		LLVM.InitializeAllAsmPrinters();
+
+		if (string.IsNullOrEmpty(targetTriple))
+		{
+			targetTriple = LLVMTargetRef.DefaultTriple;
+		}
+
 		BindingDiagnosticBag diagnostics = BindingDiagnosticBag.GetInstance();
-		LLVMModuleRef module = LlvmTranslator.Translate([SourceLibrary], GetEntryPoint(), diagnostics);
-		LlvmOptimizer.Optimize(module, new LLVMTargetMachineRef(0));
+		if (LLVMTargetRef.TryGetTargetFromTriple(targetTriple, out LLVMTargetRef target, out string error))
+		{
+			LLVMTargetMachineRef machine = target.CreateTargetMachine(
+				targetTriple,
+				"generic",
+				[],
+				LLVMCodeGenOptLevel.LLVMCodeGenLevelDefault,
+				LLVMRelocMode.LLVMRelocDefault,
+				LLVMCodeModel.LLVMCodeModelDefault);
+			LLVMTargetDataRef data = machine.CreateTargetDataLayout();
+
+			LLVMModuleRef module = LlvmTranslator.Translate([SourceLibrary], GetEntryPoint(), diagnostics);
+			module.Target = targetTriple;
+			LlvmOptimizer.Optimize(module, machine);
+			resultDiagnostics = diagnostics.ToBagAndFree();
+			return (module, machine, data);
+		}
+		Debug.WriteLine(error);
+
 		resultDiagnostics = diagnostics.ToBagAndFree();
-		return module;
+		return default;
 	}
 
 	public void EmitNiteLibrary(Stream stream, out DiagnosticBag? resultDiagnostics)
