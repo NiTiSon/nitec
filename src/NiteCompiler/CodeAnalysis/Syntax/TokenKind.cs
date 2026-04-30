@@ -235,11 +235,12 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 	public static readonly TokenKind EndOfFile = Reg(uint.MaxValue, "<end-of-file>");
 
 	private const uint CategoryFlag = 0x00_00__F8_00u;
-	public static readonly TokenKind IdentifierOrKeyword = Reg(1, "<identifier>"); // identifier XID_Start XID_Continue*
-	public static readonly TokenKind EscapeIdentifier = Reg(2, "<escape-identifier>"); // `...`
-	public static readonly TokenKind LifetimeIdentifier = Reg(3, "<lifetime>"); // ' XID_Continue*
-	public static readonly TokenKind NumberLiteral = Reg(4, "<number-literal>");
-	public static readonly TokenKind CharacterLiteral = Reg(5, "<char-literal>");
+	public static readonly TokenKind IdentifierOrKeyword = Reg(1, "identifier"); // identifier XID_Start XID_Continue*
+	public static readonly TokenKind EscapeIdentifier = Reg(2, "escape-identifier"); // `...`
+	public static readonly TokenKind LifetimeIdentifier = Reg(3, "lifetime"); // ' XID_Continue*
+	public static readonly TokenKind NumberLiteral = Reg(4, "number-literal");
+	public static readonly TokenKind CharacterLiteral = Reg(5, "char-literal");
+	public static readonly TokenKind StringLiteral = Reg(6, "string-literal");
 
 	private const uint Trivia = 0x00_00__10_00u;
 	public static readonly TokenKind Whitespace = Reg(Trivia + 1, "<whitespace>");

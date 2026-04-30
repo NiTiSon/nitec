@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Net.Sockets;
 using NiteCompiler.CodeAnalysis.Text;
 using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
@@ -57,13 +58,20 @@ public sealed partial class NiteLexer
 		TextSpan span = _window.LexemeSpan;
 
 		string? text = null;
-		if (info.Kind == TokenKind.IdentifierOrKeyword || info.Kind == TokenKind.NumberLiteral)
+		if (info.Kind == TokenKind.IdentifierOrKeyword)
 		{
 			text = _window.Lexeme;
 			if (SyntaxFacts.IsPossibleKeyword(_window.Width))
 			{
 				SyntaxFacts.DefineKeywordOrIdentifier(text, ref info);
 			}
+		}
+		else if (info.Kind == TokenKind.NumberLiteral ||
+		         info.Kind == TokenKind.StringLiteral ||
+		         info.Kind == TokenKind.CharacterLiteral)
+		{
+			text = _window.Lexeme;
+			text = text.Span();
 		}
 
 		ReadTrivia(false, _cache.TrailingTrivia);

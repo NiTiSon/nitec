@@ -20,11 +20,11 @@ public partial class NiteLexer
 				case SlidingWindow.InvalidCharacter:
 					done = true;
 					break;
-				case '#':
-					if (_window.Next == '!')
+				case '#' when _window.Next == '!':
+					ReadShebang();
+					if (StoreTrivia)
 					{
-						ReadShebang();
-						if (StoreTrivia) trivia.Add(new Trivia(_syntaxTree, TokenKind.Shebang, _window.LexemeSpan));
+						trivia.Add(new Trivia(_syntaxTree, TokenKind.Shebang, _window.LexemeSpan));
 					}
 					break;
 				case '/':

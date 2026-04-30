@@ -1,3 +1,5 @@
+using NiteCompiler.CodeAnalysis.Text;
+
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
 public partial class NiteLexer
@@ -7,6 +9,7 @@ public partial class NiteLexer
 		public TokenKind Kind;
 		public NumericLiteralFormat LiteralFormat;
 		public NumericLiteralType LiteralType;
+		public TextSpan TextLiteralSpan;
 	}
 }
 

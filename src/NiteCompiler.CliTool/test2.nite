@@ -1,5 +1,6 @@
 #!bin/nite
 
+#[export("mainCRTStartup")]
 public main() -> i32 {
 	return 42;
 }
