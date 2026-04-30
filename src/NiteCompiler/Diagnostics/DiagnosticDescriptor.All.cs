@@ -9,8 +9,9 @@ public partial class DiagnosticDescriptor
 		UnableToOpenFile,
 		DuplicateSourceFiles,
 		DependenciesInCoreLibrary,
-		NotTerminatedMultilineComment,
-		NotTerminatedStringLiteral,
+		UnterminatedMultilineComment,
+		UnterminatedStringLiteral,
+		UnterminatedEscapedIdentifier,
 		ExpectedToken,
 		UnexpectedToken,
 		GenericsIsNotApplicableOnModuleName,
@@ -45,10 +46,12 @@ public partial class DiagnosticDescriptor
 		DependenciesInCoreLibrary = new("dependencies-in-core-lib", "Core library can't have any dependencies.");
 
 		// Lexing
-		NotTerminatedMultilineComment = new("not-terminated-multiline-comment",
+		UnterminatedMultilineComment = new("unterminated-multiline-comment",
 			"Multi-line comment is not terminated.");
-		NotTerminatedStringLiteral = new("not-terminated-string-literal",
+		UnterminatedStringLiteral = new("unterminated-string-literal",
 			"String literal is not terminated.");
+		UnterminatedEscapedIdentifier = new("unterminated-escape-identifier",
+			"Escaped identifier is not terminated.");
 
 		// Parsing
 		UnexpectedToken = new("unexpected-token", "Unexpected token {0}.");

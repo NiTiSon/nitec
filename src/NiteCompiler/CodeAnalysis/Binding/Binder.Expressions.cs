@@ -157,6 +157,16 @@ internal partial class Binder
 			return BindNumericLiteralExpression(syntax, diagnostics);
 		}
 
+		if (syntax.Kind == NodeKind.CharacterLiteralExpression)
+		{
+			return BindCharacterLiteralExpression(syntax, diagnostics);
+		}
+
+		if (syntax.Kind == NodeKind.StringLiteralExpression)
+		{
+			return BindStringLiteralExpression(syntax, diagnostics);
+		}
+
 		throw new UnreachableException($"BindLiteralConstant({syntax.Kind})");
 	}
 
@@ -184,6 +194,17 @@ internal partial class Binder
 		TypeSymbol i32 = GetSpecialType(SpecialType.StdNumericsSInt32);
 		ConstantValue i32Value = ConstantValue.Create((int)value.Value.U64);
 		return new BoundLiteral(syntax, i32Value, i32);
+	}
+
+	private BoundLiteral BindCharacterLiteralExpression(LiteralExpressionSyntax syntax,
+		BindingDiagnosticBag diagnostics)
+	{
+		throw new NotImplementedException();
+	}
+
+	private BoundLiteral BindStringLiteralExpression(LiteralExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
+	{
+		throw new NotImplementedException();
 	}
 
 	private BoundExpression BindIdentifier(SimpleNameSyntax name, bool invoked, bool indexed,

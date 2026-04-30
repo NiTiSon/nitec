@@ -5,7 +5,7 @@ using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public sealed partial class NiteParser
+internal sealed partial class NiteParser
 {
 	private readonly DiagnosticBag _diagnostics;
 	private readonly List<Token> _tokens;

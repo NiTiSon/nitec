@@ -35,6 +35,7 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 	public ushort HighBits => (ushort)((_value & 0xFFFF0000u) >> 16);
 	public ushort RawValue => (ushort)(_value & 0xFFFF);
 
+	public bool IsAnyIdentifierOrKeyword => this == EscapedIdentifier || this == IdentifierOrKeyword;
 	public bool IsTrivia => (_value & CategoryFlag) == Trivia;
 	public bool IsPunctuator => (_value & CategoryFlag) == Punctuator;
 	public bool IsKeyword => (_value & CategoryFlag) == Keyword;
@@ -91,6 +92,8 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 		if (this == True) return NodeKind.TrueLiteralExpression;
 		if (this == False) return NodeKind.FalseLiteralExpression;
 		if (this == NumberLiteral) return NodeKind.NumberLiteralExpression;
+		if (this == CharacterLiteral) return NodeKind.CharacterLiteralExpression;
+		if (this == StringLiteral) return NodeKind.StringLiteralExpression;
 
 		Debug.WriteLine($"ToLiteralExpressionKind({this}) is failed");
 		return NodeKind.None;
@@ -236,11 +239,11 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 
 	private const uint CategoryFlag = 0x00_00__F8_00u;
 	public static readonly TokenKind IdentifierOrKeyword = Reg(1, "identifier"); // identifier XID_Start XID_Continue*
-	public static readonly TokenKind EscapeIdentifier = Reg(2, "escape-identifier"); // `...`
+	public static readonly TokenKind EscapedIdentifier = Reg(2, "escaped-identifier"); // `...`
 	public static readonly TokenKind LifetimeIdentifier = Reg(3, "lifetime"); // ' XID_Continue*
-	public static readonly TokenKind NumberLiteral = Reg(4, "number-literal");
-	public static readonly TokenKind CharacterLiteral = Reg(5, "char-literal");
-	public static readonly TokenKind StringLiteral = Reg(6, "string-literal");
+	public static readonly TokenKind NumberLiteral = Reg(4, "number-literal"); // any numbers: integers, floats
+	public static readonly TokenKind CharacterLiteral = Reg(5, "char-literal"); // '.'
+	public static readonly TokenKind StringLiteral = Reg(6, "string-literal"); // "..."
 
 	private const uint Trivia = 0x00_00__10_00u;
 	public static readonly TokenKind Whitespace = Reg(Trivia + 1, "<whitespace>");

@@ -120,7 +120,7 @@ public sealed class SlidingWindow
 		return currentChar == '\r' && nextChar == '\n' ? 2 : 1;
 	}
 
-	public char NextChar()
+	public char PeekThenAdvance()
 	{
 		char c = Peek();
 		if (c != InvalidCharacter)

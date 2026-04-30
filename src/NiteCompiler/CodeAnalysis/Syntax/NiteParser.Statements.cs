@@ -3,7 +3,7 @@ using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public sealed partial class NiteParser
+internal sealed partial class NiteParser
 {
 	private StatementSyntax ParseStatement()
 	{
@@ -59,7 +59,7 @@ public sealed partial class NiteParser
 					TokenKind.CloseBrace
 				);
 
-				return new(openBrace.Tree, openBrace, statementsBuilder.Build(openBrace.Tree), Current);
+				return new(openBrace.Tree, openBrace, statementsBuilder.Build(openBrace.Tree), MatchToken(TokenKind.CloseBrace));
 			}
 
 			StatementSyntax node = ParseStatement();

@@ -9,7 +9,7 @@ internal static class NumberParser
 {
 	public static NumberToken.Packed Parse(in NiteLexer.TokenInfo info, ReadOnlySpan<char> text, Location location, DiagnosticBag diagnostics)
 	{
-		return info.LiteralFormat switch
+		return info.NumericFormat switch
 		{
 			NumericLiteralFormat.Integer => ParseInteger(info, text, location, diagnostics),
 			_ => throw new NotImplementedException()

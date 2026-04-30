@@ -168,4 +168,43 @@ internal static class SyntaxFacts
 			or '1'
 			or DigitDelimiter;
 	}
+
+	public static bool TryGetEscapedCharacter(ref char escapedCharacter)
+	{
+		switch (escapedCharacter)
+		{
+			case '\'':
+				escapedCharacter = '\'';
+				return true;
+			case '\"':
+				escapedCharacter = '\"';
+				return true;
+			case '`':
+				escapedCharacter = '`';
+				return true;
+			case '\\':
+				escapedCharacter = '\\';
+				return true;
+			case 'n':
+				escapedCharacter = '\n';
+				return true;
+			case 'r':
+				escapedCharacter = '\r';
+				return true;
+			case 't':
+				escapedCharacter = '\t';
+				return true;
+			case 'b':
+				escapedCharacter = '\b';
+				return true;
+			case 'v':
+				escapedCharacter = '\v';
+				return true;
+			case '0':
+				escapedCharacter = '\x00';
+				return true;
+			default:
+				return false;
+		}
+	}
 }

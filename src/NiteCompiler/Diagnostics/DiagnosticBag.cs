@@ -113,14 +113,19 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.DependenciesInCoreLibrary, []);
 	}
 
-	public void ReportNotTerminatedMultiLineComment(Location source)
+	public void ReportUnterminatedMultiLineComment(Location source)
 	{
-		Add(DiagnosticDescriptor.NotTerminatedMultilineComment, [source]);
+		Add(DiagnosticDescriptor.UnterminatedMultilineComment, [source]);
 	}
 
-	public void ReportNotTerminatedStringLiteral(Location source)
+	public void ReportUnterminatedStringLiteral(Location source)
 	{
-		Add(DiagnosticDescriptor.NotTerminatedStringLiteral, [source]);
+		Add(DiagnosticDescriptor.UnterminatedStringLiteral, [source]);
+	}
+
+	public void ReportUnterminatedEscapedIdentifier(Location source)
+	{
+		Add(DiagnosticDescriptor.UnterminatedEscapedIdentifier, [source]);
 	}
 
 	public void ReportExpectedToken(Location source, TokenKind kind)

@@ -3,7 +3,7 @@ using NiteCompiler.Compilation;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public partial class NiteLexer
+internal partial class NiteLexer
 {
 	private bool StoreTrivia => DocumentationMode != DocumentationMode.None;
 
@@ -146,7 +146,7 @@ public partial class NiteLexer
 			{
 				case SlidingWindow.InvalidCharacter:
 					TextSpan span = _window.LexemeSpan;
-					_diagnostics.ReportNotTerminatedMultiLineComment(span.Contextualize(_syntaxTree));
+					_diagnostics.ReportUnterminatedMultiLineComment(span.Contextualize(_syntaxTree));
 					done = true;
 					break;
 				case '*':

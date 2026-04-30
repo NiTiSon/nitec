@@ -3,7 +3,7 @@ using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public sealed class NumberToken : Token
+internal sealed class NumberToken : Token
 {
 	public Packed Value { get; }
 	public NumericLiteralType Type { get; }

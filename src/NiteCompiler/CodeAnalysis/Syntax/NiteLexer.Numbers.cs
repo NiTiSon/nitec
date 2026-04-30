@@ -2,13 +2,13 @@ using System;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public partial class NiteLexer
+internal partial class NiteLexer
 {
 	private void ReadNumber(ref TokenInfo info)
 	{
 		info.Kind = TokenKind.NumberLiteral;
-		info.LiteralType = NumericLiteralType.None;
-		info.LiteralFormat = NumericLiteralFormat.Integer;
+		info.NumericType = NumericLiteralType.None;
+		info.NumericFormat = NumericLiteralFormat.Integer;
 
 		if (_window.Current == '0')
 		{
@@ -41,7 +41,7 @@ public partial class NiteLexer
 			// Look ahead: '.' followed by digit means fractional
 			if (SyntaxFacts.IsValidDecimalDigit(_window.Next))
 			{
-				info.LiteralFormat = NumericLiteralFormat.Float;
+				info.NumericFormat = NumericLiteralFormat.Float;
 				_window.Advance(); // consume '.'
 
 				while (SyntaxFacts.IsValidDecimalDigit(_window.Current))
@@ -50,14 +50,14 @@ public partial class NiteLexer
 			else
 			{
 				// 12. is valid float
-				info.LiteralFormat = NumericLiteralFormat.Float;
+				info.NumericFormat = NumericLiteralFormat.Float;
 				_window.Advance(); // consume '.'
 			}
 		}
 
 		if (_window.Current is 'e' or 'E')
 		{
-			info.LiteralFormat = NumericLiteralFormat.ENotation;
+			info.NumericFormat = NumericLiteralFormat.ENotation;
 			_window.Advance();
 
 			if (_window.Current is '+' or '-')
@@ -100,33 +100,33 @@ public partial class NiteLexer
 			case 3:
 				switch (buf[..3])
 				{
-					case "u16": info.LiteralType = NumericLiteralType.U16; return;
-					case "u32": info.LiteralType = NumericLiteralType.U32; return;
-					case "u64": info.LiteralType = NumericLiteralType.U64; return;
+					case "u16": info.NumericType = NumericLiteralType.U16; return;
+					case "u32": info.NumericType = NumericLiteralType.U32; return;
+					case "u64": info.NumericType = NumericLiteralType.U64; return;
 
-					case "i16": info.LiteralType = NumericLiteralType.I16; return;
-					case "i32": info.LiteralType = NumericLiteralType.I32; return;
-					case "i64": info.LiteralType = NumericLiteralType.I64; return;
+					case "i16": info.NumericType = NumericLiteralType.I16; return;
+					case "i32": info.NumericType = NumericLiteralType.I32; return;
+					case "i64": info.NumericType = NumericLiteralType.I64; return;
 
-					case "f16": info.LiteralType = NumericLiteralType.F16; return;
-					case "f32": info.LiteralType = NumericLiteralType.F32; return;
-					case "f64": info.LiteralType = NumericLiteralType.F64; return;
+					case "f16": info.NumericType = NumericLiteralType.F16; return;
+					case "f32": info.NumericType = NumericLiteralType.F32; return;
+					case "f64": info.NumericType = NumericLiteralType.F64; return;
 				}
 
 				break;
 			case 2:
 				switch (buf[..2])
 				{
-					case "u8": info.LiteralType = NumericLiteralType.U8; return;
-					case "i8": info.LiteralType = NumericLiteralType.I8; return;
+					case "u8": info.NumericType = NumericLiteralType.U8; return;
+					case "i8": info.NumericType = NumericLiteralType.I8; return;
 				}
 
 				break;
 			case 1:
 				switch (buf[0])
 				{
-					case 'u': info.LiteralType = NumericLiteralType.Unsigned; return;
-					case 'i': info.LiteralType = NumericLiteralType.Signed;   return;
+					case 'u': info.NumericType = NumericLiteralType.Unsigned; return;
+					case 'i': info.NumericType = NumericLiteralType.Signed;   return;
 				}
 
 				break;

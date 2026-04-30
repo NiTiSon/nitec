@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Net.Sockets;
 using NiteCompiler.CodeAnalysis.Text;
@@ -6,7 +7,7 @@ using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public sealed partial class NiteLexer
+internal sealed partial class NiteLexer
 {
 	private readonly DiagnosticBag _diagnostics;
 	private readonly SlidingWindow _window;
@@ -66,12 +67,18 @@ public sealed partial class NiteLexer
 				SyntaxFacts.DefineKeywordOrIdentifier(text, ref info);
 			}
 		}
-		else if (info.Kind == TokenKind.NumberLiteral ||
-		         info.Kind == TokenKind.StringLiteral ||
-		         info.Kind == TokenKind.CharacterLiteral)
+		else if (info.Kind == TokenKind.NumberLiteral)
 		{
 			text = _window.Lexeme;
-			text = text.Span();
+		}
+		else if (info.Kind == TokenKind.EscapedIdentifier)
+		{
+			text = _cache.StringBuilder.ToString();
+		}
+		else if (info.Kind == TokenKind.StringLiteral ||
+		         info.Kind == TokenKind.CharacterLiteral)
+		{
+			text = _cache.StringBuilder.ToString();
 		}
 
 		ReadTrivia(false, _cache.TrailingTrivia);
@@ -83,6 +90,15 @@ public sealed partial class NiteLexer
 		{
 			return new IdentifierOrKeywordToken(_syntaxTree, info.Kind, span, text!, leading, trailing);
 		}
+		if (info.Kind == TokenKind.EscapedIdentifier)
+		{
+			return new StringToken(_syntaxTree, info.Kind, span, text!, leading, trailing);
+		}
+		if (info.Kind == TokenKind.StringLiteral ||
+		    info.Kind == TokenKind.CharacterLiteral)
+		{
+			return new StringToken(_syntaxTree, info.Kind, span, text!, leading, trailing);
+		}
 		if (info.Kind == TokenKind.NumberLiteral)
 		{
 			return new NumberToken(_syntaxTree, span,
@@ -91,8 +107,8 @@ public sealed partial class NiteLexer
 					text,
 					Location.Create(_syntaxTree, span),
 					_diagnostics),
-				info.LiteralType,
-				info.LiteralFormat,
+				info.NumericType,
+				info.NumericFormat,
 				leading,
 				trailing);
 		}
@@ -112,8 +128,7 @@ public sealed partial class NiteLexer
 		{
 			case >= 'a' and <= 'z':
 			case >= 'A' and <= 'Z':
-				_window.Advance();
-				ReadIdentifierSkipFirst(ref info);
+				ReadIdentifier(ref info);
 				break;
 			case '~':
 				_window.Advance();
@@ -397,10 +412,14 @@ public sealed partial class NiteLexer
 
 				break;
 			case '\'':
-				ReadLifetimeIdentifierOrCharacter(ref info);
+				throw new NotImplementedException();
+				// ReadLifetimeIdentifierOrCharacter(ref info);
 				break;
 			case >= '0' and <= '9':
 				ReadNumber(ref info);
+				break;
+			case '`':
+				ReadEscapedIdentifier(ref info);
 				break;
 			default:
 				ReadIdentifier(ref info);

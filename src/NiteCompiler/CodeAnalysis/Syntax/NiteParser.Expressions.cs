@@ -5,7 +5,7 @@ using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public sealed partial class NiteParser
+internal sealed partial class NiteParser
 {
 	[Flags]
 	private enum NameOptions
@@ -201,7 +201,7 @@ public sealed partial class NiteParser
 				return ParseParenthesizedExpression();
 			}
 
-			if (tokenKind == TokenKind.IdentifierOrKeyword)
+			if (tokenKind.IsAnyIdentifierOrKeyword)
 			{
 				return ParsePathName();
 			}
@@ -209,7 +209,8 @@ public sealed partial class NiteParser
 			if (tokenKind == TokenKind.True ||
 			    tokenKind == TokenKind.False ||
 			    tokenKind == TokenKind.NumberLiteral ||
-			    tokenKind == TokenKind.CharacterLiteral)
+			    tokenKind == TokenKind.CharacterLiteral ||
+			    tokenKind == TokenKind.StringLiteral)
 			{
 				Token current = PeekAndAdvance();
 				return new LiteralExpressionSyntax(_syntaxTree, current, current.TKind.ToLiteralExpressionKind());
@@ -343,6 +344,7 @@ public sealed partial class NiteParser
 	private SimpleNameSyntax ParseSimpleName(NameOptions options = NameOptions.None)
 	{
 		Token current = PeekAndAdvance();
+		Debug.Assert(current.TKind.IsAnyIdentifierOrKeyword);
 
 		Token identifier;
 		string identifierText;
@@ -351,9 +353,10 @@ public sealed partial class NiteParser
 			identifier = current;
 			identifierText = (current as IdentifierOrKeywordToken)!.Identifier;
 		}
-		else if (current.TKind == TokenKind.EscapeIdentifier)
+		else if (current.TKind == TokenKind.EscapedIdentifier)
 		{
-			throw new NotImplementedException("ParseSimpleName(EscapedIdentifier)");
+			identifier = current;
+			identifierText = (current as StringToken)!.Text;
 		}
 		else
 		{

@@ -60,7 +60,7 @@ public static class NiteCompiler
 
 	private static bool LinkExecutable(string objPath, string targetTriple, string outputPath, DiagnosticBag diagnostics)
 	{
-		bool isMsvc = targetTriple.Contains("MSVC", StringComparison.CurrentCultureIgnoreCase);
+		bool isMsvc = targetTriple.Contains("MSVC", StringComparison.OrdinalIgnoreCase);
 		Process process = new()
 		{
 			StartInfo = new ProcessStartInfo

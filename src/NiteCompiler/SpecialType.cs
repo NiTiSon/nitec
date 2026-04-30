@@ -22,6 +22,9 @@ public enum SpecialType : byte
 	StdVoid = 14,
 	StdNeverReturn = 15,
 	StdBoolean = 16,
+	StdTextCharacterUtf8 = 17,
+	StdTextCharacterUtf16 = 18,
+	StdTextCharacterUtf32 = 19,
 	// Change SpecialTypeExtensions.Count if add new special types
 }
 
@@ -46,6 +49,9 @@ internal static class SpecialTypeExtensions
 		"std::Void",
 		"std::NeverReturn",
 		"std::Boolean",
+		"std::text::CharacterUtf8",
+		"std::text::CharacterUtf16",
+		"std::text::CharacterUtf32",
 	];
 
 	static SpecialTypeExtensions()
@@ -61,7 +67,7 @@ internal static class SpecialTypeExtensions
 
 	extension(SpecialType self)
 	{
-		public static SpecialType Count => SpecialType.StdBoolean + 1;
+		public static SpecialType Count => SpecialType.StdTextCharacterUtf32 + 1;
 
 		public static SpecialType GetSpecialTypeFromFullName(string fullName)
 		{
@@ -92,5 +98,10 @@ internal static class SpecialTypeExtensions
 			self is SpecialType.StdNumericsFloat16
 				or SpecialType.StdNumericsFloat32
 				or SpecialType.StdNumericsFloat64;
+
+		public bool IsCharacter =>
+			self is SpecialType.StdTextCharacterUtf8
+				or SpecialType.StdTextCharacterUtf16
+				or SpecialType.StdTextCharacterUtf32;
 	}
 }

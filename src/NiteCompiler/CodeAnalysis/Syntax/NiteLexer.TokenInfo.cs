@@ -1,26 +1,24 @@
-using NiteCompiler.CodeAnalysis.Text;
-
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public partial class NiteLexer
+internal partial class NiteLexer
 {
 	internal ref struct TokenInfo
 	{
 		public TokenKind Kind;
-		public NumericLiteralFormat LiteralFormat;
-		public NumericLiteralType LiteralType;
-		public TextSpan TextLiteralSpan;
+		public NumericLiteralFormat NumericFormat;
+		public NumericLiteralType NumericType;
+		public StringLiteralType StringType;
 	}
 }
 
-public enum NumericLiteralFormat : byte
+internal enum NumericLiteralFormat : byte
 {
 	Integer,
 	Float,
 	ENotation,
 }
 
-public enum NumericLiteralType : byte
+internal enum NumericLiteralType : byte
 {
 	None,
 	I8,
@@ -36,4 +34,13 @@ public enum NumericLiteralType : byte
 	F16,
 	F32,
 	F64
+}
+
+internal enum StringLiteralType : byte
+{
+	None, // none explicitly -> utf-8
+	Unicode8,
+	Unicode16,
+	Unicode32,
+	Os
 }

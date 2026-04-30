@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public partial class NiteParser
+internal partial class NiteParser
 {
 	private bool IsPresentedAnyModifier()
 	{
