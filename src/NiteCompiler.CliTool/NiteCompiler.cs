@@ -58,7 +58,7 @@ public static class NiteCompiler
 			throw new Exception($"Emit error: {message}");
 	}
 
-	private static void LinkExecutable(string objPath, string targetTriple, string outputPath)
+	private static bool LinkExecutable(string objPath, string targetTriple, string outputPath, DiagnosticBag diagnostics)
 	{
 		bool isMsvc = targetTriple.Contains("MSVC", StringComparison.CurrentCultureIgnoreCase);
 		Process process = new()
@@ -79,8 +79,11 @@ public static class NiteCompiler
 		if (process.ExitCode != 0)
 		{
 			string error = process.StandardError.ReadToEnd();
-			throw new Exception($"Linking failed: {error}");
+			diagnostics.ReportLinkerNotZeroReturnCode(error);
+			return false;
 		}
+
+		return true;
 	}
 
 	private static void Compile(FileInfo[] sources, FileInfo[] dependencies, NiteCompilationOptions options,
@@ -156,7 +159,7 @@ public static class NiteCompiler
 					{
 						var (module, machine, dataLayout) = compilation.GetLlvmModule(out resultingDiagnostics, ref targetTriple);
 						EmitObjectFile(module, machine, dataLayout, "out.obj");
-						LinkExecutable("out.obj", targetTriple, "out.exe");
+						LinkExecutable("out.obj", targetTriple, "out.exe", diagnostics);
 						break;
 					}
 					default:

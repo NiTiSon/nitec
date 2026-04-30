@@ -31,7 +31,8 @@ public partial class DiagnosticDescriptor
 		IntegralValueCantBeSigned,
 		IntegralValueIsGreaterThanMaxValue,
 		IntegralValueIsSmallerThanMinValue,
-		InternalError
+		InternalError,
+		LinkerNotZeroReturnCode
 		;
 
 	static DiagnosticDescriptor()
@@ -81,5 +82,6 @@ public partial class DiagnosticDescriptor
 			"Integral value is smaller than min value of specified type.");
 
 		InternalError = new("internal-error", "Critical internal compiler error. Please report this to the nitec developer.\n{0}.");
+		LinkerNotZeroReturnCode = new("linker-not-zero-exit-code", "{0}");
 	}
 }

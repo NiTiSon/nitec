@@ -229,4 +229,9 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 	{
 		Add(DiagnosticDescriptor.InternalError, [], exception);
 	}
+
+	public void ReportLinkerNotZeroReturnCode(string error)
+	{
+		Add(DiagnosticDescriptor.LinkerNotZeroReturnCode, [], error);
+	}
 }
