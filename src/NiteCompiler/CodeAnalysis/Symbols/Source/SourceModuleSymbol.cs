@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NiteCompiler.CodeAnalysis.Declarations;
 using NiteCompiler.CodeAnalysis.Syntax;
-using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Symbols.Source;
@@ -143,7 +142,7 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 			case DeclarationKind.Module:
 				return new SourceModuleSymbol(ContainingLibrary, this, (MergedModuleDeclaration)declaration, diagnostics);
 			case DeclarationKind.Type:
-				return new SourceTypeSymbol(this, (MergedTypeDeclaration)declaration);
+				return new SourceTypeSymbol(this, (MergedTypeDeclaration)declaration, diagnostics);
 
 			default:
 				throw new InvalidEnumArgumentException(nameof(declaration.Kind), (int)declaration.Kind, typeof(DeclarationKind));

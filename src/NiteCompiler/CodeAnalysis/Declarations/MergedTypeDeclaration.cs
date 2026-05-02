@@ -9,10 +9,12 @@ namespace NiteCompiler.CodeAnalysis.Declarations;
 internal sealed class MergedTypeDeclaration : MergedItemDeclaration
 {
 	public ImmutableArray<SingleTypeDeclaration> Declarations { get; }
+	public int Arity => Declarations[0].Arity;
 
 	public MergedTypeDeclaration(ImmutableArray<SingleTypeDeclaration> declarations)
 		: base(declarations.FirstOrDefault()?.Name ?? string.Empty)
 	{
+		Debug.Assert(declarations.Length > 0);
 		Declarations = declarations;
 	}
 

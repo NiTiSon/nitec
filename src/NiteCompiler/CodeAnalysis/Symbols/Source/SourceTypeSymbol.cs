@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Threading;
 using NiteCompiler.CodeAnalysis.Declarations;
 using NiteCompiler.Compilation;
+using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Symbols.Source;
 
@@ -18,12 +18,17 @@ internal sealed class SourceTypeSymbol : TypeSymbol
 	public override SpecialType SpecialType { get; }
 
 	private CompletionPart _state;
-	public SourceTypeSymbol(ContainerSymbol containingSymbol, MergedTypeDeclaration declaration)
+	public SourceTypeSymbol(ContainerSymbol containingSymbol, MergedTypeDeclaration declaration, BindingDiagnosticBag diagnostics)
 	{
 		ContainingSymbol = containingSymbol;
 		Declaration = declaration;
 
 		SpecialType = MakeSpecialType();
+
+		foreach (SingleTypeDeclaration declarationType in declaration.Declarations)
+		{
+			diagnostics.AddRange(declarationType.Diagnostics);
+		}
 	}
 
 	private SpecialType MakeSpecialType()

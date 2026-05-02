@@ -36,7 +36,3 @@ module std::numerics;
 
 public type Float32;
 public type SInt32;
-
-module std::text;
-
-public type X::Y::Z;
