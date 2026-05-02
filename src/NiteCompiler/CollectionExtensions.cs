@@ -22,7 +22,7 @@ public static class CollectionExtensions
 		}
 	}
 
-	extension<T>(List<T> list)
+	extension<T>(ICollection<T> list)
 	{
 		public bool AddNotNull([NotNullWhen(true)] T? item)
 		{

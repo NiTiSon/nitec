@@ -332,13 +332,7 @@ internal sealed partial class NiteParser
 
 	private NameSyntax ParseName()
 	{
-		if (Current.TKind == TokenKind.IdentifierOrKeyword)
-		{
-			return ParseSimpleName();
-		}
-
-		// TODO: Qualified names
-		throw new NotImplementedException();
+		return ParsePathName();
 	}
 
 	private SimpleNameSyntax ParseSimpleName(NameOptions options = NameOptions.None)

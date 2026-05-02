@@ -9,7 +9,7 @@ public sealed class TypeDeclarationSyntax : MemberSyntax
 	public Token AccessibilityToken { get; }
 	public SyntaxList<Token> Modifiers { get; }
 	public Token TypeKeyword { get; }
-	public SimpleNameSyntax Name { get; }
+	public NameSyntax Name { get; }
 	public TypeBodySyntax Body { get; }
 	public SyntaxList<MemberSyntax>? Members => Body is MembersTypeBodySyntax members ? members.Members : null;
 
@@ -18,7 +18,7 @@ public sealed class TypeDeclarationSyntax : MemberSyntax
 	public override TextSpan Span => TextSpan.FromBounds(AccessibilityToken.Span, Body.Span);
 	public override NodeKind Kind => NodeKind.TypeDeclaration;
 
-	internal TypeDeclarationSyntax(SyntaxTree tree, Token accessibilityToken, SyntaxList<Token> modifiers, Token typeKeyword, SimpleNameSyntax name, TypeBodySyntax body) : base(tree)
+	internal TypeDeclarationSyntax(SyntaxTree tree, Token accessibilityToken, SyntaxList<Token> modifiers, Token typeKeyword, NameSyntax name, TypeBodySyntax body) : base(tree)
 	{
 		AccessibilityToken = accessibilityToken;
 		Modifiers = modifiers;

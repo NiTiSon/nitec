@@ -2,7 +2,7 @@
 
 // #[export("mainCRTStartup")]
 private win_main_c_runtime_startup() {
-	let x = "Hello World";
+
 }
 
 public simple_func(x: i32) -> i32 {
@@ -36,3 +36,7 @@ module std::numerics;
 
 public type Float32;
 public type SInt32;
+
+module std::text;
+
+public type X::Y::Z;

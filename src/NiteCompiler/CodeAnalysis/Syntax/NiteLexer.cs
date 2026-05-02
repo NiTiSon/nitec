@@ -412,7 +412,6 @@ internal sealed partial class NiteLexer
 
 				break;
 			case '\'':
-				throw new NotImplementedException();
 				// ReadLifetimeIdentifierOrCharacter(ref info);
 				break;
 			case >= '0' and <= '9':

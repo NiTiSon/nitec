@@ -70,7 +70,7 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 			return [];
 		}
 
-		List<SingleItemDeclaration> memberBuilder = new();
+		var memberBuilder = ArrayBuilder<SingleItemDeclaration>.GetInstance();
 		foreach (var member in members)
 		{
 			SingleItemDeclaration? item = Visit(member);
@@ -78,31 +78,66 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 			memberBuilder.AddNotNull(item);
 		}
 
-		return [..memberBuilder];
+		return memberBuilder.ToImmutableAndFree();
 	}
 
 	public override SingleTypeDeclaration VisitTypeDeclaration(TypeDeclarationSyntax declaration)
 	{
-		var members = VisitModuleMembers(declaration, declaration.Members);
+		var members = VisitTypeMembers(declaration, declaration.Members);
+		DeclarationAccessibility accessibility = GetAccessibility(declaration.AccessibilityToken);
+		DeclarationModifiers modifiers = GetModifiers(declaration.Modifiers);
 
-		SimpleNameSyntax name = declaration.Name;
+
+		NameSyntax name = declaration.Name;
+		SyntaxNode currentNode = declaration;
+
+		// The syntax
+		// [accessibility] [modifiers] type X::Y::Z;
+		// will produce three types
+		// The "X" with partial modifier and weak (none) accessibility
+		// The "X::Y" with partial modifier and weak (none) accessibility
+		// The "X::Y::Z" with [modifiers] and [accessibility] accessibility
+		while (name is PathNameSyntax path)
+		{
+			SingleTypeDeclaration type = new(
+				name: name.UnqualifiedName.GetName(),
+				arity: name.UnqualifiedName.Arity,
+				accessibility: accessibility,
+				modifiers: modifiers,
+				syntax: currentNode.CreateReference(),
+				nameLocation: (name.Location as SourceLocation)!,
+				members: members,
+				diagnostics: []
+			);
+
+			members = [type];
+
+			currentNode = name = path.Left;
+
+			accessibility = DeclarationAccessibility.MissedByInlinedDeclaration;
+			modifiers = DeclarationModifiers.Partial;
+		}
 
 		return new SingleTypeDeclaration(
-			declaration.Name.GetName(),
-			syntax: declaration.CreateReference(),
+			name: name.GetName(),
+			arity: name.Arity,
+			accessibility: accessibility,
+			modifiers: modifiers,
+			syntax: currentNode.CreateReference(),
 			nameLocation: (name.Location as SourceLocation)!,
 			members: members,
-			diagnostics: []);
+			diagnostics: []
+			);
 	}
 
-	private ImmutableArray<SingleItemDeclaration> VisitModuleMembers(SyntaxNode node, SyntaxList<MemberSyntax>? members)
+	private ImmutableArray<SingleItemDeclaration> VisitTypeMembers(SyntaxNode node, SyntaxList<MemberSyntax>? members)
 	{
 		if (members == null || members.Count == 0)
 		{
 			return [];
 		}
 
-		List<SingleItemDeclaration> memberBuilder = new();
+		var memberBuilder = ArrayBuilder<SingleItemDeclaration>.GetInstance();
 		foreach (var member in members)
 		{
 			SingleItemDeclaration? item = Visit(member);
@@ -110,6 +145,48 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 			memberBuilder.AddNotNull(item);
 		}
 
-		return [];
+		return memberBuilder.ToImmutableAndFree();
+	}
+
+	private static DeclarationAccessibility GetAccessibility(Token token)
+	{
+		TokenKind kind = token.TKind;
+		if (kind == TokenKind.Public)
+		{
+			return DeclarationAccessibility.Public;
+		}
+
+		if (kind == TokenKind.Protected)
+		{
+			return DeclarationAccessibility.Protected;
+		}
+
+		if (kind == TokenKind.Private)
+		{
+			return DeclarationAccessibility.Private;
+		}
+
+		if (kind == TokenKind.Friend)
+		{
+			return DeclarationAccessibility.Friend;
+		}
+
+		if (kind == TokenKind.Family)
+		{
+			return DeclarationAccessibility.Family;
+		}
+
+		if (kind == TokenKind.Internal)
+		{
+			return DeclarationAccessibility.Internal;
+		}
+
+		return DeclarationAccessibility.NotDeclaredByError;
+	}
+
+	private DeclarationModifiers GetModifiers(SyntaxList<Token> modifiers)
+	{
+		// TODO: implement
+		return DeclarationModifiers.None;
 	}
 }

@@ -53,7 +53,7 @@ internal partial class NiteParser
 	private TypeDeclarationSyntax ParseTypeDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers,
 		Token typeKeyword)
 	{
-		SimpleNameSyntax name = ParseSimpleName();
+		NameSyntax name = ParseName();
 
 		TypeBodySyntax body = ParseTypeBody();
 
@@ -67,10 +67,21 @@ internal partial class NiteParser
 			Token openBrace = PeekAndAdvance();
 
 			SyntaxList<MemberSyntax>.Builder membersBuilder = new();
-			if (IsPresentedAnyAccessibilityToken())
+			while (Current.TKind != TokenKind.CloseBrace &&
+			       Current.TKind != TokenKind.EndOfFile)
 			{
-				Token elevatedKeyword = PeekAndAdvance().ToContextualKeywordToken();
-				membersBuilder.Add(ParseMember(elevatedKeyword));
+				if (IsPresentedAnyAccessibilityToken())
+				{
+					Token elevatedKeyword = PeekAndAdvance().ToContextualKeywordToken();
+					membersBuilder.Add(ParseMember(elevatedKeyword));
+				}
+				else
+				{
+					break;
+					// TODO: no break, we should try to read member,
+					//	and then if member is valid -> try to construct non-error-node with diagnostic [accessibility-modifier-required]
+					//	otherwise if we can't get a valid member -> try to predict incomplete member and add as error-node
+				}
 			}
 
 			Token closeBrace = MatchToken(TokenKind.CloseBrace);
