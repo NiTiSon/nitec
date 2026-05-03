@@ -62,7 +62,7 @@ public class SsaBuilderTests
 		FunctionSymbol function = module.GetMembersUnordered().OfType<FunctionSymbol>().Single(f => f.Name == functionName);
 		SourceFunctionSymbol sourceFunction = (SourceFunctionSymbol)function;
 
-		ExecutableCodeBinder binder = sourceFunction.TryGetBodyBinder()!;
+		Binder binder = sourceFunction.TryGetBodyBinder()!;
 		BindingDiagnosticBag diagnostics = BindingDiagnosticBag.GetInstance();
 
 		Assert.That(compilation.GetDiagnostics(CompilationStage.Compile, includeEarlierStages: true).Any(t => t.Severity == DiagnosticSeverity.Error), Is.False);

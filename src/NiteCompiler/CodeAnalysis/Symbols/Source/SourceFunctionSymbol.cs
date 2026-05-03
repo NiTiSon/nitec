@@ -129,7 +129,7 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 		return result;
 	}
 
-	public ExecutableCodeBinder? TryGetBodyBinder()
+	public Binder? TryGetBodyBinder()
 	{
 		Binder? inFunctionBinder = TryGetInFunctionBinder();
 		FunctionBodySyntax body = GetInFunctionSyntaxNode();
@@ -139,8 +139,9 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 			syntax = blockBody.Block;
 		}
 
-		Debug.Assert(syntax != null);
-		return inFunctionBinder == null ? null : new ExecutableCodeBinder(syntax, this, inFunctionBinder);
+		return inFunctionBinder == null
+			? null
+			: (syntax == null ? inFunctionBinder : new ExecutableCodeBinder(syntax, this, inFunctionBinder));
 	}
 
 	internal override void ForceComplete(Predicate<Symbol>? filter, CancellationToken cancellationToken = default)

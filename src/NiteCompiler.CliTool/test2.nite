@@ -1,7 +1,11 @@
 #!bin/nite
 
+// #[import("<entry_point>main_utf8")]
+family main();
+
 // #[export("mainCRTStartup")]
-private mainCRTStartup() {
+family mainCRTStartup() {
+	return;
 }
 
 public simple_func(x: i32) -> i32 {

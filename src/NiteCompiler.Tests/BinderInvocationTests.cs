@@ -42,7 +42,7 @@ public class BinderInvocationTests
 			.Single(static f => f.Name == "caller");
 		SourceFunctionSymbol sourceFunction = (SourceFunctionSymbol)function;
 
-		ExecutableCodeBinder binder = sourceFunction.TryGetBodyBinder()!;
+		Binder binder = sourceFunction.TryGetBodyBinder()!;
 		BindingDiagnosticBag diagnostics = BindingDiagnosticBag.GetInstance();
 
 		try

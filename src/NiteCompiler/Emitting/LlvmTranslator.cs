@@ -163,7 +163,7 @@ internal sealed partial class LlvmTranslator
 			return null;
 		}
 
-		ExecutableCodeBinder? binder = sourceFunction.TryGetBodyBinder();
+		Binder? binder = sourceFunction.TryGetBodyBinder();
 		if (binder == null)
 		{
 			return null;
