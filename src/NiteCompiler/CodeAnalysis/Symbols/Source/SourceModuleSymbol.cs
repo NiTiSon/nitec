@@ -142,7 +142,7 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 			case DeclarationKind.Module:
 				return new SourceModuleSymbol(ContainingLibrary, this, (MergedModuleDeclaration)declaration, diagnostics);
 			case DeclarationKind.Type:
-				return new SourceTypeSymbol(this, (MergedTypeDeclaration)declaration, diagnostics);
+				return new SourceNamedTypeSymbol(this, (MergedTypeDeclaration)declaration, diagnostics);
 
 			default:
 				throw new InvalidEnumArgumentException(nameof(declaration.Kind), (int)declaration.Kind, typeof(DeclarationKind));

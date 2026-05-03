@@ -7,18 +7,19 @@ using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Symbols.Source;
 
-internal sealed class SourceTypeSymbol : TypeSymbol
+internal sealed class SourceNamedTypeSymbol : NamedTypeSymbol
 {
 	public MergedTypeDeclaration Declaration { get; }
 	public override ContainerSymbol ContainingSymbol { get; }
 	public override NiteCompilation DeclaringCompilation => ContainingSymbol.DeclaringCompilation!;
 
 	public override string Name => Declaration.Name;
+	public override int Arity => Declaration.Arity;
 
 	public override SpecialType SpecialType { get; }
 
 	private CompletionPart _state;
-	public SourceTypeSymbol(ContainerSymbol containingSymbol, MergedTypeDeclaration declaration, BindingDiagnosticBag diagnostics)
+	public SourceNamedTypeSymbol(ContainerSymbol containingSymbol, MergedTypeDeclaration declaration, BindingDiagnosticBag diagnostics)
 	{
 		ContainingSymbol = containingSymbol;
 		Declaration = declaration;
