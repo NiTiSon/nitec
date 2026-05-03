@@ -13,7 +13,7 @@ public sealed class PredefinedTypeSyntax : TypeSyntax
 
 	internal PredefinedTypeSyntax(SyntaxTree tree, Token typeKeyword) : base(tree)
 	{
-		Debug.Assert(typeKeyword.IsTypeKeyword);
+		Debug.Assert(typeKeyword.IsPredefinedTypeKeyword);
 		TypeKeyword = typeKeyword;
 	}
 

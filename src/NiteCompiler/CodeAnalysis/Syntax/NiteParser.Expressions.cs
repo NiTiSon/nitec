@@ -379,7 +379,7 @@ internal sealed partial class NiteParser
 
 	private TypeSyntax ParseType()
 	{
-		if (Current.IsTypeKeyword)
+		if (Current.IsPredefinedTypeKeyword)
 		{
 			return ParsePredefinedType();
 		}

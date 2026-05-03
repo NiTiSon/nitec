@@ -39,12 +39,12 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 	public bool IsTrivia => (_value & CategoryFlag) == Trivia;
 	public bool IsPunctuator => (_value & CategoryFlag) == Punctuator;
 	public bool IsKeyword => (_value & CategoryFlag) == Keyword;
-	public bool IsTypeKeyword => (_value & CategoryFlag) == TypeKeyword;
+	public bool IsPredefinedTypeKeyword => (_value & CategoryFlag) == TypeKeyword;
 	public SpecialType AssociatedSpecialType
 	{
 		get
 		{
-			Debug.Assert(IsTypeKeyword);
+			Debug.Assert(IsPredefinedTypeKeyword);
 			return (SpecialType)(_value - TypeKeyword);
 		}
 	}

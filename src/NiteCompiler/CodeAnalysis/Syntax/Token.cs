@@ -12,7 +12,7 @@ public abstract class Token : SyntaxNode
 	public abstract TokenKind TKind { get; }
 	public sealed override NodeKind Kind => NodeKind.Token;
 	public bool IsKeyword => TKind.IsKeyword;
-	public bool IsTypeKeyword => TKind.IsTypeKeyword;
+	public bool IsPredefinedTypeKeyword => TKind.IsPredefinedTypeKeyword;
 
 	protected Token(SyntaxTree tree, TextSpan span, SyntaxList<Trivia> leadingTrivia, SyntaxList<Trivia> trailingTrivia) : base(tree)
 	{
