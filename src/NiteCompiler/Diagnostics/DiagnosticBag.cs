@@ -128,6 +128,16 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.UnterminatedEscapedIdentifier, [source]);
 	}
 
+	public void ReportInvalidCharacterLiteralEncoding(Location source, string encoding, int byteCount)
+	{
+		Add(DiagnosticDescriptor.InvalidCharacterLiteralEncoding, [source], encoding, byteCount);
+	}
+
+	public void ReportInvalidCharacterLiteral(Location source)
+	{
+		Add(DiagnosticDescriptor.InvalidCharacterLiteral, [source]);
+	}
+
 	public void ReportExpectedToken(Location source, TokenKind kind)
 	{
 		Add(DiagnosticDescriptor.ExpectedToken, [source], kind);

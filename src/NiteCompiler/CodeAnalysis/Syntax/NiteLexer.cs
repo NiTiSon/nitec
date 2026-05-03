@@ -92,12 +92,13 @@ internal sealed partial class NiteLexer
 		}
 		if (info.Kind == TokenKind.EscapedIdentifier)
 		{
-			return new StringToken(_syntaxTree, info.Kind, span, text!, leading, trailing);
+			// yeah, escaped identifier is a string token, shame on me
+			return new StringToken(_syntaxTree, info.Kind, span, text!, StringLiteralType.None, leading, trailing);
 		}
 		if (info.Kind == TokenKind.StringLiteral ||
 		    info.Kind == TokenKind.CharacterLiteral)
 		{
-			return new StringToken(_syntaxTree, info.Kind, span, text!, leading, trailing);
+			return new StringToken(_syntaxTree, info.Kind, span, text!, info.StringType, leading, trailing);
 		}
 		if (info.Kind == TokenKind.NumberLiteral)
 		{
@@ -412,7 +413,8 @@ internal sealed partial class NiteLexer
 
 				break;
 			case '\'':
-				// ReadLifetimeIdentifierOrCharacter(ref info);
+				// TODO[mid]: Handle lifetime identifier
+				ReadCharacter(ref info);
 				break;
 			case >= '0' and <= '9':
 				ReadNumber(ref info);

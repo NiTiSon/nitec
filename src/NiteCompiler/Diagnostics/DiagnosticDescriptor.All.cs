@@ -12,6 +12,8 @@ public partial class DiagnosticDescriptor
 		UnterminatedMultilineComment,
 		UnterminatedStringLiteral,
 		UnterminatedEscapedIdentifier,
+		InvalidCharacterLiteral,
+		InvalidCharacterLiteralEncoding,
 		ExpectedToken,
 		UnexpectedToken,
 		GenericsIsNotApplicableOnModuleName,
@@ -52,6 +54,10 @@ public partial class DiagnosticDescriptor
 			"String literal is not terminated.");
 		UnterminatedEscapedIdentifier = new("unterminated-escape-identifier",
 			"Escaped identifier is not terminated.");
+		InvalidCharacterLiteral = new("invalid-character-literal",
+			"Character literal must contain exactly one Unicode scalar value.");
+		InvalidCharacterLiteralEncoding = new("invalid-character-literal-encoding",
+			"Character literal cannot be represented as {0}: it requires {1} byte(s).");
 
 		// Parsing
 		UnexpectedToken = new("unexpected-token", "Unexpected token {0}.");

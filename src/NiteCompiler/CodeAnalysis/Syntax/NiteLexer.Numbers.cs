@@ -82,7 +82,7 @@ internal partial class NiteLexer
 
 	private void ReadNumericTypeSuffix(ref TokenInfo info)
 	{
-		if (!char.IsAsciiLetter(_window.Current)) // I believe that faster than call three comparison
+		if (!char.IsAsciiLetter(_window.Current)) // I believe this is faster than calling three comparison
 			return;
 
 		Span<char> buf = stackalloc char[3];

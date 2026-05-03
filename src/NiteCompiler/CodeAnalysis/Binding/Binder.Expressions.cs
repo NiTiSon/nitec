@@ -196,15 +196,24 @@ internal partial class Binder
 		return new BoundLiteral(syntax, i32Value, i32);
 	}
 
-	private BoundLiteral BindCharacterLiteralExpression(LiteralExpressionSyntax syntax,
-		BindingDiagnosticBag diagnostics)
+	private BoundLiteral BindCharacterLiteralExpression(LiteralExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
-		throw new NotImplementedException();
+		Debug.Assert(syntax.Kind == NodeKind.CharacterLiteralExpression);
+		StringToken content = (syntax.Token as StringToken)!;
+		SpecialType type = content.LiteralType switch
+		{
+			StringLiteralType.Unicode8 => SpecialType.StdTextCharacterUtf8,
+			StringLiteralType.Unicode16 => SpecialType.StdTextCharacterUtf16,
+			StringLiteralType.Unicode32 => SpecialType.StdTextCharacterUtf32,
+			_ => SpecialType.StdTextCharacterUtf8
+		};
+		return new BoundLiteral(syntax, ConstantValue.Create(0), GetSpecialType(type));
 	}
 
 	private BoundLiteral BindStringLiteralExpression(LiteralExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
-		throw new NotImplementedException();
+		// TODO: Implement
+		return new BoundLiteral(syntax, ConstantValue.Create(0), GetSpecialType(SpecialType.StdVoid));
 	}
 
 	private BoundExpression BindIdentifier(SimpleNameSyntax name, bool invoked, bool indexed,

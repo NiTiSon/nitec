@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Text;
 using NiteCompiler.CodeAnalysis.Text;
 using NiteCompiler.Diagnostics;
 
@@ -213,6 +214,10 @@ internal sealed partial class NiteParser
 			    tokenKind == TokenKind.StringLiteral)
 			{
 				Token current = PeekAndAdvance();
+				if (tokenKind == TokenKind.CharacterLiteral)
+				{
+					ValidateCharacterLiteral(current);
+				}
 				return new LiteralExpressionSyntax(_syntaxTree, current, current.TKind.ToLiteralExpressionKind());
 			}
 
@@ -238,6 +243,67 @@ internal sealed partial class NiteParser
 					return expression;
 				}
 			}
+		}
+	}
+
+	private void ValidateCharacterLiteral(Token token)
+	{
+		StringToken? stringToken = token as StringToken;
+		if (stringToken is null)
+		{
+			return;
+		}
+
+		string text = stringToken.Text;
+		Span<Rune> runes = stackalloc Rune[2];
+		int runeCount = 0;
+		foreach (Rune rune in text.EnumerateRunes())
+		{
+			if (runeCount >= runes.Length)
+			{
+				break;
+			}
+			runes[runeCount++] = rune;
+		}
+
+		if (runeCount != 1)
+		{
+			_diagnostics.ReportInvalidCharacterLiteral(token.Span.Contextualize(_syntaxTree));
+			return;
+		}
+
+		Rune singleRune = runes[0];
+		int requiredBytes;
+		string encodingName;
+		switch (stringToken.LiteralType)
+		{
+			case StringLiteralType.None:
+			case StringLiteralType.Unicode8:
+				requiredBytes = Encoding.UTF8.GetByteCount(singleRune.ToString());
+				encodingName = "utf8";
+				if (requiredBytes != 1)
+				{
+					_diagnostics.ReportInvalidCharacterLiteralEncoding(token.Span.Contextualize(_syntaxTree), encodingName, requiredBytes);
+				}
+				break;
+			case StringLiteralType.Unicode16:
+				requiredBytes = Encoding.Unicode.GetByteCount(singleRune.ToString());
+				encodingName = "utf16";
+				if (requiredBytes != 2)
+				{
+					_diagnostics.ReportInvalidCharacterLiteralEncoding(token.Span.Contextualize(_syntaxTree), encodingName, requiredBytes);
+				}
+				break;
+			case StringLiteralType.Unicode32:
+				requiredBytes = Encoding.UTF32.GetByteCount(singleRune.ToString());
+				encodingName = "utf32";
+				if (requiredBytes != 4)
+				{
+					_diagnostics.ReportInvalidCharacterLiteralEncoding(token.Span.Contextualize(_syntaxTree), encodingName, requiredBytes);
+				}
+				break;
+			case StringLiteralType.Os:
+				break;
 		}
 	}
 
