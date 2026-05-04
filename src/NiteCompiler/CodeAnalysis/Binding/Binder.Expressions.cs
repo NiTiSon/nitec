@@ -103,9 +103,11 @@ internal partial class Binder
 	private BoundExpression BindAddressOfExpression(UnaryExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		Debug.Assert(syntax.Kind == NodeKind.AddressOfExpression);
-		BoundExpression operand = BindRValueWithoutTargetType(syntax.Expression, diagnostics);
+		BoundExpression operand = BindLValueWithoutTargetType(syntax.Expression, diagnostics);
 
-		return new BoundAddressOfExpression(syntax, operand, operand.Type);
+		// TODO[high]: isMutable must be detected
+		TypeSymbol refType = Compilation.CreateReferenceType(operand.Type, isMutable: true, isNullable: false);
+		return new BoundAddressOfExpression(syntax, operand, refType);
 	}
 
 	private BoundExpression BindDereferenceExpression(UnaryExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
