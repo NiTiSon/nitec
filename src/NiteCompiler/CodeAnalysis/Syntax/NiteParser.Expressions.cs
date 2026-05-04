@@ -383,9 +383,17 @@ internal sealed partial class NiteParser
 		{
 			return ParsePredefinedType();
 		}
-		else if (Current.TKind == TokenKind.IdentifierOrKeyword)
+
+		TokenKind currentKind = Current.TKind;
+		if (currentKind == TokenKind.IdentifierOrKeyword ||
+		    currentKind == TokenKind.EscapedIdentifier)
 		{
 			return ParseName();
+		}
+
+		if (currentKind == TokenKind.Ampersand)
+		{
+			return ParseReferenceType();
 		}
 
 		throw new NotImplementedException();
@@ -394,6 +402,28 @@ internal sealed partial class NiteParser
 	private PredefinedTypeSyntax ParsePredefinedType()
 	{
 		return new(_syntaxTree, PeekAndAdvance());
+	}
+
+	private ReferenceTypeSyntax ParseReferenceType()
+	{
+		Debug.Assert(Current.TKind == TokenKind.Ampersand);
+		Token ampersand = PeekAndAdvance();
+
+		Token? constKeyword = null;
+		if (Current.TKind == TokenKind.Const)
+		{
+			constKeyword = PeekAndAdvance();
+		}
+
+		Token? questionToken = null;
+		if (Current.TKind == TokenKind.QuestionSign)
+		{
+			questionToken = PeekAndAdvance();
+		}
+
+		TypeSyntax elementType = ParseType();
+
+		return new ReferenceTypeSyntax(_syntaxTree, ampersand, constKeyword, questionToken, elementType);
 	}
 
 	private NameSyntax ParseName()

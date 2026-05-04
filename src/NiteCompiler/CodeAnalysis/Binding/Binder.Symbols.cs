@@ -31,7 +31,20 @@ internal partial class Binder
 			return BindPredefinedType((PredefinedTypeSyntax)syntax);
 		}
 
+		if (syntax.Kind == NodeKind.ReferenceType)
+		{
+			return BindReferenceType((ReferenceTypeSyntax)syntax, diagnostics);
+		}
+
 		throw new NotImplementedException();
+	}
+
+	private TypeSymbol BindReferenceType(ReferenceTypeSyntax syntax, BindingDiagnosticBag diagnostics)
+	{
+		TypeSymbol element = BindType(syntax.ElementSyntax, diagnostics);
+		bool isMutable = syntax.ConstToken == null;
+		bool isNullable = syntax.QuestionToken != null;
+		return Compilation.CreateReferenceType(element, isMutable, isNullable);
 	}
 
 	public TypeSymbol BindType(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics)

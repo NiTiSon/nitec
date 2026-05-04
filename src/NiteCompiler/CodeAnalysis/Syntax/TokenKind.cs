@@ -369,5 +369,8 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 	public static readonly TokenKind RightUnsignedShiftAssignment = Reg(BinaryFlag | AssignmentFlag | Operator | 34, ">>>=");
 	public static readonly TokenKind Range = Reg(BinaryFlag | Operator | 35, "..");
 	public static readonly TokenKind RangeInclusive = Reg(BinaryFlag | Operator | 36, "..=");
+	public static readonly TokenKind QuestionSign = Reg(BinaryFlag | Operator | 37, "?");
+	public static readonly TokenKind QuestionAssignmentSign = Reg(BinaryFlag | AssignmentFlag | Operator | 38, "?=");
+	public static readonly TokenKind DoubleQuestionSign = Reg(BinaryFlag| Operator | 39, "??");
 	// #, $, etc. as possible overridable operators?
 }

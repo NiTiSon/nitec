@@ -1,10 +1,13 @@
 #!bin/nite
 
 // #[import("<entry_point>main_utf8")]
-family main();
+private main() -> &i32 {
+	let x: &i32 = 1;
+	return x;
+}
 
 // #[export("mainCRTStartup")]
-family mainCRTStartup() {
+private mainCRTStartup() {
 	return;
 }
 

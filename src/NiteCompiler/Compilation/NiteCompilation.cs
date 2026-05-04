@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
@@ -144,6 +145,23 @@ public sealed partial class NiteCompilation
 	private bool IsMissingType(SpecialType type)
 	{
 		return _lateinitSpecialTypes?[(int)type] == null;
+	}
+
+	private ConcurrentDictionary<(TypeSymbol, bool, bool), ReferenceTypeSymbol>? _referenceTypeSymbols;
+	internal ReferenceTypeSymbol CreateReferenceType(TypeSymbol pointsTo, bool isMutable, bool isNullable)
+	{
+		if (_referenceTypeSymbols == null)
+		{
+			Interlocked.CompareExchange(ref _referenceTypeSymbols, new(), null);
+		}
+
+		if (!_referenceTypeSymbols.TryGetValue((pointsTo, isMutable, isNullable), out ReferenceTypeSymbol? value))
+		{
+			value = new ReferenceTypeSymbol(pointsTo, isMutable, isNullable);
+			_referenceTypeSymbols[(pointsTo, isMutable, isNullable)] = value;
+		}
+
+		return value;
 	}
 
 	public FunctionSymbol? GetEntryPoint()

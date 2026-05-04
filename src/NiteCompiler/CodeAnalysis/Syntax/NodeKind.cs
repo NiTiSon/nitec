@@ -242,9 +242,12 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind NumberLiteralExpression = Reg(Expression + 9, "number-literal-expression");
 	public static readonly NodeKind CharacterLiteralExpression = Reg(Expression + 10, "character-literal-expression");
 	public static readonly NodeKind StringLiteralExpression = Reg(Expression + 11, "string-literal-expression");
-	public static readonly NodeKind PredefinedType = Reg(Expression + 12, "<predefined-type>");
-	public static readonly NodeKind InvocationExpression = Reg(Expression + 13, Precedence.Primary, "invocation-expression");
-	public static readonly NodeKind IndexationExpression = Reg(Expression + 14, Precedence.Primary, "indexation-expression");
+	public static readonly NodeKind PredefinedType = Reg(Expression + 12, "predefined-type");
+	public static readonly NodeKind PointerType = Reg(Expression + 13, "pointer-type");
+	public static readonly NodeKind ReferenceType = Reg(Expression + 14, "reference-type");
+	public static readonly NodeKind OptionalType = Reg(Expression + 15, "optional-type");
+	public static readonly NodeKind InvocationExpression = Reg(Expression + 16, Precedence.Primary, "invocation-expression");
+	public static readonly NodeKind IndexationExpression = Reg(Expression + 17, Precedence.Primary, "indexation-expression");
 	private const uint Operation = 0x00_00__28_00;
 	public static readonly NodeKind UnaryAddExpression = Reg(Operation + 1, Precedence.Unary, "unary-add-expression");
 	public static readonly NodeKind AddExpression = Reg(Operation + BinaryFlag + 2, Precedence.Additive, "add-expression");

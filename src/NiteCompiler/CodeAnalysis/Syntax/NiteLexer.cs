@@ -157,26 +157,24 @@ internal sealed partial class NiteLexer
 				}
 
 				break;
-			// case '?':
-			// 	if (_window.Next == '?')
-			// 	{
-			// 		if (_window.Peek(2) == '=')
-			// 		{
-			// 			_window.Advance(3);
-			// 			info.Kind = TokenKind.QuestionQuestionEqualsToken;
-			// 		}
-			// 		else
-			// 		{
-			// 			_window.Advance(2);
-			// 			info.Kind = TokenKind.QuestionQuestionToken;
-			// 		}
-			// 	}
-			// 	else
-			// 	{
-			// 		_window.Advance();
-			// 		info.Kind = TokenKind.QuestionToken;
-			// 	}
-			//	break;
+			case '?':
+				if (_window.Next == '?')
+				{
+					_window.Advance(2);
+					info.Kind = TokenKind.DoubleQuestionSign;
+				}
+				else if (_window.Next == '=')
+				{
+					_window.Advance(2);
+					info.Kind = TokenKind.QuestionAssignmentSign;
+				}
+				else
+				{
+					_window.Advance();
+					info.Kind = TokenKind.QuestionSign;
+				}
+
+				break;
 			case '-':
 				if (_window.Next == '>')
 				{

@@ -26,6 +26,9 @@ public abstract class SyntaxVisitor
 	public virtual void VisitGenericName(GenericNameSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitPathName(PathNameSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitPredefinedType(PredefinedTypeSyntax expression) => DefaultVisit(expression);
+	public virtual void VisitPointerType(TypeSyntax expression) => DefaultVisit(expression);
+	public virtual void VisitReferenceType(ReferenceTypeSyntax expression) => DefaultVisit(expression);
+	public virtual void VisitOptionalType(TypeSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitInvocationExpression(InvocationExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitIndexationExpression(IndexationExpressionSyntax expression) => DefaultVisit(expression);
 
@@ -79,6 +82,9 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitGenericName(GenericNameSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitPathName(PathNameSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitPredefinedType(PredefinedTypeSyntax expression) => DefaultVisit(expression);
+	public virtual TResult? VisitPointerType(TypeSyntax expression) => DefaultVisit(expression);
+	public virtual TResult? VisitReferenceType(ReferenceTypeSyntax expression) => DefaultVisit(expression);
+	public virtual TResult? VisitOptionalType(TypeSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitInvocationExpression(InvocationExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitIndexationExpression(IndexationExpressionSyntax expression) => DefaultVisit(expression);
 
