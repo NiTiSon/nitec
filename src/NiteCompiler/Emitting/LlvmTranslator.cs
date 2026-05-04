@@ -34,7 +34,7 @@ internal sealed partial class LlvmTranslator
 		BindingDiagnosticBag diagnostics)
 	{
 		string moduleName = libraries.IsDefaultOrEmpty ? "__nite" : libraries[0].Name;
-		var translator = new LlvmTranslator(moduleName, diagnostics);
+		LlvmTranslator translator = new(moduleName, diagnostics);
 		translator.TranslateImpl(libraries, entryPoint);
 		translator._builder.Dispose();
 		return translator._module;
@@ -175,6 +175,7 @@ internal sealed partial class LlvmTranslator
 			return body.BlockBody;
 		}
 
+		Debug.WriteLine($"Function '{function.ToDisplayString()}' is bounded with errors: the MIR and IR processes are invalid when bound node contains any error!");
 		return null;
 	}
 

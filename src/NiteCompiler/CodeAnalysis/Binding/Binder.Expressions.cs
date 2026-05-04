@@ -80,6 +80,16 @@ internal partial class Binder
 
 	private BoundExpression BindUnaryExpression(UnaryExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
+		if (syntax.Kind == NodeKind.AddressOfExpression)
+		{
+			return BindAddressOfExpression(syntax, diagnostics);
+		}
+
+		if (syntax.Kind == NodeKind.DereferencingExpression)
+		{
+			return BindDereferenceExpression(syntax, diagnostics);
+		}
+
 		var expression = BindRValueWithoutTargetType(syntax.Expression, diagnostics);
 
 		if (IsSimpleUnaryOperator(syntax.Kind))
@@ -88,6 +98,32 @@ internal partial class Binder
 		}
 
 		throw new NotImplementedException("Pointer operators are not implemented yet.");
+	}
+
+	private BoundExpression BindAddressOfExpression(UnaryExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
+	{
+		Debug.Assert(syntax.Kind == NodeKind.AddressOfExpression);
+		BoundExpression operand = BindRValueWithoutTargetType(syntax.Expression, diagnostics);
+
+		if (operand.Type is BaseReferenceTypeSymbol referenceType)
+		{
+			return new BoundAddressOfExpression(syntax, operand, referenceType.PointsTo);
+		}
+
+		return new BoundAddressOfExpression(syntax, operand, CreateErrorType());
+	}
+
+	private BoundExpression BindDereferenceExpression(UnaryExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
+	{
+		Debug.Assert(syntax.Kind == NodeKind.DereferencingExpression);
+		BoundExpression operand = BindRValueWithoutTargetType(syntax.Expression, diagnostics);
+
+		if (operand.Type is BaseReferenceTypeSymbol referenceType)
+		{
+			return new BoundDereferenceExpression(syntax, operand, referenceType.PointsTo, referenceType.IsMutable);
+		}
+
+		return new BoundDereferenceExpression(syntax, operand, CreateErrorType(), isMutable: false);
 	}
 
 	private BoundExpression BindBinaryExpression(BinaryExpressionSyntax syntax, BindingDiagnosticBag diagnostics)

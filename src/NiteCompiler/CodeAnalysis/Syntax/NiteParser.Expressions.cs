@@ -354,6 +354,20 @@ internal sealed partial class NiteParser
 
 	private ExpressionSyntax ParsePrimaryOrUnaryExpression(Precedence precedence)
 	{
+		if (Current.TKind == TokenKind.Ampersand)
+		{
+			Token operatorToken = PeekAndAdvance();
+			ExpressionSyntax expression = ParseSubExpression(NodeKind.AddressOfExpression.Precedence);
+			return new UnaryExpressionSyntax(operatorToken.Tree, operatorToken, expression, NodeKind.AddressOfExpression);
+		}
+
+		if (Current.TKind == TokenKind.Asterisk)
+		{
+			Token operatorToken = PeekAndAdvance();
+			ExpressionSyntax expression = ParseSubExpression(NodeKind.DereferencingExpression.Precedence);
+			return new UnaryExpressionSyntax(operatorToken.Tree, operatorToken, expression, NodeKind.DereferencingExpression);
+		}
+
 		if (Current.TKind is { IsOperator: true, CanBeUnaryOperator: true })
 		{
 			Token operatorToken = PeekAndAdvance();

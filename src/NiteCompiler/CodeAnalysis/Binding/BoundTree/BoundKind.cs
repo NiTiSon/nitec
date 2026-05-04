@@ -20,6 +20,8 @@ internal enum BoundKind
 	Literal,
 	Local,
 	Parameter,
+	AddressOfExpression,
+	DereferenceExpression,
 	UnaryExpression,
 	BinaryExpression,
 	AssignmentExpression,

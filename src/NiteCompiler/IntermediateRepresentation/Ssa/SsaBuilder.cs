@@ -260,6 +260,8 @@ internal sealed class SsaBuilder
 		return expression switch
 		{
 			BoundLiteral literal => EmitLiteral(literal, block),
+			BoundAddressOfExpression addressOf => EmitAddressOfExpression(addressOf, block),
+			BoundDereferenceExpression dereference => EmitDereferenceExpression(dereference, block),
 			BoundUnaryExpression unary => EmitUnaryExpression(unary, block),
 			BoundBinaryExpression binary => EmitBinaryExpression(binary, block),
 			BoundAssignment assignment => EmitAssignmentExpression(assignment, block),
@@ -270,6 +272,16 @@ internal sealed class SsaBuilder
 
 			_ => throw new UnreachableException($"RewriteExpression({expression.GetType()})")
 		};
+	}
+
+	private SsaValue EmitAddressOfExpression(BoundAddressOfExpression addressOf, SsaBlock block)
+	{
+		throw new NotImplementedException("SSA lowering for address-of expressions is not implemented yet.");
+	}
+
+	private SsaValue EmitDereferenceExpression(BoundDereferenceExpression dereference, SsaBlock block)
+	{
+		throw new NotImplementedException("SSA lowering for dereference expressions is not implemented yet.");
 	}
 
 	private SsaValue EmitLiteral(BoundLiteral literal, SsaBlock block)
