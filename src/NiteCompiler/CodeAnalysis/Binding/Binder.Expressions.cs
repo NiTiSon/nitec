@@ -12,19 +12,6 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal partial class Binder
 {
-	private const int ValueKindInsignificantBits = 2;
-	private const BindValueKind ValueKindSignificantBitsMask = unchecked((BindValueKind)~((1 << ValueKindInsignificantBits) - 1));
-
-	[Flags]
-	internal enum BindValueKind : ushort
-	{
-		RValue = 1 << ValueKindInsignificantBits,
-
-		LValue = 2 << ValueKindInsignificantBits,
-
-		Variable = 4 << ValueKindInsignificantBits,
-	}
-
 	private BoundBadExpression BadExpression(SyntaxNode syntax)
 	{
 		return BadExpression(syntax, LookupResultKind.Empty, []);
@@ -134,18 +121,6 @@ internal partial class Binder
 		}
 
 		throw new NotImplementedException("Operators && and || not implemented yet.");
-	}
-
-	private BoundExpression CheckValue(BoundExpression expression, BindValueKind valueKind, BindingDiagnosticBag diagnostics)
-	{
-		var actual = expression.ValueKind;
-
-		if ((actual & ValueKindSignificantBitsMask) == (valueKind & ValueKindSignificantBitsMask))
-			return expression;
-
-		// TODO: Error in diagnostic
-
-		return expression;
 	}
 
 	private BoundExpression BindValue(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics, BindValueKind valueKind)
