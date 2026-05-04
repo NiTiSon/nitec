@@ -407,7 +407,31 @@ internal sealed partial class NiteParser
 
 		if (currentKind == TokenKind.Ampersand)
 		{
-			return ParseReferenceType();
+			Token ampersand = PeekAndAdvance();
+			return ParseReferenceType(ampersand);
+		}
+
+		if (currentKind == TokenKind.DoubleAmpersand)
+		{
+			Token combinedToken = PeekAndAdvance();
+			Token firstAmpersand = new Token.Default(
+				_syntaxTree,
+				TokenKind.Ampersand,
+				combinedToken.Span.SubSpan(0, 1),
+				combinedToken.LeadingTrivia,
+				SyntaxList<Trivia>.GetEmpty(_syntaxTree));
+			Token secondAmpersand = new Token.Default(
+				_syntaxTree,
+				TokenKind.Ampersand,
+				combinedToken.Span.SubSpan(1, 1),
+				SyntaxList<Trivia>.GetEmpty(_syntaxTree),
+				combinedToken.TrailingTrivia);
+
+			TypeSyntax type = ParseType();
+			type = new ReferenceTypeSyntax(_syntaxTree, secondAmpersand, null, null, type);
+			type = new ReferenceTypeSyntax(_syntaxTree, firstAmpersand, null, null, type);
+
+			return type;
 		}
 
 		throw new NotImplementedException();
@@ -418,11 +442,9 @@ internal sealed partial class NiteParser
 		return new(_syntaxTree, PeekAndAdvance());
 	}
 
-	private ReferenceTypeSyntax ParseReferenceType()
+	private ReferenceTypeSyntax ParseReferenceType(Token ampersand)
 	{
-		Debug.Assert(Current.TKind == TokenKind.Ampersand);
-		Token ampersand = PeekAndAdvance();
-
+		Debug.Assert(ampersand.TKind == TokenKind.Ampersand);
 		Token? constKeyword = null;
 		if (Current.TKind == TokenKind.Const)
 		{

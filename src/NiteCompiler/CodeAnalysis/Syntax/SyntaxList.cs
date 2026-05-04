@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using NiteCompiler.CodeAnalysis.Text;
 
@@ -23,6 +22,11 @@ public sealed class SyntaxList<TNode> : SyntaxNode, IEnumerable<TNode>
 		_nodes = nodes;
 	}
 
+	internal SyntaxList(SyntaxTree tree) : base(tree)
+	{
+		_nodes = [];
+	}
+
 	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitSyntaxList(this);
 	public override void Accept(SyntaxVisitor visitor) => visitor.VisitSyntaxList(this);
 
@@ -36,6 +40,11 @@ public sealed class SyntaxList<TNode> : SyntaxNode, IEnumerable<TNode>
 		where TDerived : TNode
 	{
 		return new SyntaxList<TDerived>(this.Tree, (TDerived[])this._nodes);
+	}
+
+	public static SyntaxList<TNode> GetEmpty(SyntaxTree tree)
+	{
+		return tree.GetEmptySyntaxList<TNode>();
 	}
 
 	public override IEnumerable<TNode> GetChildren()

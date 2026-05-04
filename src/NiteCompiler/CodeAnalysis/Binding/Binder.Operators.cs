@@ -129,6 +129,11 @@ internal partial class Binder
 		BoundExpression left = BindLValueWithoutTargetType(syntax.Left, diagnostics);
 		BoundExpression right = BindRValueWithoutTargetType(syntax.Right, diagnostics);
 
+		if (left.HasErrors || right.HasErrors)
+		{
+			return new BoundAssignment(syntax, left, right);
+		}
+
 		// TODO: Conversion
 		// TODO: Errors
 

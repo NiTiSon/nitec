@@ -102,6 +102,23 @@ public sealed class SyntaxTree
 		}
 	}
 
+	private Dictionary<Type, SyntaxNode>? _lateinitEmptyLists;
+	internal SyntaxList<TNode> GetEmptySyntaxList<TNode>() where TNode : SyntaxNode
+	{
+		if (_lateinitEmptyLists == null)
+		{
+			Interlocked.CompareExchange(ref _lateinitEmptyLists, new(), null);
+		}
+
+		if (!_lateinitEmptyLists.TryGetValue(typeof(TNode), out SyntaxNode? result))
+		{
+			result = new SyntaxList<TNode>(this);
+			_lateinitEmptyLists[typeof(TNode)] = result;
+		}
+
+		return (SyntaxList<TNode>)result;
+	}
+
 	public IEnumerable<Diagnostic> GetDiagnostics(CancellationToken cancellationToken = default)
 	{
 		return Diagnostics;

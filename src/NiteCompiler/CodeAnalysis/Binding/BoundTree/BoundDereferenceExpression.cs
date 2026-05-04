@@ -12,12 +12,14 @@ internal sealed class BoundDereferenceExpression : BoundExpression
 	public override Pureness Pureness => Expression.Pureness;
 	public override Binder.BindValueKind ValueKind { get; }
 
-	public BoundDereferenceExpression(SyntaxNode syntax, BoundExpression expression, TypeSymbol type, bool isMutable)
-		: base(syntax)
+	public BoundDereferenceExpression(SyntaxNode syntax, BoundExpression expression, TypeSymbol type, bool isMutable, bool hasErrors = false)
+		: base(syntax, hasErrors || expression.HasErrors)
 	{
 		Expression = expression;
 		Type = type;
-		ValueKind = isMutable ? Binder.BindValueKind.LValue : Binder.BindValueKind.RValue;
+		ValueKind = isMutable
+			? Binder.BindValueKind.LValue | Binder.BindValueKind.RValue
+			: Binder.BindValueKind.RValue;
 	}
 
 	public override void Accept(BoundVisitor visitor)

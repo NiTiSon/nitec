@@ -13,6 +13,7 @@ namespace NiteCompiler.IntermediateRepresentation.Ssa;
 internal sealed class SsaBuilder
 {
 	private readonly Dictionary<LocalVariableOrParameterSymbol, Stack<SsaValue>> _stacks = new();
+	private readonly HashSet<LocalVariableOrParameterSymbol> _addressTakenSymbols = [];
 	private int _tempId = 0;
 
 	public static SsaFunction Build(ControlFlowGraph cfg, FunctionSymbol function)
@@ -34,6 +35,8 @@ internal sealed class SsaBuilder
 		{
 			_stacks[v] = new Stack<SsaValue>();
 		}
+
+		CollectAddressTakenSymbols(cfg);
 
 		var defs = CollectDefinitions(cfg);
 
@@ -71,7 +74,7 @@ internal sealed class SsaBuilder
 		return set;
 	}
 
-	private static Dictionary<LocalVariableOrParameterSymbol, HashSet<BasicBlock>> CollectDefinitions(ControlFlowGraph cfg)
+	private Dictionary<LocalVariableOrParameterSymbol, HashSet<BasicBlock>> CollectDefinitions(ControlFlowGraph cfg)
 	{
 		var result = new Dictionary<LocalVariableOrParameterSymbol, HashSet<BasicBlock>>();
 
@@ -82,6 +85,11 @@ internal sealed class SsaBuilder
 				if (stmt is BoundLocalVariableDeclarationStatement varDeclaration)
 				{
 					LocalVariableSymbol var = varDeclaration.Local;
+					if (RequiresStorage(var))
+					{
+						continue;
+					}
+
 					if (!result.TryGetValue(var, out HashSet<BasicBlock>? set))
 					{
 						set = [];
@@ -98,10 +106,11 @@ internal sealed class SsaBuilder
 					{
 						BoundLocal local => local.Local,
 						BoundParameter param => param.Parameter,
+						BoundDereferenceExpression { Expression: BoundAddressOfExpression addressOf } => GetAddressedSymbol(addressOf.Expression),
 						_ => null
 					};
 
-					if (targetSymbol == null) continue;
+					if (targetSymbol == null || RequiresStorage(targetSymbol)) continue;
 
 					if (!result.TryGetValue(targetSymbol, out HashSet<BasicBlock>? set))
 					{
@@ -114,6 +123,73 @@ internal sealed class SsaBuilder
 		}
 
 		return result;
+	}
+
+	private void CollectAddressTakenSymbols(ControlFlowGraph cfg)
+	{
+		foreach (BasicBlock block in cfg.Blocks)
+		{
+			foreach (BoundStatement statement in block.Statements)
+			{
+				CollectAddressTakenSymbols(statement);
+			}
+
+			if (block.Terminator is ConditionalBranchTerminator condBr)
+			{
+				CollectAddressTakenSymbols(condBr.Condition);
+			}
+			else if (block.Terminator is ReturnTerminator { Expression: { } ret })
+			{
+				CollectAddressTakenSymbols(ret);
+			}
+		}
+	}
+
+	private void CollectAddressTakenSymbols(BoundStatement statement)
+	{
+		switch (statement)
+		{
+			case BoundExpressionStatement es:
+				CollectAddressTakenSymbols(es.Expression);
+				break;
+			case BoundLocalVariableDeclarationStatement declaration when declaration.Initializer != null:
+				CollectAddressTakenSymbols(declaration.Initializer);
+				break;
+		}
+	}
+
+	private void CollectAddressTakenSymbols(BoundExpression expression)
+	{
+		switch (expression)
+		{
+			case BoundAddressOfExpression addressOf:
+				if (GetAddressedSymbol(addressOf.Expression) is { } symbol)
+				{
+					_addressTakenSymbols.Add(symbol);
+				}
+				CollectAddressTakenSymbols(addressOf.Expression);
+				break;
+			case BoundDereferenceExpression dereference:
+				CollectAddressTakenSymbols(dereference.Expression);
+				break;
+			case BoundUnaryExpression unary:
+				CollectAddressTakenSymbols(unary.Expression);
+				break;
+			case BoundBinaryExpression binary:
+				CollectAddressTakenSymbols(binary.Left);
+				CollectAddressTakenSymbols(binary.Right);
+				break;
+			case BoundAssignment assignment:
+				CollectAddressTakenSymbols(assignment.Left);
+				CollectAddressTakenSymbols(assignment.Right);
+				break;
+			case BoundCall call:
+				foreach (BoundExpression argument in call.Arguments)
+				{
+					CollectAddressTakenSymbols(argument);
+				}
+				break;
+		}
 	}
 
 	private void InitializeParameters(FunctionSymbol function)
@@ -247,7 +323,14 @@ internal sealed class SsaBuilder
 				if (var.Initializer != null)
 				{
 					SsaValue value = RewriteExpression(var.Initializer, block);
-					_stacks[var.Local].Push(value);
+					if (RequiresStorage(var.Local))
+					{
+						block.Instructions.Add(new StoreLocalAddressInstruction(var.Local, value));
+					}
+					else
+					{
+						_stacks[var.Local].Push(value);
+					}
 				}
 				break;
 			default:
@@ -276,12 +359,20 @@ internal sealed class SsaBuilder
 
 	private SsaValue EmitAddressOfExpression(BoundAddressOfExpression addressOf, SsaBlock block)
 	{
-		throw new NotImplementedException("SSA lowering for address-of expressions is not implemented yet.");
+		LocalVariableOrParameterSymbol symbol = GetAddressedSymbol(addressOf.Expression)
+			?? throw new UnreachableException($"EmitAddressOfExpression({addressOf.Expression.GetType()})");
+
+		SsaTemp result = NewTemp(addressOf.Type);
+		block.Instructions.Add(new AddressOfInstruction(result, symbol));
+		return result;
 	}
 
 	private SsaValue EmitDereferenceExpression(BoundDereferenceExpression dereference, SsaBlock block)
 	{
-		throw new NotImplementedException("SSA lowering for dereference expressions is not implemented yet.");
+		SsaValue address = RewriteExpression(dereference.Expression, block);
+		SsaTemp result = NewTemp(dereference.Type);
+		block.Instructions.Add(new LoadIndirectInstruction(result, address));
+		return result;
 	}
 
 	private SsaValue EmitLiteral(BoundLiteral literal, SsaBlock block)
@@ -371,6 +462,13 @@ internal sealed class SsaBuilder
 	{
 		SsaValue right = RewriteExpression(assignment.Right, block);
 
+		if (assignment.Left is BoundDereferenceExpression dereference)
+		{
+			SsaValue address = RewriteExpression(dereference.Expression, block);
+			block.Instructions.Add(new StoreIndirectInstruction(address, right));
+			return right;
+		}
+
 		LocalVariableOrParameterSymbol symbol = assignment.Left switch
 		{
 			BoundLocal local => local.Local,
@@ -381,7 +479,14 @@ internal sealed class SsaBuilder
 		// SsaTemp temp = NewTemp(symbol.Type);
 		// block.Instructions.Add(new CopyInstruction(temp, right));
 
-		_stacks[symbol].Push(right);
+		if (RequiresStorage(symbol))
+		{
+			block.Instructions.Add(new StoreLocalAddressInstruction(symbol, right));
+		}
+		else
+		{
+			_stacks[symbol].Push(right);
+		}
 
 		return right;
 	}
@@ -402,12 +507,12 @@ internal sealed class SsaBuilder
 
 	private SsaValue EmitParameter(BoundParameter parameter, SsaBlock block)
 	{
-		return ReadLocal(parameter.Parameter);
+		return ReadLocal(parameter.Parameter, block);
 	}
 
 	private SsaValue EmitLocal(BoundLocal local, SsaBlock block)
 	{
-		return ReadLocal(local.Local);
+		return ReadLocal(local.Local, block);
 	}
 
 	private Dictionary<LocalVariableOrParameterSymbol, int> SaveStacks()
@@ -434,11 +539,43 @@ internal sealed class SsaBuilder
 
 	private SsaValue ReadLocal(LocalVariableOrParameterSymbol symbol)
 	{
+		if (RequiresStorage(symbol))
+		{
+			throw new InvalidOperationException("Address-backed local reads require an SsaBlock.");
+		}
+
 		if (!_stacks.TryGetValue(symbol, out var stack) || stack.Count == 0)
 		{
 			throw new InvalidOperationException($"'{symbol.Name}' is not initialized in current state => invalid bound tree or critical errors during SSA-translation. This is compiler error!");
 		}
 
 		return stack.Peek();
+	}
+
+	private SsaValue ReadLocal(LocalVariableOrParameterSymbol symbol, SsaBlock block)
+	{
+		if (RequiresStorage(symbol))
+		{
+			SsaTemp result = NewTemp(symbol.Type);
+			block.Instructions.Add(new LoadLocalAddressInstruction(result, symbol));
+			return result;
+		}
+
+		return ReadLocal(symbol);
+	}
+
+	private static LocalVariableOrParameterSymbol? GetAddressedSymbol(BoundExpression expression)
+	{
+		return expression switch
+		{
+			BoundLocal local => local.Local,
+			BoundParameter parameter => parameter.Parameter,
+			_ => null
+		};
+	}
+
+	private bool RequiresStorage(LocalVariableOrParameterSymbol symbol)
+	{
+		return _addressTakenSymbols.Contains(symbol) || symbol.Type is BaseReferenceTypeSymbol;
 	}
 }

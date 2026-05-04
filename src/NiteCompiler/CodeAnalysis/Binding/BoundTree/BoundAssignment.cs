@@ -25,7 +25,8 @@ internal sealed class BoundAssignment : BoundExpression
 	}
 	public override Binder.BindValueKind ValueKind => Binder.BindValueKind.RValue;
 
-	public BoundAssignment(SyntaxNode syntax, BoundExpression left, BoundExpression right) : base(syntax)
+	public BoundAssignment(SyntaxNode syntax, BoundExpression left, BoundExpression right, bool hasErrors = false)
+		: base(syntax, hasErrors || left.HasErrors || right.HasErrors)
 	{
 		Left = left;
 		Right = right;

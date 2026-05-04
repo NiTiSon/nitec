@@ -107,7 +107,12 @@ internal partial class Binder
 			return new BoundDereferenceExpression(syntax, operand, referenceType.PointsTo, referenceType.IsMutable);
 		}
 
-		return new BoundDereferenceExpression(syntax, operand, CreateErrorType(), isMutable: true);
+		if (!operand.HasErrors && !operand.Type.IsErrorSymbol)
+		{
+			diagnostics.Diagnostics.ReportCannotDereferenceNonReference(syntax.Operator.Location, operand.Type);
+		}
+
+		return new BoundDereferenceExpression(syntax, operand, CreateErrorType(), isMutable: true, hasErrors: true);
 	}
 
 	private BoundExpression BindBinaryExpression(BinaryExpressionSyntax syntax, BindingDiagnosticBag diagnostics)

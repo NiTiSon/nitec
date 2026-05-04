@@ -31,6 +31,7 @@ internal partial class LlvmTranslator
 		LLVMValueRef llvmFunction = plan.LlvmFunction;
 		Dictionary<BasicBlock, LLVMBasicBlockRef> blockMap = new(plan.Cfg.Blocks.Length);
 		Dictionary<SsaValue, LLVMValueRef> valueMap = new();
+		Dictionary<LocalVariableOrParameterSymbol, LLVMValueRef> storageMap = new();
 
 		foreach (BasicBlock block in plan.Cfg.Blocks)
 		{
@@ -41,6 +42,17 @@ internal partial class LlvmTranslator
 		{
 			SsaParameter ssaParameter = new(parameter);
 			valueMap[ssaParameter] = llvmFunction.GetParam((uint)parameter.Ordinal);
+		}
+
+		_builder.PositionAtEnd(blockMap[plan.Cfg.Entry]);
+		foreach (LocalVariableOrParameterSymbol symbol in CollectAddressBackedSymbols(plan.Ssa))
+		{
+			LLVMValueRef storage = _builder.BuildAlloca(GetLlvmType(symbol.Type), $"{symbol.Name}.addr");
+			storageMap[symbol] = storage;
+			if (symbol is ParameterSymbol parameter)
+			{
+				_builder.BuildStore(llvmFunction.GetParam((uint)parameter.Ordinal), storage);
+			}
 		}
 
 		foreach ((BasicBlock cfgBlock, SsaBlock ssaBlock) in plan.Ssa.Blocks)
@@ -55,7 +67,7 @@ internal partial class LlvmTranslator
 
 			foreach (Instruction instruction in ssaBlock.Instructions)
 			{
-				EmitInstruction(instruction, blockMap, valueMap);
+				EmitInstruction(instruction, blockMap, valueMap, storageMap);
 			}
 		}
 
@@ -81,7 +93,8 @@ internal partial class LlvmTranslator
 
 	private void EmitInstruction(Instruction instruction,
 		Dictionary<BasicBlock, LLVMBasicBlockRef> blockMap,
-		Dictionary<SsaValue, LLVMValueRef> valueMap)
+		Dictionary<SsaValue, LLVMValueRef> valueMap,
+		Dictionary<LocalVariableOrParameterSymbol, LLVMValueRef> storageMap)
 	{
 		switch (instruction)
 		{
@@ -158,6 +171,27 @@ internal partial class LlvmTranslator
 					_plans[call.Function].LlvmFunction,
 					arguments,
 					call.Output.Type.IsVoidType ? string.Empty : "call");
+				break;
+			case AddressOfInstruction addressOf:
+				valueMap[addressOf.Output] = storageMap[addressOf.Symbol];
+				break;
+			case LoadLocalAddressInstruction loadLocal:
+				valueMap[loadLocal.Output] = _builder.BuildLoad2(
+					GetLlvmType(loadLocal.Output.Type),
+					storageMap[loadLocal.Symbol],
+					$"load.{loadLocal.Symbol.Name}");
+				break;
+			case StoreLocalAddressInstruction storeLocal:
+				_builder.BuildStore(ResolveValue(storeLocal.Value, valueMap), storageMap[storeLocal.Symbol]);
+				break;
+			case LoadIndirectInstruction loadIndirect:
+				valueMap[loadIndirect.Output] = _builder.BuildLoad2(
+					GetLlvmType(loadIndirect.Output.Type),
+					ResolveValue(loadIndirect.Address, valueMap),
+					"load.ind");
+				break;
+			case StoreIndirectInstruction storeIndirect:
+				_builder.BuildStore(ResolveValue(storeIndirect.Value, valueMap), ResolveValue(storeIndirect.Address, valueMap));
 				break;
 			case RetInstruction ret:
 				if (ret.Value == null)
@@ -292,6 +326,31 @@ internal partial class LlvmTranslator
 		throw new KeyNotFoundException($"No LLVM value mapped for SSA value '{value.GetType().Name}'.");
 	}
 
+	private static IEnumerable<LocalVariableOrParameterSymbol> CollectAddressBackedSymbols(SsaFunction ssa)
+	{
+		HashSet<LocalVariableOrParameterSymbol> result = [];
+		foreach (SsaBlock block in ssa.Blocks.Values)
+		{
+			foreach (Instruction instruction in block.Instructions)
+			{
+				switch (instruction)
+				{
+					case AddressOfInstruction addressOf:
+						result.Add(addressOf.Symbol);
+						break;
+					case LoadLocalAddressInstruction loadLocal:
+						result.Add(loadLocal.Symbol);
+						break;
+					case StoreLocalAddressInstruction storeLocal:
+						result.Add(storeLocal.Symbol);
+						break;
+				}
+			}
+		}
+
+		return result;
+	}
+
 	private static LLVMIntPredicate GetIntPredicate(SpecialType operandType, ComparisonKind comparisonKind)
 	{
 		bool unsigned = operandType.IsUnsignedIntegral || operandType == SpecialType.StdBoolean;
@@ -334,6 +393,11 @@ internal partial class LlvmTranslator
 
 	private LLVMTypeRef GetLlvmType(TypeSymbol type)
 	{
+		if (type is BaseReferenceTypeSymbol referenceType)
+		{
+			return LLVMTypeRef.CreatePointer(GetLlvmType(referenceType.PointsTo), 0);
+		}
+
 		return type.SpecialType switch
 		{
 			SpecialType.StdNumericsSInt8 or SpecialType.StdNumericsUInt8 => _context.Int8Type,

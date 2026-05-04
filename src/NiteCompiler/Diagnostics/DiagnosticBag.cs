@@ -240,6 +240,21 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.CannotImplicitlyConvert, [location], from.ToDisplayString(SymbolFormat.PreferShortSpecialTypeName), to.ToDisplayString(SymbolFormat.PreferShortSpecialTypeName));
 	}
 
+	public void ReportCannotUseAsLValue(Location location)
+	{
+		Add(DiagnosticDescriptor.CannotUseAsLValue, [location]);
+	}
+
+	public void ReportCannotUseAsRValue(Location location)
+	{
+		Add(DiagnosticDescriptor.CannotUseAsRValue, [location]);
+	}
+
+	public void ReportCannotDereferenceNonReference(Location location, TypeSymbol type)
+	{
+		Add(DiagnosticDescriptor.CannotDereferenceNonReference, [location], type.ToDisplayString(SymbolFormat.PreferShortSpecialTypeName));
+	}
+
 	public void ReportInternalCompilerError(Exception exception)
 	{
 		Add(DiagnosticDescriptor.InternalError, [], exception);

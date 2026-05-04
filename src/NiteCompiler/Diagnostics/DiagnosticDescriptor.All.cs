@@ -30,6 +30,9 @@ public partial class DiagnosticDescriptor
 		WrongReturnExpressionType,
 		MissingReturnStatement,
 		CannotImplicitlyConvert,
+		CannotUseAsLValue,
+		CannotUseAsRValue,
+		CannotDereferenceNonReference,
 		IntegralConstantTooLarge,
 		IntegralValueCantBeSigned,
 		IntegralValueIsGreaterThanMaxValue,
@@ -81,6 +84,9 @@ public partial class DiagnosticDescriptor
 			"Return statement expression type '{0}' is not implicitly convertable to the function return type '{1}'.");
 		MissingReturnStatement = new("missing-return", "Return statement is required.");
 		CannotImplicitlyConvert = new("cannot-implicitly-convert", "Cannot implicitly cast type '{0}' to the '{1}'.");
+		CannotUseAsLValue = new("cannot-use-as-lvalue", "Expression cannot be used as an assignment target or referenced storage location.");
+		CannotUseAsRValue = new("cannot-use-as-rvalue", "Expression cannot be used as a value.");
+		CannotDereferenceNonReference = new("cannot-dereference-non-reference", "Cannot dereference non-reference type '{0}'.");
 
 		// Value checking
 		IntegralConstantTooLarge = new("integral-constant-too-large", "Integral constant too large.");

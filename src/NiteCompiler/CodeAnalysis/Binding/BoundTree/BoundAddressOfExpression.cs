@@ -12,8 +12,8 @@ internal sealed class BoundAddressOfExpression : BoundExpression
 	public override Pureness Pureness => Expression.Pureness;
 	public override Binder.BindValueKind ValueKind => Binder.BindValueKind.RValue;
 
-	public BoundAddressOfExpression(SyntaxNode syntax, BoundExpression expression, TypeSymbol type)
-		: base(syntax)
+	public BoundAddressOfExpression(SyntaxNode syntax, BoundExpression expression, TypeSymbol type, bool hasErrors = false)
+		: base(syntax, hasErrors || expression.HasErrors)
 	{
 		Expression = expression;
 		Type = type;

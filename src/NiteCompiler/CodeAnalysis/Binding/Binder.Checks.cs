@@ -20,13 +20,26 @@ internal partial class Binder
 
 	private BoundExpression CheckValue(BoundExpression expression, BindValueKind valueKind, BindingDiagnosticBag diagnostics)
 	{
-		BindValueKind actual = expression.ValueKind;
+		BindValueKind actual = expression.ValueKind & ValueKindSignificantBitsMask;
+		BindValueKind expected = valueKind & ValueKindSignificantBitsMask;
 
-		if ((actual & ValueKindSignificantBitsMask) == (valueKind & ValueKindSignificantBitsMask))
+		if ((actual & expected) != 0)
 			return expression;
 
-		// TODO: Error in diagnostic
+		if (expression.HasErrors || expression.Type.IsErrorSymbol)
+		{
+			return expression;
+		}
 
-		return expression;
+		if ((expected & BindValueKind.LValue) != 0)
+		{
+			diagnostics.Diagnostics.ReportCannotUseAsLValue(expression.Syntax!.Location);
+		}
+		else if ((expected & BindValueKind.RValue) != 0)
+		{
+			diagnostics.Diagnostics.ReportCannotUseAsRValue(expression.Syntax!.Location);
+		}
+
+		return BadExpression(expression.Syntax!);
 	}
 }
