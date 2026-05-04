@@ -105,12 +105,7 @@ internal partial class Binder
 		Debug.Assert(syntax.Kind == NodeKind.AddressOfExpression);
 		BoundExpression operand = BindRValueWithoutTargetType(syntax.Expression, diagnostics);
 
-		if (operand.Type is BaseReferenceTypeSymbol referenceType)
-		{
-			return new BoundAddressOfExpression(syntax, operand, referenceType.PointsTo);
-		}
-
-		return new BoundAddressOfExpression(syntax, operand, CreateErrorType());
+		return new BoundAddressOfExpression(syntax, operand, operand.Type);
 	}
 
 	private BoundExpression BindDereferenceExpression(UnaryExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
@@ -123,7 +118,7 @@ internal partial class Binder
 			return new BoundDereferenceExpression(syntax, operand, referenceType.PointsTo, referenceType.IsMutable);
 		}
 
-		return new BoundDereferenceExpression(syntax, operand, CreateErrorType(), isMutable: false);
+		return new BoundDereferenceExpression(syntax, operand, CreateErrorType(), isMutable: true);
 	}
 
 	private BoundExpression BindBinaryExpression(BinaryExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
