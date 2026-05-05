@@ -1,10 +1,7 @@
 #!bin/nite
 
-public ref_test() {
+public ref_test<'a>(x: &'a i32) {
     let z = 1;
-    let x: &i32 = &z;
-    let y: &&i32 = &x;
-    y = 1;
 }
 
 module std;

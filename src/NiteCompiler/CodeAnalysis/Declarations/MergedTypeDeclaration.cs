@@ -9,6 +9,7 @@ namespace NiteCompiler.CodeAnalysis.Declarations;
 internal sealed class MergedTypeDeclaration : MergedItemDeclaration
 {
 	public ImmutableArray<SingleTypeDeclaration> Declarations { get; }
+	public int LifetimeArity => Declarations[0].LifetimeArity;
 	public int Arity => Declarations[0].Arity;
 
 	public MergedTypeDeclaration(ImmutableArray<SingleTypeDeclaration> declarations)

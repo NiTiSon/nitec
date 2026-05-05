@@ -101,6 +101,7 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 		{
 			SingleTypeDeclaration type = new(
 				name: name.UnqualifiedName.GetName(),
+				lifetimeArity: name.UnqualifiedName.LifetimeArity,
 				arity: name.UnqualifiedName.Arity,
 				accessibility: accessibility,
 				modifiers: modifiers,
@@ -120,6 +121,7 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 
 		return new SingleTypeDeclaration(
 			name: name.GetName(),
+			lifetimeArity: name.LifetimeArity,
 			arity: name.Arity,
 			accessibility: accessibility,
 			modifiers: modifiers,

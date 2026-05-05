@@ -16,7 +16,10 @@ internal sealed class StringToken : Token
 		SyntaxList<Trivia> leadingTrivia, SyntaxList<Trivia> trailingTrivia)
 		: base(tree, span, leadingTrivia, trailingTrivia)
 	{
-		Debug.Assert(kind == TokenKind.StringLiteral || kind == TokenKind.CharacterLiteral || kind == TokenKind.EscapedIdentifier);
+		Debug.Assert(kind == TokenKind.StringLiteral ||
+		             kind == TokenKind.CharacterLiteral ||
+		             kind == TokenKind.EscapedIdentifier ||
+		             kind == TokenKind.LifetimeIdentifier);
 
 		Text = text;
 		LiteralType = literalType;

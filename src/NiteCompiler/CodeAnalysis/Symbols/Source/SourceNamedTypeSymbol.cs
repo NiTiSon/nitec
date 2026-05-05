@@ -14,6 +14,7 @@ internal sealed class SourceNamedTypeSymbol : NamedTypeSymbol
 	public override NiteCompilation DeclaringCompilation => ContainingSymbol.DeclaringCompilation!;
 
 	public override string Name => Declaration.Name;
+	public override int LifetimeArity => Declaration.LifetimeArity;
 	public override int Arity => Declaration.Arity;
 
 	public override SpecialType SpecialType { get; }

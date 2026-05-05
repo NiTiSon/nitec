@@ -225,9 +225,10 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind FunctionDeclaration = Reg(Item + 2, "function-declaration");
 	public static readonly NodeKind TypeDeclaration = Reg(Item + 3, "type-declaration");
 	public static readonly NodeKind Parameter = Reg(Item + 4, "parameter");
-	public static readonly NodeKind GenericLifetimeParameter = Reg(Item + 5, "generic-lifetime-parameter");
-	public static readonly NodeKind GenericTypeParameter = Reg(Item + 6, "generic-type-parameter");
-	public static readonly NodeKind GenericValueParameter = Reg(Item + 7, "generic-value-parameter");
+	public static readonly NodeKind Lifetime = Reg(Item + 5, "lifetime");
+	public static readonly NodeKind GenericLifetimeParameter = Reg(Item + 6, "generic-lifetime-parameter");
+	public static readonly NodeKind GenericTypeParameter = Reg(Item + 7, "generic-type-parameter");
+	public static readonly NodeKind GenericValueParameter = Reg(Item + 8, "generic-value-parameter");
 
 	private const uint Expression = 0x00_00__20_00;
 	private const uint BinaryFlag = 0x00_01__00_00;

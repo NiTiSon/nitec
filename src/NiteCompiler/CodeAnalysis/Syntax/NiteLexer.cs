@@ -1,6 +1,3 @@
-using System;
-using System.Diagnostics;
-using System.Net.Sockets;
 using NiteCompiler.CodeAnalysis.Text;
 using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
@@ -80,6 +77,10 @@ internal sealed partial class NiteLexer
 		{
 			text = _cache.StringBuilder.ToString();
 		}
+		else if (info.Kind == TokenKind.LifetimeIdentifier)
+		{
+			text = _cache.StringBuilder.ToString();
+		}
 
 		ReadTrivia(false, _cache.TrailingTrivia);
 
@@ -99,6 +100,11 @@ internal sealed partial class NiteLexer
 		    info.Kind == TokenKind.CharacterLiteral)
 		{
 			return new StringToken(_syntaxTree, info.Kind, span, text!, info.StringType, leading, trailing);
+		}
+
+		if (info.Kind == TokenKind.LifetimeIdentifier)
+		{
+			return new StringToken(_syntaxTree, info.Kind, span, text!, StringLiteralType.None, leading, trailing);
 		}
 		if (info.Kind == TokenKind.NumberLiteral)
 		{
@@ -411,8 +417,7 @@ internal sealed partial class NiteLexer
 
 				break;
 			case '\'':
-				// TODO[mid]: Handle lifetime identifier
-				ReadCharacter(ref info);
+				ReadCharacterOrLifetime(ref info);
 				break;
 			case >= '0' and <= '9':
 				ReadNumber(ref info);

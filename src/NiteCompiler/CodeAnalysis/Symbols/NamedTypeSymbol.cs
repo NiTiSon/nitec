@@ -8,6 +8,11 @@ public abstract class NamedTypeSymbol : TypeSymbol
 	public abstract override string Name { get; }
 
 	/// <summary>
+	/// The amount of lifetime arguments.
+	/// </summary>
+	public abstract override int LifetimeArity { get; }
+
+	/// <summary>
 	/// The amount of generic arguments.
 	/// </summary>
 	public abstract override int Arity { get; }

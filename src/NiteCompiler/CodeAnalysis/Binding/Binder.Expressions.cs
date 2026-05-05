@@ -26,9 +26,9 @@ internal partial class Binder
 			CreateErrorType());
 	}
 
-	internal TypeSymbol CreateErrorType(string name = "")
+	internal TypeSymbol CreateErrorType(string name = "<error_type>")
 	{
-		return new ErrorTypeSymbol(Compilation, SpecialType.None, name, arity: 0, errorInfo: null, unreported: false);
+		return new ErrorTypeSymbol(Compilation, SpecialType.None, name, lifetimeArity: 0, arity: 0, errorInfo: null, unreported: false);
 	}
 
 	internal BoundExpression BindExpression(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics, bool invoked, bool indexed)

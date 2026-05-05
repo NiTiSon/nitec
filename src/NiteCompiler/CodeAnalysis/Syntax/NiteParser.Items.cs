@@ -15,15 +15,52 @@ internal partial class NiteParser
 	{
 		Token less = MatchToken(TokenKind.Less);
 
-		SyntaxList<GenericParameterSyntax>.Builder builder = new();
+		SyntaxList<GenericOrLifetimeParameterSyntax>.Builder builder = new();
 		while (Current.TKind != TokenKind.Greater)
 		{
-			throw new NotImplementedException("Generic parameters is not implemented.");
+			builder.Add(ParseGenericOrLifetimeParameter());
+
+			if (Current.TKind == TokenKind.Comma)
+			{
+				PeekAndAdvance();
+			}
+			else if (Current.TKind != TokenKind.Greater)
+			{
+				_diagnostics.ReportExpectedToken(Current.Location, TokenKind.Comma);
+			}
 		}
 
 		Token greater = MatchToken(TokenKind.Greater);
 
 		return new GenericParameterListSyntax(_syntaxTree, less, builder.Build(_syntaxTree),  greater);
+	}
+
+	private GenericOrLifetimeParameterSyntax ParseGenericOrLifetimeParameter()
+	{
+		TokenKind tokenKind = Current.TKind;
+
+		if (tokenKind == TokenKind.LifetimeIdentifier)
+		{
+			LifetimeSyntax lifetime = ParseLifetime();
+
+			return new LifetimeParameterSyntax(_syntaxTree, lifetime);
+		}
+
+		if (tokenKind.IsAnyIdentifierOrKeyword)
+		{
+			// TODO: impl
+		}
+
+		throw new NotImplementedException();
+	}
+
+	private LifetimeSyntax ParseLifetime()
+	{
+		Debug.Assert(Current.TKind == TokenKind.LifetimeIdentifier);
+		Token lifetimeToken = PeekAndAdvance();
+		Debug.Assert(lifetimeToken is StringToken);
+
+		return new LifetimeSyntax(_syntaxTree, lifetimeToken, ((StringToken)lifetimeToken).Text);
 	}
 
 	public MemberSyntax ParseMember(Token accessibilityToken)

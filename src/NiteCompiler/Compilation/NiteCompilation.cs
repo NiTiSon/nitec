@@ -131,7 +131,7 @@ public sealed partial class NiteCompilation
 			string fullName = type.ToFullName();
 			DeclarationDiagnostics.ReportUnresolvedPredefinedType(fullName);
 
-			result = new ErrorTypeSymbol(this, type, fullName, 0, null, unreported: false);
+			result = new ErrorTypeSymbol(this, type, fullName, 0, 0, null, unreported: false);
 		}
 		else
 		{

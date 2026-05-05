@@ -133,6 +133,11 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.InvalidCharacterLiteralEncoding, [source], encoding, byteCount);
 	}
 
+	public void ReportEmptyLifetimeName(Location source)
+	{
+		Add(DiagnosticDescriptor.EmptyLifetimeName, [source]);
+	}
+
 	public void ReportInvalidCharacterLiteral(Location source)
 	{
 		Add(DiagnosticDescriptor.InvalidCharacterLiteral, [source]);

@@ -413,6 +413,7 @@ internal sealed partial class NiteParser
 
 		if (currentKind == TokenKind.DoubleAmpersand)
 		{
+			// TODO: fix #3
 			Token combinedToken = PeekAndAdvance();
 			Token firstAmpersand = new Token.Default(
 				_syntaxTree,
@@ -428,8 +429,8 @@ internal sealed partial class NiteParser
 				combinedToken.TrailingTrivia);
 
 			TypeSyntax type = ParseType();
-			type = new ReferenceTypeSyntax(_syntaxTree, secondAmpersand, null, null, type);
-			type = new ReferenceTypeSyntax(_syntaxTree, firstAmpersand, null, null, type);
+			type = new ReferenceTypeSyntax(_syntaxTree, secondAmpersand, null, null, null, type);
+			type = new ReferenceTypeSyntax(_syntaxTree, firstAmpersand, null, null, null, type);
 
 			return type;
 		}
@@ -445,6 +446,18 @@ internal sealed partial class NiteParser
 	private ReferenceTypeSyntax ParseReferenceType(Token ampersand)
 	{
 		Debug.Assert(ampersand.TKind == TokenKind.Ampersand);
+		// TODO: improve
+		// the syntaxes such
+		// &?'a
+		// &?const?
+		// are definitely wrong, and we definitely should report, but it's better if we still want to recover the valid syntax
+
+		LifetimeSyntax? lifetime = null;
+		if (Current.TKind == TokenKind.LifetimeIdentifier)
+		{
+			lifetime = ParseLifetime();
+		}
+
 		Token? constKeyword = null;
 		if (Current.TKind == TokenKind.Const)
 		{
@@ -459,7 +472,7 @@ internal sealed partial class NiteParser
 
 		TypeSyntax elementType = ParseType();
 
-		return new ReferenceTypeSyntax(_syntaxTree, ampersand, constKeyword, questionToken, elementType);
+		return new ReferenceTypeSyntax(_syntaxTree, ampersand, lifetime, constKeyword, questionToken, elementType);
 	}
 
 	private NameSyntax ParseName()

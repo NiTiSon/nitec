@@ -10,7 +10,6 @@ public abstract class FunctionSymbol : Symbol
 	public abstract TypeSymbol ReturnType { get; }
 	public abstract ImmutableArray<ParameterSymbol> Parameters { get; }
 
-
 	public override string ToDisplayString(SymbolFormat format = SymbolFormat.Default)
 	{
 		string separator = (ContainingSymbol is TypeSymbol && !IsStatic) ? "." : "::";

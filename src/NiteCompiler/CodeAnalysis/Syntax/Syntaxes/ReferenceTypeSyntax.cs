@@ -6,6 +6,7 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 public sealed class ReferenceTypeSyntax : TypeSyntax
 {
 	public Token AmpersandToken { get; }
+	public LifetimeSyntax? Lifetime { get; }
 	public Token? ConstToken { get; }
 	public Token? QuestionToken { get; }
 	public TypeSyntax ElementSyntax { get; }
@@ -13,7 +14,7 @@ public sealed class ReferenceTypeSyntax : TypeSyntax
 	public override NodeKind Kind => NodeKind.ReferenceType;
 	public override TextSpan Span => TextSpan.FromBounds(AmpersandToken.Span, ElementSyntax.Span);
 
-	internal ReferenceTypeSyntax(SyntaxTree tree, Token ampersandToken, Token? constToken, Token? questionToken, TypeSyntax elementSyntax)
+	internal ReferenceTypeSyntax(SyntaxTree tree, Token ampersandToken, LifetimeSyntax? lifetime, Token? constToken, Token? questionToken, TypeSyntax elementSyntax)
 		: base(tree)
 	{
 		AmpersandToken = ampersandToken;

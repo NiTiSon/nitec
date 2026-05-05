@@ -6,18 +6,20 @@ namespace NiteCompiler.CodeAnalysis.Declarations;
 
 internal sealed class SingleTypeDeclaration : SingleItemDeclaration
 {
+	public int LifetimeArity { get; }
 	public int Arity { get; }
 	private readonly ImmutableArray<SingleItemDeclaration> _members;
 	public override DeclarationKind Kind => DeclarationKind.Type;
 	public DeclarationAccessibility Accessibility { get; }
 	public DeclarationModifiers Modifiers { get; }
 
-	public SingleTypeDeclaration(string name, int arity,
+	public SingleTypeDeclaration(string name, int lifetimeArity, int arity,
 		DeclarationAccessibility accessibility, DeclarationModifiers modifiers,
 		SyntaxReference syntax, SourceLocation nameLocation,
 		ImmutableArray<SingleItemDeclaration> members, ImmutableArray<Diagnostic> diagnostics)
 		: base(name, syntax, nameLocation, diagnostics)
 	{
+		LifetimeArity = lifetimeArity;
 		Arity = arity;
 		Accessibility = accessibility;
 		Modifiers = modifiers;

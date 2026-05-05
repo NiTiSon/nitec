@@ -72,6 +72,58 @@ internal partial class NiteLexer
 		}
 	}
 
+	private void ReadCharacterOrLifetime(ref TokenInfo info)
+	{
+		Debug.Assert(_window.Current == '\'');
+
+		ResetPoint rp = GetResetPoint();
+		_window.Advance();
+		bool isDefinitelyACharacter = false; // escape sequences are allowed only in strings or character literals
+		ReadCharacterSymbol(ref isDefinitelyACharacter);
+
+		if (isDefinitelyACharacter)
+		{
+			Reset(rp);
+			ReadCharacter(ref info);
+		}
+		else if (_window.Current == '\'')
+		{
+			Reset(rp);
+			ReadCharacter(ref info);
+		}
+		else // otherwise definitely a lifetime identifier
+		{
+			Reset(rp);
+			ReadLifetime(ref info);
+		}
+	}
+
+	private void ReadLifetime(ref TokenInfo info)
+	{
+		Debug.Assert(_window.Current == '\'');
+		info.Kind = TokenKind.LifetimeIdentifier;
+
+		_window.Advance();
+		StringBuilder sb = AcquireStringBuilder();
+		char c = _window.Current;
+		if (IsBeginIdentifier(c, allowDigits: false))
+		{
+			int width = 1;
+			sb.Append(c);
+			while (IsContinueIdentifier(c = _window.Peek(width)))
+			{
+				sb.Append(c);
+				width++;
+			}
+
+			_window.Advance(width);
+		}
+		else
+		{
+			_diagnostics.ReportEmptyLifetimeName(_window.LexemeSpan.Contextualize(_syntaxTree));
+		}
+	}
+
 	private void ReadCharacter(ref TokenInfo info)
 	{
 		Debug.Assert(_window.Current == '\'');
