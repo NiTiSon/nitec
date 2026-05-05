@@ -46,9 +46,16 @@ internal partial class NiteParser
 			return new LifetimeParameterSyntax(_syntaxTree, lifetime);
 		}
 
-		if (tokenKind.IsAnyIdentifierOrKeyword)
+		if (tokenKind.IsAnyIdentifierOrKeyword) // value or type generic parameter
 		{
-			// TODO: impl
+			SimpleNameSyntax name = ParseSimpleName();
+
+			if (name is GenericNameSyntax)
+			{
+				// TODO: report
+			}
+
+			return new TypeParameterSyntax(_syntaxTree, name);
 		}
 
 		throw new NotImplementedException();

@@ -17,6 +17,7 @@ public abstract class SyntaxVisitor
 	public virtual void VisitSyntaxList<T>(SyntaxList<T> list) where T : SyntaxNode  => DefaultVisit(list);
 	public virtual void VisitLifetime(LifetimeSyntax lifetime) => DefaultVisit(lifetime);
 	public virtual void VisitLifetimeParameter(LifetimeParameterSyntax parameter) => DefaultVisit(parameter);
+	public virtual void VisitTypeParameter(TypeParameterSyntax parameter) => DefaultVisit(parameter);
 	public virtual void VisitGenericParameterList(GenericParameterListSyntax list) => DefaultVisit(list);
 
 	public virtual void VisitUnaryExpression(UnaryExpressionSyntax expression) => DefaultVisit(expression);
@@ -75,6 +76,7 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitSyntaxList<T>(SyntaxList<T> list) where T : SyntaxNode  => DefaultVisit(list);
 	public virtual TResult? VisitLifetime(LifetimeSyntax lifetime) => DefaultVisit(lifetime);
 	public virtual TResult? VisitLifetimeParameter(LifetimeParameterSyntax parameter) => DefaultVisit(parameter);
+	public virtual TResult? VisitTypeParameter(TypeParameterSyntax parameter) => DefaultVisit(parameter);
 	public virtual TResult? VisitGenericParameterList(GenericParameterListSyntax list) => DefaultVisit(list);
 
 	public virtual TResult? VisitUnaryExpression(UnaryExpressionSyntax expression) => DefaultVisit(expression);

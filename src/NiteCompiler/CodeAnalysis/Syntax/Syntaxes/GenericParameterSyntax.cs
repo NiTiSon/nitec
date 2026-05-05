@@ -4,5 +4,6 @@ public abstract class GenericParameterSyntax : GenericOrLifetimeParameterSyntax
 {
 	private protected GenericParameterSyntax(SyntaxTree tree) : base(tree)
 	{
+
 	}
 }

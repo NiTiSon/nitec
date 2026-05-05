@@ -4,6 +4,11 @@ public abstract class LifetimeParameterSymbol : Symbol
 {
 	public sealed override SymbolKind Kind => SymbolKind.LifetimeParameter;
 
+	/// <summary>
+	/// Is lifetime parameter is implicitly declared.
+	/// </summary>
+	public abstract bool IsImplicitLifetime { get; }
+
 	public sealed override void Accept(SymbolVisitor visitor)
 	{
 		visitor.VisitLifetimeParameter(this);

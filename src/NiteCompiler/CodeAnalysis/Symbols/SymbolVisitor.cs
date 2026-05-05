@@ -16,6 +16,7 @@ public abstract class SymbolVisitor
 	public virtual void VisitLibrary(LibrarySymbol symbol) => DefaultVisit(symbol);
 	public virtual void VisitFunction(FunctionSymbol symbol) => DefaultVisit(symbol);
 	public virtual void VisitType(TypeSymbol symbol) => DefaultVisit(symbol);
+	public virtual void VisitLifetime(LifetimeSymbol symbol) => DefaultVisit(symbol);
 	public virtual void VisitLifetimeParameter(LifetimeParameterSymbol symbol) => DefaultVisit(symbol);
 	public virtual void VisitGenericParameter(GenericParameterSymbol symbol) => DefaultVisit(symbol);
 	public virtual void VisitLocalVariable(LocalVariableSymbol symbol) => DefaultVisit(symbol);
@@ -35,6 +36,7 @@ public abstract class SymbolVisitor<TResult>
 	public virtual TResult? VisitLibrary(LibrarySymbol symbol) => DefaultVisit(symbol);
 	public virtual TResult? VisitFunction(FunctionSymbol symbol) => DefaultVisit(symbol);
 	public virtual TResult? VisitType(TypeSymbol symbol) => DefaultVisit(symbol);
+	public virtual TResult? VisitLifetime(LifetimeSymbol symbol) => DefaultVisit(symbol);
 	public virtual TResult? VisitLifetimeParameter(LifetimeParameterSymbol symbol) => DefaultVisit(symbol);
 	public virtual TResult? VisitGenericParameter(GenericParameterSymbol symbol) => DefaultVisit(symbol);
 	public virtual TResult? VisitLocalVariable(LocalVariableSymbol symbol) => DefaultVisit(symbol);
@@ -54,6 +56,7 @@ public abstract class SymbolVisitor<TResult, TArgument>
 	public virtual TResult? VisitLibrary(LibrarySymbol symbol, TArgument arg) => DefaultVisit(symbol, arg);
 	public virtual TResult? VisitFunction(FunctionSymbol symbol, TArgument arg) => DefaultVisit(symbol, arg);
 	public virtual TResult? VisitType(TypeSymbol symbol, TArgument arg) => DefaultVisit(symbol, arg);
+	public virtual TResult? VisitLifetime(LifetimeSymbol symbol, TArgument arg) => DefaultVisit(symbol, arg);
 	public virtual TResult? VisitLifetimeParameter(LifetimeParameterSymbol symbol, TArgument arg) => DefaultVisit(symbol, arg);
 	public virtual TResult? VisitGenericParameter(GenericParameterSymbol symbol, TArgument arg) => DefaultVisit(symbol, arg);
 	public virtual TResult? VisitLocalVariable(LocalVariableSymbol symbol, TArgument arg) => DefaultVisit(symbol, arg);

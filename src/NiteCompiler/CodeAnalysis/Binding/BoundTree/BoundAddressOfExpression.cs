@@ -4,6 +4,9 @@ using NiteCompiler.CodeAnalysis.Syntax;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
 
+/// <summary>
+/// Address of expression is an expression of acquiring memory address of variable, field or parameter.
+/// </summary>
 internal sealed class BoundAddressOfExpression : BoundExpression
 {
 	public BoundExpression Expression { get; }

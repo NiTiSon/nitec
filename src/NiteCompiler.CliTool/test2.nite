@@ -1,8 +1,31 @@
 #!bin/nite
 
-public ref_test<'a>(x: &'a i32) {
-    let z = 1;
+public lifetime_test() {
+    let x: i32 = 1;
+    let y: &i32 = &x; // valid
 }
+
+public lifetime_test_fail() {
+    let x: i32 = 1;
+    let y: &i32 = &x; // invalid: reference outlives the referred location
+    drop(move x); // move is required; otherwise copy is used
+}
+
+public lifetime_test2_fail<'a>(ref: &i32) {
+	let x = 3;
+	ref = &x; // invalid: reference outlives the referred location
+}
+
+public lifetime_test3<'a, 'b>(a: &'a i32, b: &'b i32) -> &'b i32
+where 'a : 'b {
+	if (a > b) {
+		return a;
+	}
+
+	return b;
+}
+
+public drop<T>(d: T) { }
 
 module std;
 

@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Threading;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Compilation;
@@ -32,4 +34,29 @@ internal sealed class BlockBinder : LocalScopeBinder
 	}
 
 	internal override SyntaxNode ScopeDesignator => _block;
+
+	internal override LifetimeSymbol ScopeLifetime
+	{
+		get
+		{
+			if (field == null)
+			{
+				ScopeLifetimeSymbol lifetime = new(this);
+				Interlocked.CompareExchange(ref field, lifetime, null);
+			}
+
+			return field;
+		}
+	}
+
+	private sealed class ScopeLifetimeSymbol(Binder binder) : LifetimeSymbol
+	{
+		public override Symbol? ContainingSymbol { get; } = binder.ContainingMember;
+		public LifetimeSymbol? ContainingLifetime { get; } = binder.Parent?.ScopeLifetime;
+
+		public override bool Outlives(LifetimeSymbol other)
+		{
+			throw new NotImplementedException();
+		}
+	}
 }
