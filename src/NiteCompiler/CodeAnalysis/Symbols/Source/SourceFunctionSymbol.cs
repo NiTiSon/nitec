@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Syntax;
@@ -57,13 +58,13 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 
 		BinderFactory factory = DeclaringCompilation!.GetBinderFactory(Syntax.Tree);
 
-		if (Syntax.TypeClause == null) // void
+		if (Syntax.ReturnTypeClause == null) // void
 		{
 			TypeSymbol @void = (TypeSymbol)factory.GetBinder(Syntax).BindVoidType();
 			return @void;
 		}
-		Binder withGenericsBinder = factory.GetBinder(Syntax.TypeClause);
-		TypeSymbol result = withGenericsBinder.BindType(Syntax.TypeClause.Type, diagnostics);
+		Binder withGenericsBinder = factory.GetBinder(Syntax.ReturnTypeClause);
+		TypeSymbol result = withGenericsBinder.BindType(Syntax.ReturnTypeClause.Type, diagnostics);
 
 		diagnostics.Free();
 		return result;
@@ -142,6 +143,25 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 		return inFunctionBinder == null
 			? null
 			: (syntax == null ? inFunctionBinder : new ExecutableCodeBinder(syntax, this, inFunctionBinder));
+	}
+
+	public bool TryBindBody(
+		bool lower,
+		[NotNullWhen(true)] out Binder? binder,
+		[NotNullWhen(true)] out BoundFunctionBody? body,
+		BindingDiagnosticBag diagnostics)
+	{
+		binder = TryGetBodyBinder();
+		body = null;
+
+		if (binder == null)
+		{
+			return false;
+		}
+
+		body = (BoundFunctionBody)binder.BindFunctionBody(Syntax, diagnostics);
+		Debug.Assert(body != null);
+		return true;
 	}
 
 	internal override void ForceComplete(Predicate<Symbol>? filter, CancellationToken cancellationToken = default)

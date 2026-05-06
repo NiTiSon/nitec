@@ -108,6 +108,11 @@ public sealed class SyntaxList<TNode> : SyntaxNode, IEnumerable<TNode>
 		{
 			int capacity = _buffer.Length;
 
+			if (capacity == 0)
+			{
+				return tree.GetEmptySyntaxList<TNode>();
+			}
+
 			if (capacity > Count)
 			{
 				TNode[] temp = new TNode[Count];

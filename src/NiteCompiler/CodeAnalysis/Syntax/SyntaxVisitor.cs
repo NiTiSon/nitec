@@ -16,9 +16,9 @@ public abstract class SyntaxVisitor
 	public virtual void VisitTrivia(Trivia trivia) => DefaultVisit(trivia);
 	public virtual void VisitSyntaxList<T>(SyntaxList<T> list) where T : SyntaxNode  => DefaultVisit(list);
 	public virtual void VisitLifetime(LifetimeSyntax lifetime) => DefaultVisit(lifetime);
-	public virtual void VisitLifetimeParameter(LifetimeParameterSyntax parameter) => DefaultVisit(parameter);
 	public virtual void VisitTypeParameter(TypeParameterSyntax parameter) => DefaultVisit(parameter);
 	public virtual void VisitGenericParameterList(GenericParameterListSyntax list) => DefaultVisit(list);
+	public virtual void VisitConstraint(ConstraintSyntax constraint) => DefaultVisit(constraint);
 
 	public virtual void VisitUnaryExpression(UnaryExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitBinaryExpression(BinaryExpressionSyntax expression) => DefaultVisit(expression);
@@ -59,6 +59,7 @@ public abstract class SyntaxVisitor
 	public virtual void VisitLoopStatement(LoopStatementSyntax statement) => DefaultVisit(statement);
 	public virtual void VisitWhileStatement(WhileStatementSyntax statement) => DefaultVisit(statement);
 	public virtual void VisitElseClause(ElseClauseSyntax elseClause) => DefaultVisit(elseClause);
+	public virtual void VisitLifetimeOrGenericConstraintClause(LifetimeOrGenericConstraintClauseSyntax elseClause) => DefaultVisit(elseClause);
 }
 
 public abstract class SyntaxVisitor<TResult>
@@ -75,9 +76,9 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitTrivia(Trivia trivia) => DefaultVisit(trivia);
 	public virtual TResult? VisitSyntaxList<T>(SyntaxList<T> list) where T : SyntaxNode  => DefaultVisit(list);
 	public virtual TResult? VisitLifetime(LifetimeSyntax lifetime) => DefaultVisit(lifetime);
-	public virtual TResult? VisitLifetimeParameter(LifetimeParameterSyntax parameter) => DefaultVisit(parameter);
 	public virtual TResult? VisitTypeParameter(TypeParameterSyntax parameter) => DefaultVisit(parameter);
 	public virtual TResult? VisitGenericParameterList(GenericParameterListSyntax list) => DefaultVisit(list);
+	public virtual TResult? VisitConstraint(ConstraintSyntax constraint) => DefaultVisit(constraint);
 
 	public virtual TResult? VisitUnaryExpression(UnaryExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitBinaryExpression(BinaryExpressionSyntax expression)  => DefaultVisit(expression);
@@ -118,4 +119,5 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitLoopStatement(LoopStatementSyntax statement) => DefaultVisit(statement);
 	public virtual TResult? VisitWhileStatement(WhileStatementSyntax statement) => DefaultVisit(statement);
 	public virtual TResult? VisitElseClause(ElseClauseSyntax elseClause) => DefaultVisit(elseClause);
+	public virtual TResult? VisitLifetimeOrGenericConstraintClause(LifetimeOrGenericConstraintClauseSyntax elseClause) => DefaultVisit(elseClause);
 }

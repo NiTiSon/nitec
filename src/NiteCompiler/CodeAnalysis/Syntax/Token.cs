@@ -4,13 +4,22 @@ using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
+[DebuggerDisplay("{ToDebugString(), nq}")]
 public abstract class Token : SyntaxNode
 {
 	public override TextSpan Span { get; }
 	public SyntaxList<Trivia> LeadingTrivia { get; }
 	public SyntaxList<Trivia> TrailingTrivia { get; }
 	public abstract TokenKind TKind { get; }
-	public sealed override NodeKind Kind => NodeKind.Token;
+
+	public sealed override NodeKind Kind
+	{
+		get
+		{
+			Debug.WriteLine("The TokenKind.Node is acquired, probably wrong behaviour.");
+			return NodeKind.Token;
+		}
+	}
 	public bool IsKeyword => TKind.IsKeyword;
 	public bool IsPredefinedTypeKeyword => TKind.IsPredefinedTypeKeyword;
 
@@ -49,7 +58,18 @@ public abstract class Token : SyntaxNode
 
 	public override string ToString()
 	{
-		return $"Token = {TKind};";
+		return $"Token = {TKind} @{Span}";
+	}
+
+	private string ToDebugString()
+	{
+		TextLine? line = Tree.Text.Lines.GetLineByCharacterPosition(Span.Start);
+		if (line == null)
+		{
+			return ToString();
+		}
+
+		return $"Token = {TKind} @{line.Value.HumanReadableLineNumber}";
 	}
 
 	public sealed class Default(

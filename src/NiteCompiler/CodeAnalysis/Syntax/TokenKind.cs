@@ -78,7 +78,8 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 
 	public TokenKind ToContextualKeyword()
 	{
-		return (uint)(IdentifierOrKeyword.RawValue | (this.RawValue << 16));
+		TokenKind contextual = (uint)(IdentifierOrKeyword.RawValue | (this.RawValue << 16));
+		return contextual;
 	}
 
 	public TokenKind GetContextualKeyword()
@@ -310,6 +311,7 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 	public static readonly TokenKind Const = Reg(Keyword + 22, "const");
 	public static readonly TokenKind Pure = Reg(Keyword + 23, "pure");
 	public static readonly TokenKind Interface = Reg(Keyword + 24, "interface");
+	public static readonly TokenKind Where = Reg(Keyword + 25, "where");
 
 	// Type keywords have they very own unique values
 	public static readonly TokenKind I8 = Reg(TypeKeyword + (uint)SpecialType.StdNumericsSInt8, "i8");

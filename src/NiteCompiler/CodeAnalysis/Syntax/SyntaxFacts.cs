@@ -130,6 +130,9 @@ internal static class SyntaxFacts
 			case "interface":
 				info.Kind = TokenKind.Interface;
 				return;
+			case "where":
+				info.Kind = TokenKind.Where.ToContextualKeyword();
+				return;
 		}
 	}
 

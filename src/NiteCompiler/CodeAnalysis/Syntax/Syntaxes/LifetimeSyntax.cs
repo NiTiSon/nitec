@@ -3,7 +3,7 @@ using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public sealed class LifetimeSyntax : SyntaxNode
+public sealed class LifetimeSyntax : LifetimeOrGenericParameterSyntax
 {
 	public Token LifetimeToken { get; }
 	public string Identifier { get; }

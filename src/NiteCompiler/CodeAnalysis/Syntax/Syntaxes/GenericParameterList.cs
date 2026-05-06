@@ -6,14 +6,14 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 public sealed class GenericParameterListSyntax : SyntaxNode
 {
 	public Token OpenToken { get; }
-	public SyntaxList<GenericOrLifetimeParameterSyntax> Parameters { get; }
+	public SyntaxList<LifetimeOrGenericParameterSyntax> Parameters { get; }
 	public Token CloseToken { get; }
 
 	public override TextSpan Span => TextSpan.FromBounds(OpenToken.Span, CloseToken.Span);
 	public override NodeKind Kind => NodeKind.GenericParameterList;
 
 	internal GenericParameterListSyntax(SyntaxTree tree,
-		Token openToken, SyntaxList<GenericOrLifetimeParameterSyntax> parameters, Token closeToken) : base(tree)
+		Token openToken, SyntaxList<LifetimeOrGenericParameterSyntax> parameters, Token closeToken) : base(tree)
 	{
 		OpenToken = openToken;
 		Parameters = parameters;

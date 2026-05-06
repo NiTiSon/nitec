@@ -15,7 +15,7 @@ internal partial class NiteParser
 	{
 		Token less = MatchToken(TokenKind.Less);
 
-		SyntaxList<GenericOrLifetimeParameterSyntax>.Builder builder = new();
+		SyntaxList<LifetimeOrGenericParameterSyntax>.Builder builder = new();
 		while (Current.TKind != TokenKind.Greater)
 		{
 			builder.Add(ParseGenericOrLifetimeParameter());
@@ -35,15 +35,13 @@ internal partial class NiteParser
 		return new GenericParameterListSyntax(_syntaxTree, less, builder.Build(_syntaxTree),  greater);
 	}
 
-	private GenericOrLifetimeParameterSyntax ParseGenericOrLifetimeParameter()
+	private LifetimeOrGenericParameterSyntax ParseGenericOrLifetimeParameter()
 	{
 		TokenKind tokenKind = Current.TKind;
 
 		if (tokenKind == TokenKind.LifetimeIdentifier)
 		{
-			LifetimeSyntax lifetime = ParseLifetime();
-
-			return new LifetimeParameterSyntax(_syntaxTree, lifetime);
+			return ParseLifetime();
 		}
 
 		if (tokenKind.IsAnyIdentifierOrKeyword) // value or type generic parameter
@@ -154,9 +152,17 @@ internal partial class NiteParser
 			typeClause = new(_syntaxTree, retusa, type);
 		}
 
+		SyntaxList<LifetimeOrGenericConstraintClauseSyntax>? constraintClauses = null;
+		if (Current.TKind.IsAnyIdentifierOrKeyword &&
+		    Current.TKind.ToContextualKeyword() != TokenKind.Where)
+		{
+			constraintClauses = ParseConstraintClauses();
+		}
+
+
 		FunctionBodySyntax body = ParseFunctionBody();
 
-		return new FunctionDeclarationSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree), parameters, name, typeClause, body);
+		return new FunctionDeclarationSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree), parameters, name, typeClause, constraintClauses, body);
 	}
 
 	private ParameterSyntax ParseParameter()
@@ -229,5 +235,156 @@ internal partial class NiteParser
 		}
 
 		throw new UnreachableException();
+	}
+
+	private SyntaxList<LifetimeOrGenericConstraintClauseSyntax> ParseConstraintClauses()
+	{
+		Debug.Assert(Current.GetContextualKeyword() == TokenKind.Where);
+		var builder = new SyntaxList<LifetimeOrGenericConstraintClauseSyntax>.Builder();
+
+		TokenKind currentKind = Current.TKind;
+		while (currentKind != TokenKind.EndOfFile &&
+		       currentKind != TokenKind.OpenBrace &&
+		       currentKind != TokenKind.Semicolon)
+		{
+			if (currentKind.IsAnyIdentifierOrKeyword &&
+			    currentKind.GetContextualKeyword() == TokenKind.Where)
+			{
+				var constraint = ParseConstraintClause();
+
+				builder.Add(constraint);
+			}
+			else
+			{
+				Token current = PeekAndAdvance();
+				_diagnostics.ReportUnexpectedToken(current.Location, current.TKind);
+			}
+
+			if (Current.TKind == TokenKind.Comma)
+			{
+				Token comma = PeekAndAdvance();
+				_diagnostics.ReportUnexpectedToken(comma.Location, comma.TKind);
+			}
+
+			currentKind = Current.TKind;
+		}
+
+		return builder.Build(_syntaxTree);
+	}
+
+	private LifetimeOrGenericConstraintClauseSyntax ParseConstraintClause()
+	{
+		if (Current.TKind.IsAnyIdentifierOrKeyword &&
+		    Current.TKind.GetContextualKeyword() == TokenKind.Where)
+		{
+			Token whereKeyword = PeekAndAdvance();
+
+			if (Current.TKind.IsAnyIdentifierOrKeyword) // definitely a type or value constraint
+			{
+				throw new NotImplementedException("Type constraints are not implemented.");
+			}
+			else if (Current.TKind == TokenKind.LifetimeIdentifier)
+			{
+				LifetimeSyntax lifetime = ParseLifetime();
+				Token colonToken = MatchToken(TokenKind.Colon);
+				SyntaxList<ConstraintSyntax> constraints = ParseConstraints();
+
+				return new LifetimeConstraintClauseSyntax(_syntaxTree,  whereKeyword, lifetime, colonToken, constraints);
+			}
+			else // if it's not a type nor value nor lifetime then an error
+			{
+				SyntaxList<SyntaxNode>.Builder erroredNode = new();
+
+				TokenKind currentKind = Current.TKind;
+				while (currentKind != TokenKind.EndOfFile &&
+				       currentKind != TokenKind.OpenBrace && // we don't want to consume the whole method as errored nodes
+				       currentKind != TokenKind.Semicolon)
+				{
+					if (currentKind.IsAnyIdentifierOrKeyword &&
+					    currentKind.GetContextualKeyword() == TokenKind.Where)
+					{
+						break;
+					}
+
+					erroredNode.Add(PeekAndAdvance());
+					currentKind = Current.TKind;
+				}
+
+				// TODO: report
+				return new ErrorConstraintClauseSyntax(_syntaxTree, erroredNode.Build(_syntaxTree));
+			}
+		}
+		else // otherwise try to recover
+		{
+			SyntaxList<SyntaxNode>.Builder erroredNode = new();
+
+			TokenKind currentKind = Current.TKind;
+			while (currentKind != TokenKind.EndOfFile &&
+			       currentKind != TokenKind.OpenBrace && // we don't want to consume the whole method as errored nodes
+			       currentKind != TokenKind.Semicolon)
+			{
+				if (currentKind.IsAnyIdentifierOrKeyword &&
+				    currentKind.GetContextualKeyword() == TokenKind.Where)
+				{
+					goto FOUND_WHERE;
+				}
+
+				erroredNode.Add(PeekAndAdvance());
+				currentKind = Current.TKind;
+			}
+
+			// TODO: report
+			return new ErrorConstraintClauseSyntax(_syntaxTree, erroredNode.Build(_syntaxTree));
+
+			FOUND_WHERE:
+			// TODO: report (if we here, there at least one errored node)
+			return ParseConstraintClause();
+		}
+	}
+
+	private SyntaxList<ConstraintSyntax> ParseConstraints()
+	{
+		// constraints are plus separated
+		SyntaxList<ConstraintSyntax>.Builder constraints = new();
+		TokenKind currentKind = Current.TKind;
+		while (currentKind != TokenKind.EndOfFile &&
+		       currentKind != TokenKind.OpenBrace &&
+		       currentKind != TokenKind.Semicolon)
+		{
+			if (Current.TKind.IsAnyIdentifierOrKeyword &&
+			    Current.TKind.GetContextualKeyword() == TokenKind.Where)
+			{
+				break;
+			}
+
+			constraints.Add(ParseConstraint());
+
+			if (Current.TKind == TokenKind.Plus)
+			{
+				Advance();
+			}
+			else if (Current.TKind == TokenKind.Comma) // comma are wrong token, but understandable: should report
+			{
+				Token comma = PeekAndAdvance();
+				_diagnostics.ReportExpectedToken(comma.Location, TokenKind.Plus);
+			}
+
+			currentKind = Current.TKind;
+		}
+
+		// empty constrains are reported during declaration phase
+		return constraints.Build(_syntaxTree);
+	}
+
+	private ConstraintSyntax ParseConstraint()
+	{
+		if (Current.TKind == TokenKind.LifetimeIdentifier)
+		{
+			return new LifetimeConstraintSyntax(_syntaxTree, ParseLifetime());
+		}
+		else
+		{
+			throw new NotImplementedException("Other that lifetime constraints are not implemented.");
+		}
 	}
 }

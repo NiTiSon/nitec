@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Symbols.Source;
@@ -171,7 +169,6 @@ internal partial class Binder
 
 	private BoundIfStatement BindIf(IfStatementSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
-		// TODO: BindBooleanExpression
 		BoundExpression condition = BindBooleanExpression(syntax.Condition, diagnostics);
 		BoundStatement then = BindStatement(syntax.ThenStatement, diagnostics, embedded: true);
 

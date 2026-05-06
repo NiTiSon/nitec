@@ -44,6 +44,6 @@ public readonly struct TextLine
 
 	public override string ToString()
 	{
-		return $"#{Index+1}: {LineSpan} Width:{LineSpan.Length}";
+		return $"#{HumanReadableLineNumber}: {LineSpan} Width:{LineSpan.Length}";
 	}
 }

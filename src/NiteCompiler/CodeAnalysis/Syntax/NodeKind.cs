@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Binding.Operators;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
+// TODO[low]: Generate this file by script
 public readonly struct NodeKind : IEquatable<NodeKind>
 {
 	private static readonly Dictionary<ushort, string> _names = [];
@@ -226,7 +226,6 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind TypeDeclaration = Reg(Item + 3, "type-declaration");
 	public static readonly NodeKind Parameter = Reg(Item + 4, "parameter");
 	public static readonly NodeKind Lifetime = Reg(Item + 5, "lifetime");
-	public static readonly NodeKind GenericLifetimeParameter = Reg(Item + 6, "generic-lifetime-parameter");
 	public static readonly NodeKind GenericTypeParameter = Reg(Item + 7, "generic-type-parameter");
 	public static readonly NodeKind GenericValueParameter = Reg(Item + 8, "generic-value-parameter");
 
@@ -315,4 +314,9 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind BracketedArgumentList = Reg(Other + 7, "bracketed-argument-list");
 	public static readonly NodeKind GenericParameterList = Reg(Other + 8, "generic-parameter-list");
 	public static readonly NodeKind GenericArgumentList = Reg(Other + 9, "generic-argument-list");
+	public static readonly NodeKind TypeConstraintClause = Reg(Other + 10, "type-constraint-clause");
+	public static readonly NodeKind ValueConstraintClause = Reg(Other + 11, "value-constraint-clause");
+	public static readonly NodeKind LifetimeConstraintClause = Reg(Other + 12, "lifetime-constraint-clause");
+	public static readonly NodeKind ErrorConstraintClause = Reg(Other + 13, "error-constraint-clause");
+	public static readonly NodeKind LifetimeConstraint = Reg(Other + 14, "lifetime-constraint");
 }
