@@ -68,6 +68,14 @@ internal sealed class SourceNamedTypeSymbol : NamedTypeSymbol
 			{
 				case CompletionPart.None:
 					return;
+				case CompletionPart.LifetimeParameters:
+					// TODO[lifetime]
+					_state.NotePartComplete(CompletionPart.LifetimeParameters);
+					break;
+				case CompletionPart.GenericParameters:
+					// TODO[generics]
+					_state.NotePartComplete(CompletionPart.GenericParameters);
+					break;
 				case CompletionPart.MembersCompleted:
 					// TODO: Members
 

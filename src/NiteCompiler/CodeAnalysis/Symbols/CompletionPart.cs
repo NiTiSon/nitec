@@ -10,21 +10,25 @@ internal enum CompletionPart
 	None = 0,
 	Attributes = 1 << 0,
 	Type = 1 << 1,
-	MembersCompleted = 1 << 3,
-	All = (1 << 4) - 1,
+	LifetimeParameters = 1 << 2,
+	GenericParameters = 1 << 3,
+	MembersCompleted = 1 << 4,
+	All = (1 << 5) - 1,
 
 	// Modules
-	NameToMembersMap = 1 << 1,
-	//+ MembersCompleted
+	NameToMembersMap = Type,
+	// + MembersCompleted
 
 	// Functions
-	//: Type
-	Parameters = 1 << 2,
+	// + Type
+	// + LifetimeParameters
+	// + GenericParameters
+	Parameters = MembersCompleted,
 
 	ModuleSymbolAll = NameToMembersMap | MembersCompleted,
 	LibrarySymbolAll = MembersCompleted,
-	TypeSymbolAll = MembersCompleted,
-	FunctionSymbolAll = Type | Parameters,
+	TypeSymbolAll = MembersCompleted | LifetimeParameters | GenericParameters,
+	FunctionSymbolAll = Type | LifetimeParameters | GenericParameters | Parameters,
 	ParameterSymbolAll = Type,
 }
 

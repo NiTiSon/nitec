@@ -1,6 +1,7 @@
 #!bin/nite
 
 public lifetime_test3<'a, 'b>(a: &'a i32, b: &'b i32) -> &'b i32
+where 'a : 'b + 'b
 where 'a : 'b + 'b {
 	if (a > b) {
 		return a;

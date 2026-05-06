@@ -10,6 +10,21 @@ public abstract class FunctionSymbol : Symbol
 	public abstract TypeSymbol ReturnType { get; }
 	public abstract ImmutableArray<ParameterSymbol> Parameters { get; }
 
+	public sealed override void Accept(SymbolVisitor visitor)
+	{
+		visitor.VisitFunction(this);
+	}
+
+	public sealed override TResult? Accept<TResult>(SymbolVisitor<TResult> visitor) where TResult : default
+	{
+		return visitor.VisitFunction(this);
+	}
+
+	public sealed override TResult? Accept<TResult, TArgument>(SymbolVisitor<TResult, TArgument> visitor, TArgument arg) where TResult : default
+	{
+		return visitor.VisitFunction(this, arg);
+	}
+
 	public override string ToDisplayString(SymbolFormat format = SymbolFormat.Default)
 	{
 		string separator = (ContainingSymbol is TypeSymbol && !IsStatic) ? "." : "::";

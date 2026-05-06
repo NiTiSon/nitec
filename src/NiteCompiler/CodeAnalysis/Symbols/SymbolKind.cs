@@ -10,8 +10,8 @@ public enum SymbolKind
 	Property = 5,
 	Function = 6,
 	Parameter = 7,
-	GenericParameter = 8,
-	Lifetime = 9,
-	LifetimeParameter = 10,
+	GenericTypeParameter = 8,
+	GenericValueParameter = 8,
+	LifetimeParameter = 9,
 	LocalVariable = 11,
 }

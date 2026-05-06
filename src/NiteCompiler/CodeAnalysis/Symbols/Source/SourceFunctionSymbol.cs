@@ -24,21 +24,6 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 		Syntax = syntax;
 	}
 
-	public override void Accept(SymbolVisitor visitor)
-	{
-		visitor.VisitFunction(this);
-	}
-
-	public override TResult? Accept<TResult>(SymbolVisitor<TResult> visitor) where TResult : default
-	{
-		return visitor.VisitFunction(this);
-	}
-
-	public override TResult? Accept<TResult, TArgument>(SymbolVisitor<TResult, TArgument> visitor, TArgument arg) where TResult : default
-	{
-		return visitor.VisitFunction(this, arg);
-	}
-
 	public override TypeSymbol ReturnType
 	{
 		get
@@ -183,6 +168,14 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 				case CompletionPart.Type:
 					_ = ReturnType;
 					_state.NotePartComplete(CompletionPart.Type);
+					break;
+				case CompletionPart.LifetimeParameters:
+					// TODO[lifetime]
+					_state.NotePartComplete(CompletionPart.LifetimeParameters);
+					break;
+				case CompletionPart.GenericParameters:
+					// TODO[generics]
+					_state.NotePartComplete(CompletionPart.GenericParameters);
 					break;
 				case CompletionPart.Parameters:
 					foreach (var parameter in Parameters)
