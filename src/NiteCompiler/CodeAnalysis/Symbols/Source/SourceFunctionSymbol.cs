@@ -55,6 +55,42 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 		return result;
 	}
 
+	public override ImmutableArray<LifetimeParameterSymbol> Lifetimes
+	{
+		get
+		{
+			if (field.IsDefault)
+			{
+				ImmutableInterlocked.InterlockedCompareExchange(ref field, MakeLifetimeParameters(), default);
+			}
+
+			return field;
+		}
+	}
+
+	private ImmutableArray<LifetimeParameterSymbol> MakeLifetimeParameters()
+	{
+		if (Syntax.Name is not GenericNameSyntax genericNameSyntax)
+		{
+			return [];
+		}
+
+		var builder = ArrayBuilder<LifetimeParameterSymbol>.GetInstance();
+
+		int ordinal = 0;
+		foreach (var parameterSyntax in genericNameSyntax.GenericParameterList.Parameters)
+		{
+			if (parameterSyntax is not LifetimeSyntax lifetime) continue;
+
+			var symbol = new SourceLifetimeParameterSymbol(this, lifetime.Identifier, ordinal);
+			builder.Add(symbol);
+
+			ordinal++;
+		}
+
+		return builder.ToImmutable();
+	}
+
 	public override ImmutableArray<ParameterSymbol> Parameters
 	{
 		get
@@ -170,7 +206,7 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 					_state.NotePartComplete(CompletionPart.Type);
 					break;
 				case CompletionPart.LifetimeParameters:
-					// TODO[lifetime]
+					_ = Lifetimes;
 					_state.NotePartComplete(CompletionPart.LifetimeParameters);
 					break;
 				case CompletionPart.GenericParameters:

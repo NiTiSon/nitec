@@ -8,6 +8,7 @@ public abstract class FunctionSymbol : Symbol
 	public sealed override SymbolKind Kind => SymbolKind.Function;
 
 	public abstract TypeSymbol ReturnType { get; }
+	public abstract ImmutableArray<LifetimeParameterSymbol> Lifetimes { get; }
 	public abstract ImmutableArray<ParameterSymbol> Parameters { get; }
 
 	public sealed override void Accept(SymbolVisitor visitor)
