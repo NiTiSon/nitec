@@ -138,6 +138,16 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.EmptyLifetimeName, [source]);
 	}
 
+	public void ReportDuplicateLifetimeParameter(Location source)
+	{
+		Add(DiagnosticDescriptor.DuplicateLifetimeParameter, [source]);
+	}
+
+	public void ReportDuplicateLifetimeConstraintClause(Location source, LifetimeSymbol lifetime)
+	{
+		Add(DiagnosticDescriptor.DuplicateLifetimeConstraintClause, [source], lifetime.ToDisplayString());
+	}
+
 	public void ReportInvalidCharacterLiteral(Location source)
 	{
 		Add(DiagnosticDescriptor.InvalidCharacterLiteral, [source]);

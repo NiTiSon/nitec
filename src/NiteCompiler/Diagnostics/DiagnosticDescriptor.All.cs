@@ -17,6 +17,8 @@ public partial class DiagnosticDescriptor
 		ExpectedToken,
 		UnexpectedToken,
 		EmptyLifetimeName,
+		DuplicateLifetimeParameter,
+		DuplicateLifetimeConstraintClause,
 		GenericsIsNotApplicableOnModuleName,
 		GenericsIsNotApplicableOnGenericTypeName,
 		CannotResolveSymbol,
@@ -70,6 +72,8 @@ public partial class DiagnosticDescriptor
 		GenericsIsNotApplicableOnGenericTypeName = new("generics-not-applicable-on-generic-type-name", "Generic type name cannot contain any generic parameters.");
 		ExpectedToken = new("expected-token", "Expected token {0}.");
 		EmptyLifetimeName = new("empty-lifetime-name", "The lifetime identifier cannot be empty.");
+		DuplicateLifetimeParameter = new("lifetime-parameter-duplicate", "Lifetime parameter with the same name already exists.");
+		DuplicateLifetimeConstraintClause = new("duplicate-lifetime-constraint-clause", "Constraint for {0} lifetime is already declared.");
 		AccessibilityModifierRequiredBeforeMemberDeclaration = new("accessibility-modifier-required", "Accessibility modifier required before member declaration.");
 		MissingParameterTypeSpecification = new("missing-parameter-type", "Type specification required for parameter syntax.");
 

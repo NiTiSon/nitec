@@ -12,6 +12,6 @@ public enum SymbolKind
 	Parameter = 7,
 	GenericTypeParameter = 8,
 	GenericValueParameter = 8,
-	LifetimeParameter = 9,
+	Lifetime = 9,
 	LocalVariable = 11,
 }

@@ -1,8 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
+using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading;
+using LLVMSharp;
 using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Diagnostics;
@@ -55,7 +60,7 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 		return result;
 	}
 
-	public override ImmutableArray<LifetimeParameterSymbol> Lifetimes
+	public override ImmutableArray<LifetimeSymbol> Lifetimes
 	{
 		get
 		{
@@ -68,27 +73,126 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 		}
 	}
 
-	private ImmutableArray<LifetimeParameterSymbol> MakeLifetimeParameters()
+	public override ImmutableArray<LifetimeConstraint> LifetimeConstraints
+	{
+		get
+		{
+			if (field.IsDefault)
+			{
+				ImmutableInterlocked.InterlockedCompareExchange(ref field, MakeLifetimeConstraints(), default);
+			}
+
+			return field;
+		}
+	}
+
+	private ImmutableArray<LifetimeSymbol> MakeLifetimeParameters()
 	{
 		if (Syntax.Name is not GenericNameSyntax genericNameSyntax)
 		{
 			return [];
 		}
 
-		var builder = ArrayBuilder<LifetimeParameterSymbol>.GetInstance();
+		var builder = ArrayBuilder<LifetimeSymbol>.GetInstance();
+
+		var diagnostics = BindingDiagnosticBag.GetInstance();
+
+		HashSet<string> names = [];
 
 		int ordinal = 0;
-		foreach (var parameterSyntax in genericNameSyntax.GenericParameterList.Parameters)
+		foreach (LifetimeOrGenericParameterSyntax parameterSyntax in genericNameSyntax.GenericParameterList.Parameters)
 		{
-			if (parameterSyntax is not LifetimeSyntax lifetime) continue;
+			if (parameterSyntax is not LifetimeSyntax lifetimeSyntax)
+			{
+				continue;
+			}
 
-			var symbol = new SourceLifetimeParameterSymbol(this, lifetime.Identifier, ordinal);
+			string name = lifetimeSyntax.Identifier;
+
+			if (!names.Add(name))
+			{
+				diagnostics.Diagnostics.ReportDuplicateLifetimeParameter(lifetimeSyntax.Location);
+
+				continue;
+			}
+
+			var symbol = new SourceLifetimeSymbol(
+				this,
+				lifetimeSyntax.Identifier,
+				ordinal);
+
 			builder.Add(symbol);
 
 			ordinal++;
 		}
 
+		AddDeclarationDiagnostics(diagnostics);
+		diagnostics.Free();
+
 		return builder.ToImmutable();
+	}
+
+	private ImmutableArray<LifetimeConstraint> MakeLifetimeConstraints()
+	{
+		// need WithLifetimesBinder
+		throw new NotImplementedException();
+		// if (Lifetimes.Length == 0 || Syntax.Name is not GenericNameSyntax nameSyntax || Syntax.ConstraintClauses == null)
+		// {
+		// 	return ImmutableArray<LifetimeConstraint>.Empty;
+		// }
+		//
+		// BindingDiagnosticBag diagnostics = BindingDiagnosticBag.GetInstance();
+		// HashSet<LifetimeSyntax> lifetimes = [];
+		//
+		// Dictionary<string, LifetimeSymbol> map = Lifetimes.ToDictionary(t => t.Name);
+		// ArrayBuilder<LifetimeConstraint> builder = ArrayBuilder<LifetimeConstraint>.GetInstance();
+		// foreach (LifetimeOrGenericConstraintClauseSyntax constraintSyntax in Syntax.ConstraintClauses)
+		// {
+		// 	if (constraintSyntax is not LifetimeConstraintClauseSyntax lifetimeConstraintClause)
+		// 	{
+		// 		continue;
+		// 	}
+		//
+		// 	string longerLifetimeName = lifetimeConstraintClause.Lifetime.Identifier;
+		// 	if (!map.TryGetValue(longerLifetimeName, out LifetimeSymbol? lifetime))
+		// 	{
+		// 		diagnostics.Diagnostics.ReportUnresolvedSymbol(lifetimeConstraintClause.Lifetime.Location);
+		// 		continue; // we don't want to overwhelm user with diagnostics, so just ignore constraints in such scenario
+		// 	}
+		//
+		// 	foreach (ConstraintSyntax constraint in lifetimeConstraintClause.Constraints)
+		// 	{
+		// 		if (constraint is not LifetimeConstraintSyntax lifetimeConstraint)
+		// 		{
+		// 			// TODO: diagnostic
+		// 		}
+		// 	}
+		//
+		// 	if (!map.TryGetValue(longerLifetimeName, out LifetimeSymbol? longer))
+		// 	{
+		// 		diagnostics.Diagnostics.ReportUndefinedLifetime(
+		// 			lifetimeConstraint.LifetimeIdentifier.Location,
+		// 			longerLifetimeName);
+		//
+		// 		continue;
+		// 	}
+		//
+		// 	if (!map.TryGetValue(shorterName, out LifetimeSymbol? shorter))
+		// 	{
+		// 		diagnostics.Diagnostics.ReportUndefinedLifetime(
+		// 			lifetimeConstraint.TargetLifetime.Location,
+		// 			shorterName);
+		//
+		// 		continue;
+		// 	}
+		//
+		// 	builder.Add(new LifetimeConstraint(
+		// 		longer,
+		// 		shorter));
+		// }
+		//
+		// AddDeclarationDiagnostics(diagnostics);
+		// diagnostics.Free();
 	}
 
 	public override ImmutableArray<ParameterSymbol> Parameters

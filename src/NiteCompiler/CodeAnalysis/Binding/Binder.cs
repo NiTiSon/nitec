@@ -73,5 +73,4 @@ internal abstract partial class Binder
 	}
 
 	internal virtual SyntaxNode? ScopeDesignator => null;
-	internal virtual LifetimeParameterSymbol? ScopeLifetimeParameter => null;
 }
