@@ -302,6 +302,7 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind WhileStatement = Reg(Statement + 7, "while-statement");
 	public static readonly NodeKind ForStatement = Reg(Statement + 8, "for-statement");
 	public static readonly NodeKind DoWhileStatement = Reg(Statement + 9, "do-while-statement");
+	public static readonly NodeKind ErrorStatement = Reg(Statement + 10, "error-statement");
 	public static readonly NodeKind LocalVariableDeclarationStatement = Reg(Statement + 100, "local-variable-declaration-statement");
 
 	private const uint Other = 0x00_00_F0_00;

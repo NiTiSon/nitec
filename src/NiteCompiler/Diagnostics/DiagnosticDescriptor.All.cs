@@ -18,6 +18,7 @@ public partial class DiagnosticDescriptor
 		UnexpectedToken,
 		EmptyLifetimeName,
 		GenericsIsNotApplicableOnModuleName,
+		GenericsIsNotApplicableOnGenericTypeName,
 		CannotResolveSymbol,
 		UnresolvedPredefinedType,
 		AmbiguousReference,
@@ -66,6 +67,7 @@ public partial class DiagnosticDescriptor
 		// Parsing
 		UnexpectedToken = new("unexpected-token", "Unexpected token {0}.");
 		GenericsIsNotApplicableOnModuleName = new("generics-not-applicable-on-module-name", "Module name cannot contain any generic parameters.");
+		GenericsIsNotApplicableOnGenericTypeName = new("generics-not-applicable-on-generic-type-name", "Generic type name cannot contain any generic parameters.");
 		ExpectedToken = new("expected-token", "Expected token {0}.");
 		EmptyLifetimeName = new("empty-lifetime-name", "The lifetime identifier cannot be empty.");
 		AccessibilityModifierRequiredBeforeMemberDeclaration = new("accessibility-modifier-required", "Accessibility modifier required before member declaration.");

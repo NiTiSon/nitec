@@ -158,6 +158,11 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.GenericsIsNotApplicableOnModuleName, [location]);
 	}
 
+	public void ReportGenericsIsNotApplicableOnGenericsTypeName(Location location)
+	{
+		Add(DiagnosticDescriptor.GenericsIsNotApplicableOnGenericTypeName, [location]);
+	}
+
 	public void ReportUnresolvedSymbol(Location source)
 	{
 		Add(DiagnosticDescriptor.CannotResolveSymbol, [source]);

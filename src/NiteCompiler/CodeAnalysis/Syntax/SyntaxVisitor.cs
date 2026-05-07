@@ -41,8 +41,7 @@ public abstract class SyntaxVisitor
 	public virtual void VisitParameter(ParameterSyntax parameter) => DefaultVisit(parameter);
 	public virtual void VisitArgumentList(ArgumentListSyntax list) => DefaultVisit(list);
 	public virtual void VisitBracketedArgumentList(BracketedArgumentListSyntax list) => DefaultVisit(list);
-	public virtual void VisitBlockFunctionBody(BlockFunctionBodySyntax body) => DefaultVisit(body);
-	public virtual void VisitEmptyFunctionBody(EmptyFunctionBodySyntax body) => DefaultVisit(body);
+	public virtual void VisitFunctionBody(FunctionBodySyntax body) => DefaultVisit(body);
 	public virtual void VisitTypeDeclaration(TypeDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual void VisitMembersTypeBody(MembersTypeBodySyntax body) => DefaultVisit(body);
 	public virtual void VisitEmptyTypeBody(EmptyTypeBodySyntax body) => DefaultVisit(body);
@@ -58,6 +57,7 @@ public abstract class SyntaxVisitor
 	public virtual void VisitIfStatement(IfStatementSyntax statement) => DefaultVisit(statement);
 	public virtual void VisitLoopStatement(LoopStatementSyntax statement) => DefaultVisit(statement);
 	public virtual void VisitWhileStatement(WhileStatementSyntax statement) => DefaultVisit(statement);
+	public virtual void VisitErrorStatement(ErrorStatementSyntax statement) => DefaultVisit(statement);
 	public virtual void VisitElseClause(ElseClauseSyntax elseClause) => DefaultVisit(elseClause);
 	public virtual void VisitLifetimeOrGenericConstraintClause(LifetimeOrGenericConstraintClauseSyntax elseClause) => DefaultVisit(elseClause);
 }
@@ -101,8 +101,7 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitParameter(ParameterSyntax parameter) => DefaultVisit(parameter);
 	public virtual TResult? VisitArgumentList(ArgumentListSyntax list) => DefaultVisit(list);
 	public virtual TResult? VisitBracketedArgumentList(BracketedArgumentListSyntax list) => DefaultVisit(list);
-	public virtual TResult? VisitBlockFunctionBody(BlockFunctionBodySyntax body) => DefaultVisit(body);
-	public virtual TResult? VisitEmptyFunctionBody(EmptyFunctionBodySyntax body) => DefaultVisit(body);
+	public virtual TResult? VisitFunctionBody(FunctionBodySyntax body) => DefaultVisit(body);
 	public virtual TResult? VisitTypeDeclaration(TypeDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual TResult? VisitMembersTypeBody(MembersTypeBodySyntax body) => DefaultVisit(body);
 	public virtual TResult? VisitEmptyTypeBody(EmptyTypeBodySyntax body) => DefaultVisit(body);
@@ -118,6 +117,7 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitIfStatement(IfStatementSyntax statement) => DefaultVisit(statement);
 	public virtual TResult? VisitLoopStatement(LoopStatementSyntax statement) => DefaultVisit(statement);
 	public virtual TResult? VisitWhileStatement(WhileStatementSyntax statement) => DefaultVisit(statement);
+	public virtual TResult? VisitErrorStatement(ErrorStatementSyntax statement) => DefaultVisit(statement);
 	public virtual TResult? VisitElseClause(ElseClauseSyntax elseClause) => DefaultVisit(elseClause);
 	public virtual TResult? VisitLifetimeOrGenericConstraintClause(LifetimeOrGenericConstraintClauseSyntax elseClause) => DefaultVisit(elseClause);
 }

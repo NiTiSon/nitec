@@ -76,6 +76,8 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 		}
 	}
 
+	public bool IsLiteralTokenKind => ToLiteralExpressionKind() != None;
+
 	public TokenKind ToContextualKeyword()
 	{
 		TokenKind contextual = (uint)(IdentifierOrKeyword.RawValue | (this.RawValue << 16));

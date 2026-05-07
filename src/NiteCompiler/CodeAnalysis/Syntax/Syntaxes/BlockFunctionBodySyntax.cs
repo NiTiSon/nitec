@@ -17,9 +17,6 @@ public sealed class BlockFunctionBodySyntax : FunctionBodySyntax
 		Block = block;
 	}
 
-	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitBlockFunctionBody(this);
-	public override void Accept(SyntaxVisitor visitor) => visitor.VisitBlockFunctionBody(this);
-
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return Block;

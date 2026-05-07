@@ -31,6 +31,12 @@ internal sealed partial class NiteParser
 		{
 			return ParseWhileStatement();
 		}
+		else if (Current.TKind.IsAnyIdentifierOrKeyword ||
+		         Current.TKind.IsLiteralTokenKind ||
+		         Current.TKind == TokenKind.OpenParen)
+		{
+			return ParseExpressionStatement();
+		}
 		// else if (Current.TKind == TokenKind.For)
 		// {
 		// 	return ParseForStatement();
@@ -41,7 +47,22 @@ internal sealed partial class NiteParser
 		// }
 		else
 		{
-			return ParseExpressionStatement();
+			TokenKind currentKind = Current.TKind;
+
+			SyntaxList<Token>.Builder erroredNodes = new();
+			while (currentKind != TokenKind.EndOfFile &&
+			       currentKind != TokenKind.Semicolon &&
+			       currentKind != TokenKind.OpenBrace)
+			{
+				// the errored statements with blocks will treat left side as error statement,
+				// and right as valid block syntax
+				erroredNodes.Add(PeekAndAdvance());
+			}
+
+			var nodes = erroredNodes.Build(_syntaxTree);
+
+			_diagnostics.ReportUnexpectedToken(nodes[0].Location, nodes[0].TKind);
+			return new ErrorStatementSyntax(_syntaxTree, nodes);
 		}
 	}
 

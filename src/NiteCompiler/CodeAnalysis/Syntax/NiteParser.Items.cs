@@ -50,7 +50,7 @@ internal partial class NiteParser
 
 			if (name is GenericNameSyntax)
 			{
-				// TODO: report
+				_diagnostics.ReportGenericsIsNotApplicableOnGenericsTypeName(name.Location);
 			}
 
 			return new TypeParameterSyntax(_syntaxTree, name);
@@ -229,12 +229,24 @@ internal partial class NiteParser
 			BlockStatementSyntax block = ParseBlockStatement();
 			return new BlockFunctionBodySyntax(_syntaxTree, block);
 		}
-		else if (Current.TKind == TokenKind.Semicolon)
+		if (Current.TKind == TokenKind.Semicolon)
 		{
 			return new EmptyFunctionBodySyntax(_syntaxTree, PeekAndAdvance());
 		}
 
-		throw new UnreachableException();
+		SyntaxList<Token>.Builder erroredNodes = new();
+		TokenKind currentKind = Current.TKind;
+		while (currentKind != TokenKind.EndOfFile &&
+		       currentKind != TokenKind.CloseBrace)
+		{
+			erroredNodes.Add(PeekAndAdvance());
+
+			currentKind = Current.TKind;
+		}
+
+		var nodes = erroredNodes.Build(_syntaxTree);
+		_diagnostics.ReportExpectedToken(nodes[0].Location, TokenKind.OpenBrace);
+		return new ErrorFunctionBodySyntax(_syntaxTree,  nodes);
 	}
 
 	private SyntaxList<LifetimeOrGenericConstraintClauseSyntax> ParseConstraintClauses()

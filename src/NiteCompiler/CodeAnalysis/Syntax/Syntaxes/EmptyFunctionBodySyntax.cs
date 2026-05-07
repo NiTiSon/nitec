@@ -7,18 +7,15 @@ public sealed class EmptyFunctionBodySyntax : FunctionBodySyntax
 {
 	public Token SemicolonToken { get; }
 
+	public override TextSpan Span => SemicolonToken.Span;
+	public override NodeKind Kind => NodeKind.EmptyFunctionBody;
+
 	internal override Token ClosingToken => SemicolonToken;
 
 	internal EmptyFunctionBodySyntax(SyntaxTree tree, Token semicolonToken) : base(tree)
 	{
 		SemicolonToken = semicolonToken;
 	}
-
-	public override TextSpan Span => SemicolonToken.Span;
-	public override NodeKind Kind => NodeKind.EmptyFunctionBody;
-
-	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitEmptyFunctionBody(this);
-	public override void Accept(SyntaxVisitor visitor) => visitor.VisitEmptyFunctionBody(this);
 
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
