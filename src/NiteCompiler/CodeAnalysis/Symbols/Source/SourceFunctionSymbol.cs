@@ -88,7 +88,7 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 
 	private ImmutableArray<LifetimeSymbol> MakeLifetimeParameters()
 	{
-		if (Syntax.Name is not GenericNameSyntax genericNameSyntax)
+		if (Syntax.GenericParameterList == null)
 		{
 			return [];
 		}
@@ -100,7 +100,7 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 		HashSet<string> names = [];
 
 		int ordinal = 0;
-		foreach (LifetimeOrGenericParameterSyntax parameterSyntax in genericNameSyntax.GenericParameterList.Parameters)
+		foreach (LifetimeOrGenericParameterSyntax parameterSyntax in Syntax.GenericParameterList.Parameters)
 		{
 			if (parameterSyntax is not LifetimeSyntax lifetimeSyntax)
 			{
@@ -240,7 +240,7 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 		int ordinal = 0;
 		foreach (var parameter in Syntax.ParameterList.Parameters)
 		{
-			TypeSymbol type = withGenericsBinder.BindType(parameter.TypeClause.Type, diagnostics);
+			TypeSymbol type = withGenericsBinder.BindType(parameter.TypeClauseSyntax.Type, diagnostics);
 			var parameterSymbol = SourceParameterSymbol.Create(withGenericsBinder, this, type, parameter, ordinal, diagnostics);
 			builder.Add(parameterSymbol);
 			ordinal++;

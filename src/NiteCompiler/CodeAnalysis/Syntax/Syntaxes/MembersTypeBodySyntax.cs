@@ -9,8 +9,6 @@ public sealed class MembersTypeBodySyntax : TypeBodySyntax
 	public SyntaxList<MemberSyntax> Members { get; }
 	public Token CloseBrace { get; }
 
-	internal override Token ClosingToken => CloseBrace;
-
 	internal MembersTypeBodySyntax(SyntaxTree tree, Token openBrace, SyntaxList<MemberSyntax> members, Token closeBrace) : base(tree)
 	{
 		OpenBrace = openBrace;
@@ -21,16 +19,10 @@ public sealed class MembersTypeBodySyntax : TypeBodySyntax
 	public override TextSpan Span => TextSpan.FromBounds(OpenBrace.Span, CloseBrace.Span);
 	public override NodeKind Kind => NodeKind.TypeBody;
 
-	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitMembersTypeBody(this);
-	public override void Accept(SyntaxVisitor visitor) => visitor.VisitMembersTypeBody(this);
-
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return OpenBrace;
-		foreach (ItemSyntax item in Members)
-		{
-			yield return item;
-		}
+		yield return Members;
 		yield return CloseBrace;
 	}
 }

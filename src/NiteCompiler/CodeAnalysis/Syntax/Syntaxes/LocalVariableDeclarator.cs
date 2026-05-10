@@ -6,7 +6,7 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 public sealed class LocalVariableDeclarator : SyntaxNode
 {
 	public SimpleNameSyntax Name { get; }
-	public TypeClause? TypeClause { get; }
+	public TypeClauseSyntax? TypeClause { get; }
 	public EqualsValueClause? EqualsValueClause { get; }
 
 	public override TextSpan Span
@@ -19,7 +19,7 @@ public sealed class LocalVariableDeclarator : SyntaxNode
 	}
 	public override NodeKind Kind => NodeKind.LocalVariableDeclarator;
 
-	internal LocalVariableDeclarator(SyntaxTree tree, SimpleNameSyntax name, TypeClause? typeClause, EqualsValueClause? equalsValueClause) : base(tree)
+	internal LocalVariableDeclarator(SyntaxTree tree, SimpleNameSyntax name, TypeClauseSyntax? typeClause, EqualsValueClause? equalsValueClause) : base(tree)
 	{
 		Name = name;
 		TypeClause = typeClause;

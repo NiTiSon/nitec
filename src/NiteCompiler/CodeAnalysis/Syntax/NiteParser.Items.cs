@@ -53,10 +53,36 @@ internal partial class NiteParser
 				_diagnostics.ReportGenericsIsNotApplicableOnGenericsTypeName(name.Location);
 			}
 
-			return new TypeParameterSyntax(_syntaxTree, name);
+			// Value: T
+			if (Current.TKind == TokenKind.Colon)
+			{
+				Token colon = PeekAndAdvance();
+
+				TypeSyntax type = ParseType();
+				TypeClauseSyntax typeClause = new(_syntaxTree, colon, type);
+
+				return new GenericValueParameterSyntax(_syntaxTree, name, typeClause);
+			}
+
+			// T
+			return new GenericTypeParameterSyntax(_syntaxTree, name);
 		}
 
-		throw new NotImplementedException();
+		SyntaxList<SyntaxNode>.Builder errorNodes = new();
+
+		TokenKind currentKind = Current.TKind;
+		_diagnostics.ReportUnexpectedToken(Current.Location, currentKind);
+
+		while (currentKind != TokenKind.EndOfFile &&
+		       currentKind != TokenKind.Greater &&
+		       currentKind != TokenKind.Comma)
+		{
+			errorNodes.Add(PeekAndAdvance());
+
+			currentKind = Current.TKind;
+		}
+
+		return new GenericErrorParameterSyntax(_syntaxTree, errorNodes.Build(_syntaxTree));
 	}
 
 	private LifetimeSyntax ParseLifetime()
@@ -95,11 +121,68 @@ internal partial class NiteParser
 	private TypeDeclarationSyntax ParseTypeDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers,
 		Token typeKeyword)
 	{
-		NameSyntax name = ParseName();
+		NameSyntax name = ParseInlineName();
+		GenericParameterListSyntax? genericParameterList = null;
+		if (Current.TKind == TokenKind.Less)
+		{
+			genericParameterList = ParseGenericParameterList();
+		}
 
 		TypeBodySyntax body = ParseTypeBody();
 
-		return new TypeDeclarationSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree), typeKeyword, name, body);
+		return new TypeDeclarationSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree), typeKeyword, name, genericParameterList, body);
+	}
+
+	private NameSyntax ParseInlineName()
+	{
+		ResetPoint rp = GetResetPoint();
+		// (SimpleName GenericArgumentList? '::')* SimpleName
+		SimpleNameSyntax first = ParseSimpleName();
+
+		if (Current.TKind != TokenKind.Less &&
+		    Current.TKind != TokenKind.DoubleColon)
+		{
+			ReleaseResetPoint(rp);
+			return first;
+		}
+
+		NameSyntax left = first;
+
+		while (true)
+		{
+			GenericParameterListSyntax? genericParameters = null;
+
+			UpdateResetPoint(ref rp); // in case we reach the end on inline-name, we should come back right before them
+			if (Current.TKind == TokenKind.Less)
+			{
+				genericParameters = ParseGenericParameterList();
+			}
+
+			if (Current.TKind != TokenKind.DoubleColon)
+			{
+				if (genericParameters != null)
+				{
+					Reset(rp);
+				}
+				break;
+			}
+
+			Token doubleColon = PeekAndAdvance();
+
+			SimpleNameSyntax right = ParseSimpleName();
+
+			left = new InlineNameSyntax(_syntaxTree, left, doubleColon, right, genericParameters);
+
+			if (Current.TKind != TokenKind.Less &&
+			    Current.TKind != TokenKind.DoubleColon)
+			{
+				break;
+			}
+		}
+
+		ReleaseResetPoint(rp);
+
+		return left;
 	}
 
 	private TypeBodySyntax ParseTypeBody()
@@ -135,16 +218,42 @@ internal partial class NiteParser
 			return new EmptyTypeBodySyntax(_syntaxTree, PeekAndAdvance());
 		}
 
-		throw new UnreachableException();
+		SyntaxList<SyntaxNode>.Builder errorNodes = new();
+
+		// if met open brace, probably within the real one body -> definitely not within empty body syntax
+		bool metOpenBrace = false;
+
+		TokenKind currentKind = Current.TKind;
+		_diagnostics.ReportUnexpectedToken(Current.Location, currentKind);
+		while (currentKind != TokenKind.EndOfFile &&
+		       currentKind != TokenKind.CloseBrace &&
+		       (currentKind != TokenKind.Semicolon && !metOpenBrace))
+		{
+			if (currentKind == TokenKind.OpenBrace)
+			{
+				metOpenBrace = true;
+			}
+
+			errorNodes.Add(PeekAndAdvance());
+
+			currentKind = Current.TKind;
+		}
+
+		return new ErrorTypeBodySyntax(_syntaxTree, errorNodes.Build(_syntaxTree));
 	}
 
 	private FunctionDeclarationSyntax ParseFunctionDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers)
 	{
 		SimpleNameSyntax name = ParseSimpleName();
+		GenericParameterListSyntax? genericParameterList = null;
+		if (Current.TKind == TokenKind.Less)
+		{
+			genericParameterList = ParseGenericParameterList();
+		}
 
 		ParameterListSyntax parameters = ParseParameterList();
 
-		TypeClause? typeClause = null;
+		TypeClauseSyntax? typeClause = null;
 		if (Current.TKind == TokenKind.Retusa)
 		{
 			Token retusa = PeekAndAdvance();
@@ -162,14 +271,16 @@ internal partial class NiteParser
 
 		FunctionBodySyntax body = ParseFunctionBody();
 
-		return new FunctionDeclarationSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree), parameters, name, typeClause, constraintClauses, body);
+		return new FunctionDeclarationSyntax(_syntaxTree,
+			accessibilityToken, modifiers.Build(_syntaxTree), name, genericParameterList, parameters, typeClause,
+			constraintClauses, body);
 	}
 
 	private ParameterSyntax ParseParameter()
 	{
 		SimpleNameSyntax name = ParseSimpleName();
 
-		TypeClause? typeClause = null;
+		TypeClauseSyntax? typeClause = null;
 		if (Current.TKind == TokenKind.Colon)
 		{
 			Token colon = PeekAndAdvance();

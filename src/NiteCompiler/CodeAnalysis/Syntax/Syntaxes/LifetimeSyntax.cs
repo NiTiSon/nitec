@@ -24,11 +24,11 @@ public sealed class LifetimeSyntax : LifetimeOrGenericParameterSyntax
 
 	public override void Accept(SyntaxVisitor visitor)
 	{
-		visitor.VisitLifetime(this);
+		visitor.VisitLifetimeParameter(this);
 	}
 
 	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default
 	{
-		return visitor.VisitLifetime(this);
+		return visitor.VisitLifetimeParameter(this);
 	}
 }

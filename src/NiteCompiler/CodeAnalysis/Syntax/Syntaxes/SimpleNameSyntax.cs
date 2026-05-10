@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using NiteCompiler.CodeAnalysis.Text;
-
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
 public abstract class SimpleNameSyntax : NameSyntax

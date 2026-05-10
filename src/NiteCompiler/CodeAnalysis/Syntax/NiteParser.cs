@@ -7,7 +7,7 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 
 internal sealed partial class NiteParser
 {
-	private readonly DiagnosticBag _diagnostics;
+	private DiagnosticBag _diagnostics;
 	private readonly List<Token> _tokens;
 	private int _position;
 	private readonly SyntaxTree _syntaxTree;

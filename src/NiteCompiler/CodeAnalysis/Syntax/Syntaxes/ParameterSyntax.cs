@@ -6,14 +6,14 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 public sealed class ParameterSyntax : SyntaxNode
 {
 	public SimpleNameSyntax Name { get; }
-	public TypeClause TypeClause { get; }
+	public TypeClauseSyntax TypeClauseSyntax { get; }
 	public override NodeKind Kind => NodeKind.Parameter;
-	public override TextSpan Span => TextSpan.FromBounds(Name.Span, TypeClause.Span);
+	public override TextSpan Span => TextSpan.FromBounds(Name.Span, TypeClauseSyntax.Span);
 
-	internal ParameterSyntax(SyntaxTree tree, SimpleNameSyntax name, TypeClause typeClause) : base(tree)
+	internal ParameterSyntax(SyntaxTree tree, SimpleNameSyntax name, TypeClauseSyntax typeClauseSyntax) : base(tree)
 	{
 		Name = name;
-		TypeClause = typeClause;
+		TypeClauseSyntax = typeClauseSyntax;
 	}
 
 	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default
@@ -29,6 +29,6 @@ public sealed class ParameterSyntax : SyntaxNode
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return Name;
-		yield return TypeClause;
+		yield return TypeClauseSyntax;
 	}
 }

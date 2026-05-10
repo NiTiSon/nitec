@@ -15,8 +15,8 @@ public abstract class SyntaxVisitor
 	public virtual void VisitToken(Token token) => DefaultVisit(token);
 	public virtual void VisitTrivia(Trivia trivia) => DefaultVisit(trivia);
 	public virtual void VisitSyntaxList<T>(SyntaxList<T> list) where T : SyntaxNode  => DefaultVisit(list);
-	public virtual void VisitLifetime(LifetimeSyntax lifetime) => DefaultVisit(lifetime);
-	public virtual void VisitTypeParameter(TypeParameterSyntax parameter) => DefaultVisit(parameter);
+	public virtual void VisitLifetimeParameter(LifetimeSyntax lifetime) => DefaultVisit(lifetime);
+	public virtual void VisitGenericParameter(GenericParameterSyntax parameter) => DefaultVisit(parameter);
 	public virtual void VisitGenericParameterList(GenericParameterListSyntax list) => DefaultVisit(list);
 	public virtual void VisitConstraint(ConstraintSyntax constraint) => DefaultVisit(constraint);
 
@@ -25,9 +25,7 @@ public abstract class SyntaxVisitor
 	public virtual void VisitAssignmentExpression(AssignmentExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitParenthesizedExpression(ParenthesizedExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitLiteralExpression(LiteralExpressionSyntax expression) => DefaultVisit(expression);
-	public virtual void VisitIdentifierName(IdentifierNameSyntax expression) => DefaultVisit(expression);
-	public virtual void VisitGenericName(GenericNameSyntax expression) => DefaultVisit(expression);
-	public virtual void VisitPathName(PathNameSyntax expression) => DefaultVisit(expression);
+	public virtual void VisitName(NameSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitPredefinedType(PredefinedTypeSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitPointerType(TypeSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitReferenceType(ReferenceTypeSyntax expression) => DefaultVisit(expression);
@@ -43,11 +41,10 @@ public abstract class SyntaxVisitor
 	public virtual void VisitBracketedArgumentList(BracketedArgumentListSyntax list) => DefaultVisit(list);
 	public virtual void VisitFunctionBody(FunctionBodySyntax body) => DefaultVisit(body);
 	public virtual void VisitTypeDeclaration(TypeDeclarationSyntax declaration) => DefaultVisit(declaration);
-	public virtual void VisitMembersTypeBody(MembersTypeBodySyntax body) => DefaultVisit(body);
-	public virtual void VisitEmptyTypeBody(EmptyTypeBodySyntax body) => DefaultVisit(body);
+	public virtual void VisitTypeBody(TypeBodySyntax body) => DefaultVisit(body);
 	public virtual void VisitLocalVariableDeclarator(LocalVariableDeclarator declarator) => DefaultVisit(declarator);
 	public virtual void VisitEqualsValueClause(EqualsValueClause clause) => DefaultVisit(clause);
-	public virtual void VisitTypeClause(TypeClause clause) => DefaultVisit(clause);
+	public virtual void VisitTypeClause(TypeClauseSyntax clauseSyntax) => DefaultVisit(clauseSyntax);
 
 	public virtual void VisitEmptyStatement(EmptyStatementSyntax statement) => DefaultVisit(statement);
 	public virtual void VisitReturnStatement(ReturnStatementSyntax statement) => DefaultVisit(statement);
@@ -75,8 +72,8 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitToken(Token token) => DefaultVisit(token);
 	public virtual TResult? VisitTrivia(Trivia trivia) => DefaultVisit(trivia);
 	public virtual TResult? VisitSyntaxList<T>(SyntaxList<T> list) where T : SyntaxNode  => DefaultVisit(list);
-	public virtual TResult? VisitLifetime(LifetimeSyntax lifetime) => DefaultVisit(lifetime);
-	public virtual TResult? VisitTypeParameter(TypeParameterSyntax parameter) => DefaultVisit(parameter);
+	public virtual TResult? VisitLifetimeParameter(LifetimeSyntax lifetime) => DefaultVisit(lifetime);
+	public virtual TResult? VisitGenericParameter(GenericParameterSyntax parameter) => DefaultVisit(parameter);
 	public virtual TResult? VisitGenericParameterList(GenericParameterListSyntax list) => DefaultVisit(list);
 	public virtual TResult? VisitConstraint(ConstraintSyntax constraint) => DefaultVisit(constraint);
 
@@ -85,9 +82,7 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitAssignmentExpression(AssignmentExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitParenthesizedExpression(ParenthesizedExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitLiteralExpression(LiteralExpressionSyntax expression) => DefaultVisit(expression);
-	public virtual TResult? VisitIdentifierName(IdentifierNameSyntax expression) => DefaultVisit(expression);
-	public virtual TResult? VisitGenericName(GenericNameSyntax expression) => DefaultVisit(expression);
-	public virtual TResult? VisitPathName(PathNameSyntax expression) => DefaultVisit(expression);
+	public virtual TResult? VisitName(NameSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitPredefinedType(PredefinedTypeSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitPointerType(TypeSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitReferenceType(ReferenceTypeSyntax expression) => DefaultVisit(expression);
@@ -103,11 +98,10 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitBracketedArgumentList(BracketedArgumentListSyntax list) => DefaultVisit(list);
 	public virtual TResult? VisitFunctionBody(FunctionBodySyntax body) => DefaultVisit(body);
 	public virtual TResult? VisitTypeDeclaration(TypeDeclarationSyntax declaration) => DefaultVisit(declaration);
-	public virtual TResult? VisitMembersTypeBody(MembersTypeBodySyntax body) => DefaultVisit(body);
-	public virtual TResult? VisitEmptyTypeBody(EmptyTypeBodySyntax body) => DefaultVisit(body);
+	public virtual TResult? VisitTypeBody(TypeBodySyntax body) => DefaultVisit(body);
 	public virtual TResult? VisitLocalVariableDeclarator(LocalVariableDeclarator declarator) => DefaultVisit(declarator);
 	public virtual TResult? VisitEqualsValueClause(EqualsValueClause clause) => DefaultVisit(clause);
-	public virtual TResult? VisitTypeClause(TypeClause clause) => DefaultVisit(clause);
+	public virtual TResult? VisitTypeClause(TypeClauseSyntax clauseSyntax) => DefaultVisit(clauseSyntax);
 
 	public virtual TResult? VisitEmptyStatement(EmptyStatementSyntax statement) => DefaultVisit(statement);
 	public virtual TResult? VisitReturnStatement(ReturnStatementSyntax statement) => DefaultVisit(statement);

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
@@ -7,26 +6,29 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 public sealed class GenericNameSyntax : SimpleNameSyntax
 {
 	public Token Identifier { get; }
-	public GenericParameterListSyntax GenericParameterList { get; } // TODO!!: replace with GenericArgumentListSyntax
+	public Token OpenToken { get; }
+	public SyntaxList<ExpressionSyntax> GenericArguments { get; }
+	public Token CloseToken { get; }
 
 	public override NodeKind Kind => NodeKind.GenericNameExpression;
-	public override TextSpan Span => TextSpan.FromBounds(Identifier.Span, GenericParameterList.Span);
+	public override TextSpan Span => TextSpan.FromBounds(Identifier.Span, CloseToken.Span);
 
-	internal GenericNameSyntax(SyntaxTree tree, Token identifier, string identifierText, GenericParameterListSyntax genericParameterList)
+	internal GenericNameSyntax(SyntaxTree tree, Token identifier, string identifierText, Token openToken,
+		SyntaxList<ExpressionSyntax> arguments, Token closeToken)
 		: base(tree, identifierText)
 	{
-		Debug.Assert(genericParameterList != null);
-
 		Identifier = identifier;
-		GenericParameterList = genericParameterList;
+
+		OpenToken = openToken;
+		GenericArguments = arguments;
+		CloseToken = closeToken;
 	}
 
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return Identifier;
-		yield return GenericParameterList;
+		yield return OpenToken;
+		yield return GenericArguments;
+		yield return CloseToken;
 	}
-
-	public override void Accept(SyntaxVisitor visitor) => visitor.VisitGenericName(this);
-	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitGenericName(this);
 }

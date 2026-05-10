@@ -3,7 +3,7 @@ using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public sealed class TypeClause : SyntaxNode
+public sealed class TypeClauseSyntax : SyntaxNode
 {
 	public Token Token { get; }
 	public TypeSyntax Type { get; }
@@ -11,7 +11,7 @@ public sealed class TypeClause : SyntaxNode
 	public override TextSpan Span => TextSpan.FromBounds(Token.Span, Type.Span);
 	public override NodeKind Kind => NodeKind.TypeClause;
 
-	internal TypeClause(SyntaxTree tree, Token token, TypeSyntax type) : base(tree)
+	internal TypeClauseSyntax(SyntaxTree tree, Token token, TypeSyntax type) : base(tree)
 	{
 		Token = token;
 		Type = type;

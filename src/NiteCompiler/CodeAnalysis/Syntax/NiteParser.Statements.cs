@@ -129,7 +129,7 @@ internal sealed partial class NiteParser
 	{
 		SimpleNameSyntax name = ParseSimpleName();
 
-		TypeClause? typeClause = null;
+		TypeClauseSyntax? typeClause = null;
 		EqualsValueClause? valueClause = null;
 
 		if (Current.TKind == TokenKind.Colon)

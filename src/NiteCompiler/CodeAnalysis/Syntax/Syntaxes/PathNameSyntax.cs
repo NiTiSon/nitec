@@ -32,7 +32,4 @@ public sealed class PathNameSyntax : NameSyntax
 		yield return DoubleColon;
 		yield return Right;
 	}
-
-	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitPathName(this);
-	public override void Accept(SyntaxVisitor visitor) => visitor.VisitPathName(this);
 }

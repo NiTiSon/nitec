@@ -1,5 +1,3 @@
-using System.Linq;
-
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
 public abstract class NameSyntax : TypeSyntax
@@ -8,15 +6,18 @@ public abstract class NameSyntax : TypeSyntax
 
 	public abstract string GetName();
 
-	public int Arity => this is GenericNameSyntax
-		? ((GenericNameSyntax)this).GenericParameterList.Parameters
-			.Count(t => t.IsGenericParameter)
-		: 0;
-
-	public int LifetimeArity => this is GenericNameSyntax
-		? ((GenericNameSyntax)this).GenericParameterList.Parameters
-			.Count(t => !t.IsGenericParameter)
-		: 0;
-
 	public abstract SimpleNameSyntax UnqualifiedName { get; }
+
+	public virtual int LifetimeArity => 0;
+	public virtual int Arity => 0;
+
+	public sealed override void Accept(SyntaxVisitor visitor)
+	{
+		visitor.VisitName(this);
+	}
+
+	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default
+	{
+		return visitor.VisitName(this);
+	}
 }

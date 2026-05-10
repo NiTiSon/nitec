@@ -8,9 +8,10 @@ public sealed class FunctionDeclarationSyntax : MemberSyntax
 {
 	public Token AccessibilityToken { get; }
 	public SyntaxList<Token> Modifiers { get; }
-	public ParameterListSyntax ParameterList { get; }
 	public SimpleNameSyntax Name { get; }
-	public TypeClause? ReturnTypeClause { get; }
+	public GenericParameterListSyntax? GenericParameterList { get; }
+	public ParameterListSyntax ParameterList { get; }
+	public TypeClauseSyntax? ReturnTypeClause { get; }
 	public SyntaxList<LifetimeOrGenericConstraintClauseSyntax>? ConstraintClauses { get; }
 	public FunctionBodySyntax Body { get; }
 
@@ -20,12 +21,14 @@ public sealed class FunctionDeclarationSyntax : MemberSyntax
 	public override NodeKind Kind => NodeKind.FunctionDeclaration;
 
 	internal FunctionDeclarationSyntax(SyntaxTree tree, Token accessibilityToken, SyntaxList<Token> modifiers,
-		ParameterListSyntax parameterList, SimpleNameSyntax name, TypeClause? returnTypeClause,
-		SyntaxList<LifetimeOrGenericConstraintClauseSyntax>? constraintClauses, FunctionBodySyntax body) : base(tree)
+		SimpleNameSyntax name, GenericParameterListSyntax? genericParameterList, ParameterListSyntax parameterList,
+		TypeClauseSyntax? returnTypeClause, SyntaxList<LifetimeOrGenericConstraintClauseSyntax>? constraintClauses,
+		FunctionBodySyntax body) : base(tree)
 	{
 		AccessibilityToken = accessibilityToken;
 		Modifiers = modifiers;
 		Name = name;
+		GenericParameterList = genericParameterList;
 		ReturnTypeClause = returnTypeClause;
 		ConstraintClauses = constraintClauses;
 		Body = body;
@@ -39,9 +42,11 @@ public sealed class FunctionDeclarationSyntax : MemberSyntax
 	{
 		yield return AccessibilityToken;
 		yield return Modifiers;
-		yield return ParameterList;
 		yield return Name;
+		if (GenericParameterList != null) yield return GenericParameterList;
+		yield return ParameterList;
 		if (ReturnTypeClause != null) yield return ReturnTypeClause;
+		if (ConstraintClauses != null) yield return ConstraintClauses;
 		yield return Body;
 	}
 }

@@ -10,7 +10,7 @@ namespace NiteCompiler.CodeAnalysis.Symbols.Source;
 internal sealed class SourceLocalVariableSymbol : LocalVariableSymbol
 {
 	private readonly Binder _scopeBinder;
-	private readonly TypeClause? _typeClause;
+	private readonly TypeClauseSyntax? _typeClause;
 	private readonly EqualsValueClause? _equalsValueClause;
 	private readonly Binder? _initializerBinder;
 
@@ -59,7 +59,7 @@ internal sealed class SourceLocalVariableSymbol : LocalVariableSymbol
 	public override Symbol ContainingSymbol { get; }
 
 	public SourceLocalVariableSymbol(Symbol containing, Binder scopeBinder,
-		TypeClause? type, EqualsValueClause? initializer, Binder? initializerBinder,
+		TypeClauseSyntax? type, EqualsValueClause? initializer, Binder? initializerBinder,
 		bool isAssignable, string name,
 		Location nameLocation, SyntaxReference syntaxReference)
 	{

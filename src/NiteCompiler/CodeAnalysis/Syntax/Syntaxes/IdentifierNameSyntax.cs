@@ -18,7 +18,4 @@ public sealed class IdentifierNameSyntax : SimpleNameSyntax
 	{
 		yield return Identifier;
 	}
-
-	public override void Accept(SyntaxVisitor visitor) => visitor.VisitIdentifierName(this);
-	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitIdentifierName(this);
 }

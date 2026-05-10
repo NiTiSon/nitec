@@ -6,5 +6,13 @@ public abstract class TypeBodySyntax : BodySyntax
 	{
 	}
 
-	internal abstract Token ClosingToken { get; }
+	public sealed override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default
+	{
+		return visitor.VisitTypeBody(this);
+	}
+
+	public sealed override void Accept(SyntaxVisitor visitor)
+	{
+		visitor.VisitTypeBody(this);
+	}
 }

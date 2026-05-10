@@ -13,6 +13,7 @@ internal sealed partial class NiteParser
 	{
 		None = 0,
 		InExpression = 1 << 0,
+		InItemName = 1 << 1,
 	}
 
 	private (TokenKind operatorTokenKind, NodeKind operatorExpressionKind) GetExpressionOperatorTokenKindAndExpressionKind()
@@ -502,10 +503,15 @@ internal sealed partial class NiteParser
 			throw new UnreachableException($"ParseSimpleName({current.TKind})");
 		}
 
-		if (Current.TKind == TokenKind.Less)
+		if (Current.TKind == TokenKind.Less && options.HasFlag(NameOptions.InExpression))
 		{
-			GenericParameterListSyntax generics = ParseGenericParameterList();
-			return new GenericNameSyntax(_syntaxTree, identifier, identifierText, generics);
+			Token openToken = PeekAndAdvance();
+
+			SyntaxList<ExpressionSyntax>.Builder arguments = ParseCommaSeparatedList(TokenKind.Greater, ParseExpression);
+
+			Token closeToken = MatchToken(TokenKind.Greater);
+
+			return new GenericNameSyntax(_syntaxTree, identifier, identifierText, openToken, arguments.Build(_syntaxTree), closeToken);
 		}
 		else
 		{
@@ -535,7 +541,7 @@ internal sealed partial class NiteParser
 		{
 			if (nameSyntax is not IdentifierNameSyntax)
 			{
-				Location? location = (nameSyntax as GenericNameSyntax)?.GenericParameterList.Location;
+				Location? location = (nameSyntax as GenericNameSyntax)?.GenericArguments.Location;
 				_diagnostics.ReportGenericsIsNotApplicableOnModuleName(location ?? nameSyntax.Location);
 			}
 		}

@@ -87,9 +87,30 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 		DeclarationAccessibility accessibility = GetAccessibility(declaration.AccessibilityToken);
 		DeclarationModifiers modifiers = GetModifiers(declaration.Modifiers);
 
-
 		NameSyntax name = declaration.Name;
 		SyntaxNode currentNode = declaration;
+
+		if (name is InlineNameSyntax inline)
+		{
+			SingleTypeDeclaration type = new(
+				name: name.UnqualifiedName.GetName(),
+				lifetimeArity: declaration.GenericParameterList?.LifetimeArity ?? 0,
+				arity: declaration.GenericParameterList?.Arity ?? 0,
+				accessibility: accessibility,
+				modifiers: modifiers,
+				syntax: currentNode.CreateReference(),
+				nameLocation: (name.Location as SourceLocation)!,
+				members: members,
+				diagnostics: []
+			);
+
+			members = [type];
+
+			currentNode = name = inline.Left;
+
+			accessibility = DeclarationAccessibility.MissedByInlinedDeclaration;
+			modifiers = DeclarationModifiers.Partial;
+		}
 
 		// The syntax
 		// [accessibility] [modifiers] type X::Y::Z;
@@ -97,7 +118,7 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 		// The "X" with partial modifier and weak (none) accessibility
 		// The "X::Y" with partial modifier and weak (none) accessibility
 		// The "X::Y::Z" with [modifiers] and [accessibility] accessibility
-		while (name is PathNameSyntax path)
+		while (name is InlineNameSyntax inline2)
 		{
 			SingleTypeDeclaration type = new(
 				name: name.UnqualifiedName.GetName(),
@@ -113,10 +134,7 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 
 			members = [type];
 
-			currentNode = name = path.Left;
-
-			accessibility = DeclarationAccessibility.MissedByInlinedDeclaration;
-			modifiers = DeclarationModifiers.Partial;
+			currentNode = name = inline2.Left;
 		}
 
 		return new SingleTypeDeclaration(

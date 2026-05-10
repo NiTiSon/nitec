@@ -209,6 +209,30 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 		return !lhs.Equals(rhs);
 	}
 
+	[Obsolete("Comparison is not allowed.")]
+	public static bool operator !=(TokenKind lhs, NodeKind rhs)
+	{
+		throw new InvalidOperationException("TokenKind and NodeKind comparison is not allowed.");
+	}
+
+	[Obsolete("Comparison is not allowed.")]
+	public static bool operator ==(TokenKind lhs, NodeKind rhs)
+	{
+		throw new InvalidOperationException("TokenKind and NodeKind comparison is not allowed.");
+	}
+
+	[Obsolete("Comparison is not allowed.")]
+	public static bool operator !=(NodeKind lhs, TokenKind rhs)
+	{
+		throw new InvalidOperationException("TokenKind and NodeKind comparison is not allowed.");
+	}
+
+	[Obsolete("Comparison is not allowed.")]
+	public static bool operator ==(NodeKind lhs, TokenKind rhs)
+	{
+		throw new InvalidOperationException("TokenKind and NodeKind comparison is not allowed.");
+	}
+
 	public override int GetHashCode()
 	{
 		return RawValue;

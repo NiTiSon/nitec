@@ -7,8 +7,6 @@ public sealed class EmptyTypeBodySyntax : TypeBodySyntax
 {
 	public Token SemicolonToken { get; }
 
-	internal override Token ClosingToken => SemicolonToken;
-
 	internal EmptyTypeBodySyntax(SyntaxTree tree, Token semicolonToken) : base(tree)
 	{
 		SemicolonToken = semicolonToken;
@@ -16,9 +14,6 @@ public sealed class EmptyTypeBodySyntax : TypeBodySyntax
 
 	public override TextSpan Span => SemicolonToken.Span;
 	public override NodeKind Kind => NodeKind.EmptyTypeBody;
-
-	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitEmptyTypeBody(this);
-	public override void Accept(SyntaxVisitor visitor) => visitor.VisitEmptyTypeBody(this);
 
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
