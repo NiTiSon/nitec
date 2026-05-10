@@ -56,6 +56,11 @@ public abstract class Token : SyntaxNode
 		return [];
 	}
 
+	public override IEnumerable<Token> GetTokens()
+	{
+		yield return this;
+	}
+
 	public override string ToString()
 	{
 		return $"Token = {TKind} @{Span}";

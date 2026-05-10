@@ -4,7 +4,7 @@ namespace NiteCompiler.CodeAnalysis.Symbols;
 
 public abstract class TypeSymbol : ContainerSymbol
 {
-	public sealed override SymbolKind Kind => SymbolKind.Type;
+	public override SymbolKind Kind => SymbolKind.Type;
 
 	public virtual SpecialType SpecialType => SpecialType.None;
 

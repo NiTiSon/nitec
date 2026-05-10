@@ -10,7 +10,7 @@ public sealed class LifetimeConstraintClauseSyntax : LifetimeOrGenericConstraint
 	public Token ColonToken { get; }
 	public SyntaxList<ConstraintSyntax> Constraints { get; }
 
-	public override TextSpan Span => TextSpan.FromBounds(WhereKeyword.Span, ColonToken.Span);
+	public override TextSpan Span => TextSpan.FromBounds(WhereKeyword.Span, Constraints.Span);
 	public override NodeKind Kind => NodeKind.LifetimeConstraintClause;
 
 	internal LifetimeConstraintClauseSyntax(SyntaxTree tree, Token whereKeyword, LifetimeSyntax lifetime,

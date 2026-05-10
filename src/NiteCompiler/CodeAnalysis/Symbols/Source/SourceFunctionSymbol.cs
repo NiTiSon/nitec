@@ -134,65 +134,88 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 
 	private ImmutableArray<LifetimeConstraint> MakeLifetimeConstraints()
 	{
-		// need WithLifetimesBinder
-		throw new NotImplementedException();
-		// if (Lifetimes.Length == 0 || Syntax.Name is not GenericNameSyntax nameSyntax || Syntax.ConstraintClauses == null)
-		// {
-		// 	return ImmutableArray<LifetimeConstraint>.Empty;
-		// }
-		//
-		// BindingDiagnosticBag diagnostics = BindingDiagnosticBag.GetInstance();
-		// HashSet<LifetimeSyntax> lifetimes = [];
-		//
-		// Dictionary<string, LifetimeSymbol> map = Lifetimes.ToDictionary(t => t.Name);
-		// ArrayBuilder<LifetimeConstraint> builder = ArrayBuilder<LifetimeConstraint>.GetInstance();
-		// foreach (LifetimeOrGenericConstraintClauseSyntax constraintSyntax in Syntax.ConstraintClauses)
-		// {
-		// 	if (constraintSyntax is not LifetimeConstraintClauseSyntax lifetimeConstraintClause)
-		// 	{
-		// 		continue;
-		// 	}
-		//
-		// 	string longerLifetimeName = lifetimeConstraintClause.Lifetime.Identifier;
-		// 	if (!map.TryGetValue(longerLifetimeName, out LifetimeSymbol? lifetime))
-		// 	{
-		// 		diagnostics.Diagnostics.ReportUnresolvedSymbol(lifetimeConstraintClause.Lifetime.Location);
-		// 		continue; // we don't want to overwhelm user with diagnostics, so just ignore constraints in such scenario
-		// 	}
-		//
-		// 	foreach (ConstraintSyntax constraint in lifetimeConstraintClause.Constraints)
-		// 	{
-		// 		if (constraint is not LifetimeConstraintSyntax lifetimeConstraint)
-		// 		{
-		// 			// TODO: diagnostic
-		// 		}
-		// 	}
-		//
-		// 	if (!map.TryGetValue(longerLifetimeName, out LifetimeSymbol? longer))
-		// 	{
-		// 		diagnostics.Diagnostics.ReportUndefinedLifetime(
-		// 			lifetimeConstraint.LifetimeIdentifier.Location,
-		// 			longerLifetimeName);
-		//
-		// 		continue;
-		// 	}
-		//
-		// 	if (!map.TryGetValue(shorterName, out LifetimeSymbol? shorter))
-		// 	{
-		// 		diagnostics.Diagnostics.ReportUndefinedLifetime(
-		// 			lifetimeConstraint.TargetLifetime.Location,
-		// 			shorterName);
-		//
-		// 		continue;
-		// 	}
-		//
-		// 	builder.Add(new LifetimeConstraint(
-		// 		longer,
-		// 		shorter));
-		// }
-		//
-		// AddDeclarationDiagnostics(diagnostics);
-		// diagnostics.Free();
+		// TODO: optimize allocations in this method
+		if (Lifetimes.Length == 0 ||
+		    Syntax.Name is not GenericNameSyntax ||
+		    Syntax.ConstraintClauses == null)
+		{
+			return ImmutableArray<LifetimeConstraint>.Empty;
+		}
+
+		BindingDiagnosticBag diagnostics = BindingDiagnosticBag.GetInstance();
+
+		Dictionary<string, LifetimeSymbol> map = Lifetimes.ToDictionary(t => t.Name);
+
+		HashSet<LifetimeSymbol> constrainedLifetimes = [];
+		HashSet<(LifetimeSymbol Longer, LifetimeSymbol Shorter)> uniqueConstraints = [];
+
+		ArrayBuilder<LifetimeConstraint> builder = ArrayBuilder<LifetimeConstraint>.GetInstance();
+
+		foreach (LifetimeOrGenericConstraintClauseSyntax clauseSyntax in Syntax.ConstraintClauses)
+		{
+			if (clauseSyntax is not LifetimeConstraintClauseSyntax lifetimeClause)
+			{
+				continue;
+			}
+
+			string longerName = lifetimeClause.Lifetime.Identifier;
+
+			if (!map.TryGetValue(longerName, out LifetimeSymbol? longer))
+			{
+				diagnostics.Diagnostics.ReportUnresolvedSymbol(
+					lifetimeClause.Lifetime.Location);
+
+				continue;
+			}
+
+			if (!constrainedLifetimes.Add(longer))
+			{
+				diagnostics.Diagnostics.ReportDuplicateLifetimeConstraintClause(lifetimeClause.Location, longer);
+
+				continue;
+			}
+
+			foreach (ConstraintSyntax constraintSyntax in lifetimeClause.Constraints)
+			{
+				if (constraintSyntax is not LifetimeConstraintSyntax lifetimeConstraint)
+				{
+					// TODO[generics]: diagnostic for invalid constraint kind
+					continue;
+				}
+
+				string shorterName = lifetimeConstraint.Outlives.Identifier;
+
+				if (!map.TryGetValue(shorterName, out LifetimeSymbol? shorter))
+				{
+					diagnostics.Diagnostics.ReportUnresolvedSymbol(lifetimeConstraint.Outlives.Location);
+
+					continue;
+				}
+
+				if (ReferenceEquals(longer, shorter))
+				{
+					// TODO: error
+					// diagnostics.Diagnostics.ReportInvalidLifetimeConstraint(...);
+					continue;
+				}
+
+				if (!uniqueConstraints.Add((longer, shorter)))
+				{
+					// TODO: warning
+					// diagnostics.Diagnostics.ReportDuplicateLifetimeConstraint(...);
+					continue;
+				}
+
+				builder.Add(new LifetimeConstraint(
+					longer,
+					shorter));
+			}
+		}
+
+		AddDeclarationDiagnostics(diagnostics);
+		diagnostics.Free();
+
+		return builder.ToImmutable();
 	}
 
 	public override ImmutableArray<ParameterSymbol> Parameters
@@ -311,6 +334,7 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 					break;
 				case CompletionPart.LifetimeParameters:
 					_ = Lifetimes;
+					_ = LifetimeConstraints;
 					_state.NotePartComplete(CompletionPart.LifetimeParameters);
 					break;
 				case CompletionPart.GenericParameters:

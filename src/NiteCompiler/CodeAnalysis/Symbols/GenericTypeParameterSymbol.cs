@@ -1,10 +1,12 @@
 ﻿namespace NiteCompiler.CodeAnalysis.Symbols;
 
-public abstract class GenericTypeParameterSymbol : Symbol
+public abstract class GenericTypeParameterSymbol : TypeSymbol
 {
 	public abstract int Ordinal { get; }
 
 	public sealed override SymbolKind Kind => SymbolKind.GenericTypeParameter;
+
+	public virtual GenericTypeParameterSymbol OriginalDefinition => this;
 
 	public sealed override void Accept(SymbolVisitor visitor)
 	{
