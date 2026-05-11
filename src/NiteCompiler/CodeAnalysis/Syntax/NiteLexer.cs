@@ -391,6 +391,14 @@ internal sealed partial class NiteLexer
 				_window.Advance();
 				info.Kind = TokenKind.CloseParen;
 				break;
+			case '[':
+				_window.Advance();
+				info.Kind = TokenKind.OpenBracket;
+				break;
+			case ']':
+				_window.Advance();
+				info.Kind = TokenKind.CloseBracket;
+				break;
 			case ',':
 				_window.Advance();
 				info.Kind = TokenKind.Comma;

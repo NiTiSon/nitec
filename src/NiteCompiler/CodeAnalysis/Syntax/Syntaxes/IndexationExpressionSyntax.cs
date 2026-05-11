@@ -8,7 +8,7 @@ public sealed class IndexationExpressionSyntax : ExpressionSyntax
 	public ExpressionSyntax Expression { get; }
 	public BracketedArgumentListSyntax ArgumentList { get; }
 
-	public override NodeKind Kind => NodeKind.InvocationExpression;
+	public override NodeKind Kind => NodeKind.IndexationExpression;
 	public override TextSpan Span => TextSpan.FromBounds(Expression.Span, ArgumentList.Span);
 
 	internal IndexationExpressionSyntax(SyntaxTree tree, ExpressionSyntax invoked, BracketedArgumentListSyntax argumentList) : base(tree)

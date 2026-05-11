@@ -76,7 +76,7 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 		}
 	}
 
-	public bool IsLiteralTokenKind => ToLiteralExpressionKind() != None;
+	public bool IsLiteralTokenKind => ToLiteralExpressionKind() != NodeKind.None;
 
 	public TokenKind ToContextualKeyword()
 	{

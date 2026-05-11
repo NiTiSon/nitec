@@ -16,7 +16,8 @@ internal partial class NiteParser
 		Token less = MatchToken(TokenKind.Less);
 
 		SyntaxList<LifetimeOrGenericParameterSyntax>.Builder builder = new();
-		while (Current.TKind != TokenKind.Greater)
+		while (Current.TKind != TokenKind.Greater &&
+		       Current.TKind != TokenKind.EndOfFile)
 		{
 			builder.Add(ParseGenericOrLifetimeParameter());
 
@@ -27,6 +28,7 @@ internal partial class NiteParser
 			else if (Current.TKind != TokenKind.Greater)
 			{
 				_diagnostics.ReportExpectedToken(Current.Location, TokenKind.Comma);
+				break;
 			}
 		}
 
@@ -356,7 +358,7 @@ internal partial class NiteParser
 		}
 
 		var nodes = erroredNodes.Build(_syntaxTree);
-		_diagnostics.ReportExpectedToken(nodes[0].Location, TokenKind.OpenBrace);
+		_diagnostics.ReportExpectedToken((nodes.Count > 0 ? nodes[0] : Current).Location, TokenKind.OpenBrace);
 		return new ErrorFunctionBodySyntax(_syntaxTree,  nodes);
 	}
 

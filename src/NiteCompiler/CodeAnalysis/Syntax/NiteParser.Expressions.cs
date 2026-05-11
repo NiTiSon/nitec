@@ -239,6 +239,10 @@ internal sealed partial class NiteParser
 				{
 					expression = new InvocationExpressionSyntax(_syntaxTree, expression, ParseParenthesizedArgumentList());
 				}
+				else if (tokenKind == TokenKind.OpenBracket)
+				{
+					expression = new IndexationExpressionSyntax(_syntaxTree, expression, ParseBracketedArgumentList());
+				}
 				else
 				{
 					return expression;
@@ -330,11 +334,12 @@ internal sealed partial class NiteParser
 
 	private BracketedArgumentListSyntax ParseBracketedArgumentList()
 	{
-		Token openBracket = MatchToken(TokenKind.OpenParen);
+		Token openBracket = MatchToken(TokenKind.OpenBracket);
 		SyntaxList<ExpressionSyntax>.Builder arguments = new();
 		while (true)
 		{
 			if (Current.TKind == TokenKind.EndOfFile) break;
+			if (Current.TKind == TokenKind.CloseBracket) break;
 
 			arguments.Add(ParseExpression());
 			if (Current.TKind == TokenKind.Comma)
@@ -344,7 +349,7 @@ internal sealed partial class NiteParser
 
 			if (Current.TKind == TokenKind.CloseBracket) break;
 		}
-		Token closeBracket = MatchToken(TokenKind.CloseParen);
+		Token closeBracket = MatchToken(TokenKind.CloseBracket);
 		return new(_syntaxTree, openBracket, arguments.Build(_syntaxTree), closeBracket);
 	}
 

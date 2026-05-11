@@ -33,7 +33,10 @@ internal sealed partial class NiteParser
 		}
 		else if (Current.TKind.IsAnyIdentifierOrKeyword ||
 		         Current.TKind.IsLiteralTokenKind ||
-		         Current.TKind == TokenKind.OpenParen)
+		         Current.TKind == TokenKind.OpenParen ||
+		         Current.TKind == TokenKind.Ampersand ||
+		         Current.TKind == TokenKind.Asterisk ||
+		         (Current.TKind is { IsOperator: true, CanBeUnaryOperator: true }))
 		{
 			return ParseExpressionStatement();
 		}
@@ -60,6 +63,14 @@ internal sealed partial class NiteParser
 			}
 
 			var nodes = erroredNodes.Build(_syntaxTree);
+
+			if (nodes.Count == 0)
+			{
+				Token token = PeekAndAdvance();
+				SyntaxList<Token>.Builder singleTokenBuilder = new();
+				singleTokenBuilder.Add(token);
+				nodes = singleTokenBuilder.Build(_syntaxTree);
+			}
 
 			_diagnostics.ReportUnexpectedToken(nodes[0].Location, nodes[0].TKind);
 			return new ErrorStatementSyntax(_syntaxTree, nodes);

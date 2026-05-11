@@ -53,4 +53,16 @@ public class NiteLexerTests
 
 		Assert.That(token.TKind, Is.EqualTo(TokenKind.EndOfFile));
 	}
+
+	[TestCase("[", nameof(TokenKind.OpenBracket))]
+	[TestCase("]", nameof(TokenKind.CloseBracket))]
+	public void Lex_Bracket_ReturnsBracketToken(string source, string expectedTokenName)
+	{
+		Token token = LexSingle(source);
+		TokenKind expectedToken = expectedTokenName == nameof(TokenKind.OpenBracket)
+			? TokenKind.OpenBracket
+			: TokenKind.CloseBracket;
+
+		Assert.That(token.TKind, Is.EqualTo(expectedToken));
+	}
 }

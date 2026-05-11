@@ -27,6 +27,6 @@ public sealed class ErrorStatementSyntax : StatementSyntax
 
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
-		throw new System.NotImplementedException();
+		yield return ErrorNodes;
 	}
 }
