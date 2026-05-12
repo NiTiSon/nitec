@@ -44,7 +44,7 @@ internal sealed class MetadataLibraryBuilder : SymbolVisitor<MetadataEntry?, Met
 
 		MetadataLibraryBuilder builder = new(compilation);
 		builder.Visit(compilation.SourceLibrary, null);
-		FunctionCompiler.CompileBodies(compilation, diagnostics, builder);
+		FunctionCompiler.CompileBodies(compilation, diagnostics, metadataBuilder: builder);
 
 		using BinaryWriter writer = new(library);
 		writer.Write(['n', 'l', 'i', 'b']);

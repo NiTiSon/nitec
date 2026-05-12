@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using LLVMSharp;
 using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Binding.Operators;
 using NiteCompiler.CodeAnalysis.Symbols;
@@ -272,7 +271,10 @@ internal sealed class SsaBuilder
 
 			foreach (var phi in successorSsa.Phis)
 			{
-				var value = _stacks[phi.Variable].Peek();
+				var stack = _stacks[phi.Variable];
+				SsaValue value = stack.Count > 0
+					? stack.Peek()
+					: new SsaUndef(phi.Type);
 				phi.Inputs.Add(block, value);
 			}
 		}

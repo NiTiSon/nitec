@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using LLVMSharp.Interop;
 using NiteCompiler.CodeAnalysis.Syntax;
@@ -92,7 +93,8 @@ public static class NiteCompiler
 	private static void Compile(FileInfo[] sources, FileInfo[] dependencies, NiteCompilationOptions options,
 		OutputKind outputKind, string? outputPath, string? libraryName,
 		string? targetTriple, string[] targetFeatures,
-		bool emitNir, bool emitAst)
+		bool emitNir, bool emitAst,
+		CancellationToken cancellationToken = default)
 	{
 		DiagnosticBag diagnostics = [];
 		outputPath ??= Environment.CurrentDirectory;
@@ -104,14 +106,14 @@ public static class NiteCompiler
 		{
 			Parallel.For(0, sources.Length, i =>
 			{
-				trees[i] = ParseFile(options, sources[i].FullName, diagnostics, out normalizedNames[i]);
-			});
+				trees[i] = ParseFile(options, sources[i].FullName, diagnostics, out normalizedNames[i], cancellationToken);
+			}, cancellationToken);
 		}
 		else
 		{
 			for (int i = 0; i < sources.Length; i++)
 			{
-				trees[i] = ParseFile(options, sources[i].FullName, diagnostics, out normalizedNames[i]);
+				trees[i] = ParseFile(options, sources[i].FullName, diagnostics, out normalizedNames[i], cancellationToken);
 			}
 		}
 
@@ -138,7 +140,6 @@ public static class NiteCompiler
 				{
 					using StreamWriter writer = new(astPath, append: false, Encoding.UTF8);
 					tree.Emit(writer);
-					Console.WriteLine($"AST written to: {astPath}");
 				}
 				catch (Exception ex) when (ex is DirectoryNotFoundException or FileNotFoundException)
 				{
@@ -155,6 +156,28 @@ public static class NiteCompiler
 			}
 		}
 
+		TextWriter? nirWriter = null;
+		if (emitNir)
+		{
+			string nirPath  = Path.ChangeExtension(libraryName ?? $"intermediate", ".nir");
+			try
+			{
+				nirWriter = new StreamWriter(nirPath);
+			}
+			catch (Exception ex) when (ex is DirectoryNotFoundException or FileNotFoundException)
+			{
+				diagnostics.ReportFileDoesNotExists(nirPath);
+			}
+			catch (UnauthorizedAccessException)
+			{
+				diagnostics.ReportHaveNoPrivilegesToReadFile(nirPath);
+			}
+			catch
+			{
+				diagnostics.ReportUnableToWriteFile(nirPath);
+			}
+		}
+
 		// Fallback library name
 		if (libraryName == null)
 		{
@@ -164,9 +187,9 @@ public static class NiteCompiler
 		}
 
 		var compilation = NiteCompilation.Create(libraryName, trees!, null, options, diagnostics);
-		var parseDiagnostics = compilation.GetParseDiagnostics();
-		var declarationDiagnostics = compilation.GetDeclarationDiagnostics();
-		var compilationDiagnostics = compilation.GetFunctionBodyDiagnostics();
+		var parseDiagnostics = compilation.GetParseDiagnostics(cancellationToken);
+		var declarationDiagnostics = compilation.GetDeclarationDiagnostics(cancellationToken);
+		var compilationDiagnostics = compilation.GetFunctionBodyDiagnostics(ssaWriter: nirWriter, cancellationToken);
 		diagnostics.AddRange(parseDiagnostics);
 		diagnostics.AddRange(declarationDiagnostics);
 		diagnostics.AddRange(compilationDiagnostics);
@@ -214,7 +237,8 @@ public static class NiteCompiler
 		}
 	}
 
-	private static SyntaxTree? ParseFile(NiteCompilationOptions options, string path, DiagnosticBag diagnostics, out string normalizedPath)
+	private static SyntaxTree? ParseFile(NiteCompilationOptions options, string path, DiagnosticBag diagnostics,
+		out string normalizedPath, CancellationToken cancellationToken = default)
 	{
 		SourceText? content = TryReadFileContent(path, diagnostics, out normalizedPath);
 
@@ -223,7 +247,7 @@ public static class NiteCompiler
 			return null;
 		}
 
-		SyntaxTree tree = SyntaxTree.ParseText(content, path, options);
+		SyntaxTree tree = SyntaxTree.ParseText(content, path, options, cancellationToken);
 		return tree;
 	}
 

@@ -81,7 +81,7 @@ internal partial class LlvmTranslator
 
 				foreach ((BasicBlock predecessor, SsaValue value) in phi.Inputs)
 				{
-					incomingValues[index] = valueMap[value];
+					incomingValues[index] = ResolveValue(value, valueMap);
 					incomingBlocks[index] = blockMap[predecessor];
 					index++;
 				}
@@ -305,11 +305,16 @@ internal partial class LlvmTranslator
 			: _builder.BuildICmp(GetIntPredicate(operandType.SpecialType, comparisonKind), ResolveValue(left, valueMap), ResolveValue(right, valueMap), "icmp");
 	}
 
-	private static LLVMValueRef ResolveValue(SsaValue value, Dictionary<SsaValue, LLVMValueRef> valueMap)
+	private LLVMValueRef ResolveValue(SsaValue value, Dictionary<SsaValue, LLVMValueRef> valueMap)
 	{
 		if (valueMap.TryGetValue(value, out LLVMValueRef llvmValue))
 		{
 			return llvmValue;
+		}
+
+		if (value is SsaUndef undef)
+		{
+			return LLVMValueRef.CreateConstNull(GetLlvmType(undef.Type));
 		}
 
 		if (value is SsaParameter parameter)

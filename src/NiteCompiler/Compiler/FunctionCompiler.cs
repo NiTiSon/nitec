@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Symbols;
@@ -17,12 +18,14 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 	private readonly NiteCompilation _compilation;
 	private readonly MetadataLibraryBuilder? _metadataBuilder;
 	private readonly BindingDiagnosticBag _diagnostics;
+	private readonly TextWriter? _ssaWriter;
 	private readonly Predicate<Symbol>? _filter;
 	private readonly CancellationToken _cancellationToken;
 
 	private FunctionCompiler(
 		NiteCompilation compilation,
 		BindingDiagnosticBag diagnostics,
+		TextWriter? ssaWriter = null,
 		MetadataLibraryBuilder? metadataBuilder = null,
 		Predicate<Symbol>? filter = null,
 		CancellationToken cancellationToken = default)
@@ -30,23 +33,25 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 		_compilation = compilation;
 		_metadataBuilder = metadataBuilder;
 		_diagnostics = diagnostics;
+		_ssaWriter = ssaWriter;
 		_filter = filter;
 		_cancellationToken = cancellationToken;
 	}
 
 	public static void CompileBodies(NiteCompilation compilation, BindingDiagnosticBag diagnostics,
-		MetadataLibraryBuilder? metadataBuilder, CancellationToken cancellationToken = default)
+		Predicate<Symbol>? filter = null, TextWriter? ssaWriter = null, MetadataLibraryBuilder? metadataBuilder = null,
+		CancellationToken cancellationToken = default)
 	{
-		FunctionCompiler compiler = new(compilation, diagnostics, metadataBuilder);
+		FunctionCompiler compiler = new(compilation, diagnostics, ssaWriter, metadataBuilder, filter, cancellationToken);
 
-		compiler.CompileModule(compilation.SourceLibrary.GlobalModule, cancellationToken);
+		compiler.CompileModule(compilation.SourceLibrary.GlobalModule);
 	}
 
-	private void CompileModule(ModuleSymbol symbol, CancellationToken cancellationToken = default)
+	private void CompileModule(ModuleSymbol symbol)
 	{
 		foreach (var s in symbol.GetMembersUnordered())
 		{
-			cancellationToken.ThrowIfCancellationRequested();
+			_cancellationToken.ThrowIfCancellationRequested();
 			s.Accept(this, null);
 		}
 	}
@@ -60,7 +65,7 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 
 		_cancellationToken.ThrowIfCancellationRequested();
 
-		CompileModule(symbol, _cancellationToken);
+		CompileModule(symbol);
 
 		return null;
 	}
@@ -117,7 +122,7 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 
 	private FunctionBody GenerateBody(FunctionSymbol symbol, BindingDiagnosticBag diagnostics, BoundBlock block)
 	{
-		byte[] ir = IntermediateBuilder.Compile(_compilation, symbol, block, diagnostics, _metadataBuilder);
+		byte[] ir = IntermediateBuilder.Compile(_compilation, symbol, block, diagnostics, _ssaWriter, _metadataBuilder);
 
 		return new FunctionBody([..ir]);
 	}

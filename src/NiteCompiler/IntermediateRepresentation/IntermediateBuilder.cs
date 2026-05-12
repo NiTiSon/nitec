@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.Compilation;
@@ -21,7 +22,7 @@ internal sealed class IntermediateBuilder
 	}
 
 	public static byte[] Compile(NiteCompilation compilation, FunctionSymbol function, BoundBlock block,
-		BindingDiagnosticBag diagnostics, MetadataLibraryBuilder? metadata)
+		BindingDiagnosticBag diagnostics, TextWriter? astWriter = null, MetadataLibraryBuilder? metadata = null)
 	{
 		// TODO[API infrastructure wrongity]: IntermediateCompiler shouldn't report report about code validity
 		// Verification of code should be made in previous stage, and we should invoke IntermediateBuilder only
@@ -29,26 +30,31 @@ internal sealed class IntermediateBuilder
 		IntermediateBuilder builder = new IntermediateBuilder(compilation, function);
 		ControlFlowGraph cfg = builder.CreateControlFlowGraph(block, diagnostics);
 
-		if (!diagnostics.Diagnostics.HasAnyErrors && metadata != null)
+		if (!diagnostics.Diagnostics.HasAnyErrors)
 		{
 			var ssa = SsaBuilder.Build(cfg, function);
 
-			Console.WriteLine(function.ToDisplayString());
-			foreach (var (basicBlock, ssaBlock) in ssa.Blocks)
+			if (astWriter != null)
 			{
-				Console.WriteLine($"{basicBlock.Name}:");
-				foreach (SsaPhi phi in ssaBlock.Phis)
+				astWriter.WriteLine(function.ToDisplayString());
+				foreach (var (basicBlock, ssaBlock) in ssa.Blocks)
 				{
-					Console.Write("  ");
-					phi.Write(Console.Out);
-					Console.WriteLine();
+					astWriter.WriteLine($"  {basicBlock.Name}:");
+					foreach (SsaPhi phi in ssaBlock.Phis)
+					{
+						astWriter.Write("    ");
+						phi.Write(astWriter);
+						astWriter.WriteLine();
+					}
+					foreach (Instruction instruction in ssaBlock.Instructions)
+					{
+						astWriter.Write("    ");
+						instruction.Write(astWriter);
+						astWriter.WriteLine();
+					}
 				}
-				foreach (Instruction instruction in ssaBlock.Instructions)
-				{
-					Console.Write("  ");
-					instruction.Write(Console.Out);
-					Console.WriteLine();
-				}
+				astWriter.WriteLine();
+				astWriter.Flush();
 			}
 		}
 
