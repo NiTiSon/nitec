@@ -23,8 +23,75 @@ internal static class Options
 	public const string NiTiSLibraryOutputKindName = "nlib";
 	public static readonly string[] OutputKinds = [ExecutableOutputKindName, NiTiSLibraryOutputKindName];
 
-	// public static Option<bool> EmitLlvmIrCode;
-	// public static Option<bool> EmitLlvmBitCode;
+	// Diagnostics / debug emission
+	public static readonly Option<bool> EmitNir;
+	public static readonly Option<bool> EmitAst;
+
+	static Options()
+	{
+		Input = new Argument<FileInfo[]>("sources")
+		{
+			Arity = ArgumentArity.ZeroOrMore,
+			Description = "Input source files written in Nite."
+		};
+
+		Dependencies = new Option<FileInfo[]>("-d", "--dependencies")
+		{
+			Description = "Include libraries for compilation."
+		};
+
+		AllWarningsAsErrors = new Option<bool>("-wae", "--all-warning-as-error")
+		{
+			Description = "Treat all warnings as errors."
+		};
+
+		WarningsAsErrors = new Option<string[]>("-wae+", "--warning-as-error")
+		{
+			Arity = ArgumentArity.OneOrMore,
+			Description = "Treat following warnings as errors."
+		};
+
+		WarningsNotAsErrors = new Option<string[]>("-wae-", "--warning-as-error-exclude")
+		{
+			Arity = ArgumentArity.OneOrMore,
+			Description = "Ignore following warnings from \"treat all warnings as errors\"."
+		};
+
+		LibraryName = new Option<string>("-n", "--name")
+		{
+			Description = "Name of output library."
+		};
+
+		OutputPath = new Option<string>("-o", "--output")
+		{
+			Description = "Path to the output file."
+		};
+
+		OverwriteOutput = new Option<bool>("-Y", "--overwrite-output")
+		{
+			Description = "Overwrite output file if exists."
+		};
+
+		OutputKind = new Option<string>("-k", "--output-kind")
+		{
+			Description =
+				"Determines the output format. If not set, the tool tries to infer the output kind from the output file name;" +
+				"if no output file name is provided, it falls back to the executable format."
+		};
+		OutputKind.AcceptOnlyFromAmong(OutputKinds);
+
+		EmitNir = new Option<bool>("--emit-nir")
+		{
+			Description = "Write the Nite Intermediate Representation (SSA form) for every compiled " +
+			              "function to '<outputname>.nir' alongside the primary output."
+		};
+
+		EmitAst = new Option<bool>("--emit-ast")
+		{
+			Description = "Write the Abstract Syntax Tree for every source file to " +
+			              "'<sourcefile>.ast' alongside the primary output."
+		};
+	}
 
 	public static void ConfigureCompileCommand(Command command)
 	{
@@ -39,58 +106,8 @@ internal static class Options
 		command.Options.Add(OutputPath);
 		command.Options.Add(OverwriteOutput);
 		command.Options.Add(OutputKind);
-	}
 
-	static Options()
-	{
-		Input = new("sources")
-		{
-			Arity = ArgumentArity.ZeroOrMore,
-			Description = "Input source files written in Nite."
-		};
-
-		Dependencies = new("-d", "--dependencies")
-		{
-			Description = "Include libraries for compilation."
-		};
-
-		AllWarningsAsErrors = new("-wae", "--all-warning-as-error")
-		{
-			Description = "Treat all warnings as errors."
-		};
-
-		WarningsAsErrors = new("-wae+", "--warning-as-error")
-		{
-			Arity = ArgumentArity.OneOrMore,
-			Description = "Treat following warnings as errors."
-		};
-
-		WarningsNotAsErrors = new("-wae-", "--warning-as-error-exclude")
-		{
-			Arity = ArgumentArity.OneOrMore,
-			Description = "Ignore following warnings from \"treat all warnings as errors\"."
-		};
-
-		LibraryName = new("-n", "--name")
-		{
-			Description = "Name of output library.",
-		};
-
-		OutputPath = new("-o", "--output")
-		{
-			Description = "Path to the output file."
-		};
-
-		OverwriteOutput = new("-Y", "--overwrite-output")
-		{
-			Description = "Overwrite output file if exists."
-		};
-
-		OutputKind = new("-k", "--output-kind")
-		{
-			Description = "Determines the output format. If not set, the tool tries to infer the output kind from the output file name;" +
-			              "if no output file name is provided, it falls back to the executable format."
-		};
-		OutputKind.AcceptOnlyFromAmong(OutputKinds);
+		command.Options.Add(EmitNir);
+		command.Options.Add(EmitAst);
 	}
 }

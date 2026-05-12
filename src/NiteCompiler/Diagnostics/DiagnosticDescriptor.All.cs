@@ -7,6 +7,7 @@ public partial class DiagnosticDescriptor
 		FileDoesNotExist,
 		HaveNoPrivilegesToReadFile,
 		UnableToOpenFile,
+		UnableToWriteFile,
 		DuplicateSourceFiles,
 		DependenciesInCoreLibrary,
 		UnterminatedMultilineComment,
@@ -51,6 +52,7 @@ public partial class DiagnosticDescriptor
 		FileDoesNotExist = new("file-not-found", "File '{0}' does not exist.");
 		HaveNoPrivilegesToReadFile = new("have-no-privileges-to-read-file", "Process have not enough privileges to read file '{0}'.");
 		UnableToOpenFile = new("unable-to-open-file", "Unable to open the file '{0}'.");
+		UnableToWriteFile = new("unable-to-write-file", "Unable to write a file '{0}'.");
 		DuplicateSourceFiles = new("duplicate-source-files", "Input files contains duplicates.");
 		DependenciesInCoreLibrary = new("dependencies-in-core-lib", "Core library can't have any dependencies.");
 

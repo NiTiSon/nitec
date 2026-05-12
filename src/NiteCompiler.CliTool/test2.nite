@@ -22,6 +22,42 @@ public lifetime_test2_fail<'a>(ref: &i32) {
 	ref = &x; // invalid: reference outlives the referred location
 }
 
+public drop_test(x: i32) {
+	// implicit drop x at the return
+}
+
+public drop_test2(x: i32) {
+	x = 1; // implicit drop; then assign
+}
+
+public drop_test3(cond: bool) {
+	let x: i32;
+	if cond {
+		x = 42;
+		// implicit drop here, because the at the successor scope the `x` is not always assigned
+	}
+
+	if cond {
+		x = 42;
+	} else {
+		x = 52;
+		// no implicit drop here, on all paths the `x` is assigned
+	}
+
+	// implicit drop here
+}
+
+public drop_test4() {
+	let x: i32;
+
+	if cond {
+		x = 42;
+		// implicit drop here, because the at the successor scope the `x` is not always assigned
+	}
+
+	// no implicit drop here
+}
+
 public main(cond: bool) {
 	let x;
 	x = 1; // beginning of the x lifetime

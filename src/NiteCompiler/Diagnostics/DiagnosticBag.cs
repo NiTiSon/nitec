@@ -103,6 +103,11 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.UnableToOpenFile, [], path);
 	}
 
+	public void ReportUnableToWriteFile(string path)
+	{
+		Add(DiagnosticDescriptor.UnableToOpenFile, [], path);
+	}
+
 	public void ReportDuplicateSourceFiles()
 	{
 		Add(DiagnosticDescriptor.DuplicateSourceFiles, []);

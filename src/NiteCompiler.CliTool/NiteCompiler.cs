@@ -43,10 +43,13 @@ public static class NiteCompiler
 		FileInfo[] dependencies = result.GetValue(Options.Dependencies) ?? [];
 		string? libraryName = result.GetValue(Options.LibraryName);
 		string? outputPath = result.GetValue(Options.OutputPath);
+		bool emitNir = result.GetValue(Options.EmitNir);
+		bool emitAst = result.GetValue(Options.EmitAst);
 
 		Compile(inputFiles, dependencies, NiteCompilationOptions.Default,
 			OutputKind.Executable, outputPath, libraryName,
-			null, []);
+			null, [],
+			emitNir, emitAst);
 	}
 
 	private static unsafe void EmitObjectFile(LLVMModuleRef module, LLVMTargetMachineRef targetMachine,
@@ -66,7 +69,7 @@ public static class NiteCompiler
 			StartInfo = new ProcessStartInfo
 			{
 				FileName = isMsvc ? "clang-cl" : "clang",
-				Arguments = $"{objPath} -o {outputPath} /link /subsystem:console",
+				Arguments = $"{objPath} -o {outputPath} " + (isMsvc ? "/link /subsystem:console" : ""),
 				RedirectStandardError = true,
 				RedirectStandardOutput = true,
 				UseShellExecute = false
@@ -88,7 +91,8 @@ public static class NiteCompiler
 
 	private static void Compile(FileInfo[] sources, FileInfo[] dependencies, NiteCompilationOptions options,
 		OutputKind outputKind, string? outputPath, string? libraryName,
-		string? targetTriple, string[] targetFeatures)
+		string? targetTriple, string[] targetFeatures,
+		bool emitNir, bool emitAst)
 	{
 		DiagnosticBag diagnostics = [];
 		outputPath ??= Environment.CurrentDirectory;
@@ -123,6 +127,33 @@ public static class NiteCompiler
 		}
 
 		Debug.Assert(trees.All(t => t is not null));
+
+		if (emitAst)
+		{
+			for (int i = 0; i < trees.Length; i++)
+			{
+				SyntaxTree tree = trees[i]!;
+				string astPath  = Path.ChangeExtension(normalizedNames[i] ?? $"input_{i}", ".ast");
+				try
+				{
+					using StreamWriter writer = new(astPath, append: false, Encoding.UTF8);
+					tree.Emit(writer);
+					Console.WriteLine($"AST written to: {astPath}");
+				}
+				catch (Exception ex) when (ex is DirectoryNotFoundException or FileNotFoundException)
+				{
+					diagnostics.ReportFileDoesNotExists(astPath);
+				}
+				catch (UnauthorizedAccessException)
+				{
+					diagnostics.ReportHaveNoPrivilegesToReadFile(astPath);
+				}
+				catch
+				{
+					diagnostics.ReportUnableToWriteFile(astPath);
+				}
+			}
+		}
 
 		// Fallback library name
 		if (libraryName == null)
