@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -69,41 +70,42 @@ public partial class NiteCompilation
 
 	public ImmutableArray<Diagnostic> GetParseDiagnostics(CancellationToken cancellationToken = default)
 	{
-		return GetDiagnostics(CompilationStage.Parse, false, symbolFilter: null, cancellationToken);
+		return GetDiagnostics(CompilationStage.Parse, false, symbolFilter: null, ssaWriter: null, cancellationToken);
 	}
 
 	public ImmutableArray<Diagnostic> GetDeclarationDiagnostics(CancellationToken cancellationToken = default)
 	{
-		return GetDiagnostics(CompilationStage.Declare, false, symbolFilter: null, cancellationToken);
+		return GetDiagnostics(CompilationStage.Declare, false, symbolFilter: null, ssaWriter: null, cancellationToken);
 	}
 
-	public ImmutableArray<Diagnostic> GetFunctionBodyDiagnostics(CancellationToken cancellationToken = default)
+	public ImmutableArray<Diagnostic> GetFunctionBodyDiagnostics(TextWriter? ssaWriter = null, CancellationToken cancellationToken = default)
 	{
-		return GetDiagnostics(CompilationStage.Compile, false, symbolFilter: null, cancellationToken);
+		return GetDiagnostics(CompilationStage.Compile, false, symbolFilter: null, ssaWriter, cancellationToken);
 	}
 
 	internal ImmutableArray<Diagnostic> GetDiagnostics(CompilationStage stage, bool includeEarlierStages,
-		Predicate<Symbol>? symbolFilter = null, CancellationToken cancellationToken = default)
+		Predicate<Symbol>? symbolFilter = null, TextWriter? ssaWriter = null, CancellationToken cancellationToken = default)
 	{
 		DiagnosticBag bag = new();
-		GetDiagnostics(stage, includeEarlierStages, bag, symbolFilter, cancellationToken);
+		GetDiagnostics(stage, includeEarlierStages, bag, symbolFilter, ssaWriter, cancellationToken);
 		return [..bag];
 	}
 
 	private void GetDiagnostics(CompilationStage stage, bool includeEarlierStages, DiagnosticBag diagnostics,
-		Predicate<Symbol>? symbolFilter = null, CancellationToken cancellationToken = default)
+		Predicate<Symbol>? symbolFilter = null, TextWriter? ssaWriter = null, CancellationToken cancellationToken = default)
 	{
 		var builder = BindingDiagnosticBag.GetInstance();
 		Debug.Assert(builder.Diagnostics != null);
 
-		GetDiagnosticsWithoutSeverityFiltering(stage, includeEarlierStages, builder, symbolFilter, cancellationToken);
+		GetDiagnosticsWithoutSeverityFiltering(stage, includeEarlierStages, builder, symbolFilter, ssaWriter, cancellationToken);
 
 		FilterAndAppendDiagnostics(diagnostics, builder.Diagnostics, cancellationToken);
 		builder.Free();
 	}
 
 	private void GetDiagnosticsWithoutSeverityFiltering(CompilationStage stage, bool includeEarlierStages,
-		BindingDiagnosticBag builder, Predicate<Symbol>? symbolFilter, CancellationToken cancellationToken)
+		BindingDiagnosticBag builder, Predicate<Symbol>? symbolFilter = null, TextWriter? ssaWriter = null,
+		CancellationToken cancellationToken = default)
 	{
 		Debug.Assert(builder.Diagnostics != null);
 
@@ -146,7 +148,7 @@ public partial class NiteCompilation
 
 		if (stage.IsInclude(CompilationStage.Compile, includeEarlierStages))
 		{
-			GetDiagnosticsForAllMethodBodies(builder, doLowering: false, cancellationToken);
+			GetDiagnosticsForAllMethodBodies(builder, doLowering: false, ssaWriter, cancellationToken);
 
 			cancellationToken.ThrowIfCancellationRequested();
 		}
@@ -186,10 +188,10 @@ public partial class NiteCompilation
 	}
 
 	private void GetDiagnosticsForAllMethodBodies(BindingDiagnosticBag diagnostics, bool doLowering,
-		CancellationToken cancellationToken = default)
+		TextWriter? ssaWriter = null, CancellationToken cancellationToken = default)
 	{
 		Debug.Assert(diagnostics.Diagnostics != null);
-		FunctionCompiler.CompileBodies(compilation: this, diagnostics, null, cancellationToken);
+		FunctionCompiler.CompileBodies(compilation: this, diagnostics, filter: null, ssaWriter, null, cancellationToken);
 
 		// TODO: Add documentation compiler hier
 	}

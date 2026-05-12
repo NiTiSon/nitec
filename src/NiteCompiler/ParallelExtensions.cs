@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace NiteCompiler;
 
-internal static class ParallelExtensions
+public static class ParallelExtensions
 {
 	private static readonly ParallelOptions DefaultParallelOptions = new() { MaxDegreeOfParallelism = Environment.ProcessorCount };
 
