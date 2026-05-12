@@ -25,6 +25,8 @@ public partial class DiagnosticDescriptor
 		CannotResolveSymbol,
 		UnresolvedPredefinedType,
 		AmbiguousReference,
+		DanglingReference,
+		ReferenceEscapesScope,
 		FieldMustHaveEitherTypeClauseOrDefaultValue,
 		OnlyTopLevelModuleDeclarationsAreAllowed,
 		ImplicitlyTypedVariableMustBeInitialized,
@@ -83,6 +85,8 @@ public partial class DiagnosticDescriptor
 		CannotResolveSymbol = new("cannot-resolve-symbol", "Cannot resolve symbol.");
 		UnresolvedPredefinedType = new("unresolved-predefined-type", "Predefined type `{0}` is not resolved.");
 		AmbiguousReference = new("ambiguous-reference", "Ambiguous reference:\n{0}.");
+		DanglingReference = new("dangling-reference", "Reference to '{0}' may outlive the storage of '{1}'.");
+		ReferenceEscapesScope = new("reference-escapes-scope", "Reference to local variable '{0}' escapes its scope.");
 		FieldMustHaveEitherTypeClauseOrDefaultValue = new("field-unresolvable-type", "Field must have either type clause or default value.");
 		OnlyTopLevelModuleDeclarationsAreAllowed = new("only-top-level-module-declarations-are-allowed", "Only top-level module declarations are allowed.");
 		ImplicitlyTypedVariableMustBeInitialized = new("variable-must-be-initialized", "Implicitly typed variable must be initialized.");

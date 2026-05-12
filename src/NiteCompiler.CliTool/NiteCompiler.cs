@@ -190,6 +190,7 @@ public static class NiteCompiler
 		var parseDiagnostics = compilation.GetParseDiagnostics(cancellationToken);
 		var declarationDiagnostics = compilation.GetDeclarationDiagnostics(cancellationToken);
 		var compilationDiagnostics = compilation.GetFunctionBodyDiagnostics(ssaWriter: nirWriter, cancellationToken);
+		nirWriter?.Dispose();
 		diagnostics.AddRange(parseDiagnostics);
 		diagnostics.AddRange(declarationDiagnostics);
 		diagnostics.AddRange(compilationDiagnostics);

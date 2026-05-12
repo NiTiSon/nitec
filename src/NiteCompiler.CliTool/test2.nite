@@ -2,15 +2,15 @@
 
 public type X<T>::Y<T2>::Z<T3>;
 
-public lifetime_test3<'a, 'b>(a: &'a i32, b: &'b i32) -> &'b i32
-where 'a : 'b + 'b
-where 'a : 'b + 'b {
-	if a > b {
-		return a;
-	}
-
-	return b;
-}
+// public lifetime_test3<'a, 'b>(a: &'a i32, b: &'b i32) -> &'b i32
+// where 'a : 'b + 'b
+// where 'a : 'b + 'b {
+// 	if a > b {
+// 		return a;
+// 	}
+//
+// 	return b;
+// }
 
 public lifetime_test() {
     let x: i32 = 1;
@@ -31,35 +31,28 @@ public drop_test2(x: i32) {
 }
 
 public drop_test3(cond: bool) {
-	let x: i32;
+	let x: i32 = 1;
 	if cond {
 		x = 42;
-		// implicit drop here, because the at the successor scope the `x` is not always assigned
 	}
 
 	if cond {
 		x = 42;
 	} else {
 		x = 52;
-		// no implicit drop here, on all paths the `x` is assigned
 	}
-
-	// implicit drop here
 }
 
-public drop_test4() {
+public drop_test4(cond: bool) {
 	let x: i32;
 
 	if cond {
 		x = 42;
-		// implicit drop here, because the at the successor scope the `x` is not always assigned
 	}
-
-	// no implicit drop here
 }
 
 public main(cond: bool) {
-	let x;
+	let x: i32;
 	x = 1; // beginning of the x lifetime
 
 	if cond {
@@ -67,23 +60,3 @@ public main(cond: bool) {
 		let ref_x = &x; // valid: cause x is outlive reference
 	}
 }
-
-module std;
-
-public type Boolean;
-public type NeverReturn;
-public type Void;
-
-// public interface Copyable;
-// public interface Clonable;
-
-module std::numerics;
-
-public type Float32;
-public type SInt32;
-
-module std::text;
-
-public type CharacterUtf8;
-public type CharacterUtf16;
-public type CharacterUtf32;

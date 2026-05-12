@@ -6,7 +6,7 @@
     },
     "<input>": {
       "commandName": "Project",
-      "commandLineArgs": "test2.nite -k executable --emit-nir --emit-ast"
+      "commandLineArgs": "test2.nite std.nite -k executable --emit-nir --emit-ast"
     }
   }
 }

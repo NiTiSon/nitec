@@ -82,9 +82,8 @@ internal sealed class SsaBuilder
 		{
 			foreach (BoundStatement stmt in block.Statements)
 			{
-				if (stmt is BoundLocalVariableDeclarationStatement varDeclaration)
+				if (stmt is BoundLocalVariableDeclarationStatement { Local: { } var, Initializer: not null })
 				{
-					LocalVariableSymbol var = varDeclaration.Local;
 					if (RequiresStorage(var))
 					{
 						continue;
