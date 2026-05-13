@@ -19,7 +19,7 @@ internal partial class Binder
 
 	private void LookupIdentifier(LookupResult result, SimpleNameSyntax node, bool invoked)
 	{
-		LookupIdentifier(result, name: node.GetName(), 0/*node.Arity*/, invoked);
+		LookupIdentifier(result, name: node.GetName(), node.Arity, invoked);
 	}
 
 	private void LookupIdentifier(LookupResult result, string name, int arity, bool invoked)

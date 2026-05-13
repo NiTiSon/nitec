@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.Compilation;
