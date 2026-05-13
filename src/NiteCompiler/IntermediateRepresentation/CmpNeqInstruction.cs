@@ -1,14 +1,15 @@
-﻿using System.IO;
-using NiteCompiler.IntermediateRepresentation.Ssa;
+﻿using System;
+using System.IO;
+using NiteCompiler.IntermediateRepresentation.Mir;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
-internal sealed class CmpNeqInstruction(SsaTemp output, SsaValue left, SsaValue right) : BinaryInstruction(output, left, right)
+internal sealed class CmpNeqInstruction(TempValue output, TempValue left, TempValue right) : BinaryInstruction(output, left, right)
 {
 	protected override string Mnemonic => "cmp neq";
 
 	public override void Emit(BinaryWriter writer)
 	{
-		throw new System.NotImplementedException();
+		throw new NotImplementedException();
 	}
 }

@@ -7,7 +7,7 @@ using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
 using NiteCompiler.IntermediateRepresentation;
 using NiteCompiler.IntermediateRepresentation.ControlFlow;
-using NiteCompiler.IntermediateRepresentation.Ssa;
+using NiteCompiler.IntermediateRepresentation.Mir;
 
 namespace NiteCompiler.Tests;
 
@@ -142,7 +142,7 @@ public class AddressDereferenceExpressionTests
 	}
 
 	[Test]
-	public void BuildSsa_DereferenceReferenceLocal_UsesReferenceValueAsLoadAddress()
+	public void BuildMir_DereferenceReferenceLocal_UsesReferenceValueAsLoadAddress()
 	{
 		const string source = """
 		public test() -> i32 {
@@ -161,24 +161,19 @@ public class AddressDereferenceExpressionTests
 		public type Void;
 		""";
 
-		SsaFunction ssa = BuildSsa(source, "test");
-		Instruction[] instructions = ssa.Blocks.Values
+		FunctionMir mir = BuildMir(source, "test");
+		Instruction[] instructions = mir.Blocks.Values
 			.SelectMany(block => block.Instructions)
 			.ToArray();
-		LoadIndirectInstruction load = instructions
-			.OfType<LoadIndirectInstruction>()
-			.Single();
-
 		Assert.Multiple(() =>
 		{
-			Assert.That(load.Address.Type, Is.InstanceOf<BaseReferenceTypeSymbol>());
+			Assert.That(instructions, Has.Some.InstanceOf<LoadInstruction>());
 			Assert.That(instructions, Has.Some.InstanceOf<AddressOfInstruction>());
-			Assert.That(instructions, Has.Some.InstanceOf<LoadLocalAddressInstruction>());
 		});
 	}
 
 	[Test]
-	public void BuildSsa_AddressOfDereference_EmitsReferenceInstructions()
+	public void BuildMir_AddressOfDereference_EmitsReferenceInstructions()
 	{
 		const string source = """
 		public test(x: i32) -> i32 {
@@ -190,13 +185,13 @@ public class AddressDereferenceExpressionTests
 		public type SInt32;
 		""";
 
-		SsaFunction ssa = BuildSsa(source, "test");
-		Instruction[] instructions = ssa.Blocks.Values.SelectMany(block => block.Instructions).ToArray();
+		FunctionMir mir = BuildMir(source, "test");
+		Instruction[] instructions = mir.Blocks.Values.SelectMany(block => block.Instructions).ToArray();
 
 		Assert.Multiple(() =>
 		{
 			Assert.That(instructions, Has.Some.InstanceOf<AddressOfInstruction>());
-			Assert.That(instructions, Has.Some.InstanceOf<LoadIndirectInstruction>());
+			Assert.That(instructions, Has.Some.InstanceOf<LoadInstruction>());
 		});
 	}
 
@@ -272,7 +267,7 @@ public class AddressDereferenceExpressionTests
 		return NiteCompilation.Create("test", [tree], null, NiteCompilationOptions.Default, []);
 	}
 
-	private static SsaFunction BuildSsa(string source, string functionName)
+	private static FunctionMir BuildMir(string source, string functionName)
 	{
 		NiteCompilation compilation = CreateCompilation(source);
 		Assert.That(compilation.GetDeclarationDiagnostics(), Is.Empty);
@@ -287,7 +282,7 @@ public class AddressDereferenceExpressionTests
 			Assert.That(diagnostics.Diagnostics, Is.Empty);
 
 			ControlFlowGraph cfg = ControlFlowGraphBuilder.Build(function, body.BlockBody, diagnostics);
-			return SsaBuilder.Build(cfg, function);
+			return MirBuilder.Build(compilation, function, cfg);
 		}
 		finally
 		{

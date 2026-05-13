@@ -1,15 +1,15 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using NiteCompiler.CodeAnalysis;
-using NiteCompiler.IntermediateRepresentation.Ssa;
+using NiteCompiler.IntermediateRepresentation.Mir;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
-internal class LoadImmInstruction(SsaTemp output, ConstantValue constant) : Instruction
+internal class LoadImmInstruction(TempValue output, ConstantValue constant) : Instruction
 {
 	public override bool IsBranch => false;
 
-	public readonly SsaTemp Output = output;
+	public readonly TempValue Output = output;
 	public readonly ConstantValue Constant = constant;
 
 	public override void Emit(BinaryWriter writer)
@@ -26,7 +26,7 @@ internal class LoadImmInstruction(SsaTemp output, ConstantValue constant) : Inst
 	public override void Write(TextWriter writer)
 	{
 		Output.Write(writer);
-		writer.Write(" = load ");
+		writer.Write(" = load imm ");
 		SpecialType specialType = Output.Type.SpecialType;
 		if (specialType == SpecialType.StdBoolean)
 		{

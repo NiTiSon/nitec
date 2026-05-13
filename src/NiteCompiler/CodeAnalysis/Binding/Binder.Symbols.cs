@@ -56,6 +56,21 @@ internal partial class Binder
 		throw new NotImplementedException();
 	}
 
+	/// <summary>
+	/// Returns eficient type to resolve operators, function parameters, conversions.
+	/// </summary>
+	/// <param name="from"></param>
+	/// <returns></returns>
+	private TypeSymbol GetEfficientType(TypeSymbol from)
+	{
+		return from switch
+		{
+			PointerTypeSymbol pointer => pointer.PointsTo,
+			ReferenceTypeSymbol reference => reference.PointsTo,
+			_ => from
+		};
+	}
+
 	private Symbol ResultSymbol(LookupResult result,
 		string simpleName,
 		int arity,

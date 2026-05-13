@@ -1,13 +1,13 @@
 using System.IO;
 using NiteCompiler.CodeAnalysis.Symbols;
-using NiteCompiler.IntermediateRepresentation.Ssa;
+using NiteCompiler.IntermediateRepresentation.Mir;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
-internal sealed class AddressOfInstruction(SsaTemp output, LocalVariableOrParameterSymbol symbol) : Instruction
+internal sealed class AddressOfInstruction(TempValue output, LocalVariableOrParameterSymbol symbol) : Instruction
 {
 	public override bool IsBranch => false;
-	public SsaTemp Output { get; } = output;
+	public TempValue Output { get; } = output;
 	public LocalVariableOrParameterSymbol Symbol { get; } = symbol;
 
 	public override void Emit(BinaryWriter writer)

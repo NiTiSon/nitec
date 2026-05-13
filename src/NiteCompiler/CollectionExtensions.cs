@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace NiteCompiler;
@@ -19,6 +21,59 @@ public static class CollectionExtensions
 			}
 
 			return true;
+		}
+	}
+
+	extension<T>(IEnumerable<T> items)
+	{
+		public Dictionary<TKey, T> MakeDictionaryFromValues<TKey>(Func<T, TKey> keyAccess)
+			where TKey : notnull
+		{
+			Dictionary<TKey, T> dictionary = new();
+			foreach (T item in items)
+			{
+				dictionary[keyAccess(item)] = item;
+			}
+
+			return dictionary;
+		}
+
+		public FrozenDictionary<TKey, T> MakeFrozenDictionaryFromValues<TKey>(Func<T, TKey> keyAccess)
+			where TKey : notnull
+		{
+			Dictionary<TKey, T> dictionary = new();
+			foreach (T item in items)
+			{
+				dictionary[keyAccess(item)] = item;
+			}
+
+			return dictionary.ToFrozenDictionary();
+		}
+	}
+
+	extension<T>(IEnumerable<T> keys)
+		where T : notnull
+	{
+		public Dictionary<T, TValue> MakeDictionaryFromKeys<TValue>(Func<T, TValue> valueAccess)
+		{
+			Dictionary<T, TValue> dictionary = new();
+			foreach (T key in keys)
+			{
+				dictionary[key] = valueAccess(key);
+			}
+
+			return dictionary;
+		}
+
+		public FrozenDictionary<T, TValue> MakeFrozenDictionaryFromKeys<TValue>(Func<T, TValue> valueAccess)
+		{
+			Dictionary<T, TValue> dictionary = new();
+			foreach (T key in keys)
+			{
+				dictionary[key] = valueAccess(key);
+			}
+
+			return dictionary.ToFrozenDictionary();
 		}
 	}
 

@@ -1,16 +1,16 @@
 ﻿using System.IO;
-using NiteCompiler.IntermediateRepresentation.Ssa;
+using NiteCompiler.IntermediateRepresentation.Mir;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
-internal abstract class BinaryInstruction(SsaTemp output, SsaValue left, SsaValue right) : Instruction
+internal abstract class BinaryInstruction(TempValue output, TempValue left, TempValue right) : Instruction
 {
 	public sealed override bool IsBranch => false;
 	protected abstract string Mnemonic { get; }
 
-	public SsaTemp Output { get; } = output;
-	public SsaValue Left { get; } = left;
-	public SsaValue Right { get; } = right;
+	public TempValue Output { get; } = output;
+	public TempValue Left { get; } = left;
+	public TempValue Right { get; } = right;
 
 	public override void Write(TextWriter writer)
 	{

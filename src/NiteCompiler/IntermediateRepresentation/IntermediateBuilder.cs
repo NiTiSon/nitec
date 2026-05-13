@@ -1,11 +1,10 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
 using NiteCompiler.IntermediateRepresentation.ControlFlow;
-using NiteCompiler.IntermediateRepresentation.Ssa;
+using NiteCompiler.IntermediateRepresentation.Mir;
 using NiteCompiler.Metadata;
 
 namespace NiteCompiler.IntermediateRepresentation;
@@ -32,26 +31,21 @@ internal sealed class IntermediateBuilder
 
 		if (!diagnostics.Diagnostics.HasAnyErrors)
 		{
-			var ssa = SsaBuilder.Build(cfg, function);
+			var mir = MirBuilder.Build(compilation, function, cfg);
 
 			if (astWriter != null)
 			{
 				astWriter.WriteLine(function.ToDisplayString());
-				foreach (var (basicBlock, ssaBlock) in ssa.Blocks)
+				foreach (var (basicBlock, ssaBlock) in mir.Blocks)
 				{
-					astWriter.WriteLine($"  {basicBlock.Name}:");
-					foreach (SsaPhi phi in ssaBlock.Phis)
-					{
-						astWriter.Write("    ");
-						phi.Write(astWriter);
-						astWriter.WriteLine();
-					}
+					astWriter.WriteLine($"  {basicBlock.Name}: {{");
 					foreach (Instruction instruction in ssaBlock.Instructions)
 					{
 						astWriter.Write("    ");
 						instruction.Write(astWriter);
 						astWriter.WriteLine();
 					}
+					astWriter.WriteLine("  }");
 				}
 				astWriter.WriteLine();
 				astWriter.Flush();

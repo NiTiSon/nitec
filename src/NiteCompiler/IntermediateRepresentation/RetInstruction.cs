@@ -1,14 +1,14 @@
 ﻿using System;
 using System.IO;
-using NiteCompiler.IntermediateRepresentation.Ssa;
+using NiteCompiler.IntermediateRepresentation.Mir;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
-internal sealed class RetInstruction(SsaValue? value) : Instruction
+internal sealed class RetInstruction(TempValue? value) : Instruction
 {
 	public override bool IsBranch => true;
 
-	public SsaValue? Value { get; } = value;
+	public TempValue? Value { get; } = value;
 
 	public override void Emit(BinaryWriter writer)
 	{

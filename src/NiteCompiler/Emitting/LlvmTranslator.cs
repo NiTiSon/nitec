@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using LLVMSharp.Interop;
-using NiteCompiler.CodeAnalysis;
 using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Symbols.Source;
+using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
 using NiteCompiler.IntermediateRepresentation;
 using NiteCompiler.IntermediateRepresentation.ControlFlow;
-using NiteCompiler.IntermediateRepresentation.Ssa;
+using NiteCompiler.IntermediateRepresentation.Mir;
 
 namespace NiteCompiler.Emitting;
 
@@ -19,22 +19,24 @@ internal sealed partial class LlvmTranslator
 	private readonly LLVMContextRef _context;
 	private readonly LLVMModuleRef _module;
 	private readonly LLVMBuilderRef _builder;
+	private readonly NiteCompilation _compilation;
 	private readonly BindingDiagnosticBag _diagnostics;
 	private readonly Dictionary<FunctionSymbol, FunctionPlan> _plans = new();
 
-	private LlvmTranslator(string moduleName, BindingDiagnosticBag diagnostics)
+	private LlvmTranslator(NiteCompilation compilation, string moduleName, BindingDiagnosticBag diagnostics)
 	{
 		_context = LLVMContextRef.Global;
 		_module = _context.CreateModuleWithName(moduleName);
 		_builder = _context.CreateBuilder();
+		_compilation = compilation;
 		_diagnostics = diagnostics;
 	}
 
-	public static LLVMModuleRef Translate(ImmutableArray<LibrarySymbol> libraries, FunctionSymbol? entryPoint,
+	public static LLVMModuleRef Translate(NiteCompilation compilation, ImmutableArray<LibrarySymbol> libraries, FunctionSymbol? entryPoint,
 		BindingDiagnosticBag diagnostics)
 	{
 		string moduleName = libraries.IsDefaultOrEmpty ? "__nite" : libraries[0].Name;
-		LlvmTranslator translator = new(moduleName, diagnostics);
+		LlvmTranslator translator = new(compilation, moduleName, diagnostics);
 		translator.TranslateImpl(libraries, entryPoint);
 		translator._builder.Dispose();
 		return translator._module;
@@ -86,12 +88,12 @@ internal sealed partial class LlvmTranslator
 			BuildFunctionPlan(function);
 			yield return function;
 
-			if (!_plans.TryGetValue(function, out FunctionPlan? plan) || plan.Ssa == null)
+			if (!_plans.TryGetValue(function, out FunctionPlan? plan) || plan.Mir == null)
 			{
 				continue;
 			}
 
-			foreach (FunctionSymbol callee in EnumerateCalledFunctions(plan.Ssa))
+			foreach (FunctionSymbol callee in EnumerateCalledFunctions(plan.Mir))
 			{
 				if (discovered.Add(callee))
 				{
@@ -101,9 +103,9 @@ internal sealed partial class LlvmTranslator
 		}
 	}
 
-	private static IEnumerable<FunctionSymbol> EnumerateCalledFunctions(SsaFunction ssa)
+	private static IEnumerable<FunctionSymbol> EnumerateCalledFunctions(FunctionMir mir)
 	{
-		foreach (SsaBlock block in ssa.Blocks.Values)
+		foreach (MirBlock block in mir.Blocks.Values)
 		{
 			foreach (Instruction instruction in block.Instructions)
 			{
@@ -140,20 +142,20 @@ internal sealed partial class LlvmTranslator
 
 		if (function.IsExtern)
 		{
-			_plans[function] = new FunctionPlan(function, cfg: null, ssa: null);
+			_plans[function] = new FunctionPlan(function, cfg: null, mir: null);
 			return;
 		}
 
 		BoundBlock? body = BindFunctionBody(function);
 		if (body == null)
 		{
-			_plans[function] = new FunctionPlan(function, cfg: null, ssa: null);
+			_plans[function] = new FunctionPlan(function, cfg: null, mir: null);
 			return;
 		}
 
 		ControlFlowGraph cfg = ControlFlowGraphBuilder.Build(function, body, _diagnostics);
-		SsaFunction ssa = SsaBuilder.Build(cfg, function);
-		_plans[function] = new FunctionPlan(function, cfg, ssa);
+		FunctionMir mir = MirBuilder.Build(_compilation, function, cfg);
+		_plans[function] = new FunctionPlan(function, cfg, mir);
 	}
 
 	private BoundBlock? BindFunctionBody(FunctionSymbol function)
@@ -206,11 +208,11 @@ internal sealed partial class LlvmTranslator
 		return function.ToDisplayString(SymbolFormat.Metadata);
 	}
 
-	private sealed class FunctionPlan(FunctionSymbol function, ControlFlowGraph? cfg, SsaFunction? ssa)
+	private sealed class FunctionPlan(FunctionSymbol function, ControlFlowGraph? cfg, FunctionMir? mir)
 	{
 		public FunctionSymbol Function { get; } = function;
 		public ControlFlowGraph? Cfg { get; } = cfg;
-		public SsaFunction? Ssa { get; } = ssa;
+		public FunctionMir? Mir { get; } = mir;
 		public LLVMValueRef LlvmFunction { get; set; }
 	}
 }
