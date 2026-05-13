@@ -144,39 +144,93 @@ internal sealed class LifetimeChecker
 
 	private void CheckEscapeInStatement(BoundStatement stmt, BasicBlock block)
 	{
-	    if (stmt is not BoundLocalVariableDeclarationStatement decl) return;
-	    if (decl.Initializer is not BoundAddressOfExpression addrOf) return;
+		switch (stmt)
+		{
+			case BoundLocalVariableDeclarationStatement decl:
+				CheckEscapeInDeclaration(decl);
+				break;
+			case BoundExpressionStatement { Expression: BoundAssignment assignment }:
+				CheckEscapeInAssignment(assignment);
+				break;
+		}
+	}
 
-	    // Find what symbol is being addressed.
-	    LocalVariableOrParameterSymbol? referent = addrOf.Expression switch
-	    {
-	        BoundLocal l => l.Local,
-	        BoundParameter p => p.Parameter,
-	        _ => null
-	    };
-	    if (referent == null) return;
+	private void CheckEscapeInDeclaration(BoundLocalVariableDeclarationStatement decl)
+	{
+		if (decl.Initializer is not BoundAddressOfExpression addrOf) return;
 
-	    // The new reference variable.
-	    LocalVariableOrParameterSymbol refVar = decl.Local;
+		LocalVariableOrParameterSymbol? referent = addrOf.Expression switch
+		{
+			BoundLocal l => l.Local,
+			BoundParameter p => p.Parameter,
+			_ => null
+		};
+		if (referent == null) return;
 
-	    if (!_regions.TryGetValue(refVar, out var refRegion)) return;
-	    if (!_storageLifetimes.TryGetValue(referent, out var referentLife)) return;
+		LocalVariableOrParameterSymbol refVar = decl.Local;
 
-	    // Every block where the reference is live must be covered
-	    // by the referent's storage lifetime.
-	    foreach (BasicBlock liveBlock in refRegion)
-	    {
-	        if (!referentLife.Contains(liveBlock))
-	        {
-	            // The reference is used in a block where the
-	            // referent is no longer alive → dangling reference.
-	            _diagnostics.Diagnostics.ReportDanglingReference(
-	                decl.Syntax?.Location ?? addrOf.Syntax!.Location,
-	                refVar,
-	                referent);
-	            break; // one error per variable is enough
-	        }
-	    }
+		if (!_regions.TryGetValue(refVar, out var refRegion)) return;
+		if (!_storageLifetimes.TryGetValue(referent, out var referentLife)) return;
+
+		foreach (BasicBlock liveBlock in refRegion)
+		{
+			if (!referentLife.Contains(liveBlock))
+			{
+				_diagnostics.Diagnostics.ReportDanglingReference(
+					decl.Syntax?.Location ?? addrOf.Syntax!.Location,
+					refVar,
+					referent);
+				break;
+			}
+		}
+	}
+
+	private void CheckEscapeInAssignment(BoundAssignment assignment)
+	{
+		if (assignment.Right is not BoundAddressOfExpression addrOf) return;
+
+		LocalVariableOrParameterSymbol? referent = addrOf.Expression switch
+		{
+			BoundLocal l => l.Local,
+			BoundParameter p => p.Parameter,
+			_ => null
+		};
+		if (referent == null) return;
+
+		LocalVariableOrParameterSymbol? lhsSym = assignment.Left switch
+		{
+			BoundLocal l when l.Local.Type is BaseReferenceTypeSymbol => l.Local,
+			BoundParameter p when p.Parameter.Type is BaseReferenceTypeSymbol => p.Parameter,
+			_ => null
+		};
+		if (lhsSym == null) return;
+
+		// Assigning a reference to a local into a parameter is always
+		// a dangling reference — the parameter's referent must outlive
+		// the function call.
+		if (lhsSym is ParameterSymbol)
+		{
+			_diagnostics.Diagnostics.ReportDanglingReference(
+				assignment.Syntax?.Location ?? addrOf.Syntax!.Location,
+				lhsSym,
+				referent);
+			return;
+		}
+
+		if (!_regions.TryGetValue(lhsSym, out var refRegion)) return;
+		if (!_storageLifetimes.TryGetValue(referent, out var referentLife)) return;
+
+		foreach (BasicBlock liveBlock in refRegion)
+		{
+			if (!referentLife.Contains(liveBlock))
+			{
+				_diagnostics.Diagnostics.ReportDanglingReference(
+					assignment.Syntax?.Location ?? addrOf.Syntax!.Location,
+					lhsSym,
+					referent);
+				break;
+			}
+		}
 	}
 
 	private void CheckReturnEscape(BoundExpression expr)
