@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
@@ -9,6 +9,7 @@ using NiteCompiler.CodeAnalysis.Symbols.Source;
 using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
 using NiteCompiler.IntermediateRepresentation;
+using NiteCompiler.IntermediateRepresentation.ControlFlow;
 using NiteCompiler.Metadata;
 
 namespace NiteCompiler.Compiler;
@@ -108,9 +109,15 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 
 				if (!functionBody.HasErrors)
 				{
-					var emittedBody = GenerateBody(function, diagnostics, body);
+					ControlFlowGraph cfg = ControlFlowGraphBuilder.Build(function, body, diagnostics);
 
-					_metadataBuilder?.SetFunctionBody(function, emittedBody);
+					LifetimeChecker.Check(function, body, cfg, diagnostics);
+
+					if (!diagnostics.Diagnostics.HasAnyErrors)
+					{
+						var emittedBody = GenerateBody(function, diagnostics, body);
+						_metadataBuilder?.SetFunctionBody(function, emittedBody);
+					}
 				}
 
 				return body;

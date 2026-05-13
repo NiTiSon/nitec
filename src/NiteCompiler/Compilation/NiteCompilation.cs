@@ -164,6 +164,23 @@ public sealed partial class NiteCompilation
 		return value;
 	}
 
+	private ConcurrentDictionary<(TypeSymbol, bool, bool), PointerTypeSymbol>? _pointerTypeSymbols;
+	internal PointerTypeSymbol CreatePointerType(TypeSymbol pointsTo, bool isMutable, bool isNullable)
+	{
+		if (_pointerTypeSymbols == null)
+		{
+			Interlocked.CompareExchange(ref _pointerTypeSymbols, new(), null);
+		}
+
+		if (!_pointerTypeSymbols.TryGetValue((pointsTo, isMutable, isNullable), out PointerTypeSymbol? value))
+		{
+			value = new PointerTypeSymbol(pointsTo, isMutable, isNullable);
+			_pointerTypeSymbols[(pointsTo, isMutable, isNullable)] = value;
+		}
+
+		return value;
+	}
+
 	public FunctionSymbol? GetEntryPoint()
 	{
 		// TODO: Binder.Lookup("main") etc.
@@ -195,7 +212,7 @@ public sealed partial class NiteCompilation
 				LLVMCodeModel.LLVMCodeModelDefault);
 			LLVMTargetDataRef data = machine.CreateTargetDataLayout();
 
-			LLVMModuleRef module = LlvmTranslator.Translate([SourceLibrary], GetEntryPoint(), diagnostics);
+			LLVMModuleRef module = LlvmTranslator.Translate(this, [SourceLibrary], GetEntryPoint(), diagnostics);
 			module.Target = targetTriple;
 			LlvmOptimizer.Optimize(module, machine);
 			resultDiagnostics = diagnostics.ToBagAndFree();

@@ -1,9 +1,9 @@
 ﻿using System.IO;
-using NiteCompiler.IntermediateRepresentation.Ssa;
+using NiteCompiler.IntermediateRepresentation.Mir;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
-internal sealed class CmpEqInstruction(SsaTemp output, SsaValue left, SsaValue right) : BinaryInstruction(output, left, right)
+internal sealed class CmpEqInstruction(TempValue output, TempValue left, TempValue right) : BinaryInstruction(output, left, right)
 {
 	protected override string Mnemonic => "cmp eq";
 

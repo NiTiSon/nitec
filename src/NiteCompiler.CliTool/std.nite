@@ -1,0 +1,19 @@
+﻿module std;
+
+public type Boolean;
+public type NeverReturn;
+public type Void;
+
+// public interface Copyable;
+// public interface Clonable;
+
+module std::numerics;
+
+public type Float32;
+public type SInt32;
+
+module std::text;
+
+public type CharacterUtf8;
+public type CharacterUtf16;
+public type CharacterUtf32;

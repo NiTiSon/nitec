@@ -5,7 +5,7 @@ using NiteCompiler.CodeAnalysis;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.IntermediateRepresentation;
 using NiteCompiler.IntermediateRepresentation.ControlFlow;
-using NiteCompiler.IntermediateRepresentation.Ssa;
+using NiteCompiler.IntermediateRepresentation.Mir;
 
 namespace NiteCompiler.Emitting;
 
@@ -23,83 +23,55 @@ internal partial class LlvmTranslator
 
 	private void EmitFunctionBody(FunctionPlan plan)
 	{
-		if (plan.Ssa == null || plan.Cfg == null || plan.Function.IsExtern)
+		if (plan.Mir == null || plan.Cfg == null || plan.Function.IsExtern)
 		{
 			return;
 		}
 
 		LLVMValueRef llvmFunction = plan.LlvmFunction;
 		Dictionary<BasicBlock, LLVMBasicBlockRef> blockMap = new(plan.Cfg.Blocks.Length);
-		Dictionary<SsaValue, LLVMValueRef> valueMap = new();
-		Dictionary<LocalVariableOrParameterSymbol, LLVMValueRef> storageMap = new();
+		Dictionary<TempValue, LLVMValueRef> valueMap = new();
+		Dictionary<ParameterSymbol, LLVMValueRef> parameterMap = new();
 
 		foreach (BasicBlock block in plan.Cfg.Blocks)
 		{
 			blockMap[block] = llvmFunction.AppendBasicBlock(block.Name ?? "block");
 		}
 
-		foreach (ParameterSymbol parameter in plan.Function.Parameters)
+		foreach (ParameterSymbol param in plan.Function.Parameters)
 		{
-			SsaParameter ssaParameter = new(parameter);
-			valueMap[ssaParameter] = llvmFunction.GetParam((uint)parameter.Ordinal);
+			parameterMap[param] = llvmFunction.GetParam((uint)param.Ordinal);
 		}
 
-		_builder.PositionAtEnd(blockMap[plan.Cfg.Entry]);
-		foreach (LocalVariableOrParameterSymbol symbol in CollectAddressBackedSymbols(plan.Ssa))
+		FunctionMir mir = plan.Mir;
+		foreach (BasicBlock cfgBlock in plan.Cfg.Blocks)
 		{
-			LLVMValueRef storage = _builder.BuildAlloca(GetLlvmType(symbol.Type), $"{symbol.Name}.addr");
-			storageMap[symbol] = storage;
-			if (symbol is ParameterSymbol parameter)
-			{
-				_builder.BuildStore(llvmFunction.GetParam((uint)parameter.Ordinal), storage);
-			}
-		}
-
-		foreach ((BasicBlock cfgBlock, SsaBlock ssaBlock) in plan.Ssa.Blocks)
-		{
+			MirBlock mirBlock = mir.Blocks[cfgBlock];
 			_builder.PositionAtEnd(blockMap[cfgBlock]);
 
-			foreach (SsaPhi phi in ssaBlock.Phis)
+			foreach (Instruction instruction in mirBlock.Instructions)
 			{
-				string phiName = phi.Result is null ? phi.Variable.Name : $"phi.{phi.Result.Id}";
-				valueMap[phi.Result!] = _builder.BuildPhi(GetLlvmType(phi.Type), phiName);
-			}
-
-			foreach (Instruction instruction in ssaBlock.Instructions)
-			{
-				EmitInstruction(instruction, blockMap, valueMap, storageMap);
-			}
-		}
-
-		foreach (SsaBlock ssaBlock in plan.Ssa.Blocks.Values)
-		{
-			foreach (SsaPhi phi in ssaBlock.Phis)
-			{
-				var incomingValues = new LLVMValueRef[phi.Inputs.Count];
-				var incomingBlocks = new LLVMBasicBlockRef[phi.Inputs.Count];
-				int index = 0;
-
-				foreach ((BasicBlock predecessor, SsaValue value) in phi.Inputs)
-				{
-					incomingValues[index] = ResolveValue(value, valueMap);
-					incomingBlocks[index] = blockMap[predecessor];
-					index++;
-				}
-
-				valueMap[phi.Result!].AddIncoming(incomingValues, incomingBlocks, (uint)incomingValues.Length);
+				EmitInstruction(instruction, blockMap, valueMap, parameterMap, mir);
 			}
 		}
 	}
 
 	private void EmitInstruction(Instruction instruction,
 		Dictionary<BasicBlock, LLVMBasicBlockRef> blockMap,
-		Dictionary<SsaValue, LLVMValueRef> valueMap,
-		Dictionary<LocalVariableOrParameterSymbol, LLVMValueRef> storageMap)
+		Dictionary<TempValue, LLVMValueRef> valueMap,
+		Dictionary<ParameterSymbol, LLVMValueRef> parameterMap,
+		FunctionMir mir)
 	{
 		switch (instruction)
 		{
+			case StackAllocInstruction alloca:
+				valueMap[alloca.Output] = EmitStackAlloc(alloca);
+				break;
 			case LoadImmInstruction imm:
 				valueMap[imm.Output] = EmitConstant(imm.Constant, imm.Output.Type);
+				break;
+			case LoadParamInstruction param:
+				valueMap[param.Output] = EmitParam(param.Parameter, parameterMap);
 				break;
 			case AddInstruction add:
 				valueMap[add.Output] = EmitAdd(add.Left, add.Right, add.Output.Type, "add", valueMap);
@@ -170,28 +142,19 @@ internal partial class LlvmTranslator
 					CreateFunctionType(call.Function),
 					_plans[call.Function].LlvmFunction,
 					arguments,
-					call.Output.Type.IsVoidType ? string.Empty : "call");
+					call.Function.ReturnType.IsVoidType ? string.Empty : "call");
 				break;
 			case AddressOfInstruction addressOf:
-				valueMap[addressOf.Output] = storageMap[addressOf.Symbol];
+				valueMap[addressOf.Output] = ResolveValue(mir.AddressTable![addressOf.Symbol], valueMap);
 				break;
-			case LoadLocalAddressInstruction loadLocal:
-				valueMap[loadLocal.Output] = _builder.BuildLoad2(
-					GetLlvmType(loadLocal.Output.Type),
-					storageMap[loadLocal.Symbol],
-					$"load.{loadLocal.Symbol.Name}");
+			case LoadInstruction load:
+				valueMap[load.Output] = _builder.BuildLoad2(
+					GetLlvmType(load.Output.Type),
+					ResolveValue(load.Address, valueMap),
+					"load");
 				break;
-			case StoreLocalAddressInstruction storeLocal:
-				_builder.BuildStore(ResolveValue(storeLocal.Value, valueMap), storageMap[storeLocal.Symbol]);
-				break;
-			case LoadIndirectInstruction loadIndirect:
-				valueMap[loadIndirect.Output] = _builder.BuildLoad2(
-					GetLlvmType(loadIndirect.Output.Type),
-					ResolveValue(loadIndirect.Address, valueMap),
-					"load.ind");
-				break;
-			case StoreIndirectInstruction storeIndirect:
-				_builder.BuildStore(ResolveValue(storeIndirect.Value, valueMap), ResolveValue(storeIndirect.Address, valueMap));
+			case StoreInstruction store:
+				_builder.BuildStore(ResolveValue(store.Value, valueMap), ResolveValue(store.Address, valueMap));
 				break;
 			case RetInstruction ret:
 				if (ret.Value == null)
@@ -214,6 +177,16 @@ internal partial class LlvmTranslator
 		}
 	}
 
+	private LLVMValueRef EmitStackAlloc(StackAllocInstruction stackAlloc)
+	{
+		return _builder.BuildAlloca(GetLlvmType(stackAlloc.TypeOf), "stackalloc");
+	}
+
+	private LLVMValueRef EmitParam(ParameterSymbol param, Dictionary<ParameterSymbol, LLVMValueRef> parameterMap)
+	{
+		return parameterMap[param];
+	}
+
 	private LLVMValueRef EmitConstant(ConstantValue constant, TypeSymbol type)
 	{
 		LLVMTypeRef llvmType = GetLlvmType(type);
@@ -234,28 +207,28 @@ internal partial class LlvmTranslator
 		};
 	}
 
-	private LLVMValueRef EmitAdd(SsaValue left, SsaValue right, TypeSymbol type, string name, Dictionary<SsaValue, LLVMValueRef> valueMap)
+	private LLVMValueRef EmitAdd(TempValue left, TempValue right, TypeSymbol type, string name, Dictionary<TempValue, LLVMValueRef> valueMap)
 	{
 		return type.SpecialType.IsFloat
 			? _builder.BuildFAdd(ResolveValue(left, valueMap), ResolveValue(right, valueMap), name)
 			: _builder.BuildAdd(ResolveValue(left, valueMap), ResolveValue(right, valueMap), name);
 	}
 
-	private LLVMValueRef EmitSub(SsaValue left, SsaValue right, TypeSymbol type, string name, Dictionary<SsaValue, LLVMValueRef> valueMap)
+	private LLVMValueRef EmitSub(TempValue left, TempValue right, TypeSymbol type, string name, Dictionary<TempValue, LLVMValueRef> valueMap)
 	{
 		return type.SpecialType.IsFloat
 			? _builder.BuildFSub(ResolveValue(left, valueMap), ResolveValue(right, valueMap), name)
 			: _builder.BuildSub(ResolveValue(left, valueMap), ResolveValue(right, valueMap), name);
 	}
 
-	private LLVMValueRef EmitMul(SsaValue left, SsaValue right, TypeSymbol type, string name, Dictionary<SsaValue, LLVMValueRef> valueMap)
+	private LLVMValueRef EmitMul(TempValue left, TempValue right, TypeSymbol type, string name, Dictionary<TempValue, LLVMValueRef> valueMap)
 	{
 		return type.SpecialType.IsFloat
 			? _builder.BuildFMul(ResolveValue(left, valueMap), ResolveValue(right, valueMap), name)
 			: _builder.BuildMul(ResolveValue(left, valueMap), ResolveValue(right, valueMap), name);
 	}
 
-	private LLVMValueRef EmitDiv(SsaValue left, SsaValue right, TypeSymbol type, string name, Dictionary<SsaValue, LLVMValueRef> valueMap)
+	private LLVMValueRef EmitDiv(TempValue left, TempValue right, TypeSymbol type, string name, Dictionary<TempValue, LLVMValueRef> valueMap)
 	{
 		if (type.SpecialType.IsFloat)
 		{
@@ -267,7 +240,7 @@ internal partial class LlvmTranslator
 			: _builder.BuildSDiv(ResolveValue(left, valueMap), ResolveValue(right, valueMap), name);
 	}
 
-	private LLVMValueRef EmitRem(SsaValue left, SsaValue right, TypeSymbol type, string name, Dictionary<SsaValue, LLVMValueRef> valueMap)
+	private LLVMValueRef EmitRem(TempValue left, TempValue right, TypeSymbol type, string name, Dictionary<TempValue, LLVMValueRef> valueMap)
 	{
 		if (type.SpecialType.IsFloat)
 		{
@@ -279,14 +252,14 @@ internal partial class LlvmTranslator
 			: _builder.BuildSRem(ResolveValue(left, valueMap), ResolveValue(right, valueMap), name);
 	}
 
-	private LLVMValueRef EmitNeg(SsaValue input, TypeSymbol type, string name, Dictionary<SsaValue, LLVMValueRef> valueMap)
+	private LLVMValueRef EmitNeg(TempValue input, TypeSymbol type, string name, Dictionary<TempValue, LLVMValueRef> valueMap)
 	{
 		return type.SpecialType.IsFloat
 			? _builder.BuildFNeg(ResolveValue(input, valueMap), name)
 			: _builder.BuildNeg(ResolveValue(input, valueMap), name);
 	}
 
-	private LLVMValueRef EmitNot(SsaValue input, TypeSymbol type, string name, Dictionary<SsaValue, LLVMValueRef> valueMap)
+	private LLVMValueRef EmitNot(TempValue input, TypeSymbol type, string name, Dictionary<TempValue, LLVMValueRef> valueMap)
 	{
 		if (type.SpecialType == SpecialType.StdBoolean)
 		{
@@ -297,63 +270,17 @@ internal partial class LlvmTranslator
 		return _builder.BuildNot(ResolveValue(input, valueMap), name);
 	}
 
-	private LLVMValueRef EmitComparison(SsaValue left, SsaValue right, TypeSymbol operandType,
-		ComparisonKind comparisonKind, Dictionary<SsaValue, LLVMValueRef> valueMap)
+	private LLVMValueRef EmitComparison(TempValue left, TempValue right, TypeSymbol operandType,
+		ComparisonKind comparisonKind, Dictionary<TempValue, LLVMValueRef> valueMap)
 	{
 		return operandType.SpecialType.IsFloat
 			? _builder.BuildFCmp(GetRealPredicate(comparisonKind), ResolveValue(left, valueMap), ResolveValue(right, valueMap), "fcmp")
 			: _builder.BuildICmp(GetIntPredicate(operandType.SpecialType, comparisonKind), ResolveValue(left, valueMap), ResolveValue(right, valueMap), "icmp");
 	}
 
-	private LLVMValueRef ResolveValue(SsaValue value, Dictionary<SsaValue, LLVMValueRef> valueMap)
+	private static LLVMValueRef ResolveValue(TempValue value, Dictionary<TempValue, LLVMValueRef> valueMap)
 	{
-		if (valueMap.TryGetValue(value, out LLVMValueRef llvmValue))
-		{
-			return llvmValue;
-		}
-
-		if (value is SsaUndef undef)
-		{
-			return LLVMValueRef.CreateConstNull(GetLlvmType(undef.Type));
-		}
-
-		if (value is SsaParameter parameter)
-		{
-			foreach ((SsaValue knownValue, LLVMValueRef knownLlvmValue) in valueMap)
-			{
-				if (knownValue is SsaParameter knownParameter && ReferenceEquals(knownParameter.Symbol, parameter.Symbol))
-				{
-					return knownLlvmValue;
-				}
-			}
-		}
-
-		throw new KeyNotFoundException($"No LLVM value mapped for SSA value '{value.GetType().Name}'.");
-	}
-
-	private static IEnumerable<LocalVariableOrParameterSymbol> CollectAddressBackedSymbols(SsaFunction ssa)
-	{
-		HashSet<LocalVariableOrParameterSymbol> result = [];
-		foreach (SsaBlock block in ssa.Blocks.Values)
-		{
-			foreach (Instruction instruction in block.Instructions)
-			{
-				switch (instruction)
-				{
-					case AddressOfInstruction addressOf:
-						result.Add(addressOf.Symbol);
-						break;
-					case LoadLocalAddressInstruction loadLocal:
-						result.Add(loadLocal.Symbol);
-						break;
-					case StoreLocalAddressInstruction storeLocal:
-						result.Add(storeLocal.Symbol);
-						break;
-				}
-			}
-		}
-
-		return result;
+		return valueMap[value];
 	}
 
 	private static LLVMIntPredicate GetIntPredicate(SpecialType operandType, ComparisonKind comparisonKind)

@@ -1,9 +1,9 @@
 ﻿using System.IO;
-using NiteCompiler.IntermediateRepresentation.Ssa;
+using NiteCompiler.IntermediateRepresentation.Mir;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
-internal sealed class NegInstruction(SsaTemp output, SsaValue input) : UnaryInstruction(output, input)
+internal sealed class NegInstruction(TempValue output, TempValue input) : UnaryInstruction(output, input)
 {
 	protected override string Mnemonic => "neg";
 

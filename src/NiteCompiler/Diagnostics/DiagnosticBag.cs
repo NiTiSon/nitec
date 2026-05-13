@@ -289,4 +289,9 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 	{
 		Add(DiagnosticDescriptor.LinkerNotZeroReturnCode, [], error);
 	}
+
+	public void ReportDanglingReference(Location location, LocalVariableOrParameterSymbol reference, LocalVariableOrParameterSymbol referent)
+	{
+		Add(DiagnosticDescriptor.DanglingReference, [location], reference.Name, referent.Name);
+	}
 }
