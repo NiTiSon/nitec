@@ -32,6 +32,8 @@ public abstract class SyntaxVisitor
 	public virtual void VisitOptionalType(TypeSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitInvocationExpression(InvocationExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitIndexationExpression(IndexationExpressionSyntax expression) => DefaultVisit(expression);
+	public virtual void VisitArrayType(ArrayTypeSyntax type) => DefaultVisit(type);
+	public virtual void VisitUnsizedArrayType(UnsizedArrayTypeSyntax type) => DefaultVisit(type);
 
 	public virtual void VisitModuleDeclaration(ModuleDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual void VisitFunctionDeclaration(FunctionDeclarationSyntax declaration) => DefaultVisit(declaration);
@@ -90,6 +92,8 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitOptionalType(TypeSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitInvocationExpression(InvocationExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitIndexationExpression(IndexationExpressionSyntax expression) => DefaultVisit(expression);
+	public virtual TResult? VisitArrayType(ArrayTypeSyntax type) => DefaultVisit(type);
+	public virtual TResult? VisitUnsizedArrayType(UnsizedArrayTypeSyntax type) => DefaultVisit(type);
 
 	public virtual TResult? VisitModuleDeclaration(ModuleDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual TResult? VisitFunctionDeclaration(FunctionDeclarationSyntax declaration) => DefaultVisit(declaration);
