@@ -1,12 +1,5 @@
 #!bin/nite
 
-public type X<T>::Y<T2> {
-	public x: i32;
-}
-
-public type X {
-}
-
 // public lifetime_test3<'a, 'b>(a: &'a i32, b: &'b i32) -> &'b i32
 // where 'a : 'b + 'b
 // where 'a : 'b + 'b {
@@ -17,10 +10,12 @@ public type X {
 // 	return b;
 // }
 
-public lifetime_test() {
-    let x: i32 = 1;
-    let y: &i32 = &x; // valid
+public unsized_test() {
+	// TODO: fix BindModuleOrTypeSymbol
+	// let x: UnsizedX;
 }
+
+public unsized type UnsizedX;
 
 public lifetime_test2_fail<'a>(ref: &i32) {
 	let x = 3;

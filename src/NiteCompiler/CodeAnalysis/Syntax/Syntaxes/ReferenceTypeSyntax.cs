@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;

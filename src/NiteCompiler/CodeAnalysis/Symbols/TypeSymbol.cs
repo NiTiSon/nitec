@@ -10,6 +10,7 @@ public abstract class TypeSymbol : ContainerSymbol
 	public virtual SpecialType SpecialType => SpecialType.None;
 
 	public bool IsVoidType => SpecialType == SpecialType.StdVoid;
+	public virtual bool IsUnsized => false;
 
 	public override ModuleSymbol? GetNestedModule(string name)
 	{

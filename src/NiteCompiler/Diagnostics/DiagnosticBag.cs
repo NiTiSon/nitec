@@ -319,4 +319,9 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 	{
 		Add(DiagnosticDescriptor.DuplicateModifier, [location]);
 	}
+
+	public void ReportCannotUseUnsizedType(Location location, TypeSymbol type)
+	{
+		Add(DiagnosticDescriptor.CannotUseUnsizedType, [location], type.ToDisplayString(SymbolFormat.PreferShortSpecialTypeName));
+	}
 }

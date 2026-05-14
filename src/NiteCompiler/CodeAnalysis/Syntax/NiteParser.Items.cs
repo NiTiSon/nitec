@@ -8,7 +8,7 @@ internal partial class NiteParser
 {
 	private bool IsPresentedAnyModifier()
 	{
-		return IsPresentedAny(TokenKind.Pure, TokenKind.Static, TokenKind.Const, TokenKind.Partial);
+		return IsPresentedAny(TokenKind.Pure, TokenKind.Static, TokenKind.Const, TokenKind.Partial, TokenKind.Unsized);
 	}
 
 	private GenericParameterListSyntax ParseGenericParameterList()

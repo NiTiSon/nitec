@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using NiteCompiler.CodeAnalysis.Declarations;
 using NiteCompiler.Compilation;
@@ -19,9 +20,10 @@ internal sealed class SourceNamedTypeSymbol : NamedTypeSymbol
 
 	public override SpecialType SpecialType { get; }
 	public override Accessibility Accessibility { get; }
+	public override bool IsUnsized => (_flags & Flags.IsPartial) != 0;
 
+	private readonly Flags _flags;
 	private CompletionPart _state;
-
 	public SourceNamedTypeSymbol(ContainerSymbol containingSymbol, MergedTypeDeclaration declaration, BindingDiagnosticBag diagnostics)
 	{
 		ContainingSymbol = containingSymbol;
@@ -42,6 +44,8 @@ internal sealed class SourceNamedTypeSymbol : NamedTypeSymbol
 
 		foreach (SingleTypeDeclaration singleDecl in decls)
 		{
+			_flags |= MakeFlags(singleDecl.Modifiers);
+
 			hasStrongDeclaration |= singleDecl.Accessibility != DeclarationAccessibility.MissedByInlinedDeclaration;
 
 			if (singleDecl.Accessibility == DeclarationAccessibility.MissedByInlinedDeclaration)
@@ -92,6 +96,24 @@ internal sealed class SourceNamedTypeSymbol : NamedTypeSymbol
 		}
 
 		return SpecialType.None;
+	}
+
+	[Flags]
+	private enum Flags : ushort
+	{
+		IsUnsized = 1 << 0,
+		IsPartial = 1 << 1,
+
+		// PERF: use flags to prevent heavy operation that would fail
+	}
+
+	private static Flags MakeFlags(DeclarationModifiers modifiers)
+	{
+		Flags flags = 0;
+		flags |= (modifiers & DeclarationModifiers.Partial) != 0 ? Flags.IsPartial : 0;
+		flags |= (modifiers & DeclarationModifiers.Unsized) != 0 ? Flags.IsUnsized : 0;
+
+		return flags;
 	}
 
 	private ImmutableArray<Symbol> _lateinitMembers;
