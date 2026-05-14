@@ -1,36 +1,62 @@
 #!bin/nite
 
-public type X<T>::Y<T2> {
-	public x: i32;
+// public lifetime_test3<'a, 'b>(a: &'a i32, b: &'b i32) -> &'b i32
+// where 'a : 'b + 'b
+// where 'a : 'b + 'b {
+// 	if a > b {
+// 		return a;
+// 	}
+//
+// 	return b;
+// }
+
+public unsized_test() {
+	// TODO: fix BindModuleOrTypeSymbol
+	// let x: UnsizedX;
 }
 
-public type X {
+public unsized type UnsizedX;
+
+public lifetime_test2_fail<'a>(ref: &i32) {
+	let x = 3;
+	ref = &x; // invalid: reference outlives the referred location
 }
 
-public lifetime_test3<'a, 'b>(a: &'a i32, b: &'b i32) -> &'b i32
-where 'a : 'b + 'b
-where 'a : 'b + 'b {
-	if a > b {
-		return a;
+public drop_test(x: i32) {
+	// implicit drop x at the return
+}
+
+public drop_test2(x: i32) {
+	x = 1; // implicit drop; then assign
+}
+
+public drop_test3(cond: bool) {
+	let x: i32 = 1;
+	if cond {
+		x = 42;
 	}
 
-	return b;
+	if cond {
+		x = 42;
+	} else {
+		x = 52;
+	}
 }
 
-public lifetime_test() {
-    let x: i32 = 1;
-    let y: &i32 = &x; // valid
-}
+public drop_test4(cond: bool) {
+	let x: i32;
 
-public lifetime_test2() {
-	let x_ref: &i32 = &x; // TODO: here's variable referenced before its declaration; not a lifetime exception, but a binding one
-	let x = 3;
+	if cond {
+		x = 42;
+	}
 }
 
 public main(cond: bool) {
-	let x: i32; // TODO: report something like [not-initialized-variable-was-used] | [moved-variable-was-used]
+	let x: i32;
+	x = 1; // beginning of the x lifetime
 
 	if cond {
-		let ref_x = &x;
+		x = 2;
+		let ref_x = &x; // valid: cause x is outlive reference
 	}
 }

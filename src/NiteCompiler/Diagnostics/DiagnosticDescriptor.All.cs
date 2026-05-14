@@ -45,6 +45,7 @@ public partial class DiagnosticDescriptor
 		CannotUseAsLValue,
 		CannotUseAsRValue,
 		CannotDereferenceNonReference,
+		CannotUseUnsizedType,
 		IntegralConstantTooLarge,
 		IntegralValueCantBeSigned,
 		IntegralValueIsGreaterThanMaxValue,
@@ -111,6 +112,7 @@ public partial class DiagnosticDescriptor
 		CannotUseAsLValue = new("cannot-use-as-lvalue", "Expression cannot be used as an assignment target or referenced storage location.");
 		CannotUseAsRValue = new("cannot-use-as-rvalue", "Expression cannot be used as a value.");
 		CannotDereferenceNonReference = new("cannot-dereference-non-reference", "Cannot dereference non-reference type '{0}'.");
+		CannotUseUnsizedType = new("cannot-use-unsized-type", "Cannot use unsized type '{0}' as a variable, parameter, or field type.");
 
 		// Value checking
 		IntegralConstantTooLarge = new("integral-constant-too-large", "Integral constant too large.");

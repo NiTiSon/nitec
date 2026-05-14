@@ -241,6 +241,12 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 		foreach (var parameter in Syntax.ParameterList.Parameters)
 		{
 			TypeSymbol type = withGenericsBinder.BindType(parameter.TypeClauseSyntax.Type, diagnostics);
+
+			if (type.IsUnsized)
+			{
+				diagnostics.Diagnostics.ReportCannotUseUnsizedType(parameter.TypeClauseSyntax.Type.Location, type);
+			}
+
 			var parameterSymbol = SourceParameterSymbol.Create(withGenericsBinder, this, type, parameter, ordinal, diagnostics);
 			builder.Add(parameterSymbol);
 			ordinal++;

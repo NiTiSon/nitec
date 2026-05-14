@@ -5,6 +5,14 @@ using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Declarations;
 
+/// <summary>
+/// This class is a declaration tree builder, it's collects module and types declarations across <see cref="SyntaxTree"/>
+/// and produce <see cref="MergedModuleDeclaration"/>.
+/// </summary>
+/// <remarks>
+/// This class only AND ONLY seek for modules and types, it's completely ignores functions, fields, etc.
+/// This is intentional choice.
+/// </remarks>
 internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclaration>
 {
 	private readonly SyntaxTree _syntaxTree;
@@ -214,6 +222,10 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 			if (token.TKind == TokenKind.Partial)
 			{
 				flag |= DeclarationModifiers.Partial;
+			}
+			else if (token.TKind == TokenKind.Unsized)
+			{
+				flag |= DeclarationModifiers.Unsized;
 			}
 			else
 			{

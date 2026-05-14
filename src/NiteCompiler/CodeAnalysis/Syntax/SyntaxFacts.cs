@@ -136,6 +136,9 @@ internal static class SyntaxFacts
 			case "partial":
 				info.Kind = TokenKind.Partial;
 				return;
+			case "unsized":
+				info.Kind = TokenKind.Unsized;
+				return;
 		}
 	}
 

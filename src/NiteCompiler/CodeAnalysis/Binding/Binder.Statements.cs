@@ -134,6 +134,11 @@ internal partial class Binder
 		if (declarator.TypeClause is not null)
 		{
 			declaredType = BindType(declarator.TypeClause.Type, diagnostics);
+
+			if (declaredType.IsUnsized)
+			{
+				diagnostics.Diagnostics.ReportCannotUseUnsizedType(declarator.TypeClause.Type.Location, declaredType);
+			}
 		}
 
 		if (declaredType == null && initializer == null) // It's called: try to guess type or DIE 💀☠️🪦
