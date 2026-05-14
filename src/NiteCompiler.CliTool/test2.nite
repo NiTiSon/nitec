@@ -1,6 +1,11 @@
 #!bin/nite
 
-public type X<T>::Y<T2>::Z<T3>;
+public type X<T>::Y<T2> {
+	public x: i32;
+}
+
+public type X {
+}
 
 // public lifetime_test3<'a, 'b>(a: &'a i32, b: &'b i32) -> &'b i32
 // where 'a : 'b + 'b

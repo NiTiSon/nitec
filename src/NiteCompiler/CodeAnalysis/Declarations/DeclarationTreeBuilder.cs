@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Linq;
-using Microsoft.VisualBasic.CompilerServices;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Diagnostics;
 
@@ -83,12 +79,16 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 
 	public override SingleTypeDeclaration VisitTypeDeclaration(TypeDeclarationSyntax declaration)
 	{
+		var diagnostics = BindingDiagnosticBag.GetInstance();
 		var members = VisitTypeMembers(declaration, declaration.Members);
 		DeclarationAccessibility accessibility = GetAccessibility(declaration.AccessibilityToken);
-		DeclarationModifiers modifiers = GetModifiers(declaration.Modifiers);
+		DeclarationModifiers modifiers = GetModifiers(declaration.Modifiers, diagnostics);
 
 		NameSyntax name = declaration.Name;
 		SyntaxNode currentNode = declaration;
+
+		int pendingLifetimeArity = 0;
+		int pendingArity = 0;
 
 		if (name is InlineNameSyntax inline)
 		{
@@ -110,20 +110,17 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 
 			accessibility = DeclarationAccessibility.MissedByInlinedDeclaration;
 			modifiers = DeclarationModifiers.Partial;
+
+			pendingLifetimeArity = inline.GenericParameterList?.LifetimeArity ?? 0;
+			pendingArity = inline.GenericParameterList?.Arity ?? 0;
 		}
 
-		// The syntax
-		// [accessibility] [modifiers] type X::Y::Z;
-		// will produce three types
-		// The "X" with partial modifier and weak (none) accessibility
-		// The "X::Y" with partial modifier and weak (none) accessibility
-		// The "X::Y::Z" with [modifiers] and [accessibility] accessibility
 		while (name is InlineNameSyntax inline2)
 		{
 			SingleTypeDeclaration type = new(
 				name: name.UnqualifiedName.GetName(),
-				lifetimeArity: name.UnqualifiedName.LifetimeArity,
-				arity: name.UnqualifiedName.Arity,
+				lifetimeArity: pendingLifetimeArity,
+				arity: pendingArity,
 				accessibility: accessibility,
 				modifiers: modifiers,
 				syntax: currentNode.CreateReference(),
@@ -135,18 +132,21 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 			members = [type];
 
 			currentNode = name = inline2.Left;
+
+			pendingLifetimeArity = inline2.GenericParameterList?.LifetimeArity ?? 0;
+			pendingArity = inline2.GenericParameterList?.Arity ?? 0;
 		}
 
 		return new SingleTypeDeclaration(
 			name: name.GetName(),
-			lifetimeArity: name.LifetimeArity,
-			arity: name.Arity,
+			lifetimeArity: pendingLifetimeArity,
+			arity: pendingArity,
 			accessibility: accessibility,
 			modifiers: modifiers,
 			syntax: currentNode.CreateReference(),
 			nameLocation: (name.Location as SourceLocation)!,
 			members: members,
-			diagnostics: []
+			diagnostics: diagnostics.ToImmutableAndFree()
 			);
 	}
 
@@ -204,9 +204,37 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 		return DeclarationAccessibility.NotDeclaredByError;
 	}
 
-	private DeclarationModifiers GetModifiers(SyntaxList<Token> modifiers)
+	private DeclarationModifiers GetModifiers(SyntaxList<Token> modifiers, BindingDiagnosticBag diagnostics)
 	{
-		// TODO: implement
-		return DeclarationModifiers.None;
+		DeclarationModifiers result = 0;
+
+		foreach (Token token in modifiers)
+		{
+			DeclarationModifiers flag = 0;
+			if (token.TKind == TokenKind.Partial)
+			{
+				flag |= DeclarationModifiers.Partial;
+			}
+			else
+			{
+				Debug.Fail($"GetModifiers() contains {token.TKind}");
+			}
+
+			if (!SetFlag(ref result, flag))
+			{
+				diagnostics.Diagnostics.ReportDuplicateModifier(token.Location, token.TKind.ToString());
+			}
+		}
+
+		return result;
+	}
+
+	/// <returns><see langword="true"/> when flag is set; otherwise <see langword="false"/>.</returns>
+	private static bool SetFlag(ref DeclarationModifiers modifiers, DeclarationModifiers flag)
+	{
+		DeclarationModifiers previous = modifiers;
+
+		modifiers |= flag;
+		return previous != modifiers;
 	}
 }

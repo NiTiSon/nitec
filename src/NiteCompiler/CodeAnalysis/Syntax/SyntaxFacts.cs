@@ -133,6 +133,9 @@ internal static class SyntaxFacts
 			case "where":
 				info.Kind = TokenKind.Where.ToContextualKeyword();
 				return;
+			case "partial":
+				info.Kind = TokenKind.Partial;
+				return;
 		}
 	}
 

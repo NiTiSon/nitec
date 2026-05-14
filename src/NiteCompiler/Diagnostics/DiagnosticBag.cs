@@ -105,7 +105,7 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 
 	public void ReportUnableToWriteFile(string path)
 	{
-		Add(DiagnosticDescriptor.UnableToOpenFile, [], path);
+		Add(DiagnosticDescriptor.UnableToWriteFile, [], path);
 	}
 
 	public void ReportDuplicateSourceFiles()
@@ -178,6 +178,11 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.GenericsIsNotApplicableOnGenericTypeName, [location]);
 	}
 
+	public void ReportGenericsNotApplicableOnThisItem(Location location)
+	{
+		Add(DiagnosticDescriptor.GenericsNotApplicableOnThisItem, [location]);
+	}
+
 	public void ReportUnresolvedSymbol(Location source)
 	{
 		Add(DiagnosticDescriptor.CannotResolveSymbol, [source]);
@@ -221,6 +226,21 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 	public void ReportOnlyTopLevelModuleDeclarationsAreAllowed(Location location)
 	{
 		Add(DiagnosticDescriptor.OnlyTopLevelModuleDeclarationsAreAllowed, [location]);
+	}
+
+	public void ReportPartialModifierRequired(Location location)
+	{
+		Add(DiagnosticDescriptor.PartialModifierRequired, [location]);
+	}
+
+	public void ReportInconsistentTypeAccessibility(Location location, Accessibility first, Accessibility second)
+	{
+		Add(DiagnosticDescriptor.InconsistentTypeAccessibility, [location], first.ToString(), second.ToString());
+	}
+
+	public void ReportTypeRequiresStrongDeclaration(Location location)
+	{
+		Add(DiagnosticDescriptor.TypeRequiresStrongDeclaration, [location]);
 	}
 
 	public void ReportImplicitlyTypedVariableMustBeInitialized(Location location)
@@ -293,5 +313,10 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 	public void ReportDanglingReference(Location location, LocalVariableOrParameterSymbol reference, LocalVariableOrParameterSymbol referent)
 	{
 		Add(DiagnosticDescriptor.DanglingReference, [location], reference.Name, referent.Name);
+	}
+
+	public void ReportDuplicateModifier(Location location, string modifierName)
+	{
+		Add(DiagnosticDescriptor.DuplicateModifier, [location]);
 	}
 }

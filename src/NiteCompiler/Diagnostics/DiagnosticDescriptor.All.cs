@@ -22,12 +22,17 @@ public partial class DiagnosticDescriptor
 		DuplicateLifetimeConstraintClause,
 		GenericsIsNotApplicableOnModuleName,
 		GenericsIsNotApplicableOnGenericTypeName,
+		GenericsNotApplicableOnThisItem,
+		DuplicateModifier,
 		CannotResolveSymbol,
 		UnresolvedPredefinedType,
 		AmbiguousReference,
 		DanglingReference,
 		ReferenceEscapesScope,
 		FieldMustHaveEitherTypeClauseOrDefaultValue,
+		PartialModifierRequired,
+		InconsistentTypeAccessibility,
+		TypeRequiresStrongDeclaration,
 		OnlyTopLevelModuleDeclarationsAreAllowed,
 		ImplicitlyTypedVariableMustBeInitialized,
 		AccessibilityModifierRequiredBeforeMemberDeclaration,
@@ -74,6 +79,7 @@ public partial class DiagnosticDescriptor
 		UnexpectedToken = new("unexpected-token", "Unexpected token {0}.");
 		GenericsIsNotApplicableOnModuleName = new("generics-not-applicable-on-module-name", "Module name cannot contain any generic parameters.");
 		GenericsIsNotApplicableOnGenericTypeName = new("generics-not-applicable-on-generic-type-name", "Generic type name cannot contain any generic parameters.");
+		GenericsNotApplicableOnThisItem = new("generics-not-applicable-on-this-item", "Generics is not applicable on this item.");
 		ExpectedToken = new("expected-token", "Expected token {0}.");
 		EmptyLifetimeName = new("empty-lifetime-name", "The lifetime identifier cannot be empty.");
 		DuplicateLifetimeParameter = new("lifetime-parameter-duplicate", "Lifetime parameter with the same name already exists.");
@@ -82,12 +88,16 @@ public partial class DiagnosticDescriptor
 		MissingParameterTypeSpecification = new("missing-parameter-type", "Type specification required for parameter syntax.");
 
 		// Binding
+		DuplicateModifier = new("duplicate-modifier", "Modifier '{0}' applied twice.");
 		CannotResolveSymbol = new("cannot-resolve-symbol", "Cannot resolve symbol.");
 		UnresolvedPredefinedType = new("unresolved-predefined-type", "Predefined type `{0}` is not resolved.");
 		AmbiguousReference = new("ambiguous-reference", "Ambiguous reference:\n{0}.");
 		DanglingReference = new("dangling-reference", "Reference to '{0}' may outlive the storage of '{1}'.");
 		ReferenceEscapesScope = new("reference-escapes-scope", "Reference to local variable '{0}' escapes its scope.");
 		FieldMustHaveEitherTypeClauseOrDefaultValue = new("field-unresolvable-type", "Field must have either type clause or default value.");
+		PartialModifierRequired = new("partial-modifier-required", "Type declared with multiple parts requires the 'partial' modifier.");
+		InconsistentTypeAccessibility = new("inconsistent-type-accessibility", "Inconsistent accessibility between partial type declarations.");
+		TypeRequiresStrongDeclaration = new("type-requires-strong-declaration", "Type must have at least one explicit declaration.");
 		OnlyTopLevelModuleDeclarationsAreAllowed = new("only-top-level-module-declarations-are-allowed", "Only top-level module declarations are allowed.");
 		ImplicitlyTypedVariableMustBeInitialized = new("variable-must-be-initialized", "Implicitly typed variable must be initialized.");
 

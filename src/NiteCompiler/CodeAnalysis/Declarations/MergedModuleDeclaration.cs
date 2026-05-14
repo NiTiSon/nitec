@@ -114,11 +114,11 @@ internal sealed class MergedModuleDeclaration : MergedItemDeclaration
 		if (types != null)
 		{
 			// TODO Upgrade when generics: add arity
-			var typeGroups = new Dictionary<string, List<SingleTypeDeclaration>>(StringComparer.Ordinal);
+			var typeGroups = new Dictionary<(string, int), List<SingleTypeDeclaration>>();
 
 			foreach (var n in types)
 			{
-				var builder = typeGroups.GetOrAdd(n.Name, static () => []);
+				var builder = typeGroups.GetOrAdd((n.Name, n.Arity), static () => []);
 
 				builder.Add(n);
 			}

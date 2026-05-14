@@ -41,6 +41,7 @@ public abstract class SyntaxVisitor
 	public virtual void VisitBracketedArgumentList(BracketedArgumentListSyntax list) => DefaultVisit(list);
 	public virtual void VisitFunctionBody(FunctionBodySyntax body) => DefaultVisit(body);
 	public virtual void VisitTypeDeclaration(TypeDeclarationSyntax declaration) => DefaultVisit(declaration);
+	public virtual void VisitFieldDeclaration(FieldDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual void VisitTypeBody(TypeBodySyntax body) => DefaultVisit(body);
 	public virtual void VisitLocalVariableDeclarator(LocalVariableDeclarator declarator) => DefaultVisit(declarator);
 	public virtual void VisitEqualsValueClause(EqualsValueClause clause) => DefaultVisit(clause);
@@ -98,6 +99,7 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitBracketedArgumentList(BracketedArgumentListSyntax list) => DefaultVisit(list);
 	public virtual TResult? VisitFunctionBody(FunctionBodySyntax body) => DefaultVisit(body);
 	public virtual TResult? VisitTypeDeclaration(TypeDeclarationSyntax declaration) => DefaultVisit(declaration);
+	public virtual TResult? VisitFieldDeclaration(FieldDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual TResult? VisitTypeBody(TypeBodySyntax body) => DefaultVisit(body);
 	public virtual TResult? VisitLocalVariableDeclarator(LocalVariableDeclarator declarator) => DefaultVisit(declarator);
 	public virtual TResult? VisitEqualsValueClause(EqualsValueClause clause) => DefaultVisit(clause);

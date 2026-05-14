@@ -11,6 +11,10 @@ public abstract class ContainerSymbol : Symbol
 	// + GetTypeMembers()
 	// + GetTypeMembers(name, int?)
 
+	public abstract ImmutableArray<Symbol> GetMembers(string name);
+	public abstract ImmutableArray<TypeSymbol> GetTypeMembers();
+	public abstract ImmutableArray<TypeSymbol> GetTypeMembers(string name, int? arity);
+
 	public virtual ImmutableArray<ModuleSymbol> GetNestedModules()
 	{
 		var members = GetMembers();

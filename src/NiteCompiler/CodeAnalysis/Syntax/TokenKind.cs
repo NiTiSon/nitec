@@ -338,6 +338,7 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 	public static readonly TokenKind Pure = Reg(Keyword + 23, "pure");
 	public static readonly TokenKind Interface = Reg(Keyword + 24, "interface");
 	public static readonly TokenKind Where = Reg(Keyword + 25, "where");
+	public static readonly TokenKind Partial = Reg(Keyword + 26, "partial");
 
 	// Type keywords have they very own unique values
 	public static readonly TokenKind I8 = Reg(TypeKeyword + (uint)SpecialType.StdNumericsSInt8, "i8");

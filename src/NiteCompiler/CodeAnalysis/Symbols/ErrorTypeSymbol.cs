@@ -39,4 +39,19 @@ internal sealed class ErrorTypeSymbol : NamedTypeSymbol, IErrorSymbol
 	{
 		return [];
 	}
+
+	public override ImmutableArray<Symbol> GetMembers(string name)
+	{
+		return [];
+	}
+
+	public override ImmutableArray<TypeSymbol> GetTypeMembers()
+	{
+		return [];
+	}
+
+	public override ImmutableArray<TypeSymbol> GetTypeMembers(string name, int? arity)
+	{
+		return [];
+	}
 }

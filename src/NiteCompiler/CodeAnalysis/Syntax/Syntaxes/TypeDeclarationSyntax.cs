@@ -40,6 +40,7 @@ public sealed class TypeDeclarationSyntax : MemberSyntax
 		yield return Modifiers;
 		yield return TypeKeyword;
 		yield return Name;
+		if (GenericParameterList != null) yield return GenericParameterList;
 		yield return Body;
 	}
 }

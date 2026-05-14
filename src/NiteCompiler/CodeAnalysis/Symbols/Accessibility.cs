@@ -1,4 +1,4 @@
-namespace NiteCompiler;
+namespace NiteCompiler.CodeAnalysis.Symbols;
 
 public enum Accessibility : byte
 {
