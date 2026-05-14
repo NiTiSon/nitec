@@ -251,6 +251,8 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind OptionalType = Reg(Expression + 16, "optional-type");
 	public static readonly NodeKind InvocationExpression = Reg(Expression + 17, Precedence.Primary, "invocation-expression");
 	public static readonly NodeKind IndexationExpression = Reg(Expression + 18, Precedence.Primary, "indexation-expression");
+	public static readonly NodeKind ArrayType = Reg(Expression + 19, "array-type");
+	public static readonly NodeKind UnsizedArrayType = Reg(Expression + 20, "unsized-array-type");
 	private const uint Operation = 0x00_00__28_00;
 	public static readonly NodeKind UnaryAddExpression = Reg(Operation + 1, Precedence.Unary, "unary-add-expression");
 	public static readonly NodeKind AddExpression = Reg(Operation + BinaryFlag + 2, Precedence.Additive, "add-expression");
