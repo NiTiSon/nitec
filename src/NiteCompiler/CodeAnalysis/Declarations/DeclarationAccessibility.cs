@@ -1,4 +1,6 @@
-﻿namespace NiteCompiler.CodeAnalysis.Declarations;
+﻿using NiteCompiler.CodeAnalysis.Symbols;
+
+namespace NiteCompiler.CodeAnalysis.Declarations;
 
 internal enum DeclarationAccessibility : byte
 {

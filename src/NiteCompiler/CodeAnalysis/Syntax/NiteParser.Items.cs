@@ -8,7 +8,7 @@ internal partial class NiteParser
 {
 	private bool IsPresentedAnyModifier()
 	{
-		return IsPresentedAny(TokenKind.Pure, TokenKind.Static, TokenKind.Const);
+		return IsPresentedAny(TokenKind.Pure, TokenKind.Static, TokenKind.Const, TokenKind.Partial);
 	}
 
 	private GenericParameterListSyntax ParseGenericParameterList()
@@ -98,7 +98,7 @@ internal partial class NiteParser
 
 	public MemberSyntax ParseMember(Token accessibilityToken)
 	{
-		Debug.Assert(accessibilityToken.IsKeyword);
+		Debug.Assert(accessibilityToken.IsKeyword || accessibilityToken.TKind == TokenKind.None);
 		SyntaxList<Token>.Builder modifiers = new();
 		while (IsPresentedAnyModifier())
 		{
@@ -117,7 +117,33 @@ internal partial class NiteParser
 			throw new NotImplementedException("Interfaces are not implemented yet.");
 		}
 
-		return ParseFunctionDeclaration(accessibilityToken, modifiers);
+		SimpleNameSyntax name = ParseSimpleName();
+		GenericParameterListSyntax? genericParameterList = null;
+		if (Current.TKind == TokenKind.Less)
+		{
+			genericParameterList = ParseGenericParameterList();
+		}
+
+		if (Current.TKind == TokenKind.Colon)
+		{
+			if (genericParameterList != null)
+			{
+				_diagnostics.ReportGenericsNotApplicableOnThisItem(genericParameterList.Location);
+			}
+
+			return ParseFieldDeclaration(accessibilityToken, modifiers, name);
+		}
+
+		return ParseFunctionDeclaration(accessibilityToken, modifiers, name, genericParameterList);
+	}
+
+	private FieldDeclarationSyntax ParseFieldDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers, SimpleNameSyntax name)
+	{
+		Token colon = MatchToken(TokenKind.Colon);
+		TypeSyntax type = ParseType();
+		Token semicolon = MatchToken(TokenKind.Semicolon);
+		TypeClauseSyntax typeClause = new(_syntaxTree, colon, type);
+		return new FieldDeclarationSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree), name, typeClause, semicolon);
 	}
 
 	private TypeDeclarationSyntax ParseTypeDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers,
@@ -204,10 +230,10 @@ internal partial class NiteParser
 				}
 				else
 				{
-					break;
-					// TODO: no break, we should try to read member,
-					//	and then if member is valid -> try to construct non-error-node with diagnostic [accessibility-modifier-required]
-					//	otherwise if we can't get a valid member -> try to predict incomplete member and add as error-node
+					Token missingToken = new Token.Default(_syntaxTree, TokenKind.None, Current.Span,
+						SyntaxList<Trivia>.GetEmpty(_syntaxTree), SyntaxList<Trivia>.GetEmpty(_syntaxTree));
+					_diagnostics.ReportAccessibilityModifierRequiredBeforeMemberDeclaration(Current.Location);
+					membersBuilder.Add(ParseMember(missingToken));
 				}
 			}
 
@@ -244,15 +270,9 @@ internal partial class NiteParser
 		return new ErrorTypeBodySyntax(_syntaxTree, errorNodes.Build(_syntaxTree));
 	}
 
-	private FunctionDeclarationSyntax ParseFunctionDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers)
+	private FunctionDeclarationSyntax ParseFunctionDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers,
+		SimpleNameSyntax name, GenericParameterListSyntax? genericParameterList)
 	{
-		SimpleNameSyntax name = ParseSimpleName();
-		GenericParameterListSyntax? genericParameterList = null;
-		if (Current.TKind == TokenKind.Less)
-		{
-			genericParameterList = ParseGenericParameterList();
-		}
-
 		ParameterListSyntax parameters = ParseParameterList();
 
 		TypeClauseSyntax? typeClause = null;

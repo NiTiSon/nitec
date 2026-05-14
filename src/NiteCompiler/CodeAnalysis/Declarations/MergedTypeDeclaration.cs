@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
@@ -79,7 +81,40 @@ internal sealed class MergedTypeDeclaration : MergedItemDeclaration
 
 	private ImmutableArray<MergedTypeDeclaration> MakeMembers()
 	{
-		return [];
-		// TODO: Currently ain't no types as members of other type
+		List<SingleTypeDeclaration>? types = null;
+
+		foreach (SingleTypeDeclaration decl in Declarations)
+		{
+			foreach (SingleItemDeclaration child in decl.Members)
+			{
+				if (child is SingleTypeDeclaration typeDecl)
+				{
+					types ??= new();
+					types.Add(typeDecl);
+				}
+			}
+		}
+
+		if (types == null)
+		{
+			return [];
+		}
+
+		var typeGroups = new Dictionary<(string, int), List<SingleTypeDeclaration>>();
+
+		foreach (SingleTypeDeclaration n in types)
+		{
+			List<SingleTypeDeclaration> builder = typeGroups.GetOrAdd((n.Name, n.Arity), static () => []);
+			builder.Add(n);
+		}
+
+		ImmutableArray<MergedTypeDeclaration>.Builder children = ImmutableArray.CreateBuilder<MergedTypeDeclaration>();
+
+		foreach (List<SingleTypeDeclaration> typeGroup in typeGroups.Values)
+		{
+			children.Add(MergedTypeDeclaration.Create([..typeGroup]));
+		}
+
+		return children.ToImmutable();
 	}
 }

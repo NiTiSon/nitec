@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Symbols;
@@ -9,6 +10,16 @@ public abstract class TypeSymbol : ContainerSymbol
 	public virtual SpecialType SpecialType => SpecialType.None;
 
 	public bool IsVoidType => SpecialType == SpecialType.StdVoid;
+
+	public override ModuleSymbol? GetNestedModule(string name)
+	{
+		return null;
+	}
+
+	public override ImmutableArray<ModuleSymbol> GetNestedModules()
+	{
+		return [];
+	}
 
 	public override string ToDisplayString(SymbolFormat format = SymbolFormat.Default)
 	{

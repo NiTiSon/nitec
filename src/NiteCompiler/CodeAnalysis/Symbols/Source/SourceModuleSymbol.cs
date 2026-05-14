@@ -54,6 +54,45 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 		return GetMembersUnordered();
 	}
 
+	public override ImmutableArray<Symbol> GetMembers(string name)
+	{
+		if (GetNameToMembersMap().TryGetValue(name, out var members))
+		{
+			return members;
+		}
+
+		return [];
+	}
+
+	public override ImmutableArray<TypeSymbol> GetTypeMembers()
+	{
+		var types = ArrayBuilder<TypeSymbol>.GetInstance();
+		foreach (Symbol member in GetMembers())
+		{
+			if (member is TypeSymbol type) types.Add(type);
+		}
+
+		return types.ToImmutableAndFree();
+	}
+
+	public override ImmutableArray<TypeSymbol> GetTypeMembers(string name, int? arity)
+	{
+		var types = ArrayBuilder<TypeSymbol>.GetInstance();
+		foreach (Symbol member in GetMembers())
+		{
+			if (member is TypeSymbol type)
+			{
+				if (type.Name != name) continue;
+
+				if (arity != null && arity.Value != type.Arity) continue;
+
+				types.Add(type);
+			}
+		}
+
+		return types.ToImmutableAndFree();
+	}
+
 	private Dictionary<string, ImmutableArray<Symbol>>? _lateinitNameToMembersMap;
 	private Dictionary<string, ImmutableArray<Symbol>> GetNameToMembersMap()
 	{

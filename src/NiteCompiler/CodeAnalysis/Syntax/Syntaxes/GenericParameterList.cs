@@ -14,7 +14,7 @@ public sealed class GenericParameterListSyntax : SyntaxNode
 	public override NodeKind Kind => NodeKind.GenericParameterList;
 
 	public int LifetimeArity => Parameters.Count(t => !t.IsGenericParameter);
-	public int Arity => Parameters.Count(t => !t.IsGenericParameter);
+	public int Arity => Parameters.Count(t => t.IsGenericParameter);
 
 	internal GenericParameterListSyntax(SyntaxTree tree,
 		Token openToken, SyntaxList<LifetimeOrGenericParameterSyntax> parameters, Token closeToken) : base(tree)

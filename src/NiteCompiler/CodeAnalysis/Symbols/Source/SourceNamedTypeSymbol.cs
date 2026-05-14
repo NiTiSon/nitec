@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Immutable;
-using System.Numerics;
 using System.Threading;
 using NiteCompiler.CodeAnalysis.Declarations;
 using NiteCompiler.Compilation;
@@ -19,8 +18,10 @@ internal sealed class SourceNamedTypeSymbol : NamedTypeSymbol
 	public override int Arity => Declaration.Arity;
 
 	public override SpecialType SpecialType { get; }
+	public override Accessibility Accessibility { get; }
 
 	private CompletionPart _state;
+
 	public SourceNamedTypeSymbol(ContainerSymbol containingSymbol, MergedTypeDeclaration declaration, BindingDiagnosticBag diagnostics)
 	{
 		ContainingSymbol = containingSymbol;
@@ -33,14 +34,52 @@ internal sealed class SourceNamedTypeSymbol : NamedTypeSymbol
 			diagnostics.AddRange(declarationType.Diagnostics);
 		}
 
-		// if more than one declaration, all declarations must have `partial` modifier
-		// if more than one declaration, all declaration must have the same accessibility or error-accessibility
-		// at least declaration must have at least one *strong* declaration, explanation below:
-		//
-		// public type X::Y; // the Y is a strong inline declaration, and the X is a weak declaration
-		// the X is a weak declared, 'cause it's having no explicit modifiers nor accessibility (the partial modifier is implicit for weak declarations)
+		ImmutableArray<SingleTypeDeclaration> decls = declaration.Declarations;
 
-		// TODO: Need determine modifiers and accessibility
+		Accessibility effectiveAccessibility = Accessibility.None;
+		bool accessibilitySet = false;
+		bool hasStrongDeclaration = false;
+
+		foreach (SingleTypeDeclaration singleDecl in decls)
+		{
+			hasStrongDeclaration |= singleDecl.Accessibility != DeclarationAccessibility.MissedByInlinedDeclaration;
+
+			if (singleDecl.Accessibility == DeclarationAccessibility.MissedByInlinedDeclaration)
+			{
+				continue;
+			}
+
+			if (!accessibilitySet)
+			{
+				effectiveAccessibility = (Accessibility)singleDecl.Accessibility;
+				accessibilitySet = true;
+			}
+			else if (effectiveAccessibility != (Accessibility)singleDecl.Accessibility)
+			{
+				diagnostics.Diagnostics.ReportInconsistentTypeAccessibility(
+					singleDecl.NameLocation,
+					effectiveAccessibility,
+					(Accessibility)singleDecl.Accessibility);
+			}
+		}
+
+		if (decls.Length > 1)
+		{
+			foreach (SingleTypeDeclaration singleDecl in decls)
+			{
+				if (!singleDecl.Modifiers.HasFlag(DeclarationModifiers.Partial))
+				{
+					diagnostics.Diagnostics.ReportPartialModifierRequired(singleDecl.NameLocation);
+				}
+			}
+		}
+
+		if (!hasStrongDeclaration)
+		{
+			diagnostics.Diagnostics.ReportTypeRequiresStrongDeclaration(decls[0].NameLocation);
+		}
+
+		Accessibility = effectiveAccessibility;
 	}
 
 	private SpecialType MakeSpecialType()
@@ -55,11 +94,77 @@ internal sealed class SourceNamedTypeSymbol : NamedTypeSymbol
 		return SpecialType.None;
 	}
 
+	private ImmutableArray<Symbol> _lateinitMembers;
 	public override ImmutableArray<Symbol> GetMembers()
 	{
-		// TODO: Implement
-		return [];
-		throw new System.NotImplementedException();
+		if (_lateinitMembers.IsDefault)
+		{
+			ImmutableInterlocked.InterlockedInitialize(ref _lateinitMembers, MakeMembers());
+		}
+
+		return _lateinitMembers;
+	}
+
+
+	public override ImmutableArray<Symbol> GetMembers(string name)
+	{
+		var members = ArrayBuilder<Symbol>.GetInstance();
+		foreach (Symbol member in GetMembers())
+		{
+			if (member.Name == name)
+			{
+				members.Add(member);
+			}
+		}
+
+		return members.ToImmutableAndFree();
+	}
+
+	public override ImmutableArray<TypeSymbol> GetTypeMembers()
+	{
+		var types = ArrayBuilder<TypeSymbol>.GetInstance();
+		foreach (Symbol member in GetMembers())
+		{
+			if (member is TypeSymbol type) types.Add(type);
+		}
+
+		return types.ToImmutableAndFree();
+	}
+
+	public override ImmutableArray<TypeSymbol> GetTypeMembers(string name, int? arity)
+	{
+		var types = ArrayBuilder<TypeSymbol>.GetInstance();
+		foreach (Symbol member in GetMembers())
+		{
+			if (member is TypeSymbol type)
+			{
+				if (type.Name != name) continue;
+
+				if (arity != null && arity.Value != type.Arity) continue;
+
+				types.Add(type);
+			}
+		}
+
+		return types.ToImmutableAndFree();
+	}
+
+	private ImmutableArray<Symbol> MakeMembers()
+	{
+		BindingDiagnosticBag diagnostics = BindingDiagnosticBag.GetInstance();
+
+		ImmutableArray<Symbol>.Builder builder = ImmutableArray.CreateBuilder<Symbol>();
+
+		foreach (MergedTypeDeclaration memberDecl in Declaration.Members)
+		{
+			var nestedType = new SourceNamedTypeSymbol(this, memberDecl, diagnostics);
+			builder.Add(nestedType);
+		}
+
+		AddDeclarationDiagnostics(diagnostics);
+		diagnostics.Free();
+
+		return builder.ToImmutable();
 	}
 
 	internal override void ForceComplete(Predicate<Symbol>? filter, CancellationToken cancellationToken = default)
@@ -87,10 +192,17 @@ internal sealed class SourceNamedTypeSymbol : NamedTypeSymbol
 					_state.NotePartComplete(CompletionPart.GenericParameters);
 					break;
 				case CompletionPart.MembersCompleted:
-					// TODO: Members
+				{
+					ImmutableArray<Symbol> members = GetMembers();
+
+					foreach (Symbol member in members)
+					{
+						member.ForceComplete(filter, cancellationToken);
+					}
 
 					_state.NotePartComplete(CompletionPart.MembersCompleted);
 					break;
+				}
 				default:
 					_state.NotePartComplete(CompletionPart.All & ~CompletionPart.TypeSymbolAll);
 					break;
@@ -98,5 +210,10 @@ internal sealed class SourceNamedTypeSymbol : NamedTypeSymbol
 
 			_state.SpinWaitComplete(incompletePart, cancellationToken);
 		}
+	}
+
+	internal override bool HasComplete(CompletionPart part)
+	{
+		return _state.HasComplete(part);
 	}
 }

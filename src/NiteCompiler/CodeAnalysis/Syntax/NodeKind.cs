@@ -229,6 +229,7 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind GenericTypeParameter = Reg(Item + 7, "generic-type-parameter");
 	public static readonly NodeKind GenericValueParameter = Reg(Item + 8, "generic-value-parameter");
 	public static readonly NodeKind GenericErrorParameter = Reg(Item + 9, "generic-error-parameter");
+	public static readonly NodeKind FieldDeclaration = Reg(Item + 10, "field-declaration");
 
 	private const uint Expression = 0x00_00__20_00;
 	private const uint BinaryFlag = 0x00_01__00_00;
