@@ -159,7 +159,7 @@ public static class NiteCompiler
 		TextWriter? nirWriter = null;
 		if (emitNir)
 		{
-			string nirPath  = Path.ChangeExtension(libraryName ?? $"intermediate", ".nir");
+			string nirPath  = Path.ChangeExtension(libraryName ?? "intermediate", ".nir");
 			try
 			{
 				nirWriter = new StreamWriter(nirPath);

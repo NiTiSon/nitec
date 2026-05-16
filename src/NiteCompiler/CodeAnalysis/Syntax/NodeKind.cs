@@ -230,15 +230,17 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind GenericValueParameter = Reg(Item + 8, "generic-value-parameter");
 	public static readonly NodeKind GenericErrorParameter = Reg(Item + 9, "generic-error-parameter");
 	public static readonly NodeKind FieldDeclaration = Reg(Item + 10, "field-declaration");
+	public static readonly NodeKind ConstructorDeclaration = Reg(Item + 11, "constructor-declaration");
+	public static readonly NodeKind NamedConstructorDeclaration = Reg(Item + 12, "named-constructor-declaration");
+	public static readonly NodeKind SelfParameter = Reg(Item + 13, "self-parameter");
 
 	private const uint Expression = 0x00_00__20_00;
 	private const uint BinaryFlag = 0x00_01__00_00;
 	private const uint AssignmentFlag = 0x00_02__00_00;
-	public static readonly NodeKind IdentifierName = Reg(Expression + 1, "identifier-name-expression");
-	public static readonly NodeKind EscapedNameExpression = Reg(Expression + 2, "escaped-name-expression");
+	public static readonly NodeKind IdentifierNameExpression = Reg(Expression + 1, "identifier-name-expression");
 	public static readonly NodeKind GenericNameExpression = Reg(Expression + 3, "generic-name-expression");
 	public static readonly NodeKind PathNameExpression = Reg(Expression + 4, "path-name-expression");
-	public static readonly NodeKind InlineName = Reg(Expression + 5, "inline-name-expression");
+	public static readonly NodeKind InlineName = Reg(Expression + 5, "inline-name-expression"); // not used as expression
 	public static readonly NodeKind TrueLiteralExpression = Reg(Expression + 7, "true-literal-expression");
 	public static readonly NodeKind FalseLiteralExpression = Reg(Expression + 8, "false-literal-expression");
 	public static readonly NodeKind ParenthesizedExpression = Reg(Expression + 9, "parenthesized-expression");
@@ -253,6 +255,8 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind IndexationExpression = Reg(Expression + 18, Precedence.Primary, "indexation-expression");
 	public static readonly NodeKind ArrayType = Reg(Expression + 19, "array-type");
 	public static readonly NodeKind UnsizedArrayType = Reg(Expression + 20, "unsized-array-type");
+	public static readonly NodeKind SelfExpression = Reg(Expression + 21, "self-expression");
+	public static readonly NodeKind MemberAccessExpression = Reg(Expression + 22, Precedence.Primary, "member-access-expression");
 	private const uint Operation = 0x00_00__28_00;
 	public static readonly NodeKind UnaryAddExpression = Reg(Operation + 1, Precedence.Unary, "unary-add-expression");
 	public static readonly NodeKind AddExpression = Reg(Operation + BinaryFlag + 2, Precedence.Additive, "add-expression");

@@ -317,11 +317,16 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 
 	public void ReportDuplicateModifier(Location location, string modifierName)
 	{
-		Add(DiagnosticDescriptor.DuplicateModifier, [location]);
+		Add(DiagnosticDescriptor.DuplicateModifier, [location], modifierName);
 	}
 
 	public void ReportCannotUseUnsizedType(Location location, TypeSymbol type)
 	{
 		Add(DiagnosticDescriptor.CannotUseUnsizedType, [location], type.ToDisplayString(SymbolFormat.PreferShortSpecialTypeName));
+	}
+
+	public void ReportSymbolIsInvalidInCurrentScope(Location location)
+	{
+		Add(DiagnosticDescriptor.SymbolIsInvalidInCurrentScope, [location]);
 	}
 }

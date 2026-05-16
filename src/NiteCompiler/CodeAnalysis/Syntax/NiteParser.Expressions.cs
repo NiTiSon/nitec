@@ -203,6 +203,12 @@ internal sealed partial class NiteParser
 				return ParseParenthesizedExpression();
 			}
 
+			if (tokenKind == TokenKind.Self)
+			{
+				Token selfKeyword = PeekAndAdvance();
+				return new SelfExpressionSyntax(_syntaxTree, selfKeyword);
+			}
+
 			if (tokenKind.IsAnyIdentifierOrKeyword)
 			{
 				return ParsePathName();
@@ -242,6 +248,12 @@ internal sealed partial class NiteParser
 				else if (tokenKind == TokenKind.OpenBracket)
 				{
 					expression = new IndexationExpressionSyntax(_syntaxTree, expression, ParseBracketedArgumentList());
+				}
+				else if (tokenKind == TokenKind.Dot)
+				{
+					Token dotToken = PeekAndAdvance();
+					SimpleNameSyntax memberName = ParseSimpleName();
+					expression = new MemberAccessExpressionSyntax(_syntaxTree, expression, dotToken, memberName);
 				}
 				else
 				{

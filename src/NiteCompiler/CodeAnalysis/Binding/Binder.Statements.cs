@@ -27,25 +27,18 @@ internal partial class Binder
 		switch (syntax)
 		{
 			case FunctionDeclarationSyntax function:
-				// if (function.Kind == NodeKind.ConstructorDeclaration)
-				// {
-				// 	return BindConstructorBody((ConstructorDeclarationSyntax)method, diagnostics);
-				// }
-				// if (function.Kind == NodeKind.NamedConstructorDeclaration)
-				// {
-				// 	return BindConstructorBody((NamedConstructorDeclarationSyntax)method, diagnostics);
-				// }
-
 				return BindFunctionBody(function, function.Body, diagnostics);
+			case BaseConstructorDeclarationSyntax constructor:
+				return BindFunctionBody(constructor, constructor.Body, diagnostics);
 			default:
 				throw new ArgumentException($"Unexpected syntax kind: {syntax.Kind}");
 		}
 	}
 
-	private BoundNode BindFunctionBody(FunctionDeclarationSyntax function, FunctionBodySyntax body,
+	private BoundNode BindFunctionBody(SyntaxNode declaration, FunctionBodySyntax body,
 		BindingDiagnosticBag diagnostics)
 	{
-		return new BoundFunctionBody(function, (BoundBlock)BindFunctionBodyStatement(body, diagnostics));
+		return new BoundFunctionBody(declaration, (BoundBlock)BindFunctionBodyStatement(body, diagnostics));
 	}
 
 	private BoundNode BindFunctionBodyStatement(FunctionBodySyntax syntax, BindingDiagnosticBag diagnostics)

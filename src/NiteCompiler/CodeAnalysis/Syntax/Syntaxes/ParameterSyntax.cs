@@ -3,7 +3,7 @@ using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public sealed class ParameterSyntax : SyntaxNode
+public sealed class ParameterSyntax : BaseParameterSyntax
 {
 	public SimpleNameSyntax Name { get; }
 	public TypeClauseSyntax TypeClauseSyntax { get; }

@@ -56,4 +56,19 @@ internal static class LookupPosition
 
 		return declaration != null && IsBeforeToken(position, declaration, declaration.ClosingToken);
 	}
+
+	public static bool IsInConstructorDeclaration(int position, ConstructorDeclarationSyntax? declaration)
+	{
+		if (declaration is { Body: EmptyFunctionBodySyntax empty })
+		{
+			return IsBeforeOrAtToken(position, declaration, empty.SemicolonToken);
+		}
+
+		return declaration != null && IsBeforeToken(position, declaration, declaration.Body.ClosingToken);
+	}
+
+	public static bool IsInNamedConstructorDeclaration(int position, NamedConstructorDeclarationSyntax? declaration)
+	{
+		return declaration != null && IsBeforeToken(position, declaration, declaration.Body.ClosingToken);
+	}
 }

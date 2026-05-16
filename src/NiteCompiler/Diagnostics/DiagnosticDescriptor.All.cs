@@ -37,6 +37,7 @@ public partial class DiagnosticDescriptor
 		ImplicitlyTypedVariableMustBeInitialized,
 		AccessibilityModifierRequiredBeforeMemberDeclaration,
 		MissingParameterTypeSpecification,
+		SymbolIsInvalidInCurrentScope,
 		MustReturnValue,
 		CannotReturnValue,
 		WrongReturnExpressionType,
@@ -87,6 +88,7 @@ public partial class DiagnosticDescriptor
 		DuplicateLifetimeConstraintClause = new("duplicate-lifetime-constraint-clause", "Constraint for {0} lifetime is already declared.");
 		AccessibilityModifierRequiredBeforeMemberDeclaration = new("accessibility-modifier-required", "Accessibility modifier required before member declaration.");
 		MissingParameterTypeSpecification = new("missing-parameter-type", "Type specification required for parameter syntax.");
+		SymbolIsInvalidInCurrentScope = new("symbol-in-invalid-scope", "Symbol is invalid in current scope.");
 
 		// Binding
 		DuplicateModifier = new("duplicate-modifier", "Modifier '{0}' applied twice.");

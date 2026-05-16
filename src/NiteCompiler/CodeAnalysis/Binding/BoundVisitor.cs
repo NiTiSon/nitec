@@ -30,4 +30,5 @@ internal abstract class BoundVisitor
 	public virtual void VisitLiteral(BoundLiteral literal) => DefaultVisit(literal);
 	public virtual void VisitCopy(BoundCopy copy) => DefaultVisit(copy);
 	public virtual void VisitReturn(BoundReturn returnStatement) => DefaultVisit(returnStatement);
+	public virtual void VisitFieldAccess(BoundFieldAccess fieldAccess) => DefaultVisit(fieldAccess);
 }

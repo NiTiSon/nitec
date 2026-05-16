@@ -194,6 +194,15 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 		{
 			return new SourceFunctionSymbol(this, (FunctionDeclarationSyntax)syntax);
 		}
+		else if (syntax.Kind == NodeKind.ConstructorDeclaration ||
+		         syntax.Kind == NodeKind.NamedConstructorDeclaration)
+		{
+			ErrorTypeSymbol errorType = new(DeclaringCompilation!, SpecialType.None, string.Empty, lifetimeArity: 0, arity: 0,
+				errorInfo: null, unreported: false);
+
+			diagnostics.Diagnostics.ReportSymbolIsInvalidInCurrentScope(syntax.Location );
+			return new SourceConstructorSymbol(errorType, (BaseConstructorDeclarationSyntax)syntax);
+		}
 		else
 		{
 			throw new UnreachableException();

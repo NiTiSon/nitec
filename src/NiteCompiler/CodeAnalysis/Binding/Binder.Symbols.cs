@@ -31,6 +31,16 @@ internal partial class Binder
 			return BindPredefinedType((PredefinedTypeSyntax)syntax);
 		}
 
+		if (syntax.Kind == NodeKind.IdentifierNameExpression)
+		{
+			return BindModuleOrTypeSymbol((IdentifierNameSyntax)syntax, diagnostics);
+		}
+
+		if (syntax.Kind == NodeKind.GenericNameExpression)
+		{
+			return BindGenericTypeSymbol((GenericNameSyntax)syntax, diagnostics);
+		}
+
 		if (syntax.Kind == NodeKind.ReferenceType)
 		{
 			return BindReferenceType((ReferenceTypeSyntax)syntax, diagnostics);
@@ -47,6 +57,16 @@ internal partial class Binder
 		}
 
 		throw new NotImplementedException();
+	}
+
+	private Symbol BindModuleOrTypeSymbol(IdentifierNameSyntax identifier, BindingDiagnosticBag diagnostics)
+	{
+		throw new NotImplementedException("TODO: Implement lookup for types/modules");
+	}
+
+	private Symbol BindGenericTypeSymbol(GenericNameSyntax genericNameSyntax, BindingDiagnosticBag diagnostics)
+	{
+		throw new NotImplementedException("TODO: Implement lookup for generic types");
 	}
 
 	private TypeSymbol BindReferenceType(ReferenceTypeSyntax syntax, BindingDiagnosticBag diagnostics)

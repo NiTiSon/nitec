@@ -1,27 +1,37 @@
 #!bin/nite
 
-// public lifetime_test3<'a, 'b>(a: &'a i32, b: &'b i32) -> &'b i32
-// where 'a : 'b + 'b
-// where 'a : 'b + 'b {
-// 	if a > b {
-// 		return a;
-// 	}
-//
-// 	return b;
+// public unsized_test() {
+// 	let x: UnsizedX;
 // }
-
-public unsized_test() {
-	// TODO: fix BindModuleOrTypeSymbol
-	// let x: UnsizedX;
-}
 
 public unsized type UnsizedX;
 
-public lifetime_test2_fail<'a>(ref: &i32) {
-	let x = 3;
-	ref = &x; // invalid: reference outlives the referred location
+// public lifetime_test2_fail<'a>(ref: &i32) {
+// 	let x = 3;
+// 	ref = &x;
+// }
+
+public type Vector2 {
+	public x: f32;
+	public y: f32;
+
+	public new(self.x, self.y); // generative constructor
+
+	public new(value: f32) { // usual constructor
+		self.x = value;
+		self.y = value;
+	}
+
+	public new create_x(x: f32) { // named constructor
+		self.x = x;
+		self.y = 0;
+	}
 }
 
-public main(args: &[i32]) {
-	return args;
+public sum_vectors(lhs: Vector2, rhs: Vector2) -> Vector2 {
+	let result = Vector2(0);
+
+	result.x = lhs.x + rhs.x;
+	result.y = lhs.y + rhs.y;
+	return result;
 }

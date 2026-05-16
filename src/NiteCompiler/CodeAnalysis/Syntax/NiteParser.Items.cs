@@ -117,6 +117,18 @@ internal partial class NiteParser
 			throw new NotImplementedException("Interfaces are not implemented yet.");
 		}
 
+		if (Current.TKind == TokenKind.New)
+		{
+			Token newKeyword = PeekAndAdvance();
+
+			if (Current.TKind == TokenKind.OpenParen)
+			{
+				return ParseConstructorDeclaration(accessibilityToken, modifiers, newKeyword);
+			}
+
+			return ParseNamedConstructorDeclaration(accessibilityToken, modifiers, newKeyword);
+		}
+
 		SimpleNameSyntax name = ParseSimpleName();
 		GenericParameterListSyntax? genericParameterList = null;
 		if (Current.TKind == TokenKind.Less)
@@ -135,6 +147,25 @@ internal partial class NiteParser
 		}
 
 		return ParseFunctionDeclaration(accessibilityToken, modifiers, name, genericParameterList);
+	}
+
+	private ConstructorDeclarationSyntax ParseConstructorDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers, Token newKeyword)
+	{
+		ParameterListSyntax parameterList = ParseParameterList();
+		FunctionBodySyntax body = ParseFunctionBody();
+
+		return new ConstructorDeclarationSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree), newKeyword, parameterList, body);
+	}
+
+	private NamedConstructorDeclarationSyntax ParseNamedConstructorDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers, Token newKeyword)
+	{
+		SimpleNameSyntax name = ParseSimpleName();
+		ParameterListSyntax parameterList = ParseParameterList();
+		FunctionBodySyntax body = ParseFunctionBody();
+
+		return new NamedConstructorDeclarationSyntax(_syntaxTree,
+			accessibilityToken, modifiers.Build(_syntaxTree),
+			newKeyword, name, parameterList, body);
 	}
 
 	private FieldDeclarationSyntax ParseFieldDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers, SimpleNameSyntax name)
@@ -298,8 +329,21 @@ internal partial class NiteParser
 			constraintClauses, body);
 	}
 
-	private ParameterSyntax ParseParameter()
+	private SelfParameterSyntax ParseSelfParameter()
 	{
+		Token selfKeyword = PeekAndAdvance();
+		Token dotToken = MatchToken(TokenKind.Dot);
+		SimpleNameSyntax fieldName = ParseSimpleName();
+		return new SelfParameterSyntax(_syntaxTree, selfKeyword, dotToken, fieldName);
+	}
+
+	private BaseParameterSyntax ParseParameter()
+	{
+		if (Current.TKind == TokenKind.Self)
+		{
+			return ParseSelfParameter();
+		}
+
 		SimpleNameSyntax name = ParseSimpleName();
 
 		TypeClauseSyntax? typeClause = null;

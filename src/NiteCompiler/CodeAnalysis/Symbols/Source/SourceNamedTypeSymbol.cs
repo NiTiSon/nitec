@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using NiteCompiler.CodeAnalysis.Declarations;
+using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
 
@@ -181,6 +182,32 @@ internal sealed class SourceNamedTypeSymbol : NamedTypeSymbol
 		{
 			var nestedType = new SourceNamedTypeSymbol(this, memberDecl, diagnostics);
 			builder.Add(nestedType);
+		}
+
+		foreach (var singleDecl in Declaration.Declarations)
+		{
+			var typeSyntax = (TypeDeclarationSyntax)singleDecl.SyntaxReference.GetSyntax();
+			var members = typeSyntax.Members;
+			if (members == null) continue;
+
+			foreach (var member in members)
+			{
+				switch (member)
+				{
+					case FieldDeclarationSyntax field:
+						builder.Add(new SourceFieldSymbol(this, field));
+						break;
+					case ConstructorDeclarationSyntax ctor:
+						builder.Add(new SourceConstructorSymbol(this, ctor));
+						break;
+					case NamedConstructorDeclarationSyntax namedCtor:
+						builder.Add(new SourceConstructorSymbol(this, namedCtor));
+						break;
+					case FunctionDeclarationSyntax func:
+						builder.Add(new SourceFunctionSymbol(this, func));
+						break;
+				}
+			}
 		}
 
 		AddDeclarationDiagnostics(diagnostics);

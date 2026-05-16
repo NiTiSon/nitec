@@ -240,14 +240,19 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 		int ordinal = 0;
 		foreach (var parameter in Syntax.ParameterList.Parameters)
 		{
-			TypeSymbol type = withGenericsBinder.BindType(parameter.TypeClauseSyntax.Type, diagnostics);
+			if (parameter is not ParameterSyntax normalParameter)
+			{
+				continue;
+			}
+
+			TypeSymbol type = withGenericsBinder.BindType(normalParameter.TypeClauseSyntax.Type, diagnostics);
 
 			if (type.IsUnsized)
 			{
-				diagnostics.Diagnostics.ReportCannotUseUnsizedType(parameter.TypeClauseSyntax.Type.Location, type);
+				diagnostics.Diagnostics.ReportCannotUseUnsizedType(normalParameter.TypeClauseSyntax.Type.Location, type);
 			}
 
-			var parameterSymbol = SourceParameterSymbol.Create(withGenericsBinder, this, type, parameter, ordinal, diagnostics);
+			var parameterSymbol = SourceParameterSymbol.Create(withGenericsBinder, this, type, normalParameter, ordinal, diagnostics);
 			builder.Add(parameterSymbol);
 			ordinal++;
 		}

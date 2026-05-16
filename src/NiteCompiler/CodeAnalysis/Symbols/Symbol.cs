@@ -42,6 +42,12 @@ public abstract class Symbol
 		}
 	}
 
+	/// <summary>
+	/// The name property of symbol. Does not include any metadata.
+	/// </summary>
+	/// <remarks>
+	/// Never is <see langword="null"/>: if name is not valid on symbol the empty string is returned.
+	/// </remarks>
 	public virtual string Name => string.Empty;
 	public virtual int LifetimeArity => 0;
 	public virtual int Arity => 0;

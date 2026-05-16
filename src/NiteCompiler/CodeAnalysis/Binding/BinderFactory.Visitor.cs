@@ -186,6 +186,93 @@ internal partial class BinderFactory
 			return resultBinder;
 		}
 
+		public override Binder VisitConstructorDeclaration(BaseConstructorDeclarationSyntax declaration)
+		{
+			return declaration switch
+			{
+				ConstructorDeclarationSyntax def => VisitConstructorDeclaration(def),
+				NamedConstructorDeclarationSyntax named => VisitNamedConstructorDeclaration(named),
+				_ => throw new UnreachableException()
+			};
+		}
+
+		private Binder VisitConstructorDeclaration(ConstructorDeclarationSyntax declaration)
+		{
+
+			if (!LookupPosition.IsInConstructorDeclaration(_position, declaration))
+			{
+				return VisitCore(declaration.Parent!);
+			}
+
+			NodeUsage usage;
+			if (LookupPosition.IsInBody(_position, declaration.Body))
+			{
+				usage = NodeUsage.FunctionBody;
+			}
+			else
+			{
+				usage = NodeUsage.Normal;
+			}
+
+			var key = new BinderCache(declaration, usage);
+
+			if (!BinderCache.TryGetValue(key, out Binder? resultBinder))
+			{
+				resultBinder = VisitCore(declaration.Parent!);
+
+				if (usage == NodeUsage.FunctionBody)
+				{
+					var ctor = GetConstructorSymbol(declaration, resultBinder);
+					if (ctor != null)
+					{
+						resultBinder = new InFunctionBinder(ctor, resultBinder);
+					}
+				}
+
+				BinderCache.TryAdd(key, resultBinder);
+			}
+
+			return resultBinder;
+		}
+
+		private Binder VisitNamedConstructorDeclaration(NamedConstructorDeclarationSyntax declaration)
+		{
+			if (!LookupPosition.IsInNamedConstructorDeclaration(_position, declaration))
+			{
+				return VisitCore(declaration.Parent!);
+			}
+
+			NodeUsage usage;
+			if (LookupPosition.IsInBody(_position, declaration.Body))
+			{
+				usage = NodeUsage.FunctionBody;
+			}
+			else
+			{
+				usage = NodeUsage.Normal;
+			}
+
+			var key = new BinderCache(declaration, usage);
+
+			if (!BinderCache.TryGetValue(key, out Binder? resultBinder))
+			{
+				resultBinder = VisitCore(declaration.Parent!);
+
+				if (usage == NodeUsage.FunctionBody)
+				{
+					var ctor = GetNamedConstructorSymbol(declaration, resultBinder);
+					if (ctor != null)
+					{
+						resultBinder = new InFunctionBinder(ctor, resultBinder);
+					}
+				}
+
+				BinderCache.TryAdd(key, resultBinder);
+			}
+
+			return resultBinder;
+		}
+
 		private ContainerSymbol? GetContainer(Binder binder, SyntaxNode node)
 		{
 			Symbol? containingSymbol = binder.ContainingMember;
@@ -218,6 +305,40 @@ internal partial class BinderFactory
 					{
 						return function;
 					}
+				}
+			}
+
+			return null;
+		}
+
+		private SourceConstructorSymbol? GetConstructorSymbol(ConstructorDeclarationSyntax syntax, Binder outerBinder)
+		{
+			ContainerSymbol? container = GetContainer(outerBinder, syntax);
+			if (container == null) return null;
+
+			string ctorName = MetadataFacts.ConstructorInternalNamePrefix + ".ctor";
+			foreach (var member in container.GetMembers())
+			{
+				if (member is SourceConstructorSymbol ctor && ctor.Name == ctorName)
+				{
+					return ctor;
+				}
+			}
+
+			return null;
+		}
+
+		private SourceConstructorSymbol? GetNamedConstructorSymbol(NamedConstructorDeclarationSyntax syntax, Binder outerBinder)
+		{
+			ContainerSymbol? container = GetContainer(outerBinder, syntax);
+			if (container == null) return null;
+
+			string ctorName = MetadataFacts.ConstructorInternalNamePrefix + "." + syntax.Name.GetName();
+			foreach (var member in container.GetMembers())
+			{
+				if (member is SourceConstructorSymbol ctor && ctor.Name == ctorName)
+				{
+					return ctor;
 				}
 			}
 

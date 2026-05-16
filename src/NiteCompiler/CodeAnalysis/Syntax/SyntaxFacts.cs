@@ -136,9 +136,15 @@ internal static class SyntaxFacts
 			case "partial":
 				info.Kind = TokenKind.Partial;
 				return;
-			case "unsized":
-				info.Kind = TokenKind.Unsized;
-				return;
+		case "unsized":
+			info.Kind = TokenKind.Unsized;
+			return;
+		case "self":
+			info.Kind = TokenKind.Self;
+			return;
+		case "new":
+			info.Kind = TokenKind.New;
+			return;
 		}
 	}
 

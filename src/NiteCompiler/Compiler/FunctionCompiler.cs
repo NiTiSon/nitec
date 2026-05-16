@@ -123,6 +123,41 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 				return body;
 			}
 		}
+		else if (function is SourceConstructorSymbol sourceConstructor)
+		{
+			Binder? bodyBinder = sourceConstructor.TryGetBodyBinder();
+			if (bodyBinder != null)
+			{
+				BoundNode functionBody = bodyBinder.BindFunctionBody(sourceConstructor.Syntax, diagnostics);
+
+				BoundBlock body;
+				if (functionBody.Kind == BoundKind.FunctionBody)
+				{
+					var nonConstructor = (BoundFunctionBody)functionBody;
+					body = nonConstructor.BlockBody;
+					Debug.Assert(body != null);
+				}
+				else
+				{
+					throw new NotImplementedException();
+				}
+
+				if (!functionBody.HasErrors)
+				{
+					ControlFlowGraph cfg = ControlFlowGraphBuilder.Build(function, body, diagnostics);
+
+					LifetimeChecker.Check(function, body, cfg, diagnostics);
+
+					if (!diagnostics.Diagnostics.HasAnyErrors)
+					{
+						var emittedBody = GenerateBody(function, diagnostics, body);
+						_metadataBuilder?.SetFunctionBody(function, emittedBody);
+					}
+				}
+
+				return body;
+			}
+		}
 
 		throw new UnreachableException();
 	}

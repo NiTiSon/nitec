@@ -6,7 +6,7 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 public sealed class IdentifierNameSyntax : SimpleNameSyntax
 {
 	public Token Identifier { get; }
-	public override NodeKind Kind => NodeKind.IdentifierName;
+	public override NodeKind Kind => NodeKind.IdentifierNameExpression;
 	public override TextSpan Span => Identifier.Span;
 
 	internal IdentifierNameSyntax(SyntaxTree tree, Token identifier, string identifierText) : base(tree, identifierText)

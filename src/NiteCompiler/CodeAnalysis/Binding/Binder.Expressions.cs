@@ -60,9 +60,76 @@ internal partial class Binder
 			case InvocationExpressionSyntax invocation:
 				return BindInvocation(invocation, diagnostics);
 
+			case SelfExpressionSyntax selfExpr:
+				return BindSelfExpression(selfExpr, diagnostics);
+			case MemberAccessExpressionSyntax memberAccess:
+				return BindMemberAccessExpression(memberAccess, diagnostics);
+
 			default:
 				throw new UnreachableException($"BindExpression({syntax.Kind})");
 		}
+	}
+
+	private BoundExpression BindSelfExpression(SelfExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
+	{
+		LookupResult result = LookupResult.GetInstance();
+		LookupIdentifier(result, "self", arity: 0, invoked: false);
+
+		BoundExpression boundExpression;
+		if (result.Kind == LookupResultKind.Empty)
+		{
+			diagnostics.Diagnostics.ReportUnresolvedSymbol(syntax.Location);
+			boundExpression = BadExpression(syntax);
+		}
+		else
+		{
+			Symbol symbol = result.Symbols[0];
+
+			switch (symbol.Kind)
+			{
+				case SymbolKind.LocalVariable:
+				case SymbolKind.Parameter:
+				{
+					var variable = (LocalVariableOrParameterSymbol)symbol;
+					boundExpression = variable.Type.SpecialType != SpecialType.None
+						? new BoundCopy(syntax, variable)
+						: new BoundMove(syntax, variable);
+					break;
+				}
+				default:
+					boundExpression = BadExpression(syntax);
+					break;
+			}
+		}
+
+		result.Free();
+		return boundExpression;
+	}
+
+	private BoundExpression BindMemberAccessExpression(MemberAccessExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
+	{
+		BoundExpression receiver = BindExpression(syntax.Expression, diagnostics, invoked: false, indexed: false);
+
+		if (receiver.HasErrors || receiver.Type.IsErrorSymbol)
+		{
+			return new BoundFieldAccess(syntax, receiver, null!, hasErrors: true);
+		}
+
+		string fieldName = syntax.Name.GetName();
+
+		if (receiver.Type is NamedTypeSymbol namedType)
+		{
+			foreach (var member in namedType.GetMembers(fieldName))
+			{
+				if (member is FieldSymbol field)
+				{
+					return new BoundFieldAccess(syntax, receiver, field);
+				}
+			}
+		}
+
+		diagnostics.Diagnostics.ReportUnresolvedSymbol(syntax.Name.Location);
+		return new BoundFieldAccess(syntax, receiver, null!, hasErrors: true);
 	}
 
 	private BoundExpression BindUnaryExpression(UnaryExpressionSyntax syntax, BindingDiagnosticBag diagnostics)

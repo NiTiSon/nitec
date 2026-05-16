@@ -33,6 +33,7 @@ internal sealed partial class NiteParser
 		}
 		else if (Current.TKind.IsAnyIdentifierOrKeyword ||
 		         Current.TKind.IsLiteralTokenKind ||
+		         Current.TKind == TokenKind.Self ||
 		         Current.TKind == TokenKind.OpenParen ||
 		         Current.TKind == TokenKind.Ampersand ||
 		         Current.TKind == TokenKind.Asterisk ||

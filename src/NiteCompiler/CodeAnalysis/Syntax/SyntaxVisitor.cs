@@ -32,6 +32,8 @@ public abstract class SyntaxVisitor
 	public virtual void VisitOptionalType(TypeSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitInvocationExpression(InvocationExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitIndexationExpression(IndexationExpressionSyntax expression) => DefaultVisit(expression);
+	public virtual void VisitSelfExpression(SelfExpressionSyntax expression) => DefaultVisit(expression);
+	public virtual void VisitMemberAccessExpression(MemberAccessExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual void VisitArrayType(ArrayTypeSyntax type) => DefaultVisit(type);
 	public virtual void VisitUnsizedArrayType(UnsizedArrayTypeSyntax type) => DefaultVisit(type);
 
@@ -44,6 +46,8 @@ public abstract class SyntaxVisitor
 	public virtual void VisitFunctionBody(FunctionBodySyntax body) => DefaultVisit(body);
 	public virtual void VisitTypeDeclaration(TypeDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual void VisitFieldDeclaration(FieldDeclarationSyntax declaration) => DefaultVisit(declaration);
+	public virtual void VisitConstructorDeclaration(BaseConstructorDeclarationSyntax declaration) => DefaultVisit(declaration);
+	public virtual void VisitSelfParameter(SelfParameterSyntax parameter) => DefaultVisit(parameter);
 	public virtual void VisitTypeBody(TypeBodySyntax body) => DefaultVisit(body);
 	public virtual void VisitLocalVariableDeclarator(LocalVariableDeclarator declarator) => DefaultVisit(declarator);
 	public virtual void VisitEqualsValueClause(EqualsValueClause clause) => DefaultVisit(clause);
@@ -92,6 +96,8 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitOptionalType(TypeSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitInvocationExpression(InvocationExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitIndexationExpression(IndexationExpressionSyntax expression) => DefaultVisit(expression);
+	public virtual TResult? VisitSelfExpression(SelfExpressionSyntax expression) => DefaultVisit(expression);
+	public virtual TResult? VisitMemberAccessExpression(MemberAccessExpressionSyntax expression) => DefaultVisit(expression);
 	public virtual TResult? VisitArrayType(ArrayTypeSyntax type) => DefaultVisit(type);
 	public virtual TResult? VisitUnsizedArrayType(UnsizedArrayTypeSyntax type) => DefaultVisit(type);
 
@@ -104,6 +110,8 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitFunctionBody(FunctionBodySyntax body) => DefaultVisit(body);
 	public virtual TResult? VisitTypeDeclaration(TypeDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual TResult? VisitFieldDeclaration(FieldDeclarationSyntax declaration) => DefaultVisit(declaration);
+	public virtual TResult? VisitConstructorDeclaration(BaseConstructorDeclarationSyntax declaration) => DefaultVisit(declaration);
+	public virtual TResult? VisitSelfParameter(SelfParameterSyntax parameter) => DefaultVisit(parameter);
 	public virtual TResult? VisitTypeBody(TypeBodySyntax body) => DefaultVisit(body);
 	public virtual TResult? VisitLocalVariableDeclarator(LocalVariableDeclarator declarator) => DefaultVisit(declarator);
 	public virtual TResult? VisitEqualsValueClause(EqualsValueClause clause) => DefaultVisit(clause);

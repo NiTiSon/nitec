@@ -98,7 +98,6 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 		if (this == CharacterLiteral) return NodeKind.CharacterLiteralExpression;
 		if (this == StringLiteral) return NodeKind.StringLiteralExpression;
 
-		Debug.WriteLine($"ToLiteralExpressionKind({this}) is failed");
 		return NodeKind.None;
 	}
 
@@ -340,6 +339,8 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 	public static readonly TokenKind Where = Reg(Keyword + 25, "where");
 	public static readonly TokenKind Partial = Reg(Keyword + 26, "partial");
 	public static readonly TokenKind Unsized = Reg(Keyword + 27, "unsized");
+	public static readonly TokenKind Self = Reg(Keyword + 28, "self");
+	public static readonly TokenKind New = Reg(Keyword + 29, "new");
 
 	// Type keywords have they very own unique values
 	public static readonly TokenKind I8 = Reg(TypeKeyword + (uint)SpecialType.StdNumericsSInt8, "i8");
