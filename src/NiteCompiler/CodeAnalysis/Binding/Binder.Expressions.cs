@@ -269,10 +269,13 @@ internal partial class Binder
 		switch (symbol.Kind)
 		{
 			case SymbolKind.LocalVariable:
-				return new BoundLocal(name, (LocalVariableSymbol)symbol);
-				break;
 			case SymbolKind.Parameter:
-				return new BoundParameter(name, (ParameterSymbol)symbol);
+			{
+				var variable = (LocalVariableOrParameterSymbol)symbol;
+				if (variable.Type.SpecialType != SpecialType.None)
+					return new BoundCopy(name, variable);
+				return new BoundMove(name, variable);
+			}
 			default:
 				throw new UnreachableException();
 		}

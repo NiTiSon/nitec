@@ -28,7 +28,6 @@ internal abstract class BoundVisitor
 	public virtual void VisitLoopStatement(BoundLoopStatement loopStatement) => DefaultVisit(loopStatement);
 	public virtual void VisitWhileStatement(BoundWhileStatement whileStatement) => DefaultVisit(whileStatement);
 	public virtual void VisitLiteral(BoundLiteral literal) => DefaultVisit(literal);
-	public virtual void VisitLocal(BoundLocal local) => DefaultVisit(local);
-	public virtual void VisitParameter(BoundParameter parameter) => DefaultVisit(parameter);
+	public virtual void VisitCopy(BoundCopy copy) => DefaultVisit(copy);
 	public virtual void VisitReturn(BoundReturn returnStatement) => DefaultVisit(returnStatement);
 }

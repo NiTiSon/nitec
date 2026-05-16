@@ -161,8 +161,8 @@ internal sealed class LifetimeChecker
 
 		LocalVariableOrParameterSymbol? referent = addrOf.Expression switch
 		{
-			BoundLocal l => l.Local,
-			BoundParameter p => p.Parameter,
+			BoundMove m => m.Variable,
+			BoundCopy c => c.Variable,
 			_ => null
 		};
 		if (referent == null) return;
@@ -191,16 +191,16 @@ internal sealed class LifetimeChecker
 
 		LocalVariableOrParameterSymbol? referent = addrOf.Expression switch
 		{
-			BoundLocal l => l.Local,
-			BoundParameter p => p.Parameter,
+			BoundMove m => m.Variable,
+			BoundCopy c => c.Variable,
 			_ => null
 		};
 		if (referent == null) return;
 
 		LocalVariableOrParameterSymbol? lhsSym = assignment.Left switch
 		{
-			BoundLocal l when l.Local.Type is BaseReferenceTypeSymbol => l.Local,
-			BoundParameter p when p.Parameter.Type is BaseReferenceTypeSymbol => p.Parameter,
+			BoundMove m when m.Variable.Type is BaseReferenceTypeSymbol => m.Variable,
+			BoundCopy c when c.Variable.Type is BaseReferenceTypeSymbol => c.Variable,
 			_ => null
 		};
 		if (lhsSym == null) return;
@@ -236,15 +236,21 @@ internal sealed class LifetimeChecker
 	private void CheckReturnEscape(BoundExpression expr)
 	{
 	    // Returning a reference to a local is always an escape.
-	    if (expr is not BoundLocal local) return;
-	    if (local.Type is not BaseReferenceTypeSymbol) return;
+	    if (expr is not (BoundMove or BoundCopy)) return;
+	    LocalVariableOrParameterSymbol variable = expr switch
+	    {
+	        BoundMove m => m.Variable,
+	        BoundCopy c => c.Variable,
+	        _ => null!
+	    };
+	    if (variable.Type is not BaseReferenceTypeSymbol) return;
 
 	    // If this local was initialized with &someOtherLocal,
 	    // and someOtherLocal is not a parameter, it escapes.
 	    // (Full escape analysis requires tracking provenance through assignments;
 	    //  this is the conservative first pass.)
 	    _diagnostics.Diagnostics.ReportDanglingReference(
-	        expr.Syntax!.Location, local.Local, local.Local);
+	        expr.Syntax!.Location, variable, variable);
 	}
 
 	private static void CollectDefsAndUses(
@@ -272,11 +278,11 @@ internal sealed class LifetimeChecker
 	{
 		switch (expr)
 		{
-			case BoundLocal l:
-				uses.GetOrAdd(l.Local, () => new()).Add(block);
+			case BoundMove m:
+				uses.GetOrAdd(m.Variable, () => new()).Add(block);
 				break;
-			case BoundParameter p:
-				uses.GetOrAdd(p.Parameter, () => new()).Add(block);
+			case BoundCopy c:
+				uses.GetOrAdd(c.Variable, () => new()).Add(block);
 				break;
 			case BoundAddressOfExpression a:
 				CollectUses(a.Expression, block, uses);

@@ -60,7 +60,7 @@ public class BinderInvocationTests
 				Assert.That(declaration.Local.Type.SpecialType, Is.EqualTo(SpecialType.StdBoolean));
 				Assert.That(call.Function.Name, Is.EqualTo("callee"));
 				Assert.That(call.Arguments.Length, Is.EqualTo(1));
-				Assert.That(call.Arguments[0], Is.InstanceOf<BoundParameter>());
+				Assert.That(call.Arguments[0], Is.InstanceOf<BoundCopy>());
 				Assert.That(call.Type.SpecialType, Is.EqualTo(SpecialType.StdBoolean));
 			});
 

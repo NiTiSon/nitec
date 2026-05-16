@@ -22,41 +22,6 @@ public lifetime_test2_fail<'a>(ref: &i32) {
 	ref = &x; // invalid: reference outlives the referred location
 }
 
-public drop_test(x: i32) {
-	// implicit drop x at the return
-}
-
-public drop_test2(x: i32) {
-	x = 1; // implicit drop; then assign
-}
-
-public drop_test3(cond: bool) {
-	let x: i32 = 1;
-	if cond {
-		x = 42;
-	}
-
-	if cond {
-		x = 42;
-	} else {
-		x = 52;
-	}
-}
-
-public drop_test4(cond: bool) {
-	let x: i32;
-
-	if cond {
-		x = 42;
-	}
-}
-
-public main(cond: bool) {
-	let x: i32;
-	x = 1; // beginning of the x lifetime
-
-	if cond {
-		x = 2;
-		let ref_x = &x; // valid: cause x is outlive reference
-	}
+public main(args: &[String]) {
+	return args;
 }

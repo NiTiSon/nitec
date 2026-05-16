@@ -182,8 +182,8 @@ internal sealed class MirBuilder
 			BoundAssignment assignment => EmitAssignmentExpression(assignment, block),
 			BoundCompoundAssignment compoundAssignment => throw new InvalidOperationException("Unlowered BoundTree is passed to the MirBuilder."),
 			BoundCall call => EmitCall(call, block),
-			BoundParameter parameter => EmitParameter(parameter, block),
-			BoundLocal local => EmitLocal(local, block),
+			BoundMove move => EmitLoad(move, block),
+			BoundCopy copy => EmitLoad(copy, block),
 
 			_ => throw new UnreachableException($"RewriteExpression({expression.GetType()})")
 		};
@@ -194,8 +194,8 @@ internal sealed class MirBuilder
 		TempValue output = GetNewTemp(addressOf.Type);
 		LocalVariableOrParameterSymbol symbol = addressOf.Expression switch
 		{
-			BoundLocal local => local.Local,
-			BoundParameter parameter => parameter.Parameter,
+			BoundMove move => move.Variable,
+			BoundCopy copy => copy.Variable,
 			_ => throw new UnreachableException($"EmitAddressOfExpression({addressOf.Expression.GetType()})")
 		};
 		block.Instructions.Add(new AddressOfInstruction(output, symbol));
@@ -305,8 +305,8 @@ internal sealed class MirBuilder
 	{
 		return expression switch
 		{
-			BoundLocal local => _addrTable[local.Local],
-			BoundParameter parameter => _addrTable[parameter.Parameter],
+			BoundMove move => _addrTable[move.Variable],
+			BoundCopy copy => _addrTable[copy.Variable],
 			BoundDereferenceExpression dereference => RewriteExpression(dereference.Expression, block),
 			_ => throw new UnreachableException($"GetAssignmentTargetAddress({expression.GetType()})")
 		};
@@ -326,20 +326,20 @@ internal sealed class MirBuilder
 		return ret;
 	}
 
-	private TempValue EmitParameter(BoundParameter parameter, MirBlock block)
+	private TempValue EmitLoad(BoundMove move, MirBlock block)
 	{
-		TempValue addr = _addrTable[parameter.Parameter];
-		TempValue load = GetNewTemp(parameter.Parameter.Type);
+		TempValue addr = _addrTable[move.Variable];
+		TempValue load = GetNewTemp(move.Type);
 
 		block.Instructions.Add(new LoadInstruction(load, addr));
 
 		return load;
 	}
 
-	private TempValue EmitLocal(BoundLocal local, MirBlock block)
+	private TempValue EmitLoad(BoundCopy copy, MirBlock block)
 	{
-		TempValue addr = _addrTable[local.Local];
-		TempValue load = GetNewTemp(local.Local.Type);
+		TempValue addr = _addrTable[copy.Variable];
+		TempValue load = GetNewTemp(copy.Type);
 
 		block.Instructions.Add(new LoadInstruction(load, addr));
 
