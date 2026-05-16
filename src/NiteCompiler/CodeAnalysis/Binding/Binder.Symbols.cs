@@ -36,6 +36,16 @@ internal partial class Binder
 			return BindReferenceType((ReferenceTypeSyntax)syntax, diagnostics);
 		}
 
+		if (syntax.Kind == NodeKind.UnsizedArrayType)
+		{
+			return BindUnsizedArrayType((UnsizedArrayTypeSyntax)syntax, diagnostics);
+		}
+
+		if (syntax.Kind == NodeKind.ArrayType)
+		{
+			return BindArrayType((ArrayTypeSyntax)syntax, diagnostics);
+		}
+
 		throw new NotImplementedException();
 	}
 
@@ -45,6 +55,17 @@ internal partial class Binder
 		bool isMutable = syntax.ConstToken == null;
 		bool isNullable = syntax.QuestionToken != null;
 		return Compilation.CreateReferenceType(element, isMutable, isNullable);
+	}
+
+	private TypeSymbol BindUnsizedArrayType(UnsizedArrayTypeSyntax syntax, BindingDiagnosticBag diagnostics)
+	{
+		TypeSymbol element = BindType(syntax.Type, diagnostics);
+		return Compilation.CreateUnsizedArrayType(element);
+	}
+
+	private TypeSymbol BindArrayType(ArrayTypeSyntax syntax, BindingDiagnosticBag diagnostics)
+	{
+		throw new NotImplementedException("Sized array is not implemented yet.");
 	}
 
 	public TypeSymbol BindType(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics)

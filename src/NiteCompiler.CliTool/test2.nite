@@ -22,6 +22,6 @@ public lifetime_test2_fail<'a>(ref: &i32) {
 	ref = &x; // invalid: reference outlives the referred location
 }
 
-public main(args: &[String]) {
+public main(args: &[i32]) {
 	return args;
 }

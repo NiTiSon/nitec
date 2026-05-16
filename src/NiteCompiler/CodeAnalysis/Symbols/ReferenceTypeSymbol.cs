@@ -5,7 +5,7 @@ public sealed class ReferenceTypeSymbol : BaseReferenceTypeSymbol
 	public override TypeSymbol PointsTo { get; }
 	public override bool IsMutable { get; }
 	public override bool IsNullable { get; }
-	public override bool IsFatPointer => PointsTo.IsUnsized /*|| PointsTo.IsAbstract*/;
+	public override bool IsThickPointer => PointsTo.IsUnsized /*|| PointsTo.IsAbstract*/;
 
 	internal ReferenceTypeSymbol(TypeSymbol pointsTo, bool isMutable, bool isNullable)
 	{

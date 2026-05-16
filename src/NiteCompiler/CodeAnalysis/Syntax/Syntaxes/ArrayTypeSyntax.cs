@@ -7,18 +7,18 @@ public sealed class ArrayTypeSyntax : TypeSyntax
 {
 	public Token OpenBracket { get; }
 	public TypeSyntax Type { get; }
-	public Token Comma { get; }
+	public Token Semicolon { get; }
 	public ExpressionSyntax Size { get; }
 	public Token CloseBracket { get; }
 
 	public override NodeKind Kind => NodeKind.ArrayType;
 	public override TextSpan Span => TextSpan.FromBounds(OpenBracket.Span, CloseBracket.Span);
 
-	internal ArrayTypeSyntax(SyntaxTree tree, Token openBracket, TypeSyntax type, Token comma, ExpressionSyntax size, Token closeBracket) : base(tree)
+	internal ArrayTypeSyntax(SyntaxTree tree, Token openBracket, TypeSyntax type, Token semicolon, ExpressionSyntax size, Token closeBracket) : base(tree)
 	{
 		OpenBracket = openBracket;
 		Type = type;
-		Comma = comma;
+		Semicolon = semicolon;
 		Size = size;
 		CloseBracket = closeBracket;
 	}
@@ -30,7 +30,7 @@ public sealed class ArrayTypeSyntax : TypeSyntax
 	{
 		yield return OpenBracket;
 		yield return Type;
-		yield return Comma;
+		yield return Semicolon;
 		yield return Size;
 		yield return CloseBracket;
 	}

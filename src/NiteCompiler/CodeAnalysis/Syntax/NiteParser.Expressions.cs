@@ -441,6 +441,11 @@ internal sealed partial class NiteParser
 			return type;
 		}
 
+		if (currentKind == TokenKind.OpenBracket)
+		{
+			return ParseArrayType();
+		}
+
 		throw new NotImplementedException();
 	}
 
@@ -479,6 +484,32 @@ internal sealed partial class NiteParser
 		TypeSyntax elementType = ParseType();
 
 		return new ReferenceTypeSyntax(_syntaxTree, ampersand, lifetime, constKeyword, questionToken, elementType);
+	}
+
+	private TypeSyntax ParseArrayType()
+	{
+		Debug.Assert(Current.TKind == TokenKind.OpenBracket);
+
+		Token openBracket = PeekAndAdvance();
+
+		TypeSyntax elementType = ParseType();
+
+		TokenKind currentKind = Current.TKind;
+		if (currentKind == TokenKind.Semicolon) // [Element; Sizes]
+		{
+			Token semicolon = PeekAndAdvance();
+			ExpressionSyntax sizeExpression = ParseExpression();
+
+			Token closeBracket = MatchToken(TokenKind.CloseBracket);
+
+			return new ArrayTypeSyntax(_syntaxTree, openBracket, elementType, semicolon, sizeExpression, closeBracket);
+		}
+		else // [Element]
+		{
+			Token closeBracket = MatchToken(TokenKind.CloseBracket);
+
+			return new UnsizedArrayTypeSyntax(_syntaxTree, openBracket, elementType, closeBracket);
+		}
 	}
 
 	private NameSyntax ParseName()

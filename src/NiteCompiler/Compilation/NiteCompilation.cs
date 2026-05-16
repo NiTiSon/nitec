@@ -181,6 +181,23 @@ public sealed partial class NiteCompilation
 		return value;
 	}
 
+	private ConcurrentDictionary<TypeSymbol, UnsizedArrayTypeSymbol>? _unsizedArrayTypeSymbols;
+	internal UnsizedArrayTypeSymbol CreateUnsizedArrayType(TypeSymbol elementsType)
+	{
+		if (_unsizedArrayTypeSymbols == null)
+		{
+			Interlocked.CompareExchange(ref _unsizedArrayTypeSymbols, new(), null);
+		}
+
+		if (!_unsizedArrayTypeSymbols.TryGetValue(elementsType, out UnsizedArrayTypeSymbol? value))
+		{
+			value = new UnsizedArrayTypeSymbol(elementsType);
+			_unsizedArrayTypeSymbols[elementsType] = value;
+		}
+
+		return value;
+	}
+
 	public FunctionSymbol? GetEntryPoint()
 	{
 		// TODO: Binder.Lookup("main") etc.
