@@ -24,6 +24,15 @@ internal abstract partial class Binder
 		}
 	}
 
+	public virtual TypeSymbol? ContainingType
+	{
+		get
+		{
+			Debug.Assert(Parent != null);
+			return Parent.ContainingType;
+		}
+	}
+
 	protected Binder(NiteCompilation compilation)
 	{
 		Compilation = compilation;

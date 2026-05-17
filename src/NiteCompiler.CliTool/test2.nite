@@ -34,6 +34,14 @@ public loop_test(i: i32) {
 	}
 }
 
+public addone(x: i32) -> i32 {
+	return x + 1;
+}
+
+public caller(x: i32) -> i32 {
+	return addone(x);
+}
+
 public sum_vectors(lhs: Vector2, rhs: Vector2) -> Vector2 {
 	let result = Vector2(0);
 

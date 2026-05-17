@@ -32,6 +32,11 @@ internal partial class Binder
 			return expression;
 		}
 
+		if (expression.Kind == BoundKind.FunctionGroup && valueKind == BindValueKind.RValueOrFunctionGroup)
+		{
+			return expression;
+		}
+
 		if ((expected & BindValueKind.LValue) != 0)
 		{
 			diagnostics.Diagnostics.ReportCannotUseAsLValue(expression.Syntax!.Location);

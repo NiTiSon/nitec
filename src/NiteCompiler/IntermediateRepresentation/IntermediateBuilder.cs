@@ -48,8 +48,7 @@ internal sealed class IntermediateBuilder
 							phi.Result.Write(astWriter);
 							astWriter.Write(" = phi ");
 						}
-						astWriter.Write(phi.Variable.Name);
-						astWriter.Write(" [");
+						astWriter.Write("[");
 						bool first = true;
 						foreach (var (fromBlock, value) in phi.Inputs)
 						{

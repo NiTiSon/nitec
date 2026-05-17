@@ -25,6 +25,19 @@ public abstract class Symbol
 		}
 	}
 
+	public virtual TypeSymbol? ContainingType
+	{
+		get
+		{
+			if (ContainingSymbol is TypeSymbol type)
+			{
+				return type;
+			}
+
+			return ContainingSymbol?.ContainingType;
+		}
+	}
+
 	public virtual NiteCompilation? DeclaringCompilation
 	{
 		get

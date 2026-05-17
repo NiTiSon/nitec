@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Reflection;
+using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Compilation;
 
@@ -14,4 +16,6 @@ internal sealed class SeniorBinder : Binder
 	{
 		return null;
 	}
+
+	public override TypeSymbol? ContainingType => null;
 }

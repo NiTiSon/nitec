@@ -320,7 +320,13 @@ internal partial class Binder
 			{
 				Debug.Assert(group.Count > 0);
 
-				throw new NotImplementedException();
+				var candidates = new FunctionSymbol[group.Count];
+				for (int i = 0; i < group.Count; i++)
+					candidates[i] = (FunctionSymbol)group[i];
+
+				var receiver = SynthesizeFunctionGroupReceiver(group);
+
+				boundExpression = new BoundFunctionGroup(name, [..candidates], receiver, result.Kind, CreateErrorType());
 			}
 			else
 			{
@@ -409,6 +415,26 @@ internal partial class Binder
 
 		methodGroup.Clear();
 		return ResultSymbol(result, identifierName, arity, node, diagnostics, out wasError, null);
+	}
+
+	private BoundExpression? SynthesizeFunctionGroupReceiver(ArrayBuilder<Symbol> members)
+	{
+		Debug.Assert(members.Count > 0);
+
+		TypeSymbol? currentType = ContainingType;
+		if (currentType == null)
+		{
+			return null;
+		}
+
+		var declaringType = members[0].ContainingType;
+
+		// if (currentType.IsEqualToOrDerivedFrom(declaringType, TypeCompareKind.ConsiderEverything))
+		// {
+		// 	return new (syntax, currentType, wasCompilerGenerated: true);
+		// }
+
+		return null;
 	}
 
 	private static bool IsFunctionGroup(ArrayBuilder<Symbol> members)

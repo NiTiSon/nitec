@@ -47,32 +47,36 @@ internal partial class Binder
 			return new BoundBadExpression(invocation, LookupResultKind.Empty, [], arguments, CreateErrorType());
 		}
 
-		LookupResult result = LookupResult.GetInstance();
-		try
-		{
-			BoundExpression boundExpression = BindFunctionGroup(invocation.Expression, invoked: true, indexed: false, diagnostics: diagnostics);
-			boundExpression = CheckValue(boundExpression, BindValueKind.RValueOrFunctionGroup, diagnostics);
+		BoundExpression boundExpression = BindFunctionGroup(invocation.Expression, invoked: true, indexed: false, diagnostics: diagnostics);
+		boundExpression = CheckValue(boundExpression, BindValueKind.RValueOrFunctionGroup, diagnostics);
 
-			if (result.Kind == LookupResultKind.Empty)
+		if (boundExpression is BoundFunctionGroup methodGroup)
+		{
+			if (methodGroup.Candidates.Length == 0)
 			{
 				diagnostics.Diagnostics.ReportUnresolvedSymbol(name.Location);
-				return new BoundBadExpression(invocation, LookupResultKind.Empty, [], arguments, CreateErrorType());
+				return new BoundBadExpression(invocation, methodGroup.ResultKind, [], arguments, CreateErrorType());
 			}
 
-			FunctionSymbol? function = ResolveInvokedFunction(result, arguments.Length);
+			FunctionSymbol? function = ResolveInvokedFunction(methodGroup.Candidates, arguments.Length);
 			if (function == null)
 			{
 				diagnostics.Diagnostics.ReportUnresolvedSymbol(name.Location);
-				return new BoundBadExpression(invocation, result.Kind, [..result.Symbols], arguments, CreateErrorType());
+				return new BoundBadExpression(invocation, methodGroup.ResultKind,
+					[..methodGroup.Candidates], arguments, CreateErrorType());
 			}
 
 			bool hasErrors = CheckInvocationArguments(function, arguments, diagnostics);
 			return new BoundCall(invocation, function, arguments, hasErrors);
 		}
-		finally
+
+		if (boundExpression.HasErrors)
 		{
-			result.Free();
+			return new BoundBadExpression(invocation, LookupResultKind.Empty, [], arguments, CreateErrorType());
 		}
+
+		diagnostics.Diagnostics.ReportUnresolvedSymbol(name.Location);
+		return new BoundBadExpression(invocation, LookupResultKind.Empty, [], arguments, CreateErrorType());
 	}
 
 	private ImmutableArray<BoundExpression> BindInvocationArguments(InvocationExpressionSyntax invocation,
@@ -89,15 +93,10 @@ internal partial class Binder
 		return arguments.ToImmutableAndFree();
 	}
 
-	private static FunctionSymbol? ResolveInvokedFunction(LookupResult result, int argumentCount)
+	private static FunctionSymbol? ResolveInvokedFunction(ImmutableArray<FunctionSymbol> candidates, int argumentCount)
 	{
-		foreach (Symbol symbol in result.Symbols)
+		foreach (FunctionSymbol function in candidates)
 		{
-			if (symbol is not FunctionSymbol function)
-			{
-				continue;
-			}
-
 			if (function.Parameters.Length == argumentCount)
 			{
 				return function;
