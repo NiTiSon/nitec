@@ -1,15 +1,15 @@
 ﻿using System.Collections.Immutable;
 using System.IO;
 using NiteCompiler.CodeAnalysis.Symbols;
-using NiteCompiler.IntermediateRepresentation.Mir;
+using NiteCompiler.IntermediateRepresentation.Nir;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
-internal sealed class CallInstruction(TempValue output, FunctionSymbol function, ImmutableArray<TempValue> arguments) : Instruction
+internal sealed class CallInstruction(IValue output, FunctionSymbol function, ImmutableArray<Operand> arguments) : Instruction
 {
-	public TempValue Output { get; } = output;
+	public IValue Output { get; } = output;
 	public FunctionSymbol Function { get; } = function;
-	public ImmutableArray<TempValue> Arguments { get; } = arguments;
+	public ImmutableArray<Operand> Arguments { get; } = arguments;
 
 	public override bool IsBranch => true;
 
@@ -26,7 +26,7 @@ internal sealed class CallInstruction(TempValue output, FunctionSymbol function,
 		writer.Write(" [");
 		for (int i = 0; i < Arguments.Length; i++)
 		{
-			TempValue value = Arguments[i];
+			Operand value = Arguments[i];
 
 			value.Write(writer);
 

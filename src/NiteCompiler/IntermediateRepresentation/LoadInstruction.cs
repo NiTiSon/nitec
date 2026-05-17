@@ -1,14 +1,14 @@
 using System.IO;
 using NiteCompiler.CodeAnalysis.Symbols;
-using NiteCompiler.IntermediateRepresentation.Mir;
+using NiteCompiler.IntermediateRepresentation.Nir;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
-internal sealed class LoadInstruction(TempValue output, TempValue address) : Instruction
+internal sealed class LoadInstruction(IValue output, Operand address) : Instruction
 {
 	public override bool IsBranch => false;
-	public TempValue Output { get; } = output;
-	public TempValue Address { get; } = address;
+	public IValue Output { get; } = output;
+	public Operand Address { get; } = address;
 
 	public override void Emit(BinaryWriter writer)
 	{
@@ -24,10 +24,10 @@ internal sealed class LoadInstruction(TempValue output, TempValue address) : Ins
 }
 
 
-internal sealed class LoadParamInstruction(TempValue output, ParameterSymbol parameter) : Instruction
+internal sealed class LoadParamInstruction(IValue output, ParameterSymbol parameter) : Instruction
 {
 	public override bool IsBranch => false;
-	public TempValue Output { get; } = output;
+	public IValue Output { get; } = output;
 	public ParameterSymbol Parameter { get; } = parameter;
 
 	public override void Emit(BinaryWriter writer)

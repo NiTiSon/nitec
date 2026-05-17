@@ -5,7 +5,7 @@ using NiteCompiler.CodeAnalysis;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.IntermediateRepresentation;
 using NiteCompiler.IntermediateRepresentation.ControlFlow;
-using NiteCompiler.IntermediateRepresentation.Mir;
+using NiteCompiler.IntermediateRepresentation.Nir;
 
 namespace NiteCompiler.Emitting;
 
@@ -23,16 +23,16 @@ internal partial class LlvmTranslator
 
 	private void EmitFunctionBody(FunctionPlan plan)
 	{
-		if (plan.Mir == null || plan.Cfg == null || plan.Function.IsExtern)
+		if (plan.Nir == null || plan.Cfg == null || plan.Function.IsExtern)
 		{
 			return;
 		}
 
 		LLVMValueRef llvmFunction = plan.LlvmFunction;
 		Dictionary<BasicBlock, LLVMBasicBlockRef> blockMap = new(plan.Cfg.Blocks.Length);
-		Dictionary<TempValue, LLVMValueRef> valueMap = new();
+		Dictionary<IValue, LLVMValueRef> valueMap = new();
 		Dictionary<ParameterSymbol, LLVMValueRef> parameterMap = new();
-		List<(PhiInstruction Instruction, LLVMValueRef LlvmPhi)> pendingPhis = [];
+		List<(NirPhi Phi, LLVMValueRef LlvmPhi)> pendingPhis = [];
 
 		foreach (BasicBlock block in plan.Cfg.Blocks)
 		{
@@ -44,50 +44,91 @@ internal partial class LlvmTranslator
 			parameterMap[param] = llvmFunction.GetParam((uint)param.Ordinal);
 		}
 
-		FunctionMir mir = plan.Mir;
-		foreach (BasicBlock cfgBlock in plan.Cfg.Blocks)
-		{
-			MirBlock mirBlock = mir.Blocks[cfgBlock];
-			_builder.PositionAtEnd(blockMap[cfgBlock]);
+		NirFunction nir = plan.Nir;
 
-			foreach (Instruction instruction in mirBlock.Instructions)
+		// Collect symbols whose address is taken (need stack slots)
+		HashSet<LocalVariableOrParameterSymbol> addressTakenSymbols = new();
+		foreach (NirBlock nirBlock in nir.Blocks.Values)
+		{
+			foreach (Instruction instruction in nirBlock.Instructions)
 			{
-				if (instruction is PhiInstruction phi)
+				if (instruction is AddressOfInstruction addrOf)
 				{
-					LLVMValueRef phiNode = _builder.BuildPhi(GetLlvmType(phi.Output.Type), "phi");
-					valueMap[phi.Output] = phiNode;
-					pendingPhis.Add((phi, phiNode));
-				}
-				else
-				{
-					EmitInstruction(instruction, blockMap, valueMap, parameterMap, mir);
+					addressTakenSymbols.Add(addrOf.Symbol);
 				}
 			}
 		}
 
-		foreach ((PhiInstruction instruction, LLVMValueRef llvmPhi) in pendingPhis)
+		// Position at entry block to create allocas
+		_builder.PositionAtEnd(blockMap[plan.Cfg.Entry]);
+
+		// Build address table: create allocas for address-taken symbols
+		Dictionary<LocalVariableOrParameterSymbol, LLVMValueRef> addressTable = new();
+		foreach (var symbol in addressTakenSymbols)
 		{
-			LLVMValueRef[] values = new LLVMValueRef[instruction.Incoming.Count];
-			LLVMBasicBlockRef[] blocks = new LLVMBasicBlockRef[instruction.Incoming.Count];
-			for (int i = 0; i < instruction.Incoming.Count; i++)
+			LLVMValueRef alloca = _builder.BuildAlloca(GetLlvmType(symbol.Type), symbol.Name);
+			addressTable[symbol] = alloca;
+		}
+
+		// Store parameters into allocas for address-taken params
+		foreach (var (param, paramValue) in parameterMap)
+		{
+			if (addressTable.ContainsKey(param))
 			{
-				values[i] = ResolveValue(instruction.Incoming[i].Value, valueMap);
-				blocks[i] = blockMap[instruction.Incoming[i].Block];
+				_builder.BuildStore(paramValue, addressTable[param]);
 			}
-			llvmPhi.AddIncoming(values, blocks, (uint)instruction.Incoming.Count);
+		}
+
+		// Map Param values to their LLVM function params
+		foreach (var (param, nirParam) in nir.Parameters)
+		{
+			valueMap[nirParam] = parameterMap[param];
+		}
+
+		foreach (BasicBlock cfgBlock in plan.Cfg.Blocks)
+		{
+			NirBlock nirBlock = nir.Blocks[cfgBlock];
+			_builder.PositionAtEnd(blockMap[cfgBlock]);
+
+			foreach (NirPhi phi in nirBlock.Phis)
+			{
+				LLVMValueRef phiNode = _builder.BuildPhi(GetLlvmType(phi.Variable.Type), phi.Variable.Name);
+				if (phi.Result != null)
+				{
+					valueMap[phi.Result] = phiNode;
+				}
+				pendingPhis.Add((phi, phiNode));
+			}
+
+			foreach (Instruction instruction in nirBlock.Instructions)
+			{
+				EmitInstruction(instruction, blockMap, valueMap, parameterMap, addressTable);
+			}
+		}
+
+		foreach ((NirPhi phi, LLVMValueRef llvmPhi) in pendingPhis)
+		{
+			LLVMValueRef[] values = new LLVMValueRef[phi.Inputs.Count];
+			LLVMBasicBlockRef[] blocks = new LLVMBasicBlockRef[phi.Inputs.Count];
+			int i = 0;
+			foreach (var (block, value) in phi.Inputs)
+			{
+				values[i] = ResolveValue(value, valueMap);
+				blocks[i] = blockMap[block];
+				i++;
+			}
+			llvmPhi.AddIncoming(values, blocks, (uint)phi.Inputs.Count);
 		}
 	}
 
 	private void EmitInstruction(Instruction instruction,
 		Dictionary<BasicBlock, LLVMBasicBlockRef> blockMap,
-		Dictionary<TempValue, LLVMValueRef> valueMap,
+		Dictionary<IValue, LLVMValueRef> valueMap,
 		Dictionary<ParameterSymbol, LLVMValueRef> parameterMap,
-		FunctionMir mir)
+		Dictionary<LocalVariableOrParameterSymbol, LLVMValueRef> addressTable)
 	{
 		switch (instruction)
 		{
-			case PhiInstruction:
-				break; // handled in two-pass in EmitFunctionBody
 			case UndefInstruction undef:
 				valueMap[undef.Output] = EmitDefaultValue(undef.Output.Type);
 				break;
@@ -101,68 +142,68 @@ internal partial class LlvmTranslator
 				valueMap[param.Output] = EmitParam(param.Parameter, parameterMap);
 				break;
 			case AddInstruction add:
-				valueMap[add.Output] = EmitAdd(add.Left, add.Right, add.Output.Type, "add", valueMap);
+				valueMap[add.Output] = EmitAdd(add.Left.Value, add.Right.Value, add.Output.Type, "add", valueMap);
 				break;
 			case SubInstruction sub:
-				valueMap[sub.Output] = EmitSub(sub.Left, sub.Right, sub.Output.Type, "sub", valueMap);
+				valueMap[sub.Output] = EmitSub(sub.Left.Value, sub.Right.Value, sub.Output.Type, "sub", valueMap);
 				break;
 			case MulInstruction mul:
-				valueMap[mul.Output] = EmitMul(mul.Left, mul.Right, mul.Output.Type, "mul", valueMap);
+				valueMap[mul.Output] = EmitMul(mul.Left.Value, mul.Right.Value, mul.Output.Type, "mul", valueMap);
 				break;
 			case DivInstruction div:
-				valueMap[div.Output] = EmitDiv(div.Left, div.Right, div.Output.Type, "div", valueMap);
+				valueMap[div.Output] = EmitDiv(div.Left.Value, div.Right.Value, div.Output.Type, "div", valueMap);
 				break;
 			case ModInstruction mod:
-				valueMap[mod.Output] = EmitRem(mod.Left, mod.Right, mod.Output.Type, "rem", valueMap);
+				valueMap[mod.Output] = EmitRem(mod.Left.Value, mod.Right.Value, mod.Output.Type, "rem", valueMap);
 				break;
 			case NegInstruction neg:
-				valueMap[neg.Output] = EmitNeg(neg.Input, neg.Output.Type, "neg", valueMap);
+				valueMap[neg.Output] = EmitNeg(neg.Input.Value, neg.Output.Type, "neg", valueMap);
 				break;
 			case NotInstruction not:
-				valueMap[not.Output] = EmitNot(not.Input, not.Output.Type, "not", valueMap);
+				valueMap[not.Output] = EmitNot(not.Input.Value, not.Output.Type, "not", valueMap);
 				break;
 			case AndInstruction and:
-				valueMap[and.Output] = _builder.BuildAnd(ResolveValue(and.Left, valueMap), ResolveValue(and.Right, valueMap), "and");
+				valueMap[and.Output] = _builder.BuildAnd(ResolveValue(and.Left.Value, valueMap), ResolveValue(and.Right.Value, valueMap), "and");
 				break;
 			case OrInstruction or:
-				valueMap[or.Output] = _builder.BuildOr(ResolveValue(or.Left, valueMap), ResolveValue(or.Right, valueMap), "or");
+				valueMap[or.Output] = _builder.BuildOr(ResolveValue(or.Left.Value, valueMap), ResolveValue(or.Right.Value, valueMap), "or");
 				break;
 			case XorInstruction xor:
-				valueMap[xor.Output] = _builder.BuildXor(ResolveValue(xor.Left, valueMap), ResolveValue(xor.Right, valueMap), "xor");
+				valueMap[xor.Output] = _builder.BuildXor(ResolveValue(xor.Left.Value, valueMap), ResolveValue(xor.Right.Value, valueMap), "xor");
 				break;
 			case SalInstruction sal:
-				valueMap[sal.Output] = _builder.BuildShl(ResolveValue(sal.Left, valueMap), ResolveValue(sal.Right, valueMap), "sal");
+				valueMap[sal.Output] = _builder.BuildShl(ResolveValue(sal.Left.Value, valueMap), ResolveValue(sal.Right.Value, valueMap), "sal");
 				break;
 			case SarInstruction sar:
-				valueMap[sar.Output] = _builder.BuildAShr(ResolveValue(sar.Left, valueMap), ResolveValue(sar.Right, valueMap), "sar");
+				valueMap[sar.Output] = _builder.BuildAShr(ResolveValue(sar.Left.Value, valueMap), ResolveValue(sar.Right.Value, valueMap), "sar");
 				break;
 			case ShrInstruction shr:
-				valueMap[shr.Output] = _builder.BuildLShr(ResolveValue(shr.Left, valueMap), ResolveValue(shr.Right, valueMap), "shr");
+				valueMap[shr.Output] = _builder.BuildLShr(ResolveValue(shr.Left.Value, valueMap), ResolveValue(shr.Right.Value, valueMap), "shr");
 				break;
 			case CmpEqInstruction eq:
-				valueMap[eq.Output] = EmitComparison(eq.Left, eq.Right, eq.Left.Type, ComparisonKind.Equal, valueMap);
+				valueMap[eq.Output] = EmitComparison(eq.Left.Value, eq.Right.Value, eq.Left.Value.Type, ComparisonKind.Equal, valueMap);
 				break;
 			case CmpNeqInstruction neq:
-				valueMap[neq.Output] = EmitComparison(neq.Left, neq.Right, neq.Left.Type, ComparisonKind.NotEqual, valueMap);
+				valueMap[neq.Output] = EmitComparison(neq.Left.Value, neq.Right.Value, neq.Left.Value.Type, ComparisonKind.NotEqual, valueMap);
 				break;
 			case CmpGtInstruction gt:
-				valueMap[gt.Output] = EmitComparison(gt.Left, gt.Right, gt.Left.Type, ComparisonKind.GreaterThan, valueMap);
+				valueMap[gt.Output] = EmitComparison(gt.Left.Value, gt.Right.Value, gt.Left.Value.Type, ComparisonKind.GreaterThan, valueMap);
 				break;
 			case CmpGeInstruction ge:
-				valueMap[ge.Output] = EmitComparison(ge.Left, ge.Right, ge.Left.Type, ComparisonKind.GreaterThanOrEqual, valueMap);
+				valueMap[ge.Output] = EmitComparison(ge.Left.Value, ge.Right.Value, ge.Left.Value.Type, ComparisonKind.GreaterThanOrEqual, valueMap);
 				break;
 			case CmpLtInstruction lt:
-				valueMap[lt.Output] = EmitComparison(lt.Left, lt.Right, lt.Left.Type, ComparisonKind.LessThan, valueMap);
+				valueMap[lt.Output] = EmitComparison(lt.Left.Value, lt.Right.Value, lt.Left.Value.Type, ComparisonKind.LessThan, valueMap);
 				break;
 			case CmpLeInstruction le:
-				valueMap[le.Output] = EmitComparison(le.Left, le.Right, le.Left.Type, ComparisonKind.LessThanOrEqual, valueMap);
+				valueMap[le.Output] = EmitComparison(le.Left.Value, le.Right.Value, le.Left.Value.Type, ComparisonKind.LessThanOrEqual, valueMap);
 				break;
 			case CallInstruction call:
 				DeclareFunction(call.Function);
 				var arguments = new LLVMValueRef[call.Arguments.Length];
 				for (int i = 0; i < arguments.Length; i++)
 				{
-					arguments[i] = ResolveValue(call.Arguments[i], valueMap);
+					arguments[i] = ResolveValue(call.Arguments[i].Value, valueMap);
 				}
 
 				valueMap[call.Output] = _builder.BuildCall2(
@@ -172,16 +213,16 @@ internal partial class LlvmTranslator
 					call.Function.ReturnType.IsVoidType ? string.Empty : "call");
 				break;
 			case AddressOfInstruction addressOf:
-				valueMap[addressOf.Output] = ResolveValue(mir.AddressTable![addressOf.Symbol], valueMap);
+				valueMap[addressOf.Output] = addressTable[addressOf.Symbol];
 				break;
 			case LoadInstruction load:
 				valueMap[load.Output] = _builder.BuildLoad2(
 					GetLlvmType(load.Output.Type),
-					ResolveValue(load.Address, valueMap),
+					ResolveValue(load.Address.Value, valueMap),
 					"load");
 				break;
 			case StoreInstruction store:
-				_builder.BuildStore(ResolveValue(store.Value, valueMap), ResolveValue(store.Address, valueMap));
+				_builder.BuildStore(ResolveValue(store.Value.Value, valueMap), ResolveValue(store.Address.Value, valueMap));
 				break;
 			case RetInstruction ret:
 				if (ret.Value == null)
@@ -190,14 +231,14 @@ internal partial class LlvmTranslator
 				}
 				else
 				{
-					_builder.BuildRet(ResolveValue(ret.Value, valueMap));
+					_builder.BuildRet(ResolveValue(ret.Value.Value, valueMap));
 				}
 				break;
 			case BrInstruction br:
 				_builder.BuildBr(blockMap[br.Target]);
 				break;
 			case CondBrInstruction condBr:
-				_builder.BuildCondBr(ResolveValue(condBr.Condition, valueMap), blockMap[condBr.ThenBlock], blockMap[condBr.ElseBlock]);
+				_builder.BuildCondBr(ResolveValue(condBr.Condition.Value, valueMap), blockMap[condBr.ThenBlock], blockMap[condBr.ElseBlock]);
 				break;
 			default:
 				throw new NotSupportedException($"LLVM translation for '{instruction.GetType().Name}' is not implemented.");
@@ -246,28 +287,28 @@ internal partial class LlvmTranslator
 		};
 	}
 
-	private LLVMValueRef EmitAdd(TempValue left, TempValue right, TypeSymbol type, string name, Dictionary<TempValue, LLVMValueRef> valueMap)
+	private LLVMValueRef EmitAdd(IValue left, IValue right, TypeSymbol type, string name, Dictionary<IValue, LLVMValueRef> valueMap)
 	{
 		return type.SpecialType.IsFloat
 			? _builder.BuildFAdd(ResolveValue(left, valueMap), ResolveValue(right, valueMap), name)
 			: _builder.BuildAdd(ResolveValue(left, valueMap), ResolveValue(right, valueMap), name);
 	}
 
-	private LLVMValueRef EmitSub(TempValue left, TempValue right, TypeSymbol type, string name, Dictionary<TempValue, LLVMValueRef> valueMap)
+	private LLVMValueRef EmitSub(IValue left, IValue right, TypeSymbol type, string name, Dictionary<IValue, LLVMValueRef> valueMap)
 	{
 		return type.SpecialType.IsFloat
 			? _builder.BuildFSub(ResolveValue(left, valueMap), ResolveValue(right, valueMap), name)
 			: _builder.BuildSub(ResolveValue(left, valueMap), ResolveValue(right, valueMap), name);
 	}
 
-	private LLVMValueRef EmitMul(TempValue left, TempValue right, TypeSymbol type, string name, Dictionary<TempValue, LLVMValueRef> valueMap)
+	private LLVMValueRef EmitMul(IValue left, IValue right, TypeSymbol type, string name, Dictionary<IValue, LLVMValueRef> valueMap)
 	{
 		return type.SpecialType.IsFloat
 			? _builder.BuildFMul(ResolveValue(left, valueMap), ResolveValue(right, valueMap), name)
 			: _builder.BuildMul(ResolveValue(left, valueMap), ResolveValue(right, valueMap), name);
 	}
 
-	private LLVMValueRef EmitDiv(TempValue left, TempValue right, TypeSymbol type, string name, Dictionary<TempValue, LLVMValueRef> valueMap)
+	private LLVMValueRef EmitDiv(IValue left, IValue right, TypeSymbol type, string name, Dictionary<IValue, LLVMValueRef> valueMap)
 	{
 		if (type.SpecialType.IsFloat)
 		{
@@ -279,7 +320,7 @@ internal partial class LlvmTranslator
 			: _builder.BuildSDiv(ResolveValue(left, valueMap), ResolveValue(right, valueMap), name);
 	}
 
-	private LLVMValueRef EmitRem(TempValue left, TempValue right, TypeSymbol type, string name, Dictionary<TempValue, LLVMValueRef> valueMap)
+	private LLVMValueRef EmitRem(IValue left, IValue right, TypeSymbol type, string name, Dictionary<IValue, LLVMValueRef> valueMap)
 	{
 		if (type.SpecialType.IsFloat)
 		{
@@ -291,14 +332,14 @@ internal partial class LlvmTranslator
 			: _builder.BuildSRem(ResolveValue(left, valueMap), ResolveValue(right, valueMap), name);
 	}
 
-	private LLVMValueRef EmitNeg(TempValue input, TypeSymbol type, string name, Dictionary<TempValue, LLVMValueRef> valueMap)
+	private LLVMValueRef EmitNeg(IValue input, TypeSymbol type, string name, Dictionary<IValue, LLVMValueRef> valueMap)
 	{
 		return type.SpecialType.IsFloat
 			? _builder.BuildFNeg(ResolveValue(input, valueMap), name)
 			: _builder.BuildNeg(ResolveValue(input, valueMap), name);
 	}
 
-	private LLVMValueRef EmitNot(TempValue input, TypeSymbol type, string name, Dictionary<TempValue, LLVMValueRef> valueMap)
+	private LLVMValueRef EmitNot(IValue input, TypeSymbol type, string name, Dictionary<IValue, LLVMValueRef> valueMap)
 	{
 		if (type.SpecialType == SpecialType.StdBoolean)
 		{
@@ -309,15 +350,15 @@ internal partial class LlvmTranslator
 		return _builder.BuildNot(ResolveValue(input, valueMap), name);
 	}
 
-	private LLVMValueRef EmitComparison(TempValue left, TempValue right, TypeSymbol operandType,
-		ComparisonKind comparisonKind, Dictionary<TempValue, LLVMValueRef> valueMap)
+	private LLVMValueRef EmitComparison(IValue left, IValue right, TypeSymbol operandType,
+		ComparisonKind comparisonKind, Dictionary<IValue, LLVMValueRef> valueMap)
 	{
 		return operandType.SpecialType.IsFloat
 			? _builder.BuildFCmp(GetRealPredicate(comparisonKind), ResolveValue(left, valueMap), ResolveValue(right, valueMap), "fcmp")
 			: _builder.BuildICmp(GetIntPredicate(operandType.SpecialType, comparisonKind), ResolveValue(left, valueMap), ResolveValue(right, valueMap), "icmp");
 	}
 
-	private static LLVMValueRef ResolveValue(TempValue value, Dictionary<TempValue, LLVMValueRef> valueMap)
+	private static LLVMValueRef ResolveValue(IValue value, Dictionary<IValue, LLVMValueRef> valueMap)
 	{
 		return valueMap[value];
 	}

@@ -1,13 +1,12 @@
 using System.IO;
-using NiteCompiler.IntermediateRepresentation.Mir;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
 internal sealed class UndefInstruction : Instruction
 {
-	public TempValue Output { get; }
+	public IValue Output { get; }
 
-	public UndefInstruction(TempValue output)
+	public UndefInstruction(IValue output)
 	{
 		Output = output;
 	}

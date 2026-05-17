@@ -7,7 +7,7 @@ using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
 using NiteCompiler.IntermediateRepresentation;
 using NiteCompiler.IntermediateRepresentation.ControlFlow;
-using NiteCompiler.IntermediateRepresentation.Mir;
+using NiteCompiler.IntermediateRepresentation.Nir;
 
 namespace NiteCompiler.Tests;
 
@@ -161,8 +161,8 @@ public class AddressDereferenceExpressionTests
 		public type Void;
 		""";
 
-		FunctionMir mir = BuildMir(source, "test");
-		Instruction[] instructions = mir.Blocks.Values
+		NirFunction nir = BuildNir(source, "test");
+		Instruction[] instructions = nir.Blocks.Values
 			.SelectMany(block => block.Instructions)
 			.ToArray();
 		Assert.Multiple(() =>
@@ -185,8 +185,8 @@ public class AddressDereferenceExpressionTests
 		public type SInt32;
 		""";
 
-		FunctionMir mir = BuildMir(source, "test");
-		Instruction[] instructions = mir.Blocks.Values.SelectMany(block => block.Instructions).ToArray();
+		NirFunction nir = BuildNir(source, "test");
+		Instruction[] instructions = nir.Blocks.Values.SelectMany(block => block.Instructions).ToArray();
 
 		Assert.Multiple(() =>
 		{
@@ -267,7 +267,7 @@ public class AddressDereferenceExpressionTests
 		return NiteCompilation.Create("test", [tree], null, NiteCompilationOptions.Default, []);
 	}
 
-	private static FunctionMir BuildMir(string source, string functionName)
+	private static NirFunction BuildNir(string source, string functionName)
 	{
 		NiteCompilation compilation = CreateCompilation(source);
 		Assert.That(compilation.GetDeclarationDiagnostics(), Is.Empty);
@@ -282,7 +282,7 @@ public class AddressDereferenceExpressionTests
 			Assert.That(diagnostics.Diagnostics, Is.Empty);
 
 			ControlFlowGraph cfg = ControlFlowGraphBuilder.Build(function, body.BlockBody, diagnostics);
-			return MirBuilder.Build(compilation, function, cfg);
+			return NirBuilder.Build(cfg, function);
 		}
 		finally
 		{

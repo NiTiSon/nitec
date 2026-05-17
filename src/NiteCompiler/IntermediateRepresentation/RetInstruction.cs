@@ -1,14 +1,14 @@
 ﻿using System;
 using System.IO;
-using NiteCompiler.IntermediateRepresentation.Mir;
+using NiteCompiler.IntermediateRepresentation.Nir;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
-internal sealed class RetInstruction(TempValue? value) : Instruction
+internal sealed class RetInstruction(Operand? value) : Instruction
 {
 	public override bool IsBranch => true;
 
-	public TempValue? Value { get; } = value;
+	public Operand? Value { get; } = value;
 
 	public override void Emit(BinaryWriter writer)
 	{

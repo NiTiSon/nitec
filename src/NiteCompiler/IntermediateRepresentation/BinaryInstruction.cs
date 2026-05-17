@@ -1,16 +1,16 @@
 ﻿using System.IO;
-using NiteCompiler.IntermediateRepresentation.Mir;
+using NiteCompiler.IntermediateRepresentation.Nir;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
-internal abstract class BinaryInstruction(TempValue output, TempValue left, TempValue right) : Instruction
+internal abstract class BinaryInstruction(IValue output, Operand left, Operand right) : Instruction
 {
 	public sealed override bool IsBranch => false;
 	protected abstract string Mnemonic { get; }
 
-	public TempValue Output { get; } = output;
-	public TempValue Left { get; } = left;
-	public TempValue Right { get; } = right;
+	public IValue Output { get; } = output;
+	public Operand Left { get; } = left;
+	public Operand Right { get; } = right;
 
 	public override void Write(TextWriter writer)
 	{

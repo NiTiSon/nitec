@@ -8,7 +8,7 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal partial class Binder
 {
-	private BoundExpression BindMethodGroup(ExpressionSyntax node, bool invoked, bool indexed, BindingDiagnosticBag diagnostics)
+	private BoundExpression BindFunctionGroup(ExpressionSyntax node, bool invoked, bool indexed, BindingDiagnosticBag diagnostics)
 	{
 		NodeKind nodeKind = node.Kind;
 		if (nodeKind == NodeKind.IdentifierNameExpression ||
@@ -24,7 +24,7 @@ internal partial class Binder
 
 		if (nodeKind == NodeKind.ParenthesizedExpression)
 		{
-			return BindMethodGroup(((ParenthesizedExpressionSyntax)node).Expression, invoked, indexed, diagnostics);
+			return BindFunctionGroup(((ParenthesizedExpressionSyntax)node).Expression, invoked, indexed, diagnostics);
 		}
 
 		return BindExpression(node, diagnostics, invoked, indexed);
@@ -50,8 +50,8 @@ internal partial class Binder
 		LookupResult result = LookupResult.GetInstance();
 		try
 		{
-			BoundExpression boundExpression = BindMethodGroup(invocation.Expression, invoked: true, indexed: false, diagnostics: diagnostics);
-			boundExpression = CheckValue(boundExpression, BindValueKind.RValueOrMethodGroup, diagnostics);
+			BoundExpression boundExpression = BindFunctionGroup(invocation.Expression, invoked: true, indexed: false, diagnostics: diagnostics);
+			boundExpression = CheckValue(boundExpression, BindValueKind.RValueOrFunctionGroup, diagnostics);
 
 			if (result.Kind == LookupResultKind.Empty)
 			{

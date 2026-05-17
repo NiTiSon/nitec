@@ -10,7 +10,7 @@ using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
 using NiteCompiler.IntermediateRepresentation;
 using NiteCompiler.IntermediateRepresentation.ControlFlow;
-using NiteCompiler.IntermediateRepresentation.Mir;
+using NiteCompiler.IntermediateRepresentation.Nir;
 
 namespace NiteCompiler.Emitting;
 
@@ -88,12 +88,12 @@ internal sealed partial class LlvmTranslator
 			BuildFunctionPlan(function);
 			yield return function;
 
-			if (!_plans.TryGetValue(function, out FunctionPlan? plan) || plan.Mir == null)
+			if (!_plans.TryGetValue(function, out FunctionPlan? plan) || plan.Nir == null)
 			{
 				continue;
 			}
 
-			foreach (FunctionSymbol callee in EnumerateCalledFunctions(plan.Mir))
+			foreach (FunctionSymbol callee in EnumerateCalledFunctions(plan.Nir))
 			{
 				if (discovered.Add(callee))
 				{
@@ -103,9 +103,9 @@ internal sealed partial class LlvmTranslator
 		}
 	}
 
-	private static IEnumerable<FunctionSymbol> EnumerateCalledFunctions(FunctionMir mir)
+	private static IEnumerable<FunctionSymbol> EnumerateCalledFunctions(NirFunction nir)
 	{
-		foreach (MirBlock block in mir.Blocks.Values)
+		foreach (NirBlock block in nir.Blocks.Values)
 		{
 			foreach (Instruction instruction in block.Instructions)
 			{
@@ -142,20 +142,20 @@ internal sealed partial class LlvmTranslator
 
 		if (function.IsExtern)
 		{
-			_plans[function] = new FunctionPlan(function, cfg: null, mir: null);
+			_plans[function] = new FunctionPlan(function, cfg: null, nir: null);
 			return;
 		}
 
 		BoundBlock? body = BindFunctionBody(function);
 		if (body == null)
 		{
-			_plans[function] = new FunctionPlan(function, cfg: null, mir: null);
+			_plans[function] = new FunctionPlan(function, cfg: null, nir: null);
 			return;
 		}
 
 		ControlFlowGraph cfg = ControlFlowGraphBuilder.Build(function, body, _diagnostics);
-		FunctionMir mir = MirBuilder.Build(_compilation, function, cfg);
-		_plans[function] = new FunctionPlan(function, cfg, mir);
+		NirFunction nir = NirBuilder.Build(cfg, function);
+		_plans[function] = new FunctionPlan(function, cfg, nir);
 	}
 
 	private BoundBlock? BindFunctionBody(FunctionSymbol function)
@@ -208,11 +208,11 @@ internal sealed partial class LlvmTranslator
 		return function.ToDisplayString(SymbolFormat.Metadata);
 	}
 
-	private sealed class FunctionPlan(FunctionSymbol function, ControlFlowGraph? cfg, FunctionMir? mir)
+	private sealed class FunctionPlan(FunctionSymbol function, ControlFlowGraph? cfg, NirFunction? nir)
 	{
 		public FunctionSymbol Function { get; } = function;
 		public ControlFlowGraph? Cfg { get; } = cfg;
-		public FunctionMir? Mir { get; } = mir;
+		public NirFunction? Nir { get; } = nir;
 		public LLVMValueRef LlvmFunction { get; set; }
 	}
 }

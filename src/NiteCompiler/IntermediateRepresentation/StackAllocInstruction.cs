@@ -1,12 +1,11 @@
 ﻿using System.IO;
 using NiteCompiler.CodeAnalysis.Symbols;
-using NiteCompiler.IntermediateRepresentation.Mir;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
-internal sealed class StackAllocInstruction(TempValue output, TypeSymbol typeOf, int amount = 1) : Instruction
+internal sealed class StackAllocInstruction(IValue output, TypeSymbol typeOf, int amount = 1) : Instruction
 {
-	public TempValue Output { get; } = output;
+	public IValue Output { get; } = output;
 	public TypeSymbol TypeOf { get; } = typeOf;
 	public int Amount { get; } = amount;
 

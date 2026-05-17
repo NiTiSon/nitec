@@ -4,7 +4,7 @@ using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
 using NiteCompiler.IntermediateRepresentation.ControlFlow;
-using NiteCompiler.IntermediateRepresentation.Mir;
+using NiteCompiler.IntermediateRepresentation.Nir;
 using NiteCompiler.Metadata;
 
 namespace NiteCompiler.IntermediateRepresentation;
@@ -31,15 +31,38 @@ internal sealed class IntermediateBuilder
 
 		if (!diagnostics.Diagnostics.HasAnyErrors)
 		{
-			var mir = MirBuilder.Build(compilation, function, cfg);
+			NirFunction nir = NirBuilder.Build(cfg, function);
 
 			if (astWriter != null)
 			{
 				astWriter.WriteLine(function.ToDisplayString());
-				foreach (var (basicBlock, ssaBlock) in mir.Blocks)
+				foreach (var (basicBlock, nirBlock) in nir.Blocks)
 				{
 					astWriter.WriteLine($"  {basicBlock.Name}: {{");
-					foreach (Instruction instruction in ssaBlock.Instructions)
+
+					foreach (NirPhi phi in nirBlock.Phis)
+					{
+						astWriter.Write("    ");
+						if (phi.Result != null)
+						{
+							phi.Result.Write(astWriter);
+							astWriter.Write(" = phi ");
+						}
+						astWriter.Write(phi.Variable.Name);
+						astWriter.Write(" [");
+						bool first = true;
+						foreach (var (fromBlock, value) in phi.Inputs)
+						{
+							if (!first) astWriter.Write(", ");
+							first = false;
+							value.Write(astWriter);
+							astWriter.Write(" from ");
+							astWriter.Write(fromBlock.Name);
+						}
+						astWriter.WriteLine("]");
+					}
+
+					foreach (Instruction instruction in nirBlock.Instructions)
 					{
 						astWriter.Write("    ");
 						instruction.Write(astWriter);

@@ -1,9 +1,9 @@
 ﻿using System.IO;
-using NiteCompiler.IntermediateRepresentation.Mir;
+using NiteCompiler.IntermediateRepresentation.Nir;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
-internal sealed class NotInstruction(TempValue output, TempValue input) : UnaryInstruction(output, input)
+internal sealed class NotInstruction(IValue output, Operand input) : UnaryInstruction(output, input)
 {
 	protected override string Mnemonic => "not";
 

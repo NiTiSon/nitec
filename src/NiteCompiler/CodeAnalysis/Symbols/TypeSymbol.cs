@@ -12,12 +12,12 @@ public abstract class TypeSymbol : ContainerSymbol
 	public bool IsVoidType => SpecialType == SpecialType.StdVoid;
 	public virtual bool IsUnsized => false;
 
-	public override ModuleSymbol? GetNestedModule(string name)
+	public sealed override ModuleSymbol? GetNestedModule(string name)
 	{
 		return null;
 	}
 
-	public override ImmutableArray<ModuleSymbol> GetNestedModules()
+	public sealed override ImmutableArray<ModuleSymbol> GetNestedModules()
 	{
 		return [];
 	}
@@ -41,9 +41,24 @@ public abstract class TypeSymbol : ContainerSymbol
 			return result;
 		}
 
+		// TODO: REWORK THIS SHI!!!!!
 		if (!format.HasFlag(SymbolFormat.OmitContainer) && ContainingSymbol != null)
 		{
-			result = $"{ContainingSymbol.ToDisplayString(format)}::{result}";
+			if (ContainingSymbol is ModuleSymbol { IsGlobalModule: true })
+			{
+				if (format.HasFlag(SymbolFormat.EmitGlobalModule))
+				{
+					result = $"{ContainingSymbol.ToDisplayString(format)}::{result}";
+				}
+				else if (format.HasFlag(SymbolFormat.IncludeLibrary) && ContainingLibrary != null)
+				{
+					result = ContainingLibrary.ToDisplayString(format) + result;
+				}
+			}
+			else
+			{
+				result = $"{ContainingSymbol.ToDisplayString(format)}::{result}";
+			}
 		}
 		else if (format.HasFlag(SymbolFormat.IncludeLibrary) && ContainingLibrary != null)
 		{

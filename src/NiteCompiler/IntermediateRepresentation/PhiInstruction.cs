@@ -1,16 +1,16 @@
 using System.Collections.Generic;
 using System.IO;
 using NiteCompiler.IntermediateRepresentation.ControlFlow;
-using NiteCompiler.IntermediateRepresentation.Mir;
+using NiteCompiler.IntermediateRepresentation.Nir;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
 internal sealed class PhiInstruction : Instruction
 {
-	public TempValue Output { get; }
-	public List<(TempValue Value, BasicBlock Block)> Incoming { get; } = [];
+	public IValue Output { get; }
+	public List<(Operand Value, BasicBlock Block)> Incoming { get; } = [];
 
-	public PhiInstruction(TempValue output)
+	public PhiInstruction(IValue output)
 	{
 		Output = output;
 	}

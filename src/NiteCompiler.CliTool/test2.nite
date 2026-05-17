@@ -29,7 +29,7 @@ public type Vector2 {
 }
 
 public loop_test(i: i32) {
-	while (i < 100) {
+	loop {
 		i = i + 1;
 	}
 }

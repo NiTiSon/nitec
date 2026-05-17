@@ -6,7 +6,7 @@ using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
 using NiteCompiler.IntermediateRepresentation.ControlFlow;
-using NiteCompiler.IntermediateRepresentation.Mir;
+using NiteCompiler.IntermediateRepresentation.Nir;
 
 namespace NiteCompiler.Tests;
 
@@ -14,7 +14,7 @@ namespace NiteCompiler.Tests;
 public class SsaBuilderTests
 {
 
-	internal static FunctionMir BuildMir(string source, string functionName)
+	internal static NirFunction BuildNir(string source, string functionName)
 	{
 		SyntaxTree tree = SyntaxTree.ParseText(source, "test.nite", NiteCompilationOptions.Default);
 		var compilation = NiteCompilation.Create("test", [tree], null, NiteCompilationOptions.Default, []);
@@ -33,7 +33,7 @@ public class SsaBuilderTests
 			Assert.That(diagnostics.Diagnostics, Is.Empty);
 
 			ControlFlowGraph cfg = ControlFlowGraphBuilder.Build(function, functionBody.BlockBody, diagnostics);
-			return MirBuilder.Build(compilation, function, cfg);
+			return NirBuilder.Build(cfg, function);
 		}
 		finally
 		{

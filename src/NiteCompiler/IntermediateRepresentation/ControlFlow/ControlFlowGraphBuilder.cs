@@ -191,8 +191,6 @@ internal sealed class ControlFlowGraphBuilder : BoundVisitor
 
 		if (_current.Terminator == null)
 		{
-			// back-edge to header (NOT body!)
-			_current.Terminator = new BranchTerminator(loopStatement, header);
 			Connect(_current, header);
 		}
 

@@ -1,15 +1,14 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using NiteCompiler.CodeAnalysis;
-using NiteCompiler.IntermediateRepresentation.Mir;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
-internal class LoadImmInstruction(TempValue output, ConstantValue constant) : Instruction
+internal class LoadImmInstruction(IValue output, ConstantValue constant) : Instruction
 {
 	public override bool IsBranch => false;
 
-	public readonly TempValue Output = output;
+	public readonly IValue Output = output;
 	public readonly ConstantValue Constant = constant;
 
 	public override void Emit(BinaryWriter writer)

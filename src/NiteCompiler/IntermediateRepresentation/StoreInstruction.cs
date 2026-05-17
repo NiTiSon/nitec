@@ -1,13 +1,13 @@
 using System.IO;
-using NiteCompiler.IntermediateRepresentation.Mir;
+using NiteCompiler.IntermediateRepresentation.Nir;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
-internal sealed class StoreInstruction(TempValue value, TempValue address) : Instruction
+internal sealed class StoreInstruction(Operand value, Operand address) : Instruction
 {
 	public override bool IsBranch => false;
-	public TempValue Value { get; } = value;
-	public TempValue Address { get; } = address;
+	public Operand Value { get; } = value;
+	public Operand Address { get; } = address;
 
 	public override void Emit(BinaryWriter writer)
 	{

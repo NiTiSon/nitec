@@ -1,16 +1,16 @@
 ﻿using System.IO;
 using NiteCompiler.IntermediateRepresentation.ControlFlow;
-using NiteCompiler.IntermediateRepresentation.Mir;
+using NiteCompiler.IntermediateRepresentation.Nir;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
 internal sealed class CondBrInstruction : Instruction
 {
-	public TempValue Condition { get; }
+	public Operand Condition { get; }
 	public BasicBlock ThenBlock { get; }
 	public BasicBlock ElseBlock { get; }
 
-	public CondBrInstruction(TempValue condition, BasicBlock thenBlock, BasicBlock elseBlock)
+	public CondBrInstruction(Operand condition, BasicBlock thenBlock, BasicBlock elseBlock)
 	{
 		Condition = condition;
 		ThenBlock = thenBlock;
