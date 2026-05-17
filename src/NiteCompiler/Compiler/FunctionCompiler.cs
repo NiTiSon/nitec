@@ -71,6 +71,21 @@ internal sealed class FunctionCompiler : SymbolVisitor<object, object>
 		return null;
 	}
 
+	public override object? VisitType(TypeSymbol symbol, object arg)
+	{
+		if (!PassesFilter(_filter, symbol))
+			return null;
+
+		_cancellationToken.ThrowIfCancellationRequested();
+
+		foreach (Symbol member in symbol.GetMembers())
+		{
+			member.Accept(this, arg);
+		}
+
+		return null;
+	}
+
 	public override BoundBlock? VisitFunction(FunctionSymbol symbol, object arg)
 	{
 		if (!PassesFilter(_filter, symbol))

@@ -63,6 +63,19 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 		return result;
 	}
 
+	public override ImmutableArray<GenericTypeParameterSymbol> TypeParameters
+	{
+		get
+		{
+			if (field.IsDefault)
+			{
+				ImmutableInterlocked.InterlockedCompareExchange(ref field, MakeTypeParameters(), default);
+			}
+
+			return field;
+		}
+	}
+
 	public override ImmutableArray<LifetimeSymbol> Lifetimes
 	{
 		get
@@ -122,6 +135,51 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 			var symbol = new SourceLifetimeSymbol(
 				this,
 				lifetimeSyntax.Identifier,
+				ordinal);
+
+			builder.Add(symbol);
+
+			ordinal++;
+		}
+
+		AddDeclarationDiagnostics(diagnostics);
+		diagnostics.Free();
+
+		return builder.ToImmutable();
+	}
+
+	private ImmutableArray<GenericTypeParameterSymbol> MakeTypeParameters()
+	{
+		if (Syntax.GenericParameterList == null)
+		{
+			return [];
+		}
+
+		var builder = ArrayBuilder<GenericTypeParameterSymbol>.GetInstance();
+
+		var diagnostics = BindingDiagnosticBag.GetInstance();
+
+		HashSet<string> names = [];
+
+		int ordinal = 0;
+		foreach (LifetimeOrGenericParameterSyntax parameterSyntax in Syntax.GenericParameterList.Parameters)
+		{
+			if (parameterSyntax is not GenericTypeParameterSyntax typeParamSyntax)
+			{
+				continue;
+			}
+
+			string name = typeParamSyntax.Name.GetName();
+
+			if (!names.Add(name))
+			{
+				// TODO[generics]: report duplicate type parameter error
+				continue;
+			}
+
+			var symbol = new SourceGenericTypeParameterSymbol(
+				this,
+				name,
 				ordinal);
 
 			builder.Add(symbol);
@@ -352,7 +410,7 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 					_state.NotePartComplete(CompletionPart.LifetimeParameters);
 					break;
 				case CompletionPart.GenericParameters:
-					// TODO[generics]
+					_ = TypeParameters;
 					_state.NotePartComplete(CompletionPart.GenericParameters);
 					break;
 				case CompletionPart.Parameters:

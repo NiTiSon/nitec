@@ -15,6 +15,8 @@ internal sealed class SourceConstructorSymbol : ConstructorSymbol
 	public BaseConstructorDeclarationSyntax Syntax { get; }
 	public override string Name { get; }
 
+	public override SelfParameterSymbol SelfParameter => (SelfParameterSymbol)Parameters[0];
+
 	public override ImmutableArray<ParameterSymbol> Parameters
 	{
 		get
@@ -41,6 +43,7 @@ internal sealed class SourceConstructorSymbol : ConstructorSymbol
 		}
 	}
 
+	public override ImmutableArray<GenericTypeParameterSymbol> TypeParameters => [];
 	public override ImmutableArray<LifetimeSymbol> Lifetimes => [];
 	public override ImmutableArray<LifetimeConstraint> LifetimeConstraints => [];
 
@@ -61,26 +64,31 @@ internal sealed class SourceConstructorSymbol : ConstructorSymbol
 
 	private ImmutableArray<ParameterSymbol> MakeParameters()
 	{
+		var diagnostics = BindingDiagnosticBag.GetInstance();
 		var builder = ArrayBuilder<ParameterSymbol>.GetInstance();
 
-		TypeSymbol selfType = DeclaringCompilation!.CreateReferenceType(ContainingSymbol, isMutable: true, isNullable: false);
-		var selfParam = new SynthesizedParameterSymbol(this, "self", selfType, ordinal: 0);
+		var selfParam = new SelfParameterSymbol(ContainingType!, DeclaringCompilation!);
 		builder.Add(selfParam);
 
 		Debug.Assert(Syntax != null);
 		int ord = 1;
+		BinderFactory factory = ContainingSymbol.DeclaringCompilation!.GetBinderFactory(Syntax.Tree);
+		Binder binder = factory.GetBinder(Syntax.ParameterList);
 		foreach (var param in Syntax.ParameterList.Parameters)
 		{
 			if (param is ParameterSyntax ps)
 			{
-				var sourceParam = new SourceConstructorParameterSymbol(this, ps, ord);
+				TypeSymbol paramType = binder.BindType(ps.TypeClauseSyntax.Type, diagnostics);
+				var sourceParam = SourceParameterSymbol.Create(binder, ContainingType!, paramType, ps, ord, diagnostics);
 				builder.Add(sourceParam);
 				ord++;
 			}
 			else if (param is SelfParameterSyntax sps)
 			{
-				TypeSymbol fieldType = ResolveFieldType(sps.FieldName.GetName());
-				var synthParam = new SynthesizedParameterSymbol(this, sps.FieldName.GetName(), fieldType, ord);
+				// TODO: report when not resolved; [generative-field-is-not-resolved] or smth lk tht
+				FieldSymbol? field = binder.LookupFieldSymbolWithinType(ContainingType!, sps.FieldName.GetName());
+				// TODO: replace SynthesizedParameterSymbol with SourceGenerativeParameterSymbol for future code generation
+				var synthParam = new SynthesizedParameterSymbol(this, sps.FieldName.GetName(), field?.Type ?? binder.CreateErrorType(sps.FieldName.GetName()), ord);
 				builder.Add(synthParam);
 				ord++;
 			}
@@ -90,19 +98,9 @@ internal sealed class SourceConstructorSymbol : ConstructorSymbol
 			}
 		}
 
+		AddDeclarationDiagnostics(diagnostics);
+		diagnostics.Free();
 		return builder.ToImmutableAndFree();
-	}
-
-	private TypeSymbol ResolveFieldType(string fieldName)
-	{
-		var result = ContainingSymbol.GetMembers(fieldName);
-
-		if (result.Length == 1 && result[0] is TypeSymbol type)
-		{
-			return type;
-		}
-
-		return new ErrorTypeSymbol(DeclaringCompilation!, SpecialType.None, "<unknown_field>", lifetimeArity: 0, arity: 0, errorInfo: null, unreported: false);
 	}
 
 	private TypeSymbol MakeReturnType()

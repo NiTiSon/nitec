@@ -71,4 +71,32 @@ internal static class LookupPosition
 	{
 		return declaration != null && IsBeforeToken(position, declaration, declaration.Body.ClosingToken);
 	}
+
+	public static bool IsInTypeDeclaration(int position, TypeDeclarationSyntax? declaration)
+	{
+		if (declaration == null)
+			return false;
+
+		if (declaration.Body is MembersTypeBodySyntax membersBody)
+			return position >= declaration.Span.Start && position < membersBody.CloseBrace.Span.Start;
+
+		if (declaration.Body is EmptyTypeBodySyntax emptyBody)
+			return position >= declaration.Span.Start && position <= emptyBody.SemicolonToken.Span.Start;
+
+		return position >= declaration.Span.Start;
+	}
+
+	public static bool IsInTypeBody(int position, TypeDeclarationSyntax? declaration)
+	{
+		if (declaration == null)
+			return false;
+
+		if (declaration.Body is MembersTypeBodySyntax membersBody)
+			return IsBeforeToken(position, membersBody, membersBody.CloseBrace);
+
+		if (declaration.Body is EmptyTypeBodySyntax emptyBody)
+			return IsBeforeOrAtToken(position, emptyBody, emptyBody.SemicolonToken);
+
+		return false;
+	}
 }

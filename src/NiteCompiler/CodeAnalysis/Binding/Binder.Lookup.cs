@@ -147,6 +147,19 @@ internal partial class Binder
 		return Parent.LookupLocalVariable(nameSyntax);
 	}
 
+	internal FieldSymbol? LookupFieldSymbolWithinType(TypeSymbol type, string name)
+	{
+		ImmutableArray<Symbol> candidates = GetCandidateMembers(type, name, LookupOptions.Default, this);
+
+		if (candidates is [FieldSymbol field])
+		{
+			return field;
+		}
+
+		// TODO: probably may cause problems when several members with same name are presented
+		return null;
+	}
+
 	private Binder LookupSymbolsWithFallback(LookupResult result, string name, int arity, LookupOptions options)
 	{
 		Binder binder = LookupSymbolsInternal(result, name, arity, options, diagnose: false);

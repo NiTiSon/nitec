@@ -1,14 +1,10 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Symbols.Source;
 using NiteCompiler.CodeAnalysis.Syntax;
-using NiteCompiler.CodeAnalysis.Text;
 using NiteCompiler.Compilation;
-using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
 
@@ -145,6 +141,44 @@ internal partial class BinderFactory
 			return new InContainerBinder(ns, outer);
 		}
 
+		public override Binder VisitTypeDeclaration(TypeDeclarationSyntax declaration)
+		{
+			if (!LookupPosition.IsInTypeDeclaration(_position, declaration))
+			{
+				return VisitCore(declaration.Parent!);
+			}
+
+			NodeUsage usage;
+			if (LookupPosition.IsInTypeBody(_position, declaration))
+			{
+				usage = NodeUsage.ModuleBody;
+			}
+			else
+			{
+				usage = NodeUsage.Normal;
+			}
+
+			var key = new BinderCache(declaration, usage);
+
+			if (!BinderCache.TryGetValue(key, out Binder? resultBinder))
+			{
+				resultBinder = VisitCore(declaration.Parent!);
+
+				if (usage == NodeUsage.ModuleBody)
+				{
+					var typeSymbol = GetTypeSymbol(declaration, resultBinder);
+					if (typeSymbol != null)
+					{
+						resultBinder = new InContainerBinder(typeSymbol, resultBinder);
+					}
+				}
+
+				BinderCache.TryAdd(key, resultBinder);
+			}
+
+			return resultBinder;
+		}
+
 		public override Binder VisitFunctionDeclaration(FunctionDeclarationSyntax declaration)
 		{
 			if (!LookupPosition.IsInFunctionDeclaration(_position, declaration))
@@ -169,15 +203,31 @@ internal partial class BinderFactory
 				resultBinder = VisitCore(declaration.Parent!);
 
 				SourceFunctionSymbol? function = null;
-				// if (usage != NodeUsage.Normal && declaration.GenericParameterList != null)
-				// {
-				// 	method = GetFunctionSymbol(declaration, resultBinder);
-				// 	resultBinder = new WithFunctionGenericParametersBinder(function, resultBinder);
-				// }
+				if (usage != NodeUsage.Normal && declaration.GenericParameterList != null)
+				{
+					function = function ?? GetFunctionSymbol(declaration, resultBinder);
+					if (function != null)
+					{
+						resultBinder = new WithFunctionGenericParametersBinder(function, resultBinder);
+
+						if (function.Lifetimes.Length > 0)
+						{
+							resultBinder = new WithLifetimesFunctionBinder(function, resultBinder);
+						}
+					}
+				}
 				if (usage == NodeUsage.FunctionBody)
 				{
 					function = function ?? GetFunctionSymbol(declaration, resultBinder);
-					resultBinder = new InFunctionBinder(function, resultBinder);
+					if (function != null)
+					{
+						if (function.Lifetimes.Length > 0 && declaration.GenericParameterList == null)
+						{
+							resultBinder = new WithLifetimesFunctionBinder(function, resultBinder);
+						}
+
+						resultBinder = new InFunctionBinder(function, resultBinder);
+					}
 				}
 
 				BinderCache.TryAdd(key, resultBinder);
@@ -224,6 +274,11 @@ internal partial class BinderFactory
 					var ctor = GetConstructorSymbol(declaration, resultBinder);
 					if (ctor != null)
 					{
+						if (ctor.Lifetimes.Length > 0)
+						{
+							resultBinder = new WithLifetimesFunctionBinder(ctor, resultBinder);
+						}
+
 						resultBinder = new InFunctionBinder(ctor, resultBinder);
 					}
 				}
@@ -337,6 +392,28 @@ internal partial class BinderFactory
 				if (member is SourceConstructorSymbol ctor && ctor.Name == ctorName)
 				{
 					return ctor;
+				}
+			}
+
+			return null;
+		}
+
+		private SourceNamedTypeSymbol? GetTypeSymbol(TypeDeclarationSyntax declaration, Binder outerBinder)
+		{
+			if (declaration == _memberDeclaration)
+			{
+				return _member as SourceNamedTypeSymbol;
+			}
+
+			ContainerSymbol? container = GetContainer(outerBinder, declaration);
+			if (container == null) return null;
+
+			string typeName = declaration.Name.GetName();
+			foreach (var member in container.GetMembers())
+			{
+				if (member is SourceNamedTypeSymbol type && type.Name == typeName)
+				{
+					return type;
 				}
 			}
 
