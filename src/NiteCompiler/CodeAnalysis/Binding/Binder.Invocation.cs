@@ -8,8 +8,37 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal partial class Binder
 {
+	private BoundExpression BindMethodGroup(ExpressionSyntax node, bool invoked, bool indexed, BindingDiagnosticBag diagnostics)
+	{
+		NodeKind nodeKind = node.Kind;
+		if (nodeKind == NodeKind.IdentifierNameExpression ||
+		    nodeKind == NodeKind.GenericNameExpression)
+		{
+			return BindIdentifier((SimpleNameSyntax)node, invoked, indexed, diagnostics);
+		}
+
+		if (nodeKind == NodeKind.MemberAccessExpression) // TODO: PLANNED PointerMemberAccessExpression
+		{
+			return BindMemberAccess((MemberAccessExpressionSyntax)node, diagnostics, invoked, indexed);
+		}
+
+		if (nodeKind == NodeKind.ParenthesizedExpression)
+		{
+			return BindMethodGroup(((ParenthesizedExpressionSyntax)node).Expression, invoked, indexed, diagnostics);
+		}
+
+		return BindExpression(node, diagnostics, invoked, indexed);
+	}
+
+
 	private BoundExpression BindInvocation(InvocationExpressionSyntax invocation, BindingDiagnosticBag diagnostics)
 	{
+		// invoking
+		// type() - constructor
+		// type::constructor_name() - named constructor
+		// func() - function
+		// method() - method (require add implicit bound self)
+		// self.method() - method
 		ImmutableArray<BoundExpression> arguments = BindInvocationArguments(invocation, diagnostics);
 
 		if (invocation.Expression is not SimpleNameSyntax name)
@@ -21,7 +50,8 @@ internal partial class Binder
 		LookupResult result = LookupResult.GetInstance();
 		try
 		{
-			LookupIdentifier(result, name, invoked: true);
+			BoundExpression boundExpression = BindMethodGroup(invocation.Expression, invoked: true, indexed: false, diagnostics: diagnostics);
+			boundExpression = CheckValue(boundExpression, BindValueKind.RValueOrMethodGroup, diagnostics);
 
 			if (result.Kind == LookupResultKind.Empty)
 			{

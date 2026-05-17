@@ -2,5 +2,5 @@
 
 public abstract class MethodSymbol : FunctionSymbol
 {
-	public abstract override NamedTypeSymbol ContainingSymbol { get; }
+	public abstract override TypeSymbol ContainingSymbol { get; }
 }

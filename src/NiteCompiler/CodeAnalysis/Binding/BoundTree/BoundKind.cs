@@ -28,6 +28,7 @@ internal enum BoundKind
 	InvocationExpression,
 	IndexationExpression,
 	VariableExpression,
+	TypeExpression,
 	FieldAccess,
 	BadExpression
 }

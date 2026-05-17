@@ -2,7 +2,8 @@
 
 public abstract class NamedTypeSymbol : TypeSymbol
 {
-	public sealed override SymbolKind Kind => base.Kind;
+	public override TypeKind TypeKind => TypeKind.SimpleType;
+	public sealed override SymbolKind Kind => SymbolKind.NamedType;
 
 	/// <summary>
 	/// The user-defined type name.

@@ -1,8 +1,8 @@
 #!bin/nite
 
-// public unsized_test() {
-// 	let x: UnsizedX;
-// }
+public unsized_test() {
+	let x: UnsizedX;
+}
 
 public unsized type UnsizedX;
 
@@ -25,6 +25,12 @@ public type Vector2 {
 	public new create_x(x: f32) { // named constructor
 		self.x = x;
 		self.y = 0;
+	}
+}
+
+public loop_test(i: i32) {
+	while (i < 100) {
+		i = i + 1;
 	}
 }
 

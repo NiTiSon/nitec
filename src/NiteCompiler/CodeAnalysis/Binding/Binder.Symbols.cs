@@ -33,7 +33,7 @@ internal partial class Binder
 
 		if (syntax.Kind == NodeKind.IdentifierNameExpression)
 		{
-			return BindModuleOrTypeSymbol((IdentifierNameSyntax)syntax, diagnostics);
+			return BindModuleOrTypeSymbol((IdentifierNameSyntax)syntax, null, diagnostics);
 		}
 
 		if (syntax.Kind == NodeKind.GenericNameExpression)
@@ -59,9 +59,18 @@ internal partial class Binder
 		throw new NotImplementedException();
 	}
 
-	private Symbol BindModuleOrTypeSymbol(IdentifierNameSyntax identifier, BindingDiagnosticBag diagnostics)
+	private Symbol BindModuleOrTypeSymbol(IdentifierNameSyntax identifier, ContainerSymbol? container, BindingDiagnosticBag diagnostics)
 	{
-		throw new NotImplementedException("TODO: Implement lookup for types/modules");
+		string identifierText = identifier.GetName();
+
+		var result = LookupResult.GetInstance();
+		LookupOptions options = LookupOptions.ModulesOrTypesOnly;
+
+		LookupSymbolsSimpleName(result, container, identifierText, 0, options, diagnose: true);
+
+		Symbol bindingResult = ResultSymbol(result, identifierText, 0, identifier, diagnostics, out bool wasError, container, options);
+		result.Free();
+		return bindingResult;
 	}
 
 	private Symbol BindGenericTypeSymbol(GenericNameSyntax genericNameSyntax, BindingDiagnosticBag diagnostics)

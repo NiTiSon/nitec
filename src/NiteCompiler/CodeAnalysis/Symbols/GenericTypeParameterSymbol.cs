@@ -2,6 +2,7 @@
 
 public abstract class GenericTypeParameterSymbol : TypeSymbol
 {
+	public sealed override TypeKind TypeKind => TypeKind.TypeParameter;
 	public abstract int Ordinal { get; }
 
 	public sealed override SymbolKind Kind => SymbolKind.GenericTypeParameter;

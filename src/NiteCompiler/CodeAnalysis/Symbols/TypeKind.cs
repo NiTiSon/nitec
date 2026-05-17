@@ -20,7 +20,7 @@ public enum TypeKind : byte
 	/// <summary>
 	/// Type is an error type.
 	/// </summary>
-	ErrorType = 3,
+	Error = 3,
 
 	/// <summary>
 	/// Type is a pointer type.
@@ -31,4 +31,19 @@ public enum TypeKind : byte
 	/// Type is a reference type.
 	/// </summary>
 	Reference = 5,
+
+	/// <summary>
+	/// Type is a sized array.
+	/// </summary>
+	SizedArray = 6,
+
+	/// <summary>
+	/// Type is an unsized array.
+	/// </summary>
+	UnsizedArray = 7,
+
+	/// <summary>
+	/// Type is a generic type parameter.
+	/// </summary>
+	TypeParameter = 8,
 }

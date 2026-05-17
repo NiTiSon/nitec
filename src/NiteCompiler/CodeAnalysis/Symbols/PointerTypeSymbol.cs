@@ -2,6 +2,8 @@
 
 public sealed class PointerTypeSymbol : BaseReferenceTypeSymbol
 {
+	public override TypeKind TypeKind => TypeKind.Pointer;
+	public override SymbolKind Kind => SymbolKind.Pointer;
 	public override TypeSymbol PointsTo { get; }
 	public override bool IsMutable { get; }
 	public override bool IsNullable { get; }

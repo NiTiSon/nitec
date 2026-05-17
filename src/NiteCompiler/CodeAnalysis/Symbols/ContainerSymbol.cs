@@ -13,7 +13,7 @@ public abstract class ContainerSymbol : Symbol
 
 	public abstract ImmutableArray<Symbol> GetMembers(string name);
 	public abstract ImmutableArray<TypeSymbol> GetTypeMembers();
-	public abstract ImmutableArray<TypeSymbol> GetTypeMembers(string name, int? arity);
+	public abstract ImmutableArray<TypeSymbol> GetTypeMembers(string name, int? arity = null);
 
 	public virtual ImmutableArray<ModuleSymbol> GetNestedModules()
 	{

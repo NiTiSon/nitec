@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Immutable;
+using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Symbols.Source;
 using NiteCompiler.CodeAnalysis.Syntax;
@@ -7,6 +9,106 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal partial class Binder
 {
+	/// <summary>
+	/// Performs name lookup for simple generic or non-generic name
+	/// within an optional qualifier namespace or type symbol.
+	/// If LookupOption.AttributeTypeOnly is set, then it performs
+	/// attribute type lookup which involves attribute name lookup
+	/// with and without "Attribute" suffix.
+	/// </summary>
+	internal void LookupSymbolsSimpleName(LookupResult result, ContainerSymbol? qualifier, string plainName, int arity,
+		LookupOptions options, bool diagnose)
+	{
+		// if (options.IsAttributeTypeLookup())
+		// {
+		// 	LookupAttributeType(result, qualifierOpt, plainName, arity, basesBeingResolved, options, diagnose, ref useSiteInfo);
+		// }
+		// else
+		// {
+		LookupSymbolsOrMembersInternal(result, qualifier, plainName, arity, options, diagnose);
+		// }
+	}
+
+	private void LookupSymbolsOrMembersInternal(LookupResult result, ContainerSymbol? qualifier, string name, int arity,
+		LookupOptions options,bool diagnose)
+	{
+		if (qualifier == null)
+		{
+			LookupSymbolsInternal(result, name, arity, options, diagnose);
+		}
+		else
+		{
+			LookupMembersInternal(result, qualifier, name, arity, options, this, diagnose);
+		}
+	}
+
+	protected void LookupMembersInternal(LookupResult result, ContainerSymbol qualifier, string name, int arity,
+		LookupOptions options, Binder originalBinder, bool diagnose)
+	{
+		Debug.Assert(arity >= 0);
+		if (qualifier.Kind == SymbolKind.Module)
+		{
+			LookupMembersInModule(result, (ModuleSymbol)qualifier, name, arity, options, originalBinder, diagnose);
+		}
+		else
+		{
+			LookupMembersInType(result, (TypeSymbol)qualifier, name, arity, options, originalBinder, diagnose);
+		}
+	}
+
+	protected void LookupMembersInType(LookupResult result, TypeSymbol type, string name, int arity,
+		LookupOptions options, Binder originalBinder, bool diagnose)
+	{
+		switch (type.TypeKind)
+		{
+			case TypeKind.TypeParameter:
+				throw new NotImplementedException();
+
+			case TypeKind.SimpleType:
+				LookupMembersInBasicType(result, type, name, arity, options, originalBinder, diagnose);
+				break;
+		}
+	}
+
+	protected static void LookupMembersWithoutInheritance(LookupResult result, TypeSymbol type, string name, int arity,
+		LookupOptions options, Binder originalBinder, TypeSymbol accessThroughType, bool diagnose)
+	{
+		var members = GetCandidateMembers(type, name, options, originalBinder);
+
+		foreach (Symbol member in members)
+		{
+			SingleLookupResult resultOfThisMember = originalBinder.CheckViability(member, arity, options, accessThroughType, diagnose);
+			result.MergeEqual(resultOfThisMember);
+		}
+	}
+
+	private void LookupMembersInBasicType(LookupResult result, TypeSymbol type, string name, int arity,
+		LookupOptions options, Binder originalBinder, bool diagnose)
+	{
+		LookupMembersInBasicType(result, type, name, arity, options, originalBinder, type, diagnose);
+	}
+
+	private void LookupMembersInBasicType(LookupResult result, TypeSymbol type, string name, int arity,
+		LookupOptions options, Binder originalBinder, TypeSymbol accessThroughType, bool diagnose)
+	{
+		Debug.Assert(type.TypeKind != TypeKind.TypeParameter);
+
+		LookupMembersWithoutInheritance(result, type, name, arity, options, originalBinder, accessThroughType,
+			diagnose);
+	}
+
+	private static void LookupMembersInModule(LookupResult result, ModuleSymbol module, string name, int arity,
+		LookupOptions options, Binder originalBinder, bool diagnose)
+	{
+		var members = GetCandidateMembers(module, name, options, originalBinder);
+
+		foreach (Symbol member in members)
+		{
+			SingleLookupResult resultOfThisMember = originalBinder.CheckViability(member, arity, options, null, diagnose);
+			result.MergeEqual(resultOfThisMember);
+		}
+	}
+
 	internal SingleLookupResult CheckViability(Symbol symbol, int arity, LookupOptions options, TypeSymbol? accessThroughType, bool diagnose)
 	{
 		if (options.HasFlag(LookupOptions.ModulesOrTypesOnly) && symbol is not (ModuleSymbol or TypeSymbol))
@@ -92,5 +194,18 @@ internal partial class Binder
 	internal virtual void LookupSymbolsInSingleBinder(LookupResult result, string name, int arity, LookupOptions options,
 		Binder originalBinder, bool diagnose)
 	{
+	}
+
+	internal static ImmutableArray<Symbol> GetCandidateMembers(ContainerSymbol moduleOrType, string name,
+		LookupOptions options, Binder originalBinder)
+	{
+		if ((options & LookupOptions.ModulesOrTypesOnly) != 0 && moduleOrType is TypeSymbol)
+		{
+			return moduleOrType.GetTypeMembers(name).CastArray<Symbol>();
+		}
+		else
+		{
+			return moduleOrType.GetMembers(name);
+		}
 	}
 }

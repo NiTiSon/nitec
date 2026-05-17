@@ -15,6 +15,11 @@ internal sealed class MirBuilder
 	private readonly FunctionSymbol _function;
 	private readonly ControlFlowGraph _cfg;
 	private Dictionary<LocalVariableOrParameterSymbol, TempValue> _addrTable = [];
+	private HashSet<LocalVariableOrParameterSymbol> _ssaVariables = [];
+	private readonly HashSet<LocalVariableOrParameterSymbol> _addressTaken = [];
+	private Dictionary<LocalVariableOrParameterSymbol, Stack<TempValue>> _versionStack = [];
+	private Dictionary<BasicBlock, Dictionary<LocalVariableOrParameterSymbol, TempValue>> _phiNodes = [];
+	private Dictionary<LocalVariableOrParameterSymbol, TempValue> _initialVersions = [];
 
 	private MirBuilder(NiteCompilation compilation, FunctionSymbol function, ControlFlowGraph cfg)
 	{
@@ -37,13 +42,18 @@ internal sealed class MirBuilder
 			mir.Blocks[bb] = new MirBlock(bb);
 		}
 
-		CreateStackAlloc(mir.Blocks[_cfg.Entry]);
+		AnalyzeAddressTaken();
+		ClassifyVariables();
+
+		CreatePrologue(mir.Blocks[_cfg.Entry]);
 		mir.AddressTable = _addrTable;
 
-		foreach (BasicBlock bb in _cfg.Blocks)
+		if (_ssaVariables.Count > 0)
 		{
-			Rename(bb, mir);
+			InsertPhiNodes(mir);
 		}
+
+		RenameAll(mir);
 
 		return mir;
 	}
@@ -63,30 +73,134 @@ internal sealed class MirBuilder
 		return new TempValue(_tempId++, type, name);
 	}
 
-	private void CreateStackAlloc(MirBlock mir)
+	private void AnalyzeAddressTaken()
 	{
-		foreach (ParameterSymbol parameterSymbol in _function.Parameters)
+		foreach (BasicBlock block in _cfg.Blocks)
 		{
-			TypeSymbol ptr = _compilation.CreatePointerType(parameterSymbol.Type, true, false);
-			TempValue temp = GetNewTemp(ptr);
-			mir.Instructions.Add(new StackAllocInstruction(temp, parameterSymbol.Type));
-			_addrTable[parameterSymbol] = temp;
+			foreach (BoundStatement stmt in block.Statements)
+			{
+				if (stmt is BoundExpressionStatement exprStmt)
+				{
+					FindAddressTakenInExpression(exprStmt.Expression);
+				}
+				else if (stmt is BoundLocalVariableDeclarationStatement declStmt && declStmt.Initializer != null)
+				{
+					FindAddressTakenInExpression(declStmt.Initializer);
+				}
+			}
+
+			if (block.Terminator is ReturnTerminator ret && ret.Expression != null)
+			{
+				FindAddressTakenInExpression(ret.Expression);
+			}
+			else if (block.Terminator is ConditionalBranchTerminator condBr)
+			{
+				FindAddressTakenInExpression(condBr.Condition);
+			}
+		}
+	}
+
+	private void FindAddressTakenInExpression(BoundExpression expr)
+	{
+		if (expr is BoundAddressOfExpression addrOf)
+		{
+			LocalVariableOrParameterSymbol? variable = addrOf.Expression switch
+			{
+				BoundMove move => move.Variable,
+				BoundCopy copy => copy.Variable,
+				_ => null
+			};
+			if (variable != null)
+			{
+				_addressTaken.Add(variable);
+			}
+			return;
 		}
 
-		var locals = CollectAllVariablesAndParameters();
-		foreach (LocalVariableSymbol local in locals)
+		if (expr is BoundAssignment assignment)
 		{
-			TypeSymbol ptr = _compilation.CreatePointerType(local.Type, true, false);
-			TempValue temp = GetNewTemp(ptr);
-			mir.Instructions.Add(new StackAllocInstruction(temp, local.Type));
-			_addrTable[local] = temp;
+			FindAddressTakenInExpression(assignment.Left);
+			FindAddressTakenInExpression(assignment.Right);
+		}
+		else if (expr is BoundBinaryExpression binary)
+		{
+			FindAddressTakenInExpression(binary.Left);
+			FindAddressTakenInExpression(binary.Right);
+		}
+		else if (expr is BoundUnaryExpression unary)
+		{
+			FindAddressTakenInExpression(unary.Expression);
+		}
+		else if (expr is BoundCall call)
+		{
+			foreach (var arg in call.Arguments)
+			{
+				FindAddressTakenInExpression(arg);
+			}
+		}
+		else if (expr is BoundDereferenceExpression deref)
+		{
+			FindAddressTakenInExpression(deref.Expression);
+		}
+	}
+
+	private void ClassifyVariables()
+	{
+		foreach (ParameterSymbol param in _function.Parameters)
+		{
+			if (!_addressTaken.Contains(param))
+			{
+				_ssaVariables.Add(param);
+			}
 		}
 
-		foreach (ParameterSymbol parameterSymbol in _function.Parameters)
+		foreach (LocalVariableSymbol local in CollectAllVariablesAndParameters())
 		{
-			TempValue temp = GetNewTemp(parameterSymbol.Type);
-			mir.Instructions.Add(new LoadParamInstruction(temp, parameterSymbol));
-			mir.Instructions.Add(new StoreInstruction(temp, _addrTable[parameterSymbol]));
+			if (!_addressTaken.Contains(local))
+			{
+				_ssaVariables.Add(local);
+			}
+		}
+	}
+
+	private void CreatePrologue(MirBlock entryMir)
+	{
+		foreach (ParameterSymbol param in _function.Parameters)
+		{
+			if (_ssaVariables.Contains(param))
+			{
+				TempValue paramValue = GetNewTemp(param.Type, param.Name);
+				entryMir.Instructions.Add(new LoadParamInstruction(paramValue, param));
+				_initialVersions[param] = paramValue;
+			}
+			else
+			{
+				TypeSymbol ptr = _compilation.CreatePointerType(param.Type, true, false);
+				TempValue temp = GetNewTemp(ptr);
+				entryMir.Instructions.Add(new StackAllocInstruction(temp, param.Type));
+				_addrTable[param] = temp;
+			}
+		}
+
+		foreach (LocalVariableSymbol local in CollectAllVariablesAndParameters())
+		{
+			if (!_ssaVariables.Contains(local))
+			{
+				TypeSymbol ptr = _compilation.CreatePointerType(local.Type, true, false);
+				TempValue temp = GetNewTemp(ptr);
+				entryMir.Instructions.Add(new StackAllocInstruction(temp, local.Type));
+				_addrTable[local] = temp;
+			}
+		}
+
+		foreach (ParameterSymbol param in _function.Parameters)
+		{
+			if (!_ssaVariables.Contains(param))
+			{
+				TempValue temp = GetNewTemp(param.Type);
+				entryMir.Instructions.Add(new LoadParamInstruction(temp, param));
+				entryMir.Instructions.Add(new StoreInstruction(temp, _addrTable[param]));
+			}
 		}
 	}
 
@@ -108,17 +222,205 @@ internal sealed class MirBuilder
 		return set;
 	}
 
-	private void Rename(BasicBlock bbEntry, FunctionMir mir)
+	private void InsertPhiNodes(FunctionMir mir)
 	{
-		var mirBlock = mir.Blocks[bbEntry];
+		foreach (var variable in _ssaVariables)
+		{
+			InsertPhiForVariable(variable, mir);
+		}
+	}
 
-		foreach (BoundStatement statement in bbEntry.Statements)
+	private void InsertPhiForVariable(LocalVariableOrParameterSymbol variable, FunctionMir mir)
+	{
+		HashSet<BasicBlock> defBlocks = FindDefBlocks(variable);
+
+		if (defBlocks.Count == 0)
+			return;
+
+		var hasPhi = new HashSet<BasicBlock>();
+		var workList = new Queue<BasicBlock>(defBlocks);
+
+		while (workList.Count > 0)
+		{
+			BasicBlock block = workList.Dequeue();
+
+			if (!_cfg.DominanceFrontier.TryGetValue(block, out var frontier))
+				continue;
+
+			foreach (BasicBlock frontierBlock in frontier)
+			{
+				if (!hasPhi.Add(frontierBlock))
+					continue;
+
+				AddPhiForVariable(variable, frontierBlock, mir);
+
+				if (!defBlocks.Contains(frontierBlock))
+					workList.Enqueue(frontierBlock);
+			}
+		}
+	}
+
+	private HashSet<BasicBlock> FindDefBlocks(LocalVariableOrParameterSymbol variable)
+	{
+		var defBlocks = new HashSet<BasicBlock>();
+
+		foreach (BasicBlock block in _cfg.Blocks)
+		{
+			foreach (BoundStatement stmt in block.Statements)
+			{
+				if (stmt is BoundLocalVariableDeclarationStatement decl && decl.Local == variable)
+				{
+					defBlocks.Add(block);
+				}
+				else if (stmt is BoundExpressionStatement exprStmt)
+				{
+					FindAssignmentDefsInExpression(exprStmt.Expression, variable, defBlocks, block);
+				}
+			}
+		}
+
+		return defBlocks;
+	}
+
+	private static void FindAssignmentDefsInExpression(BoundExpression expr, LocalVariableOrParameterSymbol variable,
+		HashSet<BasicBlock> defBlocks, BasicBlock block)
+	{
+		if (expr is BoundAssignment assignment)
+		{
+			if ((assignment.Left is BoundMove move && move.Variable == variable) ||
+			    (assignment.Left is BoundCopy copy && copy.Variable == variable))
+			{
+				defBlocks.Add(block);
+			}
+			FindAssignmentDefsInExpression(assignment.Right, variable, defBlocks, block);
+		}
+		else if (expr is BoundBinaryExpression binary)
+		{
+			FindAssignmentDefsInExpression(binary.Left, variable, defBlocks, block);
+			FindAssignmentDefsInExpression(binary.Right, variable, defBlocks, block);
+		}
+		else if (expr is BoundUnaryExpression unary)
+		{
+			FindAssignmentDefsInExpression(unary.Expression, variable, defBlocks, block);
+		}
+		else if (expr is BoundCall call)
+		{
+			foreach (var arg in call.Arguments)
+			{
+				FindAssignmentDefsInExpression(arg, variable, defBlocks, block);
+			}
+		}
+	}
+
+	private void AddPhiForVariable(LocalVariableOrParameterSymbol variable, BasicBlock block, FunctionMir mir)
+	{
+		var mirBlock = mir.Blocks[block];
+		TempValue phiOutput = GetNewTemp(variable.Type, variable.Name + ".phi");
+		var phi = new PhiInstruction(phiOutput);
+		mirBlock.Instructions.Insert(0, phi);
+
+		if (!_phiNodes.ContainsKey(block))
+			_phiNodes[block] = new Dictionary<LocalVariableOrParameterSymbol, TempValue>();
+		_phiNodes[block][variable] = phiOutput;
+	}
+
+	private void RenameAll(FunctionMir mir)
+	{
+		foreach (var variable in _ssaVariables)
+		{
+			_versionStack[variable] = new Stack<TempValue>();
+		}
+
+		RenameBlock(_cfg.Entry, mir);
+	}
+
+	private void RenameBlock(BasicBlock block, FunctionMir mir)
+	{
+		var mirBlock = mir.Blocks[block];
+
+		var savedHeights = new Dictionary<LocalVariableOrParameterSymbol, int>();
+		foreach (var variable in _ssaVariables)
+		{
+			savedHeights[variable] = _versionStack[variable].Count;
+		}
+
+		if (ReferenceEquals(block, _cfg.Entry))
+		{
+			foreach (var (variable, version) in _initialVersions)
+			{
+				_versionStack[variable].Push(version);
+			}
+		}
+
+		if (_phiNodes.TryGetValue(block, out var blockPhis))
+		{
+			foreach (var (variable, phiOutput) in blockPhis)
+			{
+				_versionStack[variable].Push(phiOutput);
+			}
+		}
+
+		foreach (BoundStatement statement in block.Statements)
 		{
 			RewriteStatement(statement, mirBlock);
 		}
-		Debug.Assert(bbEntry.Terminator is not null);
+
+		AddPhiIncoming(block, mir);
+
+		Debug.Assert(block.Terminator is not null);
+		RewriteTerminator(block.Terminator, mirBlock);
+
+		if (_cfg.DominatorTree.TryGetValue(block, out var children))
 		{
-			RewriteTerminator(bbEntry.Terminator, mirBlock);
+			foreach (var child in children)
+			{
+				RenameBlock(child, mir);
+			}
+		}
+
+		foreach (var variable in _ssaVariables)
+		{
+			int target = savedHeights[variable];
+			while (_versionStack[variable].Count > target)
+				_versionStack[variable].Pop();
+		}
+	}
+
+	private void AddPhiIncoming(BasicBlock fromBlock, FunctionMir mir)
+	{
+		foreach (BasicBlock succ in fromBlock.Successors)
+		{
+			if (!_phiNodes.TryGetValue(succ, out var succPhis))
+				continue;
+
+			MirBlock succMir = mir.Blocks[succ];
+
+			foreach (var (variable, phiOutput) in succPhis)
+			{
+				PhiInstruction? phiInstr = null;
+				foreach (var instr in succMir.Instructions)
+				{
+					if (instr is PhiInstruction p && p.Output == phiOutput)
+					{
+						phiInstr = p;
+						break;
+					}
+				}
+
+				TempValue incomingValue;
+				if (_versionStack.TryGetValue(variable, out var stack) && stack.Count > 0)
+				{
+					incomingValue = stack.Peek();
+				}
+				else
+				{
+					incomingValue = GetNewTemp(variable.Type);
+					phiInstr?.Incoming.Add((incomingValue, fromBlock));
+					continue;
+				}
+
+				phiInstr?.Incoming.Add((incomingValue, fromBlock));
+			}
 		}
 	}
 
@@ -130,11 +432,22 @@ internal sealed class MirBuilder
 				RewriteExpression(exprStmt.Expression, mirBlock);
 				break;
 			case BoundLocalVariableDeclarationStatement declStmt:
-				if (declStmt.Initializer != null)
+				if (_ssaVariables.Contains(declStmt.Local))
 				{
-					TempValue value = RewriteExpression(declStmt.Initializer, mirBlock);
-					TempValue addr = _addrTable[declStmt.Local];
-					mirBlock.Instructions.Add(new StoreInstruction(value, addr));
+					if (declStmt.Initializer != null)
+					{
+						TempValue value = RewriteExpression(declStmt.Initializer, mirBlock);
+						_versionStack[declStmt.Local].Push(value);
+					}
+				}
+				else
+				{
+					if (declStmt.Initializer != null)
+					{
+						TempValue value = RewriteExpression(declStmt.Initializer, mirBlock);
+						TempValue addr = _addrTable[declStmt.Local];
+						mirBlock.Instructions.Add(new StoreInstruction(value, addr));
+					}
 				}
 				break;
 			case BoundEmptyStatement:
@@ -231,7 +544,7 @@ internal sealed class MirBuilder
 
 	private TempValue EmitUnaryExpression(BoundUnaryExpression unary, MirBlock block)
 	{
-		if (unary.Op.CorrespondingFunction is not null) // user-defined operator
+		if (unary.Op.CorrespondingFunction is not null)
 		{
 			throw new NotImplementedException("call instruction is not implemented yet");
 		}
@@ -240,7 +553,6 @@ internal sealed class MirBuilder
 
 		if (unary.Op.Kind == UnaryOperatorKind.Plus)
 		{
-			// +expr is a nope operation, no need to allocate new value
 			return value;
 		}
 
@@ -257,7 +569,7 @@ internal sealed class MirBuilder
 
 	private TempValue EmitBinaryExpression(BoundBinaryExpression binary, MirBlock block)
 	{
-		if (binary.Op.CorrespondingFunction is not null) // user-defined operator
+		if (binary.Op.CorrespondingFunction is not null)
 		{
 			throw new NotImplementedException("call instruction is not implemented yet");
 		}
@@ -285,7 +597,6 @@ internal sealed class MirBuilder
 			BinaryOperatorKind.And => new AndInstruction(result, lhs, rhs),
 			BinaryOperatorKind.Xor => new XorInstruction(result, lhs, rhs),
 			BinaryOperatorKind.Or => new OrInstruction(result, lhs, rhs),
-			// tilde is never a builtin operator: no underlying instruction, only an invokable function
 			_ => throw new UnreachableException($"EmitBinaryExpression({binary.Op.Kind})")
 		};
 
@@ -296,6 +607,18 @@ internal sealed class MirBuilder
 	private TempValue EmitAssignmentExpression(BoundAssignment assignment, MirBlock block)
 	{
 		TempValue value = RewriteExpression(assignment.Right, block);
+
+		if (assignment.Left is BoundMove move && _ssaVariables.Contains(move.Variable))
+		{
+			_versionStack[move.Variable].Push(value);
+			return value;
+		}
+		if (assignment.Left is BoundCopy copy && _ssaVariables.Contains(copy.Variable))
+		{
+			_versionStack[copy.Variable].Push(value);
+			return value;
+		}
+
 		TempValue addr = GetAssignmentTargetAddress(assignment.Left, block);
 		block.Instructions.Add(new StoreInstruction(value, addr));
 		return value;
@@ -328,22 +651,35 @@ internal sealed class MirBuilder
 
 	private TempValue EmitLoad(BoundMove move, MirBlock block)
 	{
+		if (_ssaVariables.Contains(move.Variable))
+		{
+			if (_versionStack.TryGetValue(move.Variable, out var stack) && stack.Count > 0)
+				return stack.Peek();
+			TempValue undef = GetNewTemp(move.Variable.Type);
+			block.Instructions.Add(new UndefInstruction(undef));
+			return undef;
+		}
+
 		TempValue addr = _addrTable[move.Variable];
 		TempValue load = GetNewTemp(move.Type);
-
 		block.Instructions.Add(new LoadInstruction(load, addr));
-
 		return load;
 	}
 
 	private TempValue EmitLoad(BoundCopy copy, MirBlock block)
 	{
+		if (_ssaVariables.Contains(copy.Variable))
+		{
+			if (_versionStack.TryGetValue(copy.Variable, out var stack) && stack.Count > 0)
+				return stack.Peek();
+			TempValue undef = GetNewTemp(copy.Variable.Type);
+			block.Instructions.Add(new UndefInstruction(undef));
+			return undef;
+		}
+
 		TempValue addr = _addrTable[copy.Variable];
 		TempValue load = GetNewTemp(copy.Type);
-
 		block.Instructions.Add(new LoadInstruction(load, addr));
-
 		return load;
 	}
-
 }

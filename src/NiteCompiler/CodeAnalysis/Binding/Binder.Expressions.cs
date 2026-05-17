@@ -31,7 +31,8 @@ internal partial class Binder
 		return new ErrorTypeSymbol(Compilation, SpecialType.None, name, lifetimeArity: 0, arity: 0, errorInfo: null, unreported: false);
 	}
 
-	internal BoundExpression BindExpression(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics, bool invoked, bool indexed)
+	internal BoundExpression BindExpression(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics,
+		bool invoked = false, bool indexed = false)
 	{
 		switch (syntax)
 		{
@@ -53,7 +54,7 @@ internal partial class Binder
 				return BindBinaryExpression(binary, diagnostics);
 
 			case ParenthesizedExpressionSyntax paren:
-				return BindExpression(paren.Expression, diagnostics, invoked: false, indexed: false);
+				return BindExpression(paren.Expression, diagnostics);
 
 			case SimpleNameSyntax name:
 				return BindIdentifier(name, invoked, indexed, diagnostics);
@@ -63,7 +64,7 @@ internal partial class Binder
 			case SelfExpressionSyntax selfExpr:
 				return BindSelfExpression(selfExpr, diagnostics);
 			case MemberAccessExpressionSyntax memberAccess:
-				return BindMemberAccessExpression(memberAccess, diagnostics);
+				return BindMemberAccess(memberAccess, diagnostics);
 
 			default:
 				throw new UnreachableException($"BindExpression({syntax.Kind})");
@@ -106,9 +107,10 @@ internal partial class Binder
 		return boundExpression;
 	}
 
-	private BoundExpression BindMemberAccessExpression(MemberAccessExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
+	private BoundExpression BindMemberAccess(MemberAccessExpressionSyntax syntax, BindingDiagnosticBag diagnostics,
+		bool invoked = false, bool indexed = false)
 	{
-		BoundExpression receiver = BindExpression(syntax.Expression, diagnostics, invoked: false, indexed: false);
+		BoundExpression receiver = BindExpression(syntax.Expression, diagnostics);
 
 		if (receiver.HasErrors || receiver.Type.IsErrorSymbol)
 		{
@@ -197,7 +199,7 @@ internal partial class Binder
 
 	private BoundExpression BindValue(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics, BindValueKind valueKind)
 	{
-		var result = this.BindExpression(syntax, diagnostics, invoked: false, indexed: false);
+		var result = this.BindExpression(syntax, diagnostics);
 		return CheckValue(result, valueKind, diagnostics);
 	}
 
@@ -331,7 +333,8 @@ internal partial class Binder
 		return boundExpression;
 	}
 
-	private BoundExpression BindNonFunction(SimpleNameSyntax name, Symbol symbol, BindingDiagnosticBag diagnostics, LookupResultKind resultKind, bool indexed, bool wasError)
+	private BoundExpression BindNonFunction(SimpleNameSyntax name, Symbol symbol, BindingDiagnosticBag diagnostics,
+		LookupResultKind resultKind, bool indexed, bool wasError)
 	{
 		switch (symbol.Kind)
 		{
@@ -343,6 +346,9 @@ internal partial class Binder
 					return new BoundCopy(name, variable);
 				return new BoundMove(name, variable);
 			}
+			case SymbolKind.NamedType:
+			case SymbolKind.GenericTypeParameter:
+				return new BoundTypeExpression(name, (TypeSymbol)symbol, hasErrors: wasError);
 			default:
 				throw new UnreachableException();
 		}

@@ -12,6 +12,7 @@ internal partial class Binder
 	internal enum BindValueKind : ushort
 	{
 		RValue = 1 << ValueKindInsignificantBits,
+		RValueOrMethodGroup = RValue + 1,
 
 		LValue = 2 << ValueKindInsignificantBits,
 

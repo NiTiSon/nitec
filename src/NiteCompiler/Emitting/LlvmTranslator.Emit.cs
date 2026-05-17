@@ -32,6 +32,7 @@ internal partial class LlvmTranslator
 		Dictionary<BasicBlock, LLVMBasicBlockRef> blockMap = new(plan.Cfg.Blocks.Length);
 		Dictionary<TempValue, LLVMValueRef> valueMap = new();
 		Dictionary<ParameterSymbol, LLVMValueRef> parameterMap = new();
+		List<(PhiInstruction Instruction, LLVMValueRef LlvmPhi)> pendingPhis = [];
 
 		foreach (BasicBlock block in plan.Cfg.Blocks)
 		{
@@ -51,8 +52,29 @@ internal partial class LlvmTranslator
 
 			foreach (Instruction instruction in mirBlock.Instructions)
 			{
-				EmitInstruction(instruction, blockMap, valueMap, parameterMap, mir);
+				if (instruction is PhiInstruction phi)
+				{
+					LLVMValueRef phiNode = _builder.BuildPhi(GetLlvmType(phi.Output.Type), "phi");
+					valueMap[phi.Output] = phiNode;
+					pendingPhis.Add((phi, phiNode));
+				}
+				else
+				{
+					EmitInstruction(instruction, blockMap, valueMap, parameterMap, mir);
+				}
 			}
+		}
+
+		foreach ((PhiInstruction instruction, LLVMValueRef llvmPhi) in pendingPhis)
+		{
+			LLVMValueRef[] values = new LLVMValueRef[instruction.Incoming.Count];
+			LLVMBasicBlockRef[] blocks = new LLVMBasicBlockRef[instruction.Incoming.Count];
+			for (int i = 0; i < instruction.Incoming.Count; i++)
+			{
+				values[i] = ResolveValue(instruction.Incoming[i].Value, valueMap);
+				blocks[i] = blockMap[instruction.Incoming[i].Block];
+			}
+			llvmPhi.AddIncoming(values, blocks, (uint)instruction.Incoming.Count);
 		}
 	}
 
@@ -64,6 +86,11 @@ internal partial class LlvmTranslator
 	{
 		switch (instruction)
 		{
+			case PhiInstruction:
+				break; // handled in two-pass in EmitFunctionBody
+			case UndefInstruction undef:
+				valueMap[undef.Output] = EmitDefaultValue(undef.Output.Type);
+				break;
 			case StackAllocInstruction alloca:
 				valueMap[alloca.Output] = EmitStackAlloc(alloca);
 				break;
@@ -175,6 +202,18 @@ internal partial class LlvmTranslator
 			default:
 				throw new NotSupportedException($"LLVM translation for '{instruction.GetType().Name}' is not implemented.");
 		}
+	}
+
+	private LLVMValueRef EmitDefaultValue(TypeSymbol type)
+	{
+		LLVMTypeRef llvmType = GetLlvmType(type);
+		SpecialType st = type.SpecialType;
+		if (st.IsFloat)
+		{
+			return LLVMValueRef.CreateConstReal(llvmType, 0.0);
+		}
+
+		return LLVMValueRef.CreateConstInt(llvmType, 0, st.IsSignedIntegral);
 	}
 
 	private LLVMValueRef EmitStackAlloc(StackAllocInstruction stackAlloc)

@@ -2,6 +2,8 @@
 
 public sealed class ReferenceTypeSymbol : BaseReferenceTypeSymbol
 {
+	public override TypeKind TypeKind => TypeKind.Reference;
+	public override SymbolKind Kind => SymbolKind.Reference;
 	public override TypeSymbol PointsTo { get; }
 	public override bool IsMutable { get; }
 	public override bool IsNullable { get; }

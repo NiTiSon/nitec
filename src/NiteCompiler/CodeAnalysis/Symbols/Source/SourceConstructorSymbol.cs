@@ -11,7 +11,7 @@ namespace NiteCompiler.CodeAnalysis.Symbols.Source;
 
 internal sealed class SourceConstructorSymbol : ConstructorSymbol
 {
-	public override NamedTypeSymbol ContainingSymbol { get; }
+	public override TypeSymbol ContainingSymbol { get; }
 	public BaseConstructorDeclarationSyntax Syntax { get; }
 	public override string Name { get; }
 
@@ -45,7 +45,7 @@ internal sealed class SourceConstructorSymbol : ConstructorSymbol
 	public override ImmutableArray<LifetimeSymbol> Lifetimes => [];
 	public override ImmutableArray<LifetimeConstraint> LifetimeConstraints => [];
 
-	public SourceConstructorSymbol(NamedTypeSymbol containingType, BaseConstructorDeclarationSyntax syntax)
+	public SourceConstructorSymbol(TypeSymbol containingType, BaseConstructorDeclarationSyntax syntax)
 	{
 		ContainingSymbol = containingType;
 		Syntax = syntax;
