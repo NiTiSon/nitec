@@ -26,6 +26,19 @@ internal partial class Binder
 			CreateErrorType());
 	}
 
+	/// <summary>
+	/// Binds lateinit unbound nodes to either default type or to the <paramref name="targetType"/>.
+	/// </summary>
+	private BoundExpression FinallyBind(BoundExpression unbound, TypeSymbol? targetType)
+	{
+		switch (unbound)
+		{
+
+			default:
+				return unbound;
+		}
+	}
+
 	internal TypeSymbol CreateErrorType(string name = "<error_type>")
 	{
 		return new ErrorTypeSymbol(Compilation, SpecialType.None, name, lifetimeArity: 0, arity: 0, errorInfo: null, unreported: false);
@@ -269,13 +282,31 @@ internal partial class Binder
 	private BoundLiteral BindNumericLiteralExpression(LiteralExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		Debug.Assert(syntax.Kind == NodeKind.NumberLiteralExpression);
-		NumberToken? value = syntax.Token as NumberToken;
-		Debug.Assert(value != null);
+		NumberToken? valueToken = syntax.Token as NumberToken;
+		Debug.Assert(valueToken != null);
+		var value = valueToken.Value;
 
-		// TODO: Fully implement
-		TypeSymbol i32 = GetSpecialType(SpecialType.StdNumericsSInt32);
-		ConstantValue i32Value = ConstantValue.Create((int)value.Value.U64);
-		return new BoundLiteral(syntax, i32Value, i32);
+		unchecked
+		{
+			switch (valueToken.Type)
+			{
+				case NumericLiteralType.Any: // TODO: in future we possible want to lateinit theirs type for better resolution resolving
+				{
+					if (valueToken.Format != NumericLiteralFormat.Integer)
+					{
+						TypeSymbol f32 = GetSpecialType(SpecialType.StdNumericsFloat32);
+						return new BoundLiteral(syntax, ConstantValue.Create((float)value.F64), f32);
+					}
+					else
+					{
+						TypeSymbol i32 = GetSpecialType(SpecialType.StdNumericsSInt32);
+						return new BoundLiteral(syntax, ConstantValue.Create((int)value.U64), i32);
+					}
+				}
+				default:
+					throw new UnreachableException();
+			}
+		}
 	}
 
 	private BoundLiteral BindCharacterLiteralExpression(LiteralExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
@@ -327,6 +358,30 @@ internal partial class Binder
 				var receiver = SynthesizeFunctionGroupReceiver(group);
 
 				boundExpression = new BoundFunctionGroup(name, [..candidates], receiver, result.Kind, CreateErrorType());
+			}
+			else if (symbol is NamedTypeSymbol typeSymbol && invoked)
+			{
+				// Treat invoked type name as constructor call
+				ImmutableArray<Symbol> members = typeSymbol.GetMembers();
+				var constructors = ArrayBuilder<FunctionSymbol>.GetInstance();
+				foreach (Symbol member in members)
+				{
+					if (member is ConstructorSymbol ctor)
+					{
+						constructors.Add(ctor);
+					}
+				}
+
+				if (constructors.Count > 0)
+				{
+					boundExpression = new BoundFunctionGroup(name, constructors.ToImmutableAndFree(),
+						receiver: null, result.Kind, CreateErrorType());
+				}
+				else
+				{
+					constructors.Free();
+					boundExpression = BindNonFunction(name, symbol, diagnostics, result.Kind, indexed, isError);
+				}
 			}
 			else
 			{

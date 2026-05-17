@@ -11,6 +11,8 @@ public abstract class FunctionSymbol : Symbol
 	public abstract ImmutableArray<LifetimeSymbol> Lifetimes { get; }
 	public abstract ImmutableArray<LifetimeConstraint> LifetimeConstraints { get; }
 	public abstract ImmutableArray<ParameterSymbol> Parameters { get; }
+	public abstract bool IsConstructor { get; }
+	public abstract bool IsMethod { get; }
 
 	public sealed override void Accept(SymbolVisitor visitor)
 	{

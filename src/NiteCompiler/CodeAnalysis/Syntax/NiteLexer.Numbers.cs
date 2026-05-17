@@ -7,7 +7,7 @@ internal partial class NiteLexer
 	private void ReadNumber(ref TokenInfo info)
 	{
 		info.Kind = TokenKind.NumberLiteral;
-		info.NumericType = NumericLiteralType.None;
+		info.NumericType = NumericLiteralType.Any;
 		info.NumericFormat = NumericLiteralFormat.Integer;
 
 		if (_window.Current == '0')

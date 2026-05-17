@@ -22,6 +22,7 @@ internal sealed partial class LlvmTranslator
 	private readonly NiteCompilation _compilation;
 	private readonly BindingDiagnosticBag _diagnostics;
 	private readonly Dictionary<FunctionSymbol, FunctionPlan> _plans = new();
+	private readonly Dictionary<NamedTypeSymbol, LLVMTypeRef> _structTypes = new();
 
 	private LlvmTranslator(NiteCompilation compilation, string moduleName, BindingDiagnosticBag diagnostics)
 	{

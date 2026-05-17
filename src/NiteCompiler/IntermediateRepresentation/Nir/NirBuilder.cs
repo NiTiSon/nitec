@@ -13,10 +13,11 @@ internal sealed class NirBuilder
 {
 	private readonly Dictionary<LocalVariableOrParameterSymbol, Stack<IValue>> _stacks = new();
 	private int _tempId = 0;
+	private FunctionSymbol? _function;
 
 	public static NirFunction Build(ControlFlowGraph cfg, FunctionSymbol function)
 	{
-		var builder = new NirBuilder();
+		var builder = new NirBuilder { _function = function };
 		return builder.CreateNir(cfg, function);
 	}
 
@@ -269,6 +270,7 @@ internal sealed class NirBuilder
 			BoundCall call => EmitCall(call, block),
 			BoundAddressOfExpression addressOf => EmitAddressOfExpression(addressOf, block),
 			BoundDereferenceExpression dereference => EmitDereferenceExpression(dereference, block),
+			BoundFieldAccess fieldAccess => EmitFieldAccess(fieldAccess, block),
 
 			_ => throw new UnreachableException($"RewriteExpression({expression.GetType()})")
 		};
@@ -364,6 +366,7 @@ internal sealed class NirBuilder
 			BoundMove move => move.Variable,
 			BoundCopy copy => copy.Variable,
 			BoundDereferenceExpression => null,
+			BoundFieldAccess => null,
 			_ => throw new UnreachableException($"EmitAssignmentExpression({assignment.Left.GetType()})")
 		};
 
@@ -377,6 +380,13 @@ internal sealed class NirBuilder
 		{
 			Operand addr = RewriteExpression(storeDeref.Expression, block);
 			block.Instructions.Add(new StoreInstruction(right, addr));
+		}
+		else if (assignment.Left is BoundFieldAccess fieldAccess)
+		{
+			Operand basePtr = GetReceiverPointer(fieldAccess.Receiver, block);
+			Temp fieldPtr = NewTemp(fieldAccess.Type);
+			block.Instructions.Add(new GetElementPointer(fieldPtr, basePtr, fieldAccess.Field));
+			block.Instructions.Add(new StoreInstruction(right, new Copy(fieldPtr)));
 		}
 
 		return right;
@@ -394,14 +404,14 @@ internal sealed class NirBuilder
 
 	private Operand EmitCall(BoundCall call, NirBlock block)
 	{
-		Temp ret = NewTemp(call.Type);
 		Operand[] arguments = new Operand[call.Arguments.Length];
 		for (int i = 0; i < arguments.Length; i++)
 		{
 			arguments[i] = RewriteExpression(call.Arguments[i], block);
 		}
+		Temp ret = NewTemp(call.Type);
 
-		block.Instructions.Add(new CallInstruction(ret, call.Function, [.. arguments]));
+		block.Instructions.Add(new CallInstruction(ret, call.Function, [..arguments]));
 		return new Copy(ret);
 	}
 
@@ -424,6 +434,43 @@ internal sealed class NirBuilder
 		Temp load = NewTemp(dereference.Type);
 		block.Instructions.Add(new LoadInstruction(load, addr));
 		return new Copy(load);
+	}
+
+	private Operand EmitFieldAccess(BoundFieldAccess fieldAccess, NirBlock block)
+	{
+		Operand basePtr = GetReceiverPointer(fieldAccess.Receiver, block);
+		Temp fieldPtr = NewTemp(fieldAccess.Type);
+		block.Instructions.Add(new GetElementPointer(fieldPtr, basePtr, fieldAccess.Field));
+		Temp result = NewTemp(fieldAccess.Type);
+		block.Instructions.Add(new LoadInstruction(result, new Copy(fieldPtr)));
+		return new Copy(result);
+	}
+
+	private Operand GetReceiverPointer(BoundExpression receiver, NirBlock block)
+	{
+		switch (receiver)
+		{
+			case BoundMove move when move.Variable.Type is BaseReferenceTypeSymbol:
+				return EmitLocal(move, block);
+			case BoundCopy copy when copy.Variable.Type is BaseReferenceTypeSymbol:
+				return EmitLocal(copy, block);
+			case BoundMove move:
+			{
+				Temp addr = NewTemp(move.Variable.Type);
+				block.Instructions.Add(new AddressOfInstruction(addr, move.Variable));
+				return new Copy(addr);
+			}
+			case BoundCopy copy:
+			{
+				Temp addr = NewTemp(copy.Variable.Type);
+				block.Instructions.Add(new AddressOfInstruction(addr, copy.Variable));
+				return new Copy(addr);
+			}
+			case BoundDereferenceExpression deref:
+				return RewriteExpression(deref.Expression, block);
+			default:
+				throw new NotImplementedException($"GetReceiverPointer: {receiver.GetType()}");
+		}
 	}
 
 	private Dictionary<LocalVariableOrParameterSymbol, int> SaveStacks()

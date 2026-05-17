@@ -67,7 +67,13 @@ internal partial class Binder
 			}
 
 			bool hasErrors = CheckInvocationArguments(function, arguments, diagnostics);
-			return new BoundCall(invocation, function, arguments, hasErrors);
+
+			// TODO: make it more esthetic
+			TypeSymbol? typeOverride = function is ConstructorSymbol ctor
+				? ctor.ContainingType
+				: null;
+
+			return new BoundCall(invocation, function, arguments, typeOverride, hasErrors);
 		}
 
 		if (boundExpression.HasErrors)
@@ -97,7 +103,10 @@ internal partial class Binder
 	{
 		foreach (FunctionSymbol function in candidates)
 		{
-			if (function.Parameters.Length == argumentCount)
+			int paramCount = function is ConstructorSymbol
+				? function.Parameters.Length - 1
+				: function.Parameters.Length;
+			if (paramCount == argumentCount)
 			{
 				return function;
 			}
@@ -109,13 +118,14 @@ internal partial class Binder
 	private static bool CheckInvocationArguments(FunctionSymbol function, ImmutableArray<BoundExpression> arguments,
 		BindingDiagnosticBag diagnostics)
 	{
-		Debug.Assert(function.Parameters.Length == arguments.Length);
+		int offset = function is ConstructorSymbol ? 1 : 0;
+		Debug.Assert(function.Parameters.Length - offset == arguments.Length);
 
 		bool hasErrors = false;
 		for (int i = 0; i < arguments.Length; i++)
 		{
 			BoundExpression argument = arguments[i];
-			ParameterSymbol parameter = function.Parameters[i];
+			ParameterSymbol parameter = function.Parameters[i + offset];
 
 			if (argument.Type != parameter.Type)
 			{

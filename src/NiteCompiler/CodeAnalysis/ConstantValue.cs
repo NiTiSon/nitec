@@ -17,7 +17,7 @@ internal abstract class ConstantValue
 	public virtual ulong U64 => U32;
 
 	public virtual float F32 => throw new InvalidOperationException();
-	public virtual double F64 => throw new InvalidOperationException();
+	public virtual double F64 => (double)F32;
 
 	public static ConstantValue Create(bool value)
 	{
@@ -26,11 +26,27 @@ internal abstract class ConstantValue
 
 	public static ConstantValue Create(int value)
 	{
-		return new ValueI32(value);
+		return value switch
+		{
+			0 => ValueI32.Zero,
+			1 => ValueI32.One,
+			-1 => ValueI32.MinusOne,
+			2 => ValueI32.Two,
+			_ => new ValueI32(value)
+		};
+	}
+
+	public static ConstantValue Create(float value)
+	{
+		return new ValueF32(value);
 	}
 
 	private sealed class ValueI32 : ConstantValue
 	{
+		public static readonly ValueI32 Zero = new(0);
+		public static readonly ValueI32 One = new(1);
+		public static readonly ValueI32 MinusOne = new(-1);
+		public static readonly ValueI32 Two = new(2);
 		private readonly uint _value;
 
 		public ValueI32(int value)
@@ -47,6 +63,20 @@ internal abstract class ConstantValue
 
 		public override uint U32 => _value;
 		public override int S32 => unchecked((int)_value);
+	}
+
+	private sealed class ValueF32 : ConstantValue
+	{
+		private readonly float _value;
+
+		public ValueF32(float value)
+		{
+			_value = value;
+		}
+
+		public override SpecialType SpecialType => SpecialType.StdNumericsFloat32;
+
+		public override float F32 => _value;
 	}
 
 	private sealed class ValueBoolean : ConstantValue

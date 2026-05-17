@@ -198,7 +198,6 @@ internal partial class BinderFactory
 
 		private Binder VisitConstructorDeclaration(ConstructorDeclarationSyntax declaration)
 		{
-
 			if (!LookupPosition.IsInConstructorDeclaration(_position, declaration))
 			{
 				return VisitCore(declaration.Parent!);
@@ -311,15 +310,14 @@ internal partial class BinderFactory
 			return null;
 		}
 
-		private SourceConstructorSymbol? GetConstructorSymbol(ConstructorDeclarationSyntax syntax, Binder outerBinder)
+		private SourceConstructorSymbol? GetConstructorSymbol(BaseConstructorDeclarationSyntax syntax, Binder outerBinder)
 		{
 			ContainerSymbol? container = GetContainer(outerBinder, syntax);
 			if (container == null) return null;
 
-			string ctorName = MetadataFacts.ConstructorInternalNamePrefix + ".ctor";
 			foreach (var member in container.GetMembers())
 			{
-				if (member is SourceConstructorSymbol ctor && ctor.Name == ctorName)
+				if (member is SourceConstructorSymbol { Name: "" } ctor)
 				{
 					return ctor;
 				}
@@ -333,7 +331,7 @@ internal partial class BinderFactory
 			ContainerSymbol? container = GetContainer(outerBinder, syntax);
 			if (container == null) return null;
 
-			string ctorName = MetadataFacts.ConstructorInternalNamePrefix + "." + syntax.Name.GetName();
+			string ctorName = syntax.Name.GetName();
 			foreach (var member in container.GetMembers())
 			{
 				if (member is SourceConstructorSymbol ctor && ctor.Name == ctorName)

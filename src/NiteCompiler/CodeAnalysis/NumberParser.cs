@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.CodeAnalysis.Text;
 using NiteCompiler.Diagnostics;
@@ -12,7 +13,9 @@ internal static class NumberParser
 		return info.NumericFormat switch
 		{
 			NumericLiteralFormat.Integer => ParseInteger(info, text, location, diagnostics),
-			_ => throw new NotImplementedException()
+			NumericLiteralFormat.Float => ParseFloat(info, text, location, diagnostics),
+			NumericLiteralFormat.ENotation => ParseENotation(info, text, location, diagnostics),
+			_ => throw new UnreachableException()
 		};
 	}
 
@@ -52,5 +55,108 @@ internal static class NumberParser
 		{
 			return new(value);
 		}
+	}
+
+	public static NumberToken.Packed ParseFloat(in NiteLexer.TokenInfo info, ReadOnlySpan<char> text, Location location, DiagnosticBag diagnostics)
+	{
+		return new NumberToken.Packed(ParseFloatToDouble(text));
+	}
+
+	public static NumberToken.Packed ParseENotation(in NiteLexer.TokenInfo info, ReadOnlySpan<char> text, Location location, DiagnosticBag diagnostics)
+	{
+		int eIndex = -1;
+		for (int j = 0; j < text.Length; j++)
+		{
+			if (text[j] is 'e' or 'E')
+			{
+				eIndex = j;
+				break;
+			}
+		}
+
+		ReadOnlySpan<char> significandText = text[..eIndex];
+		ReadOnlySpan<char> exponentText = text[(eIndex + 1)..];
+
+		double significand = ParseFloatToDouble(significandText);
+
+		int exponent = 0;
+		int expIdx = 0;
+		bool negativeExponent = false;
+
+		if (expIdx < exponentText.Length && exponentText[expIdx] == '-')
+		{
+			negativeExponent = true;
+			expIdx++;
+		}
+		else if (expIdx < exponentText.Length && exponentText[expIdx] == '+')
+		{
+			expIdx++;
+		}
+
+		while (expIdx < exponentText.Length && SyntaxFacts.IsValidDecimalDigit(exponentText[expIdx]))
+		{
+			if (exponentText[expIdx] == SyntaxFacts.DigitDelimiter)
+			{
+				expIdx++;
+				continue;
+			}
+			exponent = exponent * 10 + (exponentText[expIdx] - '0');
+			expIdx++;
+		}
+
+		if (negativeExponent)
+			exponent = -exponent;
+
+		double result = significand;
+		if (exponent > 0)
+		{
+			for (int j = 0; j < exponent; j++)
+				result *= 10;
+		}
+		else if (exponent < 0)
+		{
+			for (int j = 0; j < -exponent; j++)
+				result /= 10;
+		}
+
+		return new NumberToken.Packed(result);
+	}
+
+	private static double ParseFloatToDouble(ReadOnlySpan<char> text)
+	{
+		double value = 0;
+		int i = 0;
+
+		while (i < text.Length && SyntaxFacts.IsValidDecimalDigit(text[i]))
+		{
+			if (text[i] == SyntaxFacts.DigitDelimiter)
+			{
+				i++;
+				continue;
+			}
+			value = value * 10 + (text[i] - '0');
+			i++;
+		}
+
+		if (i < text.Length && text[i] == '.')
+		{
+			i++;
+			double fraction = 0;
+			double divisor = 1;
+			while (i < text.Length && SyntaxFacts.IsValidDecimalDigit(text[i]))
+			{
+				if (text[i] == SyntaxFacts.DigitDelimiter)
+				{
+					i++;
+					continue;
+				}
+				fraction = fraction * 10 + (text[i] - '0');
+				divisor *= 10;
+				i++;
+			}
+			value += fraction / divisor;
+		}
+
+		return value;
 	}
 }

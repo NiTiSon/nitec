@@ -199,6 +199,7 @@ internal partial class LlvmTranslator
 				valueMap[le.Output] = EmitComparison(le.Left.Value, le.Right.Value, le.Left.Value.Type, ComparisonKind.LessThanOrEqual, valueMap);
 				break;
 			case CallInstruction call:
+			{
 				DeclareFunction(call.Function);
 				var arguments = new LLVMValueRef[call.Arguments.Length];
 				for (int i = 0; i < arguments.Length; i++)
@@ -206,12 +207,18 @@ internal partial class LlvmTranslator
 					arguments[i] = ResolveValue(call.Arguments[i].Value, valueMap);
 				}
 
-				valueMap[call.Output] = _builder.BuildCall2(
+				LLVMValueRef ret = _builder.BuildCall2(
 					CreateFunctionType(call.Function),
 					_plans[call.Function].LlvmFunction,
 					arguments,
 					call.Function.ReturnType.IsVoidType ? string.Empty : "call");
+
+				if (call.Output != null)
+				{
+					valueMap[call.Output] = ret;
+				}
 				break;
+			}
 			case AddressOfInstruction addressOf:
 				valueMap[addressOf.Output] = addressTable[addressOf.Symbol];
 				break;
@@ -224,6 +231,17 @@ internal partial class LlvmTranslator
 			case StoreInstruction store:
 				_builder.BuildStore(ResolveValue(store.Value.Value, valueMap), ResolveValue(store.Address.Value, valueMap));
 				break;
+			case GetElementPointer gep:
+			{
+				LLVMValueRef basePtr = ResolveValue(gep.BaseAddress.Value, valueMap);
+				TypeSymbol? containingType = gep.Field.ContainingType;
+				if (containingType == null)
+					throw new InvalidOperationException($"Field '{gep.Field.Name}' has no containing type.");
+				LLVMTypeRef structType = GetLlvmType(containingType);
+				int fieldIndex = FindFieldIndex(gep.Field);
+				valueMap[gep.Output] = _builder.BuildStructGEP2(structType, basePtr, (uint)fieldIndex, "gep");
+				break;
+			}
 			case RetInstruction ret:
 				if (ret.Value == null)
 				{
@@ -410,20 +428,66 @@ internal partial class LlvmTranslator
 			return LLVMTypeRef.CreatePointer(GetLlvmType(referenceType.PointsTo), 0);
 		}
 
-		return type.SpecialType switch
+		if (type.SpecialType != SpecialType.None)
 		{
-			SpecialType.StdNumericsSInt8 or SpecialType.StdNumericsUInt8 => _context.Int8Type,
-			SpecialType.StdNumericsSInt16 or SpecialType.StdNumericsUInt16 => _context.Int16Type,
-			SpecialType.StdNumericsSInt32 or SpecialType.StdNumericsUInt32 => _context.Int32Type,
-			SpecialType.StdNumericsSInt64 or SpecialType.StdNumericsUInt64 => _context.Int64Type,
-			// TODO: receive bitness from target
-			SpecialType.StdNumericsSNativeInt or SpecialType.StdNumericsUNativeInt => _context.Int64Type,
-			SpecialType.StdNumericsFloat16 => _context.HalfType,
-			SpecialType.StdNumericsFloat32 => _context.FloatType,
-			SpecialType.StdNumericsFloat64 => _context.DoubleType,
-			SpecialType.StdBoolean => _context.Int1Type,
-			SpecialType.StdVoid or SpecialType.StdNeverReturn => _context.VoidType,
-			_ => throw new NotSupportedException($"Type '{type.ToDisplayString()}' is not supported in LLVM translation.")
-		};
+			return type.SpecialType switch
+			{
+				SpecialType.StdNumericsSInt8 or SpecialType.StdNumericsUInt8 => _context.Int8Type,
+				SpecialType.StdNumericsSInt16 or SpecialType.StdNumericsUInt16 => _context.Int16Type,
+				SpecialType.StdNumericsSInt32 or SpecialType.StdNumericsUInt32 => _context.Int32Type,
+				SpecialType.StdNumericsSInt64 or SpecialType.StdNumericsUInt64 => _context.Int64Type,
+				// TODO: receive bitness from target
+				SpecialType.StdNumericsSNativeInt or SpecialType.StdNumericsUNativeInt => _context.Int64Type,
+				SpecialType.StdNumericsFloat16 => _context.HalfType,
+				SpecialType.StdNumericsFloat32 => _context.FloatType,
+				SpecialType.StdNumericsFloat64 => _context.DoubleType,
+				SpecialType.StdBoolean => _context.Int1Type,
+				SpecialType.StdVoid or SpecialType.StdNeverReturn => _context.VoidType,
+				_ => throw new NotSupportedException($"Type '{type.ToDisplayString()}' is not supported in LLVM translation.")
+			};
+		}
+
+		if (type is NamedTypeSymbol namedType)
+		{
+			return GetOrCreateStructType(namedType);
+		}
+
+		throw new NotSupportedException($"Type '{type.ToDisplayString()}' is not supported in LLVM translation.");
+	}
+
+	private LLVMTypeRef GetOrCreateStructType(NamedTypeSymbol namedType)
+	{
+		if (_structTypes.TryGetValue(namedType, out LLVMTypeRef cached))
+			return cached;
+
+		var fieldTypes = new List<LLVMTypeRef>();
+		foreach (Symbol member in namedType.GetMembers())
+		{
+			if (member is FieldSymbol field)
+			{
+				fieldTypes.Add(GetLlvmType(field.Type));
+			}
+		}
+
+		LLVMTypeRef structType = LLVMTypeRef.CreateStruct([.. fieldTypes], false);
+		_structTypes[namedType] = structType;
+		return structType;
+	}
+
+	private static int FindFieldIndex(FieldSymbol field)
+	{
+		TypeSymbol? containingType = field.ContainingType;
+		if (containingType is not NamedTypeSymbol namedType)
+			throw new InvalidOperationException($"Field '{field.Name}' does not belong to a named type.");
+		int index = 0;
+		foreach (Symbol member in namedType.GetMembers())
+		{
+			if (member == field)
+				return index;
+			if (member is FieldSymbol)
+				index++;
+		}
+
+		throw new InvalidOperationException($"Field '{field.Name}' not found in type '{namedType.Name}'.");
 	}
 }

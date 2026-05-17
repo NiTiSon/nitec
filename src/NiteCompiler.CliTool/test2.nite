@@ -28,22 +28,8 @@ public type Vector2 {
 	}
 }
 
-public loop_test(i: i32) {
-	loop {
-		i = i + 1;
-	}
-}
-
-public addone(x: i32) -> i32 {
-	return x + 1;
-}
-
-public caller(x: i32) -> i32 {
-	return addone(x);
-}
-
 public sum_vectors(lhs: Vector2, rhs: Vector2) -> Vector2 {
-	let result = Vector2(0);
+	let result = Vector2(0.0);
 
 	result.x = lhs.x + rhs.x;
 	result.y = lhs.y + rhs.y;

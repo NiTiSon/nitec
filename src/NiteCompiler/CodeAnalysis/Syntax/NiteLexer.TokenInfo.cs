@@ -20,7 +20,7 @@ internal enum NumericLiteralFormat : byte
 
 internal enum NumericLiteralType : byte
 {
-	None,
+	Any,
 	I8,
 	I16,
 	I32,

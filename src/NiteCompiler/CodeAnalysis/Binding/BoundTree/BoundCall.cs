@@ -28,16 +28,19 @@ internal sealed class BoundCall : BoundExpression
 		}
 	}
 
-	public BoundCall(InvocationExpressionSyntax syntax, FunctionSymbol function,
-		ImmutableArray<BoundExpression> arguments, bool hasErrors = false)
-		: base(syntax, hasErrors || function.IsErrorSymbol || arguments.Any(t => t.HasErrors))
-	{
-		Function = function;
-		Arguments = arguments;
-	}
+public BoundCall(InvocationExpressionSyntax syntax, FunctionSymbol function,
+	ImmutableArray<BoundExpression> arguments, TypeSymbol? typeOverride = null, bool hasErrors = false)
+	: base(syntax, hasErrors || function.IsErrorSymbol || arguments.Any(t => t.HasErrors))
+{
+	Function = function;
+	Arguments = arguments;
+	_typeOverride = typeOverride;
+}
 
-	public override BoundKind Kind => BoundKind.InvocationExpression;
-	public override TypeSymbol Type => Function.ReturnType;
+private readonly TypeSymbol? _typeOverride;
+
+public override BoundKind Kind => BoundKind.InvocationExpression;
+public override TypeSymbol Type => _typeOverride ?? Function.ReturnType;
 	public override Binder.BindValueKind ValueKind => Binder.BindValueKind.RValue;
 
 	public override void Accept(BoundVisitor visitor) =>visitor.VisitCall(this);

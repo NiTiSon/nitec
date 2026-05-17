@@ -20,6 +20,9 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 	public FunctionDeclarationSyntax Syntax { get; }
 	public override string Name => Syntax.Name.GetName();
 
+	public override bool IsMethod => ContainingType != null;
+	public override bool IsConstructor => false;
+
 	private CompletionPart _state;
 	public SourceFunctionSymbol(Symbol containingSymbol, FunctionDeclarationSyntax syntax)
 	{

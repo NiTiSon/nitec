@@ -126,6 +126,7 @@ internal partial class NiteLexer
 				case '\0':
 				case '\r':
 				case '\n':
+				case SlidingWindow.InvalidCharacter:
 					done = true;
 					break;
 				default:

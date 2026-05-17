@@ -15,7 +15,6 @@ internal sealed class SourceConstructorSymbol : ConstructorSymbol
 	public BaseConstructorDeclarationSyntax Syntax { get; }
 	public override string Name { get; }
 
-
 	public override ImmutableArray<ParameterSymbol> Parameters
 	{
 		get
@@ -49,7 +48,15 @@ internal sealed class SourceConstructorSymbol : ConstructorSymbol
 	{
 		ContainingSymbol = containingType;
 		Syntax = syntax;
-		Name = string.Empty;
+
+		if (syntax is NamedConstructorDeclarationSyntax namedCtor)
+		{
+			Name = namedCtor.Name.GetName();
+		}
+		else
+		{
+			Name = string.Empty;
+		}
 	}
 
 	private ImmutableArray<ParameterSymbol> MakeParameters()

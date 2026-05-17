@@ -37,6 +37,10 @@ internal class LoadImmInstruction(IValue output, ConstantValue constant) : Instr
 			{
 				writer.Write(Constant.S64);
 			}
+			else if (specialType.IsFloat)
+			{
+				writer.Write(Constant.F64);
+			}
 			else
 			{
 				Debug.Assert(specialType.IsUnsignedIntegral);

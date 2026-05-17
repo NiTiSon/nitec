@@ -5,9 +5,9 @@ using NiteCompiler.IntermediateRepresentation.Nir;
 
 namespace NiteCompiler.IntermediateRepresentation;
 
-internal sealed class CallInstruction(IValue output, FunctionSymbol function, ImmutableArray<Operand> arguments) : Instruction
+internal sealed class CallInstruction(IValue? output, FunctionSymbol function, ImmutableArray<Operand> arguments) : Instruction
 {
-	public IValue Output { get; } = output;
+	public IValue? Output { get; } = output;
 	public FunctionSymbol Function { get; } = function;
 	public ImmutableArray<Operand> Arguments { get; } = arguments;
 
@@ -20,8 +20,15 @@ internal sealed class CallInstruction(IValue output, FunctionSymbol function, Im
 
 	public override void Write(TextWriter writer)
 	{
-		Output.Write(writer);
-		writer.Write(" = call ");
+		if (Output is null)
+		{
+			writer.Write("call ");
+		}
+		else
+		{
+			Output.Write(writer);
+			writer.Write(" = call ");
+		}
 		writer.Write(Function.ToDisplayString(SymbolFormat.Detailed | SymbolFormat.OmitParameterNames));
 		writer.Write(" [");
 		for (int i = 0; i < Arguments.Length; i++)
