@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Binding.Pure;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
@@ -25,6 +26,7 @@ internal sealed class BoundFieldAccess : BoundExpression
 	public BoundFieldAccess(SyntaxNode syntax, BoundExpression receiver, FieldSymbol field, bool hasErrors = false)
 		: base(syntax, hasErrors || receiver.HasErrors)
 	{
+		Debug.Assert(field != null);
 		Receiver = receiver;
 		Field = field;
 	}

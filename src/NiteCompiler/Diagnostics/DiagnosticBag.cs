@@ -268,7 +268,7 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.MustReturnValue, [location]);
 	}
 
-	public void ReportCannotReportValue(Location location)
+	public void ReportCannotReturnValue(Location location)
 	{
 		Add(DiagnosticDescriptor.CannotReturnValue, [location]);
 	}

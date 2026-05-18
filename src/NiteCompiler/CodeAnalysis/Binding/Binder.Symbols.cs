@@ -101,7 +101,15 @@ internal partial class Binder
 	{
 		Symbol symbol = BindModuleOrTypeSymbol(syntax, diagnostics);
 
-		if (symbol is TypeSymbol typeSymbol) return typeSymbol;
+		if (symbol is TypeSymbol typeSymbol)
+		{
+			if (typeSymbol.IsErrorSymbol)
+			{
+				diagnostics.Diagnostics.ReportUnresolvedSymbol(syntax.Location);
+			}
+
+			return typeSymbol;
+		}
 
 		throw new NotImplementedException();
 	}
@@ -144,6 +152,12 @@ internal partial class Binder
 
 			wasError = false;
 			return symbols[0];
+		}
+
+		if (result.Kind == LookupResultKind.Empty)
+		{
+			wasError = true;
+			return CreateErrorType(simpleName);
 		}
 
 		wasError = true;

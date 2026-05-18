@@ -155,16 +155,23 @@ internal sealed class LifetimeChecker
 		}
 	}
 
+	private static LocalVariableOrParameterSymbol? ExtractVariable(BoundExpression expr)
+	{
+		return expr switch
+		{
+			BoundMove m => m.Variable,
+			BoundCopy c => c.Variable,
+			BoundLocalVariable l => l.Variable,
+			BoundParameter p => p.Variable,
+			_ => null
+		};
+	}
+
 	private void CheckEscapeInDeclaration(BoundLocalVariableDeclarationStatement decl)
 	{
 		if (decl.Initializer is not BoundAddressOfExpression addrOf) return;
 
-		LocalVariableOrParameterSymbol? referent = addrOf.Expression switch
-		{
-			BoundMove m => m.Variable,
-			BoundCopy c => c.Variable,
-			_ => null
-		};
+		LocalVariableOrParameterSymbol? referent = ExtractVariable(addrOf.Expression);
 		if (referent == null) return;
 
 		LocalVariableOrParameterSymbol refVar = decl.Local;
@@ -189,20 +196,11 @@ internal sealed class LifetimeChecker
 	{
 		if (assignment.Right is not BoundAddressOfExpression addrOf) return;
 
-		LocalVariableOrParameterSymbol? referent = addrOf.Expression switch
-		{
-			BoundMove m => m.Variable,
-			BoundCopy c => c.Variable,
-			_ => null
-		};
+		LocalVariableOrParameterSymbol? referent = ExtractVariable(addrOf.Expression);
 		if (referent == null) return;
 
-		LocalVariableOrParameterSymbol? lhsSym = assignment.Left switch
-		{
-			BoundMove m when m.Variable.Type is BaseReferenceTypeSymbol => m.Variable,
-			BoundCopy c when c.Variable.Type is BaseReferenceTypeSymbol => c.Variable,
-			_ => null
-		};
+		LocalVariableOrParameterSymbol? lhsSym = ExtractVariable(assignment.Left);
+		if (lhsSym?.Type is not BaseReferenceTypeSymbol) return;
 		if (lhsSym == null) return;
 
 		// Assigning a reference to a local into a parameter is always
@@ -236,13 +234,8 @@ internal sealed class LifetimeChecker
 	private void CheckReturnEscape(BoundExpression expr)
 	{
 	    // Returning a reference to a local is always an escape.
-	    if (expr is not (BoundMove or BoundCopy)) return;
-	    LocalVariableOrParameterSymbol variable = expr switch
-	    {
-	        BoundMove m => m.Variable,
-	        BoundCopy c => c.Variable,
-	        _ => null!
-	    };
+		LocalVariableOrParameterSymbol? variable = ExtractVariable(expr);
+		if (variable == null) return;
 	    if (variable.Type is not BaseReferenceTypeSymbol) return;
 
 	    // If this local was initialized with &someOtherLocal,
@@ -283,6 +276,12 @@ internal sealed class LifetimeChecker
 				break;
 			case BoundCopy c:
 				uses.GetOrAdd(c.Variable, () => new()).Add(block);
+				break;
+			case BoundLocalVariable l:
+				uses.GetOrAdd(l.Variable, () => new()).Add(block);
+				break;
+			case BoundParameter p:
+				uses.GetOrAdd(p.Variable, () => new()).Add(block);
 				break;
 			case BoundAddressOfExpression a:
 				CollectUses(a.Expression, block, uses);

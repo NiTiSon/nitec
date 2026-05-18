@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Symbols.Source;
@@ -89,17 +90,21 @@ internal partial class Binder
 					if (synthParam != null && field != null)
 					{
 						SyntaxNode synthSyntax = body;
-						var selfCopy = new BoundCopy(synthSyntax, ctor.SelfParameter);
-						var fieldAccess = new BoundFieldAccess(synthSyntax, selfCopy, field);
-						var paramCopy = new BoundCopy(synthSyntax, synthParam);
-						var assignment = new BoundAssignment(synthSyntax, fieldAccess, paramCopy);
-						additionalStatements.Add(new BoundExpressionStatement(synthSyntax, assignment));
+						var selfExpr = new BoundParameter(synthSyntax, ctor.SelfParameter);
+						var fieldAccess = new BoundFieldAccess(synthSyntax, selfExpr, field);
+						var paramValue = new BoundCopy(synthSyntax, synthParam);
+						var assignment = new BoundAssignment(synthSyntax, fieldAccess, paramValue);
+						additionalStatements.Add(new BoundExpressionStatement(synthSyntax, assignment)
+						{
+							CompilerGenerated = true
+						});
 					}
 				}
 
 				if (additionalStatements.Count > 0)
 				{
-					block = new BoundBlock(body, block.Locals, block.Statements.AddRange(additionalStatements));
+					additionalStatements.AddRange(block.Statements);
+					block = new BoundBlock(body, block.Locals, [..additionalStatements]);
 				}
 			}
 		}
@@ -186,7 +191,7 @@ internal partial class Binder
 		BoundExpression? initializer = null;
 		if (declarator.EqualsValueClause != null)
 		{
-			initializer = BindExpression(declarator.EqualsValueClause.Expression, diagnostics, false, false);
+			initializer = FinallyBind(BindExpression(declarator.EqualsValueClause.Expression, diagnostics), null);
 		}
 
 		TypeSymbol? declaredType = null;
@@ -251,14 +256,14 @@ internal partial class Binder
 		TypeSymbol retType = GetCurrentReturnType();
 		bool hasErrors = false;
 
-		if (syntax.Expression != null) arg = BindExpression(syntax.Expression, diagnostics, false, false);
+		if (syntax.Expression != null) arg = FinallyBind(BindExpression(syntax.Expression, diagnostics), null);
 
 		// TODO[NOT-CRITICAL]: add NeverReturn case
 		if (retType.IsVoidType) // func -> void
 		{
 			if (arg != null) // return EXPR;
 			{
-				diagnostics.Diagnostics.ReportCannotReportValue(arg.Syntax!.Location);
+				diagnostics.Diagnostics.ReportCannotReturnValue(arg.Syntax!.Location);
 				hasErrors = true;
 			}
 		}

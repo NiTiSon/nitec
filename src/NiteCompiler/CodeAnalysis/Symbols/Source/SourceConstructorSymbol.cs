@@ -72,7 +72,7 @@ internal sealed class SourceConstructorSymbol : ConstructorSymbol
 		Debug.Assert(Syntax != null);
 		int ord = 1;
 		BinderFactory factory = ContainingSymbol.DeclaringCompilation!.GetBinderFactory(Syntax.Tree);
-		Binder binder = factory.GetBinder(Syntax.ParameterList);
+		Binder binder = factory.GetBinder(Syntax);
 
 		var selfParam = SourceSelfParameterSymbol.Create(binder, this, diagnostics);
 		builder.Add(selfParam);
@@ -82,7 +82,7 @@ internal sealed class SourceConstructorSymbol : ConstructorSymbol
 			if (param is ParameterSyntax ps)
 			{
 				TypeSymbol paramType = binder.BindType(ps.TypeClauseSyntax.Type, diagnostics);
-				var sourceParam = SourceParameterSymbol.Create(binder, ContainingType!, paramType, ps, ord, diagnostics);
+				var sourceParam = SourceParameterSymbol.Create(binder, ContainingType, paramType, ps, ord, diagnostics);
 				builder.Add(sourceParam);
 				ord++;
 			}

@@ -11,8 +11,8 @@ namespace NiteCompiler.IntermediateRepresentation.Nir;
 
 internal sealed class NirBuilder
 {
-	private HashSet<LocalVariableOrParameterSymbol> _stackAllocated = [];
-	private readonly Dictionary<LocalVariableOrParameterSymbol, Temp> _addresses;
+	private readonly HashSet<LocalVariableOrParameterSymbol> _stackAllocated = [];
+	private readonly Dictionary<LocalVariableOrParameterSymbol, Temp> _addresses = [];
 	private readonly Dictionary<LocalVariableOrParameterSymbol, Stack<IValue>> _stacks = new();
 	private int _tempId = 0;
 
@@ -97,12 +97,14 @@ internal sealed class NirBuilder
 				{
 					BoundExpression target = assign.Left;
 
-					LocalVariableOrParameterSymbol? targetSymbol = target switch
-					{
-						BoundMove move => move.Variable,
-						BoundCopy copy => copy.Variable,
-						_ => null
-					};
+				LocalVariableOrParameterSymbol? targetSymbol = target switch
+				{
+					BoundMove move => move.Variable,
+					BoundCopy copy => copy.Variable,
+					BoundLocalVariable lv => lv.Variable,
+					BoundParameter p => p.Variable,
+					_ => null
+				};
 
 					if (targetSymbol == null) continue;
 
@@ -270,6 +272,8 @@ internal sealed class NirBuilder
 			BoundCompoundAssignment compoundAssignment => throw new InvalidOperationException("Unlowered BoundTree is passed to the NirBuilder."),
 			BoundMove move => EmitLocal(move, block),
 			BoundCopy copy => EmitLocal(copy, block),
+			BoundParameter param => EmitLocal(param, block),
+			BoundLocalVariable localVar => EmitLocal(localVar, block),
 			BoundCall call => EmitCall(call, block),
 			BoundAddressOfExpression addressOf => EmitAddressOfExpression(addressOf, block),
 			BoundDereferenceExpression dereference => EmitDereferenceExpression(dereference, block),
@@ -368,6 +372,8 @@ internal sealed class NirBuilder
 		{
 			BoundMove move => move.Variable,
 			BoundCopy copy => copy.Variable,
+			BoundParameter param => param.Variable,
+			BoundLocalVariable localVar => localVar.Variable,
 			BoundDereferenceExpression => null,
 			BoundFieldAccess => null,
 			_ => throw new UnreachableException($"EmitAssignmentExpression({assignment.Left.GetType()})")
@@ -395,9 +401,11 @@ internal sealed class NirBuilder
 			{
 				BoundMove move => move.Variable,
 				BoundCopy copy => copy.Variable,
+				BoundParameter param => param.Variable,
+				BoundLocalVariable localVar => localVar.Variable,
 				_ => null
 			};
-			if (fieldSymbol != null)
+			if (fieldSymbol != null && fieldSymbol.Type is not BaseReferenceTypeSymbol)
 			{
 				Temp reloaded = NewTemp(fieldSymbol.Type);
 				block.Instructions.Add(new LoadInstruction(reloaded, basePtr));
@@ -458,6 +466,8 @@ internal sealed class NirBuilder
 		{
 			BoundMove move => move.Variable,
 			BoundCopy copy => copy.Variable,
+			BoundParameter param => param.Variable,
+			BoundLocalVariable localVar => localVar.Variable,
 			_ => throw new UnreachableException($"EmitAddressOfExpression({addressOf.Expression.GetType()})")
 		};
 		block.Instructions.Add(new AddressOfInstruction(output, symbol));
@@ -490,6 +500,10 @@ internal sealed class NirBuilder
 				return EmitLocal(move, block);
 			case BoundCopy copy when copy.Variable.Type is BaseReferenceTypeSymbol:
 				return EmitLocal(copy, block);
+			case BoundParameter param when param.Variable.Type is BaseReferenceTypeSymbol:
+				return EmitLocal(param, block);
+			case BoundLocalVariable localVar when localVar.Variable.Type is BaseReferenceTypeSymbol:
+				return EmitLocal(localVar, block);
 		case BoundMove move:
 		{
 			Temp addr = NewTemp(move.Variable.Type);
@@ -506,11 +520,37 @@ internal sealed class NirBuilder
 			block.Instructions.Add(new StoreInstruction(new Copy(current), new Copy(addr)));
 			return new Copy(addr);
 		}
+		case BoundParameter param:
+		{
+			Temp addr = NewTemp(param.Variable.Type);
+			block.Instructions.Add(new AddressOfInstruction(addr, param.Variable));
+			IValue current = ReadLocal(param.Variable);
+			block.Instructions.Add(new StoreInstruction(new Copy(current), new Copy(addr)));
+			return new Copy(addr);
+		}
+		case BoundLocalVariable localVar:
+		{
+			Temp addr = NewTemp(localVar.Variable.Type);
+			block.Instructions.Add(new AddressOfInstruction(addr, localVar.Variable));
+			IValue current = ReadLocal(localVar.Variable);
+			block.Instructions.Add(new StoreInstruction(new Copy(current), new Copy(addr)));
+			return new Copy(addr);
+		}
 			case BoundDereferenceExpression deref:
 				return RewriteExpression(deref.Expression, block);
 			default:
 				throw new NotImplementedException($"GetReceiverPointer: {receiver.GetType()}");
 		}
+	}
+
+	private Operand EmitLocal(BoundParameter param, NirBlock block)
+	{
+		return new Copy(ReadLocal(param.Variable));
+	}
+
+	private Operand EmitLocal(BoundLocalVariable localVar, NirBlock block)
+	{
+		return new Copy(ReadLocal(localVar.Variable));
 	}
 
 	private Dictionary<LocalVariableOrParameterSymbol, int> SaveStacks()

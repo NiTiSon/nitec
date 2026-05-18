@@ -20,6 +20,8 @@ internal abstract class BoundVisitor
 	//public virtual void VisitIndexation(BoundIndexation indexation) => DefaultVisit(indexation);
 	public virtual void VisitType(BoundTypeExpression type) => DefaultVisit(type);
 	public virtual void VisitBlock(BoundBlock block) => DefaultVisit(block);
+	public virtual void VisitParameter(BoundParameter parameter) => DefaultVisit(parameter);
+	public virtual void VisitLocalVariable(BoundLocalVariable local) => DefaultVisit(local);
 	public virtual void VisitMove(BoundMove move) => DefaultVisit(move);
 	public virtual void VisitEmptyStatement(BoundEmptyStatement statement) => DefaultVisit(statement);
 	public virtual void VisitExpressionStatement(BoundExpressionStatement statement) => DefaultVisit(statement);

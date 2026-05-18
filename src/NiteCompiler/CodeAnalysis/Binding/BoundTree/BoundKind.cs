@@ -17,6 +17,8 @@ internal enum BoundKind
 	VariableDeclarationStatement,
 
 	Literal,
+	Parameter,
+	LocalVariable,
 	Move,
 	Copy,
 	AddressOfExpression,

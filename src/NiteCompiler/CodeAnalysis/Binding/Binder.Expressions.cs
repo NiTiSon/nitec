@@ -31,12 +31,21 @@ internal partial class Binder
 	/// </summary>
 	private BoundExpression FinallyBind(BoundExpression unbound, TypeSymbol? targetType)
 	{
-		switch (unbound)
+		LocalVariableOrParameterSymbol? variable = unbound switch
 		{
+			BoundParameter p => p.Variable,
+			BoundLocalVariable l => l.Variable,
+			_ => null
+		};
 
-			default:
-				return unbound;
+		if (variable != null)
+		{
+			return variable.Type.SpecialType != SpecialType.None
+				? new BoundCopy(unbound.Syntax, variable)
+				: new BoundMove(unbound.Syntax, variable);
 		}
+
+		return unbound;
 	}
 
 	internal TypeSymbol CreateErrorType(string name = "<error_type>")
@@ -47,12 +56,12 @@ internal partial class Binder
 	internal FieldSymbol CreateErrorField(ContainerSymbol owner, string name = "<error_field>")
 	{
 		Debug.Assert(owner != null);
-		return new ErrorFieldSymbol(owner, name, null, false, [], LookupResultKind.Empty);
+		return new ErrorFieldSymbol(owner, null ?? CreateErrorType(), name, null, false, [], LookupResultKind.Empty);
 	}
 
 	internal FieldSymbol CreateErrorField(string name = "<error_field>")
 	{
-		return new ErrorFieldSymbol(Compilation, name, null, false);
+		return new ErrorFieldSymbol(Compilation, null, name, null, false);
 	}
 
 	internal BoundExpression BindExpression(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics,
@@ -113,12 +122,15 @@ internal partial class Binder
 			switch (symbol.Kind)
 			{
 				case SymbolKind.LocalVariable:
+				{
+					var local = (LocalVariableSymbol)symbol;
+					boundExpression = new BoundLocalVariable(syntax, local);
+					break;
+				}
 				case SymbolKind.Parameter:
 				{
-					var variable = (LocalVariableOrParameterSymbol)symbol;
-					boundExpression = variable.Type.SpecialType != SpecialType.None
-						? new BoundCopy(syntax, variable)
-						: new BoundMove(syntax, variable);
+					var param = (ParameterSymbol)symbol;
+					boundExpression = new BoundParameter(syntax, param);
 					break;
 				}
 				default:
@@ -138,7 +150,7 @@ internal partial class Binder
 
 		if (receiver.HasErrors || receiver.Type.IsErrorSymbol)
 		{
-			return new BoundFieldAccess(syntax, receiver, null!, hasErrors: true);
+			return new BoundFieldAccess(syntax, receiver, CreateErrorField(receiver.Type, syntax.Name.GetName()), hasErrors: true);
 		}
 
 		string fieldName = syntax.Name.GetName();
@@ -155,7 +167,7 @@ internal partial class Binder
 		}
 
 		diagnostics.Diagnostics.ReportUnresolvedSymbol(syntax.Name.Location);
-		return new BoundFieldAccess(syntax, receiver, null!, hasErrors: true);
+		return new BoundFieldAccess(syntax, receiver, CreateErrorField(receiver.Type, syntax.Name.GetName()), hasErrors: true);
 	}
 
 	private BoundExpression BindUnaryExpression(UnaryExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
@@ -224,7 +236,12 @@ internal partial class Binder
 	private BoundExpression BindValue(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics, BindValueKind valueKind)
 	{
 		var result = this.BindExpression(syntax, diagnostics);
-		return CheckValue(result, valueKind, diagnostics);
+		result = CheckValue(result, valueKind, diagnostics);
+		if (valueKind == BindValueKind.RValue)
+		{
+			result = FinallyBind(result, targetType: null);
+		}
+		return result;
 	}
 
 	private BoundExpression BindLValueWithoutTargetType(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
@@ -239,7 +256,7 @@ internal partial class Binder
 
 	private BoundExpression BindBooleanExpression(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
-		BoundExpression result = BindExpression(syntax, diagnostics, false, false);
+		BoundExpression result = FinallyBind(BindExpression(syntax, diagnostics), null);
 
 		if (result.Type.SpecialType != SpecialType.StdBoolean)
 		{
@@ -411,12 +428,14 @@ internal partial class Binder
 		switch (symbol.Kind)
 		{
 			case SymbolKind.LocalVariable:
+			{
+				var local = (LocalVariableSymbol)symbol;
+				return new BoundLocalVariable(name, local);
+			}
 			case SymbolKind.Parameter:
 			{
-				var variable = (LocalVariableOrParameterSymbol)symbol;
-				if (variable.Type.SpecialType != SpecialType.None)
-					return new BoundCopy(name, variable);
-				return new BoundMove(name, variable);
+				var param = (ParameterSymbol)symbol;
+				return new BoundParameter(name, param);
 			}
 			case SymbolKind.NamedType:
 			case SymbolKind.GenericTypeParameter:
