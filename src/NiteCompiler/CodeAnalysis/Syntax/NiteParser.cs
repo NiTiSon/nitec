@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
@@ -10,6 +11,7 @@ internal sealed partial class NiteParser
 	private DiagnosticBag _diagnostics;
 	private readonly List<Token> _tokens;
 	private int _position;
+	private int _recursionDepth;
 	private readonly SyntaxTree _syntaxTree;
 
 	public NiteParser(NiteLexer lexer, SyntaxTree syntaxTree, DiagnosticBag diagnostics)
@@ -82,6 +84,23 @@ internal sealed partial class NiteParser
 	{
 		Debug.Assert(contextualKeywordType.IsKeyword);
 		return Current.TKind.GetContextualKeyword() == contextualKeywordType;
+	}
+
+	[DebuggerStepThrough]
+	[StackTraceHidden]
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void EnterRecursive()
+	{
+		_recursionDepth++;
+		StackGuard.EnsureSufficientStackSize(_recursionDepth);
+	}
+
+	[DebuggerStepThrough]
+	[StackTraceHidden]
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void LeaveRecursive()
+	{
+		_recursionDepth--;
 	}
 
 	[DebuggerStepThrough]

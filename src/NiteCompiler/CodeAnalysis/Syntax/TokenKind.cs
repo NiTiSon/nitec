@@ -357,7 +357,7 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 	public static readonly TokenKind F32 = Reg(TypeKeyword + (uint)SpecialType.StdNumericsFloat32, "f32");
 	public static readonly TokenKind F64 = Reg(TypeKeyword + (uint)SpecialType.StdNumericsFloat64, "f64");
 	public static readonly TokenKind Void = Reg(TypeKeyword + (uint)SpecialType.StdVoid, "void");
-	public static readonly TokenKind Never = Reg(TypeKeyword + (uint)SpecialType.StdNeverReturn, "!");
+	// Never is contextual
 	public static readonly TokenKind Boolean = Reg(TypeKeyword + (uint)SpecialType.StdBoolean, "bool");
 
 	private const uint Operator = 0x00_00__40_00u;

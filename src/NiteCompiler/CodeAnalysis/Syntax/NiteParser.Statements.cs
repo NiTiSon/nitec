@@ -7,29 +7,36 @@ internal sealed partial class NiteParser
 {
 	private StatementSyntax ParseStatement()
 	{
+		EnterRecursive();
+		StatementSyntax result;
+
 		if (Current.TKind == TokenKind.OpenBrace)
 		{
-			return ParseBlockStatement();
+			result = ParseBlockStatement();
+		}
+		else if (Current.TKind == TokenKind.Break)
+		{
+			result = ParseBreakStatement();
 		}
 		else if (Current.TKind == TokenKind.Return)
 		{
-			return ParseReturnStatement();
+			result = ParseReturnStatement();
 		}
 		else if (Current.TKind == TokenKind.Let)
 		{
-			return ParseLocalVariableDeclarationStatement();
+			result = ParseLocalVariableDeclarationStatement();
 		}
 		else if (Current.TKind == TokenKind.If)
 		{
-			return ParseIfStatement();
+			result = ParseIfStatement();
 		}
 		else if (Current.TKind == TokenKind.Loop)
 		{
-			return ParseLoopStatement();
+			result = ParseLoopStatement();
 		}
 		else if (Current.TKind == TokenKind.While)
 		{
-			return ParseWhileStatement();
+			result = ParseWhileStatement();
 		}
 		else if (Current.TKind.IsAnyIdentifierOrKeyword ||
 		         Current.TKind.IsLiteralTokenKind ||
@@ -39,16 +46,8 @@ internal sealed partial class NiteParser
 		         Current.TKind == TokenKind.Asterisk ||
 		         (Current.TKind is { IsOperator: true, CanBeUnaryOperator: true }))
 		{
-			return ParseExpressionStatement();
+			result = ParseExpressionStatement();
 		}
-		// else if (Current.TKind == TokenKind.For)
-		// {
-		// 	return ParseForStatement();
-		// }
-		// else if (Current.TKind == TokenKind.Do)
-		// {
-		// 	return ParseDoWhileStatement();
-		// }
 		else
 		{
 			TokenKind currentKind = Current.TKind;
@@ -56,11 +55,11 @@ internal sealed partial class NiteParser
 			SyntaxList<Token>.Builder erroredNodes = new();
 			while (currentKind != TokenKind.EndOfFile &&
 			       currentKind != TokenKind.Semicolon &&
-			       currentKind != TokenKind.OpenBrace)
+			       currentKind != TokenKind.OpenBrace &&
+			       currentKind != TokenKind.CloseBrace)
 			{
-				// the errored statements with blocks will treat left side as error statement,
-				// and right as valid block syntax
 				erroredNodes.Add(PeekAndAdvance());
+				currentKind = Current.TKind;
 			}
 
 			var nodes = erroredNodes.Build(_syntaxTree);
@@ -74,12 +73,16 @@ internal sealed partial class NiteParser
 			}
 
 			_diagnostics.ReportUnexpectedToken(nodes[0].Location, nodes[0].TKind);
-			return new ErrorStatementSyntax(_syntaxTree, nodes);
+			result = new ErrorStatementSyntax(_syntaxTree, nodes);
 		}
+
+		LeaveRecursive();
+		return result;
 	}
 
 	private BlockStatementSyntax ParseBlockStatement()
 	{
+		EnterRecursive();
 		Token openBrace = MatchToken(TokenKind.OpenBrace);
 
 		SyntaxList<StatementSyntax>.Builder statementsBuilder = new();
@@ -92,6 +95,7 @@ internal sealed partial class NiteParser
 					TokenKind.CloseBrace
 				);
 
+				LeaveRecursive();
 				return new(openBrace.Tree, openBrace, statementsBuilder.Build(openBrace.Tree), MatchToken(TokenKind.CloseBrace));
 			}
 
@@ -100,6 +104,7 @@ internal sealed partial class NiteParser
 		}
 		Token closeBrace = MatchToken(TokenKind.CloseBrace);
 
+		LeaveRecursive();
 		return new(openBrace.Tree, openBrace, statementsBuilder.Build(_syntaxTree), closeBrace);
 	}
 
@@ -203,6 +208,13 @@ internal sealed partial class NiteParser
 		StatementSyntax body = ParseStatement();
 
 		return new WhileStatementSyntax(_syntaxTree, @while, condition, body);
+	}
+
+	private BreakStatementSyntax ParseBreakStatement()
+	{
+		Token breakKeyword = MatchToken(TokenKind.Break);
+		Token semicolon = MatchToken(TokenKind.Semicolon);
+		return new BreakStatementSyntax(_syntaxTree, breakKeyword, semicolon);
 	}
 
 	// private ForStatementSyntax ParseForStatement()

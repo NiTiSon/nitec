@@ -255,8 +255,9 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind IndexationExpression = Reg(Expression + 18, Precedence.Primary, "indexation-expression");
 	public static readonly NodeKind ArrayType = Reg(Expression + 19, "array-type");
 	public static readonly NodeKind UnsizedArrayType = Reg(Expression + 20, "unsized-array-type");
-	public static readonly NodeKind SelfExpression = Reg(Expression + 21, "self-expression");
-	public static readonly NodeKind MemberAccessExpression = Reg(Expression + 22, Precedence.Primary, "member-access-expression");
+	public static readonly NodeKind NeverType = Reg(Expression + 21, "never-type");
+	public static readonly NodeKind SelfExpression = Reg(Expression + 22, "self-expression");
+	public static readonly NodeKind MemberAccessExpression = Reg(Expression + 23, Precedence.Primary, "member-access-expression");
 	private const uint Operation = 0x00_00__28_00;
 	public static readonly NodeKind UnaryAddExpression = Reg(Operation + 1, Precedence.Unary, "unary-add-expression");
 	public static readonly NodeKind AddExpression = Reg(Operation + BinaryFlag + 2, Precedence.Additive, "add-expression");
@@ -309,9 +310,10 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind IfStatement = Reg(Statement + 5, "if-statement");
 	public static readonly NodeKind LoopStatement = Reg(Statement + 6, "loop-statement");
 	public static readonly NodeKind WhileStatement = Reg(Statement + 7, "while-statement");
-	public static readonly NodeKind ForStatement = Reg(Statement + 8, "for-statement");
-	public static readonly NodeKind DoWhileStatement = Reg(Statement + 9, "do-while-statement");
-	public static readonly NodeKind ErrorStatement = Reg(Statement + 10, "error-statement");
+	public static readonly NodeKind BreakStatement = Reg(Statement + 8, "break-statement");
+	public static readonly NodeKind ForStatement = Reg(Statement + 9, "for-statement");
+	public static readonly NodeKind DoWhileStatement = Reg(Statement + 10, "do-while-statement");
+	public static readonly NodeKind ErrorStatement = Reg(Statement + 11, "error-statement");
 	public static readonly NodeKind LocalVariableDeclarationStatement = Reg(Statement + 100, "local-variable-declaration-statement");
 
 	private const uint Other = 0x00_00_F0_00;

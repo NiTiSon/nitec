@@ -19,6 +19,7 @@ public sealed class ReferenceTypeSyntax : TypeSyntax
 		: base(tree)
 	{
 		AmpersandToken = ampersandToken;
+		Lifetime = lifetime;
 		ConstToken = constToken;
 		QuestionToken = questionToken;
 		ElementSyntax = elementSyntax;

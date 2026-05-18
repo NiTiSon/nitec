@@ -116,7 +116,9 @@ internal sealed partial class NiteParser
 
 	private ExpressionSyntax ParseSubExpression(Precedence precedence)
 	{
+		EnterRecursive();
 		ExpressionSyntax result = Impl(precedence);
+		LeaveRecursive();
 
 		#if DEBUG
 		_ = result.Kind.Precedence;
@@ -327,20 +329,9 @@ internal sealed partial class NiteParser
 	private ArgumentListSyntax ParseParenthesizedArgumentList()
 	{
 		Token openParen = MatchToken(TokenKind.OpenParen);
-		SyntaxList<ExpressionSyntax>.Builder arguments = new();
-		while (true)
-		{
-			if (Current.TKind == TokenKind.EndOfFile) break;
-
-			arguments.Add(ParseExpression());
-			if (Current.TKind == TokenKind.Comma)
-			{
-				Advance();
-			}
-
-			if (Current.TKind == TokenKind.CloseParen) break;
-		}
+		SyntaxList<ExpressionSyntax>.Builder arguments = ParseCommaSeparatedList(TokenKind.CloseParen, ParseExpression);
 		Token closeParen = MatchToken(TokenKind.CloseParen);
+
 		return new(_syntaxTree, openParen, arguments.Build(_syntaxTree), closeParen);
 	}
 
@@ -458,6 +449,11 @@ internal sealed partial class NiteParser
 			return ParseArrayType();
 		}
 
+		if (currentKind == TokenKind.ExclamationSign)
+		{
+			return ParseNeverType();
+		}
+
 		throw new NotImplementedException();
 	}
 
@@ -522,6 +518,15 @@ internal sealed partial class NiteParser
 
 			return new UnsizedArrayTypeSyntax(_syntaxTree, openBracket, elementType, closeBracket);
 		}
+	}
+
+	private TypeSyntax ParseNeverType()
+	{
+		Debug.Assert(Current.TKind == TokenKind.ExclamationSign);
+
+		Token never = PeekAndAdvance();
+
+		return new NeverTypeSyntax(_syntaxTree, never);
 	}
 
 	private NameSyntax ParseName()
