@@ -9,7 +9,6 @@ internal sealed class Copy(IValue value) : Operand
 
 	public override void Write(TextWriter writer)
 	{
-		writer.Write("copy ");
 		Value.Write(writer);
 	}
 }

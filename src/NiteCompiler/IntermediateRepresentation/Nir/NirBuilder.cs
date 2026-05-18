@@ -387,6 +387,19 @@ internal sealed class NirBuilder
 			Temp fieldPtr = NewTemp(fieldAccess.Type);
 			block.Instructions.Add(new GetElementPointer(fieldPtr, basePtr, fieldAccess.Field));
 			block.Instructions.Add(new StoreInstruction(right, new Copy(fieldPtr)));
+
+			LocalVariableOrParameterSymbol? fieldSymbol = fieldAccess.Receiver switch
+			{
+				BoundMove move => move.Variable,
+				BoundCopy copy => copy.Variable,
+				_ => null
+			};
+			if (fieldSymbol != null)
+			{
+				Temp reloaded = NewTemp(fieldSymbol.Type);
+				block.Instructions.Add(new LoadInstruction(reloaded, basePtr));
+				_stacks[fieldSymbol].Push(reloaded);
+			}
 		}
 
 		return right;
@@ -404,6 +417,26 @@ internal sealed class NirBuilder
 
 	private Operand EmitCall(BoundCall call, NirBlock block)
 	{
+		if (call.Function.IsConstructor)
+		{
+			var ctor = (ConstructorSymbol)call.Function;
+			Temp resultAddr = NewTemp(ctor.SelfParameter.Type);
+			block.Instructions.Add(new StackAllocInstruction(resultAddr, call.Type));
+
+			var ctorArgs = new Operand[call.Arguments.Length + 1];
+			ctorArgs[0] = new Copy(resultAddr);
+			for (int i = 0; i < call.Arguments.Length; i++)
+			{
+				ctorArgs[i + 1] = RewriteExpression(call.Arguments[i], block);
+			}
+
+			block.Instructions.Add(new CallInstruction(null, call.Function, [..ctorArgs]));
+
+			Temp loaded = NewTemp(call.Type);
+			block.Instructions.Add(new LoadInstruction(loaded, new Copy(resultAddr)));
+			return new Copy(loaded);
+		}
+
 		Operand[] arguments = new Operand[call.Arguments.Length];
 		for (int i = 0; i < arguments.Length; i++)
 		{
@@ -454,18 +487,22 @@ internal sealed class NirBuilder
 				return EmitLocal(move, block);
 			case BoundCopy copy when copy.Variable.Type is BaseReferenceTypeSymbol:
 				return EmitLocal(copy, block);
-			case BoundMove move:
-			{
-				Temp addr = NewTemp(move.Variable.Type);
-				block.Instructions.Add(new AddressOfInstruction(addr, move.Variable));
-				return new Copy(addr);
-			}
-			case BoundCopy copy:
-			{
-				Temp addr = NewTemp(copy.Variable.Type);
-				block.Instructions.Add(new AddressOfInstruction(addr, copy.Variable));
-				return new Copy(addr);
-			}
+		case BoundMove move:
+		{
+			Temp addr = NewTemp(move.Variable.Type);
+			block.Instructions.Add(new AddressOfInstruction(addr, move.Variable));
+			IValue current = ReadLocal(move.Variable);
+			block.Instructions.Add(new StoreInstruction(new Copy(current), new Copy(addr)));
+			return new Copy(addr);
+		}
+		case BoundCopy copy:
+		{
+			Temp addr = NewTemp(copy.Variable.Type);
+			block.Instructions.Add(new AddressOfInstruction(addr, copy.Variable));
+			IValue current = ReadLocal(copy.Variable);
+			block.Instructions.Add(new StoreInstruction(new Copy(current), new Copy(addr)));
+			return new Copy(addr);
+		}
 			case BoundDereferenceExpression deref:
 				return RewriteExpression(deref.Expression, block);
 			default:

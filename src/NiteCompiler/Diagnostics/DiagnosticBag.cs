@@ -188,6 +188,11 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.CannotResolveSymbol, [source]);
 	}
 
+	public void ReportUnresolvedFunction(Location source)
+	{
+		Add(DiagnosticDescriptor.CannotResolveFunction, [source]);
+	}
+
 	public void ReportFieldMustHaveEitherTypeClauseOrDefaultValue(Location location)
 	{
 		Add(DiagnosticDescriptor.FieldMustHaveEitherTypeClauseOrDefaultValue, [location]);

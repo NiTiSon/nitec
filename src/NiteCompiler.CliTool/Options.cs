@@ -26,6 +26,8 @@ internal static class Options
 	// Diagnostics / debug emission
 	public static readonly Option<bool> EmitNir;
 	public static readonly Option<bool> EmitAst;
+	public static readonly Option<bool> EmitLlvmIr;
+	public static readonly Option<bool> EmitLlvmBc;
 
 	static Options()
 	{
@@ -91,6 +93,18 @@ internal static class Options
 			Description = "Write the Abstract Syntax Tree for every source file to " +
 			              "'<sourcefile>.ast' alongside the primary output."
 		};
+
+		EmitLlvmIr = new Option<bool>("--emit-llvm-ir")
+		{
+			Description = "Write the LLVM IR (textual intermediate representation) for every compiled " +
+			              "function to '<outputname>.ll'."
+		};
+
+		EmitLlvmBc = new Option<bool>("--emit-llvm-bc")
+		{
+			Description = "Write the LLVM bitcode for every compiled " +
+			              "function to '<outputname>.bc'."
+		};
 	}
 
 	public static void ConfigureCompileCommand(Command command)
@@ -109,5 +123,7 @@ internal static class Options
 
 		command.Options.Add(EmitNir);
 		command.Options.Add(EmitAst);
+		command.Options.Add(EmitLlvmIr);
+		command.Options.Add(EmitLlvmBc);
 	}
 }

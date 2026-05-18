@@ -469,9 +469,10 @@ internal partial class LlvmTranslator
 			}
 		}
 
-		LLVMTypeRef structType = LLVMTypeRef.CreateStruct([.. fieldTypes], false);
-		_structTypes[namedType] = structType;
-		return structType;
+		LLVMTypeRef namedStruct = _context.CreateNamedStruct(namedType.ToDisplayString(SymbolFormat.Metadata));
+		namedStruct.StructSetBody([..fieldTypes], false);
+		_structTypes[namedType] = namedStruct;
+		return namedStruct;
 	}
 
 	private static int FindFieldIndex(FieldSymbol field)

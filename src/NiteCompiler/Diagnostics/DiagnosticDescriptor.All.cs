@@ -25,6 +25,7 @@ public partial class DiagnosticDescriptor
 		GenericsNotApplicableOnThisItem,
 		DuplicateModifier,
 		CannotResolveSymbol,
+		CannotResolveFunction,
 		UnresolvedPredefinedType,
 		AmbiguousReference,
 		DanglingReference,
@@ -93,6 +94,7 @@ public partial class DiagnosticDescriptor
 		// Binding
 		DuplicateModifier = new("duplicate-modifier", "Modifier '{0}' applied twice.");
 		CannotResolveSymbol = new("cannot-resolve-symbol", "Cannot resolve symbol.");
+		CannotResolveFunction = new("cannot-resolve-function", "Cannot resolve function or constructor.");
 		UnresolvedPredefinedType = new("unresolved-predefined-type", "Predefined type `{0}` is not resolved.");
 		AmbiguousReference = new("ambiguous-reference", "Ambiguous reference:\n{0}.");
 		DanglingReference = new("dangling-reference", "Reference to '{0}' may outlive the storage of '{1}'.");

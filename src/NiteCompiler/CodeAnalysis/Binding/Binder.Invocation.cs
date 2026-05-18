@@ -54,14 +54,14 @@ internal partial class Binder
 		{
 			if (methodGroup.Candidates.Length == 0)
 			{
-				diagnostics.Diagnostics.ReportUnresolvedSymbol(name.Location);
+				diagnostics.Diagnostics.ReportUnresolvedFunction(name.Location);
 				return new BoundBadExpression(invocation, methodGroup.ResultKind, [], arguments, CreateErrorType());
 			}
 
 			FunctionSymbol? function = ResolveInvokedFunction(methodGroup.Candidates, arguments.Length);
 			if (function == null)
 			{
-				diagnostics.Diagnostics.ReportUnresolvedSymbol(name.Location);
+				diagnostics.Diagnostics.ReportUnresolvedFunction(name.Location);
 				return new BoundBadExpression(invocation, methodGroup.ResultKind,
 					[..methodGroup.Candidates], arguments, CreateErrorType());
 			}

@@ -46,11 +46,13 @@ public static class NiteCompiler
 		string? outputPath = result.GetValue(Options.OutputPath);
 		bool emitNir = result.GetValue(Options.EmitNir);
 		bool emitAst = result.GetValue(Options.EmitAst);
+		bool emitLlvmIr = result.GetValue(Options.EmitLlvmIr);
+		bool emitLlvmBc = result.GetValue(Options.EmitLlvmBc);
 
 		Compile(inputFiles, dependencies, NiteCompilationOptions.Default,
 			OutputKind.Executable, outputPath, libraryName,
 			null, [],
-			emitNir, emitAst);
+			emitNir, emitAst, emitLlvmIr, emitLlvmBc);
 	}
 
 	private static unsafe void EmitObjectFile(LLVMModuleRef module, LLVMTargetMachineRef targetMachine,
@@ -93,7 +95,7 @@ public static class NiteCompiler
 	private static void Compile(FileInfo[] sources, FileInfo[] dependencies, NiteCompilationOptions options,
 		OutputKind outputKind, string? outputPath, string? libraryName,
 		string? targetTriple, string[] targetFeatures,
-		bool emitNir, bool emitAst,
+		bool emitNir, bool emitAst, bool emitLlvmIr, bool emitLlvmBc,
 		CancellationToken cancellationToken = default)
 	{
 		DiagnosticBag diagnostics = [];
@@ -200,8 +202,33 @@ public static class NiteCompiler
 		    compilationDiagnostics.All(d => d.Severity != DiagnosticSeverity.Error))
 		{
 			DiagnosticBag? resultingDiagnostics = null;
+			LLVMModuleRef? llvmModule = null;
+			LLVMTargetMachineRef? llvmMachine = null;
+			LLVMTargetDataRef? llvmDataLayout = null;
 			try
 			{
+				bool needsLlvm = outputKind == OutputKind.Executable || emitLlvmIr || emitLlvmBc;
+				if (needsLlvm)
+				{
+					(llvmModule, llvmMachine, llvmDataLayout) = compilation.GetLlvmModule(out resultingDiagnostics, ref targetTriple);
+					resultingDiagnostics?.DrainInto(diagnostics);
+					resultingDiagnostics = null;
+				}
+
+				if (llvmModule != null && emitLlvmIr)
+				{
+					string llPath = Path.ChangeExtension(libraryName ?? "intermediate", ".ll");
+					if (!llvmModule.Value.TryPrintToFile(llPath, out _))
+						diagnostics.ReportUnableToWriteFile(llPath);
+				}
+
+				if (llvmModule != null && emitLlvmBc)
+				{
+					string bcPath = Path.ChangeExtension(libraryName ?? "intermediate", ".bc");
+					if (llvmModule.Value.WriteBitcodeToFile(bcPath) != 0)
+						diagnostics.ReportUnableToWriteFile(bcPath);
+				}
+
 				switch (outputKind)
 				{
 					case OutputKind.NiTiSLibrary:
@@ -212,9 +239,8 @@ public static class NiteCompiler
 					}
 					case OutputKind.Executable:
 					{
-						var (module, machine, dataLayout) = compilation.GetLlvmModule(out resultingDiagnostics, ref targetTriple);
-						EmitObjectFile(module, machine, dataLayout, "out.obj");
-						LinkExecutable("out.obj", targetTriple, "out.exe", diagnostics);
+						EmitObjectFile(llvmModule!.Value, llvmMachine!.Value, llvmDataLayout!.Value, "out.obj");
+						LinkExecutable("out.obj", targetTriple!, "out.exe", diagnostics);
 						break;
 					}
 					default:

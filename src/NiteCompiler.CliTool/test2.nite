@@ -17,19 +17,19 @@ public type Vector2 {
 
 	public new(self.x, self.y); // generative constructor
 
-	public new(value: f32) { // usual constructor
-		self.x = value;
-		self.y = value;
-	}
+	// public new(value: f32) { // usual constructor
+	// 	self.x = value;
+	// 	self.y = value;
+	// }
 
-	public new create_x(x: f32) { // named constructor
-		self.x = x;
-		self.y = 0;
-	}
+	// public new create_x(x: f32) { // named constructor
+	// 	self.x = x;
+	// 	self.y = 0;
+	// }
 }
 
 public sum_vectors(lhs: Vector2, rhs: Vector2) -> Vector2 {
-	let result = Vector2(0.0);
+	let result = Vector2(0.0, 0.0);
 
 	result.x = lhs.x + rhs.x;
 	result.y = lhs.y + rhs.y;
