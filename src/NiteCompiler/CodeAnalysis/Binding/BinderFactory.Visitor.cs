@@ -372,7 +372,7 @@ internal partial class BinderFactory
 
 			foreach (var member in container.GetMembers())
 			{
-				if (member is SourceConstructorSymbol { Name: "" } ctor)
+				if (member is SourceConstructorSymbol { Name: "" } ctor && ctor.Syntax == syntax)
 				{
 					return ctor;
 				}

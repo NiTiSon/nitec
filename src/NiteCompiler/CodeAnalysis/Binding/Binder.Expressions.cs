@@ -155,7 +155,9 @@ internal partial class Binder
 
 		string fieldName = syntax.Name.GetName();
 
-		if (receiver.Type is NamedTypeSymbol namedType)
+		TypeSymbol effectiveType = GetEfficientType(receiver.Type, out bool accessThroughPointer);
+
+		if (effectiveType is NamedTypeSymbol namedType)
 		{
 			foreach (var member in namedType.GetMembers(fieldName))
 			{

@@ -28,7 +28,7 @@ public type Vector2 {
 	// }
 }
 
-public sum_vectors(lhs: Vector2, rhs: Vector21) -> Vector2 {
+public sum_vectors(lhs: Vector2, rhs: Vector2) -> Vector2 {
 	let result = Vector2(0.0, 0.0);
 
 	result.x = lhs.x + rhs.x;

@@ -119,14 +119,19 @@ internal partial class Binder
 	/// </summary>
 	/// <param name="from"></param>
 	/// <returns></returns>
-	private TypeSymbol GetEfficientType(TypeSymbol from)
+	private TypeSymbol GetEfficientType(TypeSymbol from, out bool isPointerAccessRequired)
 	{
-		return from switch
+		isPointerAccessRequired = false;
+		switch (from)
 		{
-			PointerTypeSymbol pointer => pointer.PointsTo,
-			ReferenceTypeSymbol reference => reference.PointsTo,
-			_ => from
-		};
+			case PointerTypeSymbol pointer:
+				isPointerAccessRequired = true;
+				return pointer.PointsTo;
+			case ReferenceTypeSymbol reference:
+				return reference.PointsTo;
+			default:
+				return from;
+		}
 	}
 
 	private Symbol ResultSymbol(LookupResult result,
