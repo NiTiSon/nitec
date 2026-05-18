@@ -329,12 +329,12 @@ internal partial class NiteParser
 			constraintClauses, body);
 	}
 
-	private SelfParameterSyntax ParseSelfParameter()
+	private GenerativeParameterSyntax ParseSelfParameter()
 	{
 		Token selfKeyword = PeekAndAdvance();
 		Token dotToken = MatchToken(TokenKind.Dot);
 		SimpleNameSyntax fieldName = ParseSimpleName();
-		return new SelfParameterSyntax(_syntaxTree, selfKeyword, dotToken, fieldName);
+		return new GenerativeParameterSyntax(_syntaxTree, selfKeyword, dotToken, fieldName);
 	}
 
 	private BaseParameterSyntax ParseParameter()

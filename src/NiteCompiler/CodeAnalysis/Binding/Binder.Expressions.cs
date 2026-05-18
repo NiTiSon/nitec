@@ -44,6 +44,17 @@ internal partial class Binder
 		return new ErrorTypeSymbol(Compilation, SpecialType.None, name, lifetimeArity: 0, arity: 0, errorInfo: null, unreported: false);
 	}
 
+	internal FieldSymbol CreateErrorField(ContainerSymbol owner, string name = "<error_field>")
+	{
+		Debug.Assert(owner != null);
+		return new ErrorFieldSymbol(owner, name, null, false, [], LookupResultKind.Empty);
+	}
+
+	internal FieldSymbol CreateErrorField(string name = "<error_field>")
+	{
+		return new ErrorFieldSymbol(Compilation, name, null, false);
+	}
+
 	internal BoundExpression BindExpression(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics,
 		bool invoked = false, bool indexed = false)
 	{

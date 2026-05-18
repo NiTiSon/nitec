@@ -12,6 +12,7 @@ namespace NiteCompiler.CodeAnalysis.Symbols.Source;
 internal sealed class SourceConstructorSymbol : ConstructorSymbol
 {
 	public override TypeSymbol ContainingSymbol { get; }
+	public override TypeSymbol ContainingType => ContainingSymbol;
 	public BaseConstructorDeclarationSyntax Syntax { get; }
 	public override string Name { get; }
 
@@ -67,13 +68,15 @@ internal sealed class SourceConstructorSymbol : ConstructorSymbol
 		var diagnostics = BindingDiagnosticBag.GetInstance();
 		var builder = ArrayBuilder<ParameterSymbol>.GetInstance();
 
-		var selfParam = new SelfParameterSymbol(ContainingType!, DeclaringCompilation!);
-		builder.Add(selfParam);
 
 		Debug.Assert(Syntax != null);
 		int ord = 1;
 		BinderFactory factory = ContainingSymbol.DeclaringCompilation!.GetBinderFactory(Syntax.Tree);
 		Binder binder = factory.GetBinder(Syntax.ParameterList);
+
+		var selfParam = SourceSelfParameterSymbol.Create(binder, this, diagnostics);
+		builder.Add(selfParam);
+
 		foreach (var param in Syntax.ParameterList.Parameters)
 		{
 			if (param is ParameterSyntax ps)
@@ -83,12 +86,9 @@ internal sealed class SourceConstructorSymbol : ConstructorSymbol
 				builder.Add(sourceParam);
 				ord++;
 			}
-			else if (param is SelfParameterSyntax sps)
+			else if (param is GenerativeParameterSyntax sps)
 			{
-				// TODO: report when not resolved; [generative-field-is-not-resolved] or smth lk tht
-				FieldSymbol? field = binder.LookupFieldSymbolWithinType(ContainingType!, sps.FieldName.GetName());
-				// TODO: replace SynthesizedParameterSymbol with SourceGenerativeParameterSymbol for future code generation
-				var synthParam = new SynthesizedParameterSymbol(this, sps.FieldName.GetName(), field?.Type ?? binder.CreateErrorType(sps.FieldName.GetName()), ord);
+				var synthParam = SourceParameterSymbol.CreateGenerative(binder, this, sps, ord, diagnostics);
 				builder.Add(synthParam);
 				ord++;
 			}

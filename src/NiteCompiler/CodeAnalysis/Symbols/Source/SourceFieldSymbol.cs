@@ -49,9 +49,4 @@ internal sealed class SourceFieldSymbol : FieldSymbol
 		diagnostics.Free();
 		return result;
 	}
-
-	public override string ToDisplayString(SymbolFormat format = SymbolFormat.Default)
-	{
-		return $"{Name}: {Type.ToDisplayString(format)}";
-	}
 }

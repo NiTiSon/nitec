@@ -232,7 +232,7 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind FieldDeclaration = Reg(Item + 10, "field-declaration");
 	public static readonly NodeKind ConstructorDeclaration = Reg(Item + 11, "constructor-declaration");
 	public static readonly NodeKind NamedConstructorDeclaration = Reg(Item + 12, "named-constructor-declaration");
-	public static readonly NodeKind SelfParameter = Reg(Item + 13, "self-parameter");
+	public static readonly NodeKind GenerativeParameter = Reg(Item + 13, "self-parameter");
 
 	private const uint Expression = 0x00_00__20_00;
 	private const uint BinaryFlag = 0x00_01__00_00;

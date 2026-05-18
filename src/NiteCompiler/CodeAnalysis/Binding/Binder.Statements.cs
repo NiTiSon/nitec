@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Symbols.Source;
@@ -38,7 +39,72 @@ internal partial class Binder
 	private BoundNode BindFunctionBody(SyntaxNode declaration, FunctionBodySyntax body,
 		BindingDiagnosticBag diagnostics)
 	{
-		return new BoundFunctionBody(declaration, (BoundBlock)BindFunctionBodyStatement(body, diagnostics));
+		BoundBlock block = (BoundBlock)BindFunctionBodyStatement(body, diagnostics);
+
+		if (declaration is BaseConstructorDeclarationSyntax ctorDecl &&
+			ContainingMember is ConstructorSymbol ctor &&
+			ctorDecl.ParameterList.Parameters.Count > 0)
+		{
+			bool hasSelfParams = false;
+			foreach (var p in ctorDecl.ParameterList.Parameters)
+			{
+				if (p is GenerativeParameterSyntax)
+				{
+					hasSelfParams = true;
+					break;
+				}
+			}
+
+			if (hasSelfParams && ctor.ContainingType is NamedTypeSymbol namedType)
+			{
+				var additionalStatements = new List<BoundStatement>();
+
+				foreach (var param in ctorDecl.ParameterList.Parameters)
+				{
+					if (param is not GenerativeParameterSyntax selfParam)
+						continue;
+
+					string fieldName = selfParam.FieldName.GetName();
+
+					ParameterSymbol? synthParam = null;
+					foreach (var p in ctor.Parameters)
+					{
+						if (p.Name == fieldName)
+						{
+							synthParam = p;
+							break;
+						}
+					}
+
+					FieldSymbol? field = null;
+					foreach (var member in namedType.GetMembers())
+					{
+						if (member is FieldSymbol f && f.Name == fieldName)
+						{
+							field = f;
+							break;
+						}
+					}
+
+					if (synthParam != null && field != null)
+					{
+						SyntaxNode synthSyntax = body;
+						var selfCopy = new BoundCopy(synthSyntax, ctor.SelfParameter);
+						var fieldAccess = new BoundFieldAccess(synthSyntax, selfCopy, field);
+						var paramCopy = new BoundCopy(synthSyntax, synthParam);
+						var assignment = new BoundAssignment(synthSyntax, fieldAccess, paramCopy);
+						additionalStatements.Add(new BoundExpressionStatement(synthSyntax, assignment));
+					}
+				}
+
+				if (additionalStatements.Count > 0)
+				{
+					block = new BoundBlock(body, block.Locals, block.Statements.AddRange(additionalStatements));
+				}
+			}
+		}
+
+		return new BoundFunctionBody(declaration, block);
 	}
 
 	private BoundNode BindFunctionBodyStatement(FunctionBodySyntax syntax, BindingDiagnosticBag diagnostics)

@@ -47,7 +47,7 @@ public abstract class SyntaxVisitor
 	public virtual void VisitTypeDeclaration(TypeDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual void VisitFieldDeclaration(FieldDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual void VisitConstructorDeclaration(BaseConstructorDeclarationSyntax declaration) => DefaultVisit(declaration);
-	public virtual void VisitSelfParameter(SelfParameterSyntax parameter) => DefaultVisit(parameter);
+	public virtual void VisitGenerativeParameter(GenerativeParameterSyntax parameter) => DefaultVisit(parameter);
 	public virtual void VisitTypeBody(TypeBodySyntax body) => DefaultVisit(body);
 	public virtual void VisitLocalVariableDeclarator(LocalVariableDeclarator declarator) => DefaultVisit(declarator);
 	public virtual void VisitEqualsValueClause(EqualsValueClause clause) => DefaultVisit(clause);
@@ -111,7 +111,7 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitTypeDeclaration(TypeDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual TResult? VisitFieldDeclaration(FieldDeclarationSyntax declaration) => DefaultVisit(declaration);
 	public virtual TResult? VisitConstructorDeclaration(BaseConstructorDeclarationSyntax declaration) => DefaultVisit(declaration);
-	public virtual TResult? VisitSelfParameter(SelfParameterSyntax parameter) => DefaultVisit(parameter);
+	public virtual TResult? VisitGenerativeParameter(GenerativeParameterSyntax parameter) => DefaultVisit(parameter);
 	public virtual TResult? VisitTypeBody(TypeBodySyntax body) => DefaultVisit(body);
 	public virtual TResult? VisitLocalVariableDeclarator(LocalVariableDeclarator declarator) => DefaultVisit(declarator);
 	public virtual TResult? VisitEqualsValueClause(EqualsValueClause clause) => DefaultVisit(clause);

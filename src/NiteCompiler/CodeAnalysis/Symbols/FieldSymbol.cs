@@ -5,6 +5,11 @@ public abstract class FieldSymbol : Symbol
 	public sealed override SymbolKind Kind => SymbolKind.Field;
 	public abstract TypeSymbol Type { get; }
 
+	public sealed override string ToDisplayString(SymbolFormat format = SymbolFormat.Default)
+	{
+		return $"{Name}: {Type.ToDisplayString(format)}";
+	}
+
 	public sealed override void Accept(SymbolVisitor visitor)
 	{
 		visitor.VisitField(this);

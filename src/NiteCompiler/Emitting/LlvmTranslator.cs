@@ -6,6 +6,7 @@ using LLVMSharp.Interop;
 using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Symbols.Source;
+using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Compilation;
 using NiteCompiler.Diagnostics;
 using NiteCompiler.IntermediateRepresentation;
@@ -54,6 +55,11 @@ internal sealed partial class LlvmTranslator
 		{
 			EmitFunctionBody(plan);
 		}
+
+		// TODO: this is shi
+		LLVMValueRef fltUsed = _module.AddGlobal(_context.Int32Type, "_fltused");
+		fltUsed.IsGlobalConstant = true;
+		fltUsed.Initializer = LLVMValueRef.CreateConstInt(_context.Int32Type, 0);
 
 		if (!_module.TryVerify(LLVMVerifierFailureAction.LLVMReturnStatusAction, out string message))
 		{
@@ -161,18 +167,30 @@ internal sealed partial class LlvmTranslator
 
 	private BoundBlock? BindFunctionBody(FunctionSymbol function)
 	{
-		if (function is not SourceFunctionSymbol sourceFunction)
+		Binder? binder = null;
+		SyntaxNode syntax;
+
+		if (function is SourceFunctionSymbol sourceFunction)
+		{
+			binder = sourceFunction.TryGetBodyBinder();
+			syntax = sourceFunction.Syntax;
+		}
+		else if (function is SourceConstructorSymbol sourceConstructor)
+		{
+			binder = sourceConstructor.TryGetBodyBinder();
+			syntax = sourceConstructor.Syntax;
+		}
+		else
 		{
 			return null;
 		}
 
-		Binder? binder = sourceFunction.TryGetBodyBinder();
 		if (binder == null)
 		{
 			return null;
 		}
 
-		BoundNode functionBody = binder.BindFunctionBody(sourceFunction.Syntax, _diagnostics);
+		BoundNode functionBody = binder.BindFunctionBody(syntax, _diagnostics);
 		if (functionBody is BoundFunctionBody body && !functionBody.HasErrors)
 		{
 			return body.BlockBody;

@@ -11,13 +11,16 @@ namespace NiteCompiler.IntermediateRepresentation.Nir;
 
 internal sealed class NirBuilder
 {
+	private HashSet<LocalVariableOrParameterSymbol> _stackAllocated = [];
+	private readonly Dictionary<LocalVariableOrParameterSymbol, Temp> _addresses;
 	private readonly Dictionary<LocalVariableOrParameterSymbol, Stack<IValue>> _stacks = new();
 	private int _tempId = 0;
-	private FunctionSymbol? _function;
 
 	public static NirFunction Build(ControlFlowGraph cfg, FunctionSymbol function)
 	{
-		var builder = new NirBuilder { _function = function };
+		Debug.Assert(function != null);
+
+		NirBuilder builder = new();
 		return builder.CreateNir(cfg, function);
 	}
 
