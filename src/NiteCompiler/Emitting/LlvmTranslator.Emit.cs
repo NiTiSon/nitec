@@ -231,17 +231,32 @@ internal partial class LlvmTranslator
 			case StoreInstruction store:
 				_builder.BuildStore(ResolveValue(store.Value.Value, valueMap), ResolveValue(store.Address.Value, valueMap));
 				break;
-			case GetElementPointer gep:
-			{
-				LLVMValueRef basePtr = ResolveValue(gep.BaseAddress.Value, valueMap);
-				TypeSymbol? containingType = gep.Field.ContainingType;
-				if (containingType == null)
-					throw new InvalidOperationException($"Field '{gep.Field.Name}' has no containing type.");
-				LLVMTypeRef structType = GetLlvmType(containingType);
-				int fieldIndex = FindFieldIndex(gep.Field);
-				valueMap[gep.Output] = _builder.BuildStructGEP2(structType, basePtr, (uint)fieldIndex, "gep");
-				break;
-			}
+		case GetElementPointer gep:
+		{
+			LLVMValueRef basePtr = ResolveValue(gep.BaseAddress.Value, valueMap);
+			TypeSymbol? containingType = gep.Field.ContainingType;
+			if (containingType == null)
+				throw new InvalidOperationException($"Field '{gep.Field.Name}' has no containing type.");
+			LLVMTypeRef structType = GetLlvmType(containingType);
+			int fieldIndex = FindFieldIndex(gep.Field);
+			valueMap[gep.Output] = _builder.BuildStructGEP2(structType, basePtr, (uint)fieldIndex, "gep");
+			break;
+		}
+		case ExtractValueInstruction extract:
+		{
+			LLVMValueRef aggregate = ResolveValue(extract.Aggregate.Value, valueMap);
+			int fieldIndex = FindFieldIndex(extract.Field);
+			valueMap[extract.Output] = _builder.BuildExtractValue(aggregate, (uint)fieldIndex, "extract");
+			break;
+		}
+		case InsertValueInstruction insert:
+		{
+			LLVMValueRef aggregate = ResolveValue(insert.Aggregate.Value, valueMap);
+			LLVMValueRef value = ResolveValue(insert.Value.Value, valueMap);
+			int fieldIndex = FindFieldIndex(insert.Field);
+			valueMap[insert.Output] = _builder.BuildInsertValue(aggregate, value, (uint)fieldIndex, "insert");
+			break;
+		}
 			case RetInstruction ret:
 				if (ret.Value == null)
 				{

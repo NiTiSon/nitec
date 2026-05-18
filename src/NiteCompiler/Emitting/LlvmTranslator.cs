@@ -136,6 +136,25 @@ internal sealed partial class LlvmTranslator
 				case ModuleSymbol nestedModule:
 					CollectModuleFunctions(nestedModule, worklist, discovered);
 					break;
+				case NamedTypeSymbol namedType:
+					CollectTypeFunctions(namedType, worklist, discovered);
+					break;
+			}
+		}
+	}
+
+	private static void CollectTypeFunctions(NamedTypeSymbol type, Queue<FunctionSymbol> worklist, HashSet<FunctionSymbol> discovered)
+	{
+		foreach (Symbol member in type.GetMembers())
+		{
+			switch (member)
+			{
+				case FunctionSymbol fn when discovered.Add(fn):
+					worklist.Enqueue(fn);
+					break;
+				case NamedTypeSymbol nested:
+					CollectTypeFunctions(nested, worklist, discovered);
+					break;
 			}
 		}
 	}

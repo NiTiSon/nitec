@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Binding.Operators;
@@ -11,8 +10,8 @@ namespace NiteCompiler.IntermediateRepresentation.Nir;
 
 internal sealed class NirBuilder
 {
-	private readonly HashSet<LocalVariableOrParameterSymbol> _stackAllocated = [];
-	private readonly Dictionary<LocalVariableOrParameterSymbol, Temp> _addresses = [];
+	private readonly HashSet<LocalVariableOrParameterSymbol> _memoryMapped = [];
+	private readonly Dictionary<LocalVariableOrParameterSymbol, Temp> _addressMap = [];
 	private readonly Dictionary<LocalVariableOrParameterSymbol, Stack<IValue>> _stacks = new();
 	private int _tempId = 0;
 
@@ -33,9 +32,29 @@ internal sealed class NirBuilder
 			nir.Blocks[block] = new NirBlock(block);
 		}
 
+		FindMemoryMappedSymbols(cfg, function);
+
 		foreach (var v in CollectAllVariablesAndParameters(cfg, function))
 		{
 			_stacks[v] = new Stack<IValue>();
+		}
+
+		NirBlock entryBlock = nir.Blocks[cfg.Entry];
+		foreach (var v in _memoryMapped)
+		{
+			Temp addr = NewTemp(v.Type);
+			entryBlock.Instructions.Add(new StackAllocInstruction(addr, v.Type));
+			_addressMap[v] = addr;
+		}
+
+		// For memory-mapped parameters, store the initial param value to the stack slot
+		foreach (ParameterSymbol param in function.Parameters)
+		{
+			if (_memoryMapped.Contains(param))
+			{
+				Param paramValue = new(param);
+				entryBlock.Instructions.Add(new StoreInstruction(new Copy(paramValue), new Copy(_addressMap[param])));
+			}
 		}
 
 		var defs = CollectDefinitions(cfg);
@@ -74,7 +93,49 @@ internal sealed class NirBuilder
 		return set;
 	}
 
-	private static Dictionary<LocalVariableOrParameterSymbol, HashSet<BasicBlock>> CollectDefinitions(ControlFlowGraph cfg)
+	private void FindMemoryMappedSymbols(ControlFlowGraph cfg, FunctionSymbol function)
+	{
+		foreach (var block in cfg.Blocks)
+		{
+			foreach (BoundStatement stmt in block.Statements)
+			{
+				if (stmt is BoundExpressionStatement { Expression: BoundAddressOfExpression addrOf })
+				{
+					var symbol = addrOf.Expression switch
+					{
+						BoundMove move => move.Variable,
+						BoundCopy copy => copy.Variable,
+						BoundParameter param => param.Variable,
+						BoundLocalVariable localVar => localVar.Variable,
+						_ => null
+					};
+					if (symbol != null)
+						_memoryMapped.Add(symbol);
+				}
+
+				if (stmt is BoundLocalVariableDeclarationStatement { Initializer: BoundCall { Function.IsConstructor: true } } decl)
+				{
+					_memoryMapped.Add(decl.Local);
+				}
+
+				if (stmt is BoundExpressionStatement { Expression: BoundAssignment { Left: var left, Right: BoundCall { Function.IsConstructor: true } } })
+				{
+					var symbol = left switch
+					{
+						BoundMove move => move.Variable,
+						BoundCopy copy => copy.Variable,
+						BoundParameter param => param.Variable,
+						BoundLocalVariable localVar => localVar.Variable,
+						_ => null
+					};
+					if (symbol != null)
+						_memoryMapped.Add(symbol);
+				}
+			}
+		}
+	}
+
+	private Dictionary<LocalVariableOrParameterSymbol, HashSet<BasicBlock>> CollectDefinitions(ControlFlowGraph cfg)
 	{
 		var result = new Dictionary<LocalVariableOrParameterSymbol, HashSet<BasicBlock>>();
 
@@ -85,6 +146,7 @@ internal sealed class NirBuilder
 				if (stmt is BoundLocalVariableDeclarationStatement varDeclaration)
 				{
 					LocalVariableSymbol var = varDeclaration.Local;
+					if (_memoryMapped.Contains(var)) continue;
 					if (!result.TryGetValue(var, out HashSet<BasicBlock>? set))
 					{
 						set = [];
@@ -107,6 +169,7 @@ internal sealed class NirBuilder
 				};
 
 					if (targetSymbol == null) continue;
+					if (_memoryMapped.Contains(targetSymbol)) continue;
 
 					if (!result.TryGetValue(targetSymbol, out HashSet<BasicBlock>? set))
 					{
@@ -126,8 +189,12 @@ internal sealed class NirBuilder
 		foreach (ParameterSymbol parameter in function.Parameters)
 		{
 			Param value = new(parameter);
-			_stacks[parameter].Push(value);
 			nir.Parameters[parameter] = value;
+
+			if (!_memoryMapped.Contains(parameter))
+			{
+				_stacks[parameter].Push(value);
+			}
 		}
 	}
 
@@ -138,6 +205,7 @@ internal sealed class NirBuilder
 
 		foreach (var (variable, defBlocks) in defs)
 		{
+			if (_memoryMapped.Contains(variable)) continue;
 			Queue<BasicBlock> worklist = new(defBlocks);
 			HashSet<BasicBlock> hasAlready = [];
 
@@ -180,6 +248,7 @@ internal sealed class NirBuilder
 
 		foreach (var phi in nirBlock.Phis)
 		{
+			if (_memoryMapped.Contains(phi.Variable)) continue;
 			Temp temp = NewTemp(phi.Variable.Type);
 			phi.Result = temp;
 			_stacks[phi.Variable].Push(temp);
@@ -200,6 +269,7 @@ internal sealed class NirBuilder
 
 			foreach (var phi in successorNir.Phis)
 			{
+				if (_memoryMapped.Contains(phi.Variable)) continue;
 				IValue value = _stacks[phi.Variable].Peek();
 				phi.Inputs.Add(block, value);
 			}
@@ -251,7 +321,14 @@ internal sealed class NirBuilder
 				if (var.Initializer != null)
 				{
 					Operand operand = RewriteExpression(var.Initializer, block);
-					_stacks[var.Local].Push(operand.Value);
+					if (_memoryMapped.Contains(var.Local))
+					{
+						block.Instructions.Add(new StoreInstruction(operand, new Copy(_addressMap[var.Local])));
+					}
+					else
+					{
+						_stacks[var.Local].Push(operand.Value);
+					}
 				}
 				break;
 			case BoundEmptyStatement:
@@ -381,7 +458,14 @@ internal sealed class NirBuilder
 
 		if (symbol != null)
 		{
-			_stacks[symbol].Push(right.Value);
+			if (_memoryMapped.Contains(symbol))
+			{
+				block.Instructions.Add(new StoreInstruction(right, new Copy(_addressMap[symbol])));
+			}
+			else
+			{
+				_stacks[symbol].Push(right.Value);
+			}
 			return right;
 		}
 
@@ -392,24 +476,44 @@ internal sealed class NirBuilder
 		}
 		else if (assignment.Left is BoundFieldAccess fieldAccess)
 		{
-			Operand basePtr = GetReceiverPointer(fieldAccess.Receiver, block);
-			Temp fieldPtr = NewTemp(fieldAccess.Type);
-			block.Instructions.Add(new GetElementPointer(fieldPtr, basePtr, fieldAccess.Field));
-			block.Instructions.Add(new StoreInstruction(right, new Copy(fieldPtr)));
+			if (fieldAccess.Receiver.Type is BaseReferenceTypeSymbol)
+			{
+				Operand basePtr = GetReceiverPointer(fieldAccess.Receiver, block);
+				Temp fieldPtr = NewTemp(fieldAccess.Type);
+				block.Instructions.Add(new GetElementPointer(fieldPtr, basePtr, fieldAccess.Field));
+				block.Instructions.Add(new StoreInstruction(right, new Copy(fieldPtr)));
+			}
+			else
+			{
+				Operand aggregate = GetReceiverValue(fieldAccess.Receiver, block);
+				Temp result = NewTemp(aggregate.Value.Type);
+				block.Instructions.Add(new InsertValueInstruction(result, aggregate, right, fieldAccess.Field));
 
-			LocalVariableOrParameterSymbol? fieldSymbol = fieldAccess.Receiver switch
-			{
-				BoundMove move => move.Variable,
-				BoundCopy copy => copy.Variable,
-				BoundParameter param => param.Variable,
-				BoundLocalVariable localVar => localVar.Variable,
-				_ => null
-			};
-			if (fieldSymbol != null && fieldSymbol.Type is not BaseReferenceTypeSymbol)
-			{
-				Temp reloaded = NewTemp(fieldSymbol.Type);
-				block.Instructions.Add(new LoadInstruction(reloaded, basePtr));
-				_stacks[fieldSymbol].Push(reloaded);
+				LocalVariableOrParameterSymbol? fieldSymbol = fieldAccess.Receiver switch
+				{
+					BoundMove move => move.Variable,
+					BoundCopy copy => copy.Variable,
+					BoundParameter param => param.Variable,
+					BoundLocalVariable localVar => localVar.Variable,
+					_ => null
+				};
+
+				if (fieldSymbol != null)
+				{
+					if (_memoryMapped.Contains(fieldSymbol))
+					{
+						block.Instructions.Add(new StoreInstruction(new Copy(result), new Copy(_addressMap[fieldSymbol])));
+					}
+					else
+					{
+						_stacks[fieldSymbol].Push(result);
+					}
+				}
+				else if (fieldAccess.Receiver is BoundDereferenceExpression)
+				{
+					Operand ptr = GetReceiverPointer(fieldAccess.Receiver, block);
+					block.Instructions.Add(new StoreInstruction(new Copy(result), ptr));
+				}
 			}
 		}
 
@@ -418,12 +522,46 @@ internal sealed class NirBuilder
 
 	private Operand EmitLocal(BoundMove move, NirBlock block)
 	{
+		if (_memoryMapped.Contains(move.Variable))
+		{
+			Temp loaded = NewTemp(move.Variable.Type);
+			block.Instructions.Add(new LoadInstruction(loaded, new Copy(_addressMap[move.Variable])));
+			return new Move(loaded);
+		}
 		return new Move(ReadLocal(move.Variable));
 	}
 
 	private Operand EmitLocal(BoundCopy copy, NirBlock block)
 	{
+		if (_memoryMapped.Contains(copy.Variable))
+		{
+			Temp loaded = NewTemp(copy.Variable.Type);
+			block.Instructions.Add(new LoadInstruction(loaded, new Copy(_addressMap[copy.Variable])));
+			return new Copy(loaded);
+		}
 		return new Copy(ReadLocal(copy.Variable));
+	}
+
+	private Operand EmitLocal(BoundParameter param, NirBlock block)
+	{
+		if (_memoryMapped.Contains(param.Variable))
+		{
+			Temp loaded = NewTemp(param.Variable.Type);
+			block.Instructions.Add(new LoadInstruction(loaded, new Copy(_addressMap[param.Variable])));
+			return new Copy(loaded);
+		}
+		return new Copy(ReadLocal(param.Variable));
+	}
+
+	private Operand EmitLocal(BoundLocalVariable localVar, NirBlock block)
+	{
+		if (_memoryMapped.Contains(localVar.Variable))
+		{
+			Temp loaded = NewTemp(localVar.Variable.Type);
+			block.Instructions.Add(new LoadInstruction(loaded, new Copy(_addressMap[localVar.Variable])));
+			return new Copy(loaded);
+		}
+		return new Copy(ReadLocal(localVar.Variable));
 	}
 
 	private Operand EmitCall(BoundCall call, NirBlock block)
@@ -461,7 +599,6 @@ internal sealed class NirBuilder
 
 	private Operand EmitAddressOfExpression(BoundAddressOfExpression addressOf, NirBlock block)
 	{
-		Temp output = NewTemp(addressOf.Type);
 		LocalVariableOrParameterSymbol symbol = addressOf.Expression switch
 		{
 			BoundMove move => move.Variable,
@@ -470,6 +607,11 @@ internal sealed class NirBuilder
 			BoundLocalVariable localVar => localVar.Variable,
 			_ => throw new UnreachableException($"EmitAddressOfExpression({addressOf.Expression.GetType()})")
 		};
+		if (_memoryMapped.Contains(symbol))
+		{
+			return new Copy(_addressMap[symbol]);
+		}
+		Temp output = NewTemp(addressOf.Type);
 		block.Instructions.Add(new AddressOfInstruction(output, symbol));
 		return new Copy(output);
 	}
@@ -484,12 +626,19 @@ internal sealed class NirBuilder
 
 	private Operand EmitFieldAccess(BoundFieldAccess fieldAccess, NirBlock block)
 	{
-		Operand basePtr = GetReceiverPointer(fieldAccess.Receiver, block);
-		Temp fieldPtr = NewTemp(fieldAccess.Type);
-		block.Instructions.Add(new GetElementPointer(fieldPtr, basePtr, fieldAccess.Field));
-		Temp result = NewTemp(fieldAccess.Type);
-		block.Instructions.Add(new LoadInstruction(result, new Copy(fieldPtr)));
-		return new Copy(result);
+		if (fieldAccess.Receiver.Type is BaseReferenceTypeSymbol)
+		{
+			Operand basePtr = GetReceiverPointer(fieldAccess.Receiver, block);
+			Temp fieldPtr = NewTemp(fieldAccess.Type);
+			block.Instructions.Add(new GetElementPointer(fieldPtr, basePtr, fieldAccess.Field));
+			Temp result = NewTemp(fieldAccess.Type);
+			block.Instructions.Add(new LoadInstruction(result, new Copy(fieldPtr)));
+			return new Copy(result);
+		}
+		Operand aggregate = GetReceiverValue(fieldAccess.Receiver, block);
+		Temp result2 = NewTemp(fieldAccess.Type);
+		block.Instructions.Add(new ExtractValueInstruction(result2, aggregate, fieldAccess.Field));
+		return new Copy(result2);
 	}
 
 	private Operand GetReceiverPointer(BoundExpression receiver, NirBlock block)
@@ -505,6 +654,8 @@ internal sealed class NirBuilder
 			case BoundLocalVariable localVar when localVar.Variable.Type is BaseReferenceTypeSymbol:
 				return EmitLocal(localVar, block);
 		case BoundMove move:
+			if (_memoryMapped.Contains(move.Variable))
+				return new Copy(_addressMap[move.Variable]);
 		{
 			Temp addr = NewTemp(move.Variable.Type);
 			block.Instructions.Add(new AddressOfInstruction(addr, move.Variable));
@@ -513,6 +664,8 @@ internal sealed class NirBuilder
 			return new Copy(addr);
 		}
 		case BoundCopy copy:
+			if (_memoryMapped.Contains(copy.Variable))
+				return new Copy(_addressMap[copy.Variable]);
 		{
 			Temp addr = NewTemp(copy.Variable.Type);
 			block.Instructions.Add(new AddressOfInstruction(addr, copy.Variable));
@@ -521,6 +674,8 @@ internal sealed class NirBuilder
 			return new Copy(addr);
 		}
 		case BoundParameter param:
+			if (_memoryMapped.Contains(param.Variable))
+				return new Copy(_addressMap[param.Variable]);
 		{
 			Temp addr = NewTemp(param.Variable.Type);
 			block.Instructions.Add(new AddressOfInstruction(addr, param.Variable));
@@ -529,6 +684,8 @@ internal sealed class NirBuilder
 			return new Copy(addr);
 		}
 		case BoundLocalVariable localVar:
+			if (_memoryMapped.Contains(localVar.Variable))
+				return new Copy(_addressMap[localVar.Variable]);
 		{
 			Temp addr = NewTemp(localVar.Variable.Type);
 			block.Instructions.Add(new AddressOfInstruction(addr, localVar.Variable));
@@ -543,14 +700,55 @@ internal sealed class NirBuilder
 		}
 	}
 
-	private Operand EmitLocal(BoundParameter param, NirBlock block)
+	private Operand GetReceiverValue(BoundExpression receiver, NirBlock block)
 	{
-		return new Copy(ReadLocal(param.Variable));
-	}
-
-	private Operand EmitLocal(BoundLocalVariable localVar, NirBlock block)
-	{
-		return new Copy(ReadLocal(localVar.Variable));
+		switch (receiver)
+		{
+			case BoundMove move when move.Variable.Type is BaseReferenceTypeSymbol:
+			{
+				Operand ptr = EmitLocal(move, block);
+				TypeSymbol pointsTo = ((BaseReferenceTypeSymbol)move.Variable.Type).PointsTo;
+				Temp loaded = NewTemp(pointsTo);
+				block.Instructions.Add(new LoadInstruction(loaded, ptr));
+				return new Copy(loaded);
+			}
+			case BoundCopy copy when copy.Variable.Type is BaseReferenceTypeSymbol:
+			{
+				Operand ptr = EmitLocal(copy, block);
+				TypeSymbol pointsTo = ((BaseReferenceTypeSymbol)copy.Variable.Type).PointsTo;
+				Temp loaded = NewTemp(pointsTo);
+				block.Instructions.Add(new LoadInstruction(loaded, ptr));
+				return new Copy(loaded);
+			}
+			case BoundParameter param when param.Variable.Type is BaseReferenceTypeSymbol:
+			{
+				Operand ptr = EmitLocal(param, block);
+				TypeSymbol pointsTo = ((BaseReferenceTypeSymbol)param.Variable.Type).PointsTo;
+				Temp loaded = NewTemp(pointsTo);
+				block.Instructions.Add(new LoadInstruction(loaded, ptr));
+				return new Copy(loaded);
+			}
+			case BoundLocalVariable localVar when localVar.Variable.Type is BaseReferenceTypeSymbol:
+			{
+				Operand ptr = EmitLocal(localVar, block);
+				TypeSymbol pointsTo = ((BaseReferenceTypeSymbol)localVar.Variable.Type).PointsTo;
+				Temp loaded = NewTemp(pointsTo);
+				block.Instructions.Add(new LoadInstruction(loaded, ptr));
+				return new Copy(loaded);
+			}
+			case BoundMove move:
+				return EmitLocal(move, block);
+			case BoundCopy copy:
+				return EmitLocal(copy, block);
+			case BoundParameter param:
+				return EmitLocal(param, block);
+			case BoundLocalVariable localVar:
+				return EmitLocal(localVar, block);
+			case BoundDereferenceExpression deref:
+				return RewriteExpression(deref, block);
+			default:
+				throw new NotImplementedException($"GetReceiverValue: {receiver.GetType()}");
+		}
 	}
 
 	private Dictionary<LocalVariableOrParameterSymbol, int> SaveStacks()
@@ -559,6 +757,7 @@ internal sealed class NirBuilder
 
 		foreach (var (k, v) in _stacks)
 		{
+			if (_memoryMapped.Contains(k)) continue;
 			snapshot[k] = v.Count;
 		}
 

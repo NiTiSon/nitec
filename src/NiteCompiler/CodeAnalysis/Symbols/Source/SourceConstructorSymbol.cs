@@ -170,6 +170,10 @@ internal sealed class SourceConstructorSymbol : ConstructorSymbol
 	public override string ToDisplayString(SymbolFormat format = SymbolFormat.Default)
 	{
 		string result = $"{ContainingSymbol.ToDisplayString(format)} operator new";
+		if (!string.IsNullOrEmpty(Name))
+		{
+			result += $" {Name}";
+		}
 		result += $"({string.Join(", ", Parameters.Select(t => t.ToDisplayString(format)))})";
 		return result;
 	}

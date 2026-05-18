@@ -20,12 +20,16 @@ public type Vector2 {
 	public new(value: f32) { // usual constructor
         self.x = value;
         self.y = value;
+
+        if (value == 0.0) {
+        	self.x = 1.0;
+        }
     }
 
-	// public new create_x(x: f32) { // named constructor
-	// 	self.x = x;
-	// 	self.y = 0;
-	// }
+	public new create_x(x: f32) { // named constructor
+		self.x = x;
+		self.y = 0;
+	}
 }
 
 public sum_vectors(lhs: Vector2, rhs: Vector2) -> Vector2 {

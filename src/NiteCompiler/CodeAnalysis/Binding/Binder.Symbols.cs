@@ -115,10 +115,8 @@ internal partial class Binder
 	}
 
 	/// <summary>
-	/// Returns eficient type to resolve operators, function parameters, conversions.
+	/// Returns efficient type to resolve operators, function parameters, conversions.
 	/// </summary>
-	/// <param name="from"></param>
-	/// <returns></returns>
 	private TypeSymbol GetEfficientType(TypeSymbol from, out bool isPointerAccessRequired)
 	{
 		isPointerAccessRequired = false;
