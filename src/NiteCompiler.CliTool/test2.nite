@@ -1,14 +1,26 @@
 #!bin/nite
 
-public lifetime_test2_fail<'a>(ref: &i32) {
-	let x = 3;
-	ref = &x;
+// public lifetime_test2_fail<'a>(ref: &i32) {
+// 	let x = 3;
+// 	ref = &x;
+// }
+
+// public type Matrix4x4 {
+// 	private values: [f32; 16];
+//
+// 	public new identity() {
+// 		return;
+// 	}
+// }
+
+public type Foo {
+	public int: i32;
+
+	public new named() {
+		self.int = 12i32;
+	}
 }
 
-public type Matrix4x4 {
-	private values: [f32; 16];
-
-	public new identity() {
-		return;
-	}
+public main() -> Foo {
+	return Foo::named();
 }

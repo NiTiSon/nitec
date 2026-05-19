@@ -16,7 +16,8 @@ internal abstract class ConstantValue
 	public virtual long S64 => S32;
 	public virtual ulong U64 => U32;
 
-	public virtual float F32 => throw new InvalidOperationException();
+	public virtual Half F16 => throw new InvalidOperationException();
+	public virtual float F32 => (float)F16;
 	public virtual double F64 => (double)F32;
 
 	public static ConstantValue Create(bool value)
@@ -36,9 +37,31 @@ internal abstract class ConstantValue
 		};
 	}
 
+	public static ConstantValue Create(long value)
+	{
+		return value switch
+		{
+			0 => ValueI64.Zero,
+			1 => ValueI64.One,
+			-1 => ValueI64.MinusOne,
+			2 => ValueI64.Two,
+			_ => new ValueI64(value)
+		};
+	}
+
+	public static ConstantValue Create(Half value)
+	{
+		return new ValueF16(value);
+	}
+
 	public static ConstantValue Create(float value)
 	{
 		return new ValueF32(value);
+	}
+
+	public static ConstantValue Create(double value)
+	{
+		return new ValueF64(value);
 	}
 
 	private sealed class ValueI32 : ConstantValue
@@ -65,6 +88,44 @@ internal abstract class ConstantValue
 		public override int S32 => unchecked((int)_value);
 	}
 
+	private sealed class ValueI64 : ConstantValue
+	{
+		public static readonly ValueI64 Zero = new(0);
+		public static readonly ValueI64 One = new(1);
+		public static readonly ValueI64 MinusOne = new(-1);
+		public static readonly ValueI64 Two = new(2);
+		private readonly ulong _value;
+
+		public ValueI64(long value)
+		{
+			this._value = unchecked((uint)value);
+		}
+
+		public ValueI64(ulong value)
+		{
+			this._value = value;
+		}
+
+		public override SpecialType SpecialType => SpecialType.StdNumericsSInt64;
+
+		public override ulong U64 => _value;
+		public override int S32 => unchecked((int)_value);
+	}
+
+	private sealed class ValueF16 : ConstantValue
+	{
+		private readonly Half _value;
+
+		public ValueF16(Half value)
+		{
+			_value = value;
+		}
+
+		public override SpecialType SpecialType => SpecialType.StdNumericsFloat16;
+
+		public override Half F16 => _value;
+	}
+
 	private sealed class ValueF32 : ConstantValue
 	{
 		private readonly float _value;
@@ -77,6 +138,20 @@ internal abstract class ConstantValue
 		public override SpecialType SpecialType => SpecialType.StdNumericsFloat32;
 
 		public override float F32 => _value;
+	}
+
+	private sealed class ValueF64 : ConstantValue
+	{
+		private readonly double _value;
+
+		public ValueF64(double value)
+		{
+			_value = value;
+		}
+
+		public override SpecialType SpecialType => SpecialType.StdNumericsFloat64;
+
+		public override double F64 => _value;
 	}
 
 	private sealed class ValueBoolean : ConstantValue

@@ -93,11 +93,15 @@ internal partial class Binder
 				return BindIdentifier(name, invoked, indexed, diagnostics);
 			case InvocationExpressionSyntax invocation:
 				return BindInvocation(invocation, diagnostics);
+			case IndexationExpressionSyntax indexation:
+				throw new NotImplementedException("TODO[high]");
 
 			case SelfExpressionSyntax selfExpr:
 				return BindSelfExpression(selfExpr, diagnostics);
 			case MemberAccessExpressionSyntax memberAccess:
 				return BindMemberAccess(memberAccess, diagnostics);
+			case PathNameSyntax path:
+				return BindPath(path, diagnostics);
 
 			default:
 				throw new UnreachableException($"BindExpression({syntax.Kind})");
@@ -157,6 +161,7 @@ internal partial class Binder
 
 		TypeSymbol effectiveType = GetEfficientType(receiver.Type, out bool accessThroughPointer);
 
+		// TODO: replace with lookup?
 		if (effectiveType is NamedTypeSymbol namedType)
 		{
 			foreach (var member in namedType.GetMembers(fieldName))
@@ -170,6 +175,120 @@ internal partial class Binder
 
 		diagnostics.Diagnostics.ReportUnresolvedSymbol(syntax.Name.Location);
 		return new BoundFieldAccess(syntax, receiver, CreateErrorField(receiver.Type, syntax.Name.GetName()), hasErrors: true);
+	}
+
+	private BoundExpression BindPath(PathNameSyntax syntax, BindingDiagnosticBag diagnostics,
+		bool invoked = false, bool indexed = false)
+	{
+		ContainerSymbol? container = ResolveQualifier(syntax.Left, diagnostics);
+
+		if (container == null)
+		{
+			return BadExpression(syntax);
+		}
+
+		string rightName = syntax.Right.GetName();
+
+		LookupResult result = LookupResult.GetInstance();
+		LookupOptions options = LookupOptions.Default;
+		if (invoked)
+		{
+			options |= LookupOptions.MustBeInvocableIfMember;
+		}
+
+		LookupMembersInternal(result, container, rightName, syntax.Right.Arity, options, this, diagnose: true);
+
+		BoundExpression boundExpression;
+		if (result.Kind == LookupResultKind.Empty)
+		{
+			diagnostics.Diagnostics.ReportUnresolvedSymbol(syntax.Right.Location);
+			boundExpression = BadExpression(syntax);
+		}
+		else
+		{
+			var group = ArrayBuilder<Symbol>.GetInstance();
+			Symbol? symbol = GetSymbolOrFunctionGroup(result, syntax, rightName, arity: 0, group, diagnostics, out bool isError);
+
+			if (symbol is null)
+			{
+				Debug.Assert(group.Count > 0);
+
+				var candidates = new FunctionSymbol[group.Count];
+				for (int i = 0; i < group.Count; i++)
+					candidates[i] = (FunctionSymbol)group[i];
+
+				boundExpression = new BoundFunctionGroup(syntax, [..candidates], receiver: null, result.Kind, CreateErrorType());
+			}
+			else if (symbol is NamedTypeSymbol typeSymbol && invoked)
+			{
+				ImmutableArray<Symbol> members = typeSymbol.GetMembers();
+				var constructors = ArrayBuilder<FunctionSymbol>.GetInstance();
+				foreach (Symbol member in members)
+				{
+					if (member is ConstructorSymbol ctor)
+					{
+						constructors.Add(ctor);
+					}
+				}
+
+				if (constructors.Count > 0)
+				{
+					boundExpression = new BoundFunctionGroup(syntax, constructors.ToImmutableAndFree(),
+						receiver: null, result.Kind, CreateErrorType());
+				}
+				else
+				{
+					constructors.Free();
+					boundExpression = BindNonFunction(syntax, symbol, diagnostics, result.Kind, indexed, isError);
+				}
+			}
+			else
+			{
+				boundExpression = BindNonFunction(syntax, symbol, diagnostics, result.Kind, indexed, isError);
+			}
+			group.Free();
+		}
+
+		result.Free();
+		return boundExpression;
+	}
+
+	private ContainerSymbol? ResolveQualifier(NameSyntax name, BindingDiagnosticBag diagnostics)
+	{
+		if (name is SimpleNameSyntax simpleName)
+		{
+			Symbol symbol = BindModuleOrTypeSymbol(simpleName, diagnostics);
+			return symbol as ContainerSymbol;
+		}
+
+		if (name is PathNameSyntax pathName)
+		{
+			ContainerSymbol? leftContainer = ResolveQualifier(pathName.Left, diagnostics);
+			if (leftContainer == null)
+			{
+				return null;
+			}
+
+			string rightName = pathName.Right.GetName();
+			LookupResult result = LookupResult.GetInstance();
+			LookupMembersInternal(result, leftContainer, rightName, arity: 0, LookupOptions.ModulesOrTypesOnly, this, diagnose: true);
+
+			ContainerSymbol? container = null;
+			if (result.Kind == LookupResultKind.Viable && result.Symbols.Count > 0)
+			{
+				container = result.Symbols[0] as ContainerSymbol;
+			}
+
+			if (container == null)
+			{
+				diagnostics.Diagnostics.ReportUnresolvedSymbol(pathName.Right.Location);
+			}
+
+			result.Free();
+			return container;
+		}
+
+		return null;
 	}
 
 	private BoundExpression BindUnaryExpression(UnaryExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
@@ -258,7 +377,8 @@ internal partial class Binder
 
 	private BoundExpression BindBooleanExpression(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
-		BoundExpression result = FinallyBind(BindExpression(syntax, diagnostics), null);
+		TypeSymbol booleanType = GetSpecialType(SpecialType.StdBoolean);
+		BoundExpression result = FinallyBind(BindExpression(syntax, diagnostics), booleanType);
 
 		if (result.Type.SpecialType != SpecialType.StdBoolean)
 		{
@@ -332,6 +452,71 @@ internal partial class Binder
 						TypeSymbol i32 = GetSpecialType(SpecialType.StdNumericsSInt32);
 						return new BoundLiteral(syntax, ConstantValue.Create((int)value.U64), i32);
 					}
+				}
+				case NumericLiteralType.I8:
+				{
+					TypeSymbol type = GetSpecialType(SpecialType.StdNumericsSInt8);
+					return new BoundLiteral(syntax, ConstantValue.Create((int)(sbyte)value.U64), type);
+				}
+				case NumericLiteralType.I16:
+				{
+					TypeSymbol type = GetSpecialType(SpecialType.StdNumericsSInt16);
+					return new BoundLiteral(syntax, ConstantValue.Create((short)value.U64), type);
+				}
+				case NumericLiteralType.I32:
+				{
+					TypeSymbol type = GetSpecialType(SpecialType.StdNumericsSInt32);
+					return new BoundLiteral(syntax, ConstantValue.Create((int)value.U64), type);
+				}
+				case NumericLiteralType.I64:
+				{
+					TypeSymbol type = GetSpecialType(SpecialType.StdNumericsSInt64);
+					return new BoundLiteral(syntax, ConstantValue.Create(value.U64), type);
+				}
+				case NumericLiteralType.U8:
+				{
+					TypeSymbol type = GetSpecialType(SpecialType.StdNumericsUInt8);
+					return new BoundLiteral(syntax, ConstantValue.Create((int)(byte)value.U64), type);
+				}
+				case NumericLiteralType.U16:
+				{
+					TypeSymbol type = GetSpecialType(SpecialType.StdNumericsUInt16);
+					return new BoundLiteral(syntax, ConstantValue.Create((ushort)value.U64), type);
+				}
+				case NumericLiteralType.U32:
+				{
+					TypeSymbol type = GetSpecialType(SpecialType.StdNumericsUInt32);
+					return new BoundLiteral(syntax, ConstantValue.Create((uint)value.U64), type);
+				}
+				case NumericLiteralType.U64:
+				{
+					TypeSymbol type = GetSpecialType(SpecialType.StdNumericsUInt64);
+					return new BoundLiteral(syntax, ConstantValue.Create(value.U64), type);
+				}
+				case NumericLiteralType.Signed:
+				{
+					TypeSymbol type = GetSpecialType(SpecialType.StdNumericsSInt32);
+					return new BoundLiteral(syntax, ConstantValue.Create((int)value.U64), type);
+				}
+				case NumericLiteralType.Unsigned:
+				{
+					TypeSymbol type = GetSpecialType(SpecialType.StdNumericsUInt32);
+					return new BoundLiteral(syntax, ConstantValue.Create((int)(uint)value.U64), type);
+				}
+				case NumericLiteralType.F16:
+				{
+					TypeSymbol type = GetSpecialType(SpecialType.StdNumericsFloat16);
+					return new BoundLiteral(syntax, ConstantValue.Create((float)value.F64), type);
+				}
+				case NumericLiteralType.F32:
+				{
+					TypeSymbol type = GetSpecialType(SpecialType.StdNumericsFloat32);
+					return new BoundLiteral(syntax, ConstantValue.Create((float)value.F64), type);
+				}
+				case NumericLiteralType.F64:
+				{
+					TypeSymbol type = GetSpecialType(SpecialType.StdNumericsFloat64);
+					return new BoundLiteral(syntax, ConstantValue.Create((float)value.F64), type);
 				}
 				default:
 					throw new UnreachableException();
@@ -424,7 +609,7 @@ internal partial class Binder
 		return boundExpression;
 	}
 
-	private BoundExpression BindNonFunction(SimpleNameSyntax name, Symbol symbol, BindingDiagnosticBag diagnostics,
+	private BoundExpression BindNonFunction(SyntaxNode syntax, Symbol symbol, BindingDiagnosticBag diagnostics,
 		LookupResultKind resultKind, bool indexed, bool wasError)
 	{
 		switch (symbol.Kind)
@@ -432,16 +617,16 @@ internal partial class Binder
 			case SymbolKind.LocalVariable:
 			{
 				var local = (LocalVariableSymbol)symbol;
-				return new BoundLocalVariable(name, local);
+				return new BoundLocalVariable(syntax, local);
 			}
 			case SymbolKind.Parameter:
 			{
 				var param = (ParameterSymbol)symbol;
-				return new BoundParameter(name, param);
+				return new BoundParameter(syntax, param);
 			}
 			case SymbolKind.NamedType:
 			case SymbolKind.GenericTypeParameter:
-				return new BoundTypeExpression(name, (TypeSymbol)symbol, hasErrors: wasError);
+				return new BoundTypeExpression(syntax, (TypeSymbol)symbol, hasErrors: wasError);
 			default:
 				throw new UnreachableException();
 		}

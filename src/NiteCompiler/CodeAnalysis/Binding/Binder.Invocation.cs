@@ -17,6 +17,11 @@ internal partial class Binder
 			return BindIdentifier((SimpleNameSyntax)node, invoked, indexed, diagnostics);
 		}
 
+		if (nodeKind == NodeKind.PathNameExpression)
+		{
+			return BindPath((PathNameSyntax)node, diagnostics, invoked, indexed);
+		}
+
 		if (nodeKind == NodeKind.MemberAccessExpression) // TODO: PLANNED PointerMemberAccessExpression
 		{
 			return BindMemberAccess((MemberAccessExpressionSyntax)node, diagnostics, invoked, indexed);
@@ -39,9 +44,14 @@ internal partial class Binder
 		// func() - function
 		// method() - method (require add implicit bound self)
 		// self.method() - method
+		// PLANNED:
+		// new - auto constructor
+		// new(args) - auto constructor with arguments
+		// new named - auto named constructor
+		// new named(args) - auto named constructor with arguments
 		ImmutableArray<BoundExpression> arguments = BindInvocationArguments(invocation, diagnostics);
 
-		if (invocation.Expression is not SimpleNameSyntax name)
+		if (invocation.Expression is not NameSyntax name)
 		{
 			diagnostics.Diagnostics.ReportUnresolvedSymbol(invocation.Expression.Location);
 			return new BoundBadExpression(invocation, LookupResultKind.Empty, [], arguments, CreateErrorType());
@@ -54,14 +64,14 @@ internal partial class Binder
 		{
 			if (methodGroup.Candidates.Length == 0)
 			{
-				diagnostics.Diagnostics.ReportUnresolvedFunction(name.Location);
+				diagnostics.Diagnostics.ReportUnresolvedFunction(name.UnqualifiedName.Location);
 				return new BoundBadExpression(invocation, methodGroup.ResultKind, [], arguments, CreateErrorType());
 			}
 
 			FunctionSymbol? function = ResolveInvokedFunction(methodGroup.Candidates, arguments.Length);
 			if (function == null)
 			{
-				diagnostics.Diagnostics.ReportUnresolvedFunction(name.Location);
+				diagnostics.Diagnostics.ReportUnresolvedFunction(name.UnqualifiedName.Location);
 				return new BoundBadExpression(invocation, methodGroup.ResultKind,
 					[..methodGroup.Candidates], arguments, CreateErrorType());
 			}
@@ -81,7 +91,7 @@ internal partial class Binder
 			return new BoundBadExpression(invocation, LookupResultKind.Empty, [], arguments, CreateErrorType());
 		}
 
-		diagnostics.Diagnostics.ReportUnresolvedSymbol(name.Location);
+		diagnostics.Diagnostics.ReportUnresolvedSymbol(name.UnqualifiedName.Location);
 		return new BoundBadExpression(invocation, LookupResultKind.Empty, [], arguments, CreateErrorType());
 	}
 
