@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Syntax;
@@ -41,6 +42,11 @@ internal sealed class SourceFieldSymbol : FieldSymbol
 		Binder binder = factory.GetBinder(_syntax.TypeClause);
 		TypeSymbol result = binder.BindType(_syntax.TypeClause.Type, diagnostics);
 
+		if (result.IsUnsized)
+		{
+			diagnostics.Diagnostics.ReportCannotUseUnsizedType(_syntax.TypeClause.Type.Location, result);
+		}
+
 		if (!diagnostics.IsEmpty)
 		{
 			AddDeclarationDiagnostics(diagnostics);
@@ -48,5 +54,10 @@ internal sealed class SourceFieldSymbol : FieldSymbol
 
 		diagnostics.Free();
 		return result;
+	}
+
+	internal override void ForceComplete(Predicate<Symbol>? filter, CancellationToken cancellationToken = default)
+	{
+		_ = Type;
 	}
 }

@@ -20,7 +20,7 @@ internal sealed class SourceNamedTypeSymbol : NamedTypeSymbol
 
 	public override SpecialType SpecialType { get; }
 	public override Accessibility Accessibility { get; }
-	public override bool IsUnsized => (_flags & Flags.IsPartial) != 0;
+	public override bool IsUnsized => (_flags & Flags.IsUnsized) != 0;
 
 	private readonly Flags _flags;
 	private CompletionPart _state;

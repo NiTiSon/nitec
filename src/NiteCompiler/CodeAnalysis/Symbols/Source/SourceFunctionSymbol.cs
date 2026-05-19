@@ -318,6 +318,11 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 			ordinal++;
 		}
 
+		if (!diagnostics.IsEmpty)
+		{
+			AddDeclarationDiagnostics(diagnostics);
+		}
+
 		diagnostics.Free();
 		return builder.ToImmutable();
 	}
