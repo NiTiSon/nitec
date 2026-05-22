@@ -11,7 +11,8 @@ internal enum DeclarationModifiers
 	Virtual = 1 << 2,
 	Sealed = 1 << 3,
 	Unsized = 1 << 4,
+	Static = 1 << 5,
 
-	Unset = 1 << 5,
+	Unset = 1 << 6,
 	All = (Unset) - 1,
 }

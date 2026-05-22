@@ -227,6 +227,10 @@ internal sealed class DeclarationTreeBuilder : SyntaxVisitor<SingleItemDeclarati
 			{
 				flag |= DeclarationModifiers.Unsized;
 			}
+			else if (token.TKind == TokenKind.Static)
+			{
+				flag |= DeclarationModifiers.Static;
+			}
 			else
 			{
 				Debug.Fail($"GetModifiers() contains {token.TKind}");

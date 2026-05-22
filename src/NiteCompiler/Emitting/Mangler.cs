@@ -16,4 +16,11 @@ internal static class Mangler
 		// TODO[generics]: add mangled generics parameters
 		return sb.ToString();
 	}
+
+	public static string Mangle(FieldSymbol field)
+	{
+		StringBuilder sb = new();
+		sb.Append(field.ToDisplayString(SymbolFormat.Metadata));
+		return sb.ToString();
+	}
 }

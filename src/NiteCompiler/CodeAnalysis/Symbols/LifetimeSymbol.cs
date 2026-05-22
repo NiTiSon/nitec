@@ -5,6 +5,7 @@ namespace NiteCompiler.CodeAnalysis.Symbols;
 public abstract class LifetimeSymbol : Symbol
 {
 	public abstract int LifetimeOrdinal { get; }
+	public virtual bool IsStaticLifetime => false;
 	public sealed override SymbolKind Kind => SymbolKind.Lifetime;
 
 	public sealed override void Accept(SymbolVisitor visitor)

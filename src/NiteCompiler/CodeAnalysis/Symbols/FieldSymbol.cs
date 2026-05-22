@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
 public abstract class FieldSymbol : Symbol
@@ -7,7 +9,10 @@ public abstract class FieldSymbol : Symbol
 
 	public sealed override string ToDisplayString(SymbolFormat format = SymbolFormat.Default)
 	{
-		return $"{Name}: {Type.ToDisplayString(format)}";
+		Debug.Assert(ContainingSymbol != null);
+		string separator = ContainingSymbol.IsStatic ? "::" : ".";
+
+		return $"{ContainingSymbol.ToDisplayString(format)}{separator}Name: {Type.ToDisplayString(format)}";
 	}
 
 	public sealed override void Accept(SymbolVisitor visitor)

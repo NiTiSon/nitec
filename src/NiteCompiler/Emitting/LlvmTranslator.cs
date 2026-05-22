@@ -56,6 +56,8 @@ internal sealed partial class LlvmTranslator
 			EmitFunctionBody(plan);
 		}
 
+		EmitStaticFields(libraries);
+
 		// TODO: this is shi
 		LLVMValueRef fltUsed = _module.AddGlobal(_context.Int32Type, "_fltused");
 		fltUsed.IsGlobalConstant = true;
@@ -244,6 +246,40 @@ internal sealed partial class LlvmTranslator
 		}
 
 		return function.ToDisplayString(SymbolFormat.Metadata);
+	}
+
+	private void EmitStaticFields(ImmutableArray<LibrarySymbol> libraries)
+	{
+		foreach (LibrarySymbol library in libraries)
+		{
+			CollectStaticFields(library.GlobalModule);
+		}
+	}
+
+	private void CollectStaticFields(ModuleSymbol module)
+	{
+		foreach (Symbol member in module.GetMembersUnordered())
+		{
+			switch (member)
+			{
+				case NamedTypeSymbol namedType:
+					foreach (Symbol sym in namedType.GetMembers())
+					{
+						if (sym is FieldSymbol { IsStatic: true } field)
+						{
+							string name = Mangler.Mangle(field);
+							LLVMTypeRef type = GetLlvmType(field.Type);
+							LLVMValueRef global = _module.AddGlobal(type, name);
+							global.Initializer = LLVMValueRef.CreateConstNull(type);
+							global.Linkage = LLVMLinkage.LLVMInternalLinkage;
+						}
+					}
+					break;
+				case ModuleSymbol nestedModule:
+					CollectStaticFields(nestedModule);
+					break;
+			}
+		}
 	}
 
 	private sealed class FunctionPlan(FunctionSymbol function, ControlFlowGraph? cfg, NirFunction? nir)

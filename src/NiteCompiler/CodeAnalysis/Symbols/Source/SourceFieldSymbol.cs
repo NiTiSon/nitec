@@ -6,7 +6,7 @@ using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Symbols.Source;
 
-internal sealed class SourceFieldSymbol : FieldSymbol
+	internal sealed class SourceFieldSymbol : FieldSymbol
 {
 	private readonly SourceNamedTypeSymbol _containingType;
 	private readonly FieldDeclarationSyntax _syntax;
@@ -14,24 +14,70 @@ internal sealed class SourceFieldSymbol : FieldSymbol
 	public override Symbol ContainingSymbol => _containingType;
 	public override string Name => _syntax.Name.GetName();
 
-	private TypeSymbol? _lateinitType;
+	public override bool IsStatic
+	{
+		get
+		{
+			if (ContainingSymbol is ModuleSymbol)
+			{
+				return true;
+			}
+
+			return _flags.HasFlag(Flags.IsStatic);
+		}
+	}
+
 	public override TypeSymbol Type
 	{
 		get
 		{
-			if (_lateinitType == null)
+			if (field == null)
 			{
-				Interlocked.CompareExchange(ref _lateinitType, MakeType(), null);
+				Interlocked.CompareExchange(ref field, MakeType(), null);
 			}
 
-			return _lateinitType;
+			return field;
 		}
 	}
 
+	private readonly Flags _flags;
 	public SourceFieldSymbol(SourceNamedTypeSymbol containingType, FieldDeclarationSyntax syntax)
 	{
 		_containingType = containingType;
 		_syntax = syntax;
+
+		BindingDiagnosticBag diagnostics = BindingDiagnosticBag.GetInstance();
+		foreach (Token modifier in syntax.Modifiers)
+		{
+			if (modifier.TKind == TokenKind.Static)
+			{
+				if (!SetFlag(ref _flags, Flags.IsStatic))
+				{
+					diagnostics.Diagnostics.ReportDuplicateModifier(modifier.Location, modifier.TKind.ToString());
+				}
+			}
+			else
+			{
+				// TODO: report wrong modifier
+			}
+		}
+
+		AddDeclarationDiagnostics(diagnostics);
+	}
+
+	[Flags]
+	private enum Flags : ushort
+	{
+		IsStatic = 1 << 0,
+	}
+
+	/// <returns><see langword="true"/> when flag is set; otherwise <see langword="false"/>.</returns>
+	private static bool SetFlag(ref Flags modifiers, Flags flag)
+	{
+		Flags previous = modifiers;
+
+		modifiers |= flag;
+		return previous != modifiers;
 	}
 
 	private TypeSymbol MakeType()

@@ -83,7 +83,39 @@ internal partial class Binder
 		TypeSymbol element = BindType(syntax.ElementSyntax, diagnostics);
 		bool isMutable = syntax.ConstToken == null;
 		bool isNullable = syntax.QuestionToken != null;
-		return Compilation.CreateReferenceType(element, isMutable, isNullable);
+
+		LifetimeSymbol? lifetime = null;
+		if (syntax.Lifetime != null)
+		{
+			if (syntax.Lifetime.Identifier == "static")
+			{
+				lifetime = Compilation.GetStaticLifetime();
+			}
+			else
+			{
+				lifetime = LookupLifetimeSymbol(syntax.Lifetime, diagnostics);
+			}
+		}
+
+		return Compilation.CreateReferenceType(element, isMutable, isNullable, lifetime);
+	}
+
+	private LifetimeSymbol? LookupLifetimeSymbol(LifetimeSyntax lifetimeSyntax, BindingDiagnosticBag diagnostics)
+	{
+		string name = lifetimeSyntax.Identifier;
+
+		var result = LookupResult.GetInstance();
+		LookupSymbolsSimpleName(result, null, name, 0, LookupOptions.Default, diagnose: true);
+
+		Symbol symbol = ResultSymbol(result, name, 0, lifetimeSyntax, diagnostics, out _, null, LookupOptions.Default);
+		result.Free();
+
+		if (symbol is LifetimeSymbol lifetime)
+		{
+			return lifetime;
+		}
+
+		return null;
 	}
 
 	private TypeSymbol BindUnsizedArrayType(UnsizedArrayTypeSyntax syntax, BindingDiagnosticBag diagnostics)

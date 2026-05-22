@@ -147,18 +147,20 @@ public sealed partial class NiteCompilation
 		return _lateinitSpecialTypes?[(int)type] == null;
 	}
 
-	private ConcurrentDictionary<(TypeSymbol, bool, bool), ReferenceTypeSymbol>? _referenceTypeSymbols;
-	internal ReferenceTypeSymbol CreateReferenceType(TypeSymbol pointsTo, bool isMutable, bool isNullable)
+	public LifetimeSymbol GetStaticLifetime() => StaticLifetimeSymbol.Instance;
+
+	private ConcurrentDictionary<(TypeSymbol, bool, bool, LifetimeSymbol?), ReferenceTypeSymbol>? _referenceTypeSymbols;
+	internal ReferenceTypeSymbol CreateReferenceType(TypeSymbol pointsTo, bool isMutable, bool isNullable, LifetimeSymbol? lifetime = null)
 	{
 		if (_referenceTypeSymbols == null)
 		{
 			Interlocked.CompareExchange(ref _referenceTypeSymbols, new(), null);
 		}
 
-		if (!_referenceTypeSymbols.TryGetValue((pointsTo, isMutable, isNullable), out ReferenceTypeSymbol? value))
+		if (!_referenceTypeSymbols.TryGetValue((pointsTo, isMutable, isNullable, lifetime), out ReferenceTypeSymbol? value))
 		{
-			value = new ReferenceTypeSymbol(pointsTo, isMutable, isNullable);
-			_referenceTypeSymbols[(pointsTo, isMutable, isNullable)] = value;
+			value = new ReferenceTypeSymbol(pointsTo, isMutable, isNullable, lifetime);
+			_referenceTypeSymbols[(pointsTo, isMutable, isNullable, lifetime)] = value;
 		}
 
 		return value;

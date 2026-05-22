@@ -478,7 +478,7 @@ internal partial class LlvmTranslator
 		var fieldTypes = new List<LLVMTypeRef>();
 		foreach (Symbol member in namedType.GetMembers())
 		{
-			if (member is FieldSymbol field)
+			if (member is FieldSymbol field && !field.IsStatic)
 			{
 				fieldTypes.Add(GetLlvmType(field.Type));
 			}
@@ -500,7 +500,7 @@ internal partial class LlvmTranslator
 		{
 			if (member == field)
 				return index;
-			if (member is FieldSymbol)
+			if (member is FieldSymbol { IsStatic: false })
 				index++;
 		}
 
