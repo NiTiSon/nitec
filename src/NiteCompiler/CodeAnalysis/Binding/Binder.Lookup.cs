@@ -116,6 +116,11 @@ internal partial class Binder
 			return LookupResult.Empty();
 		}
 
+		if (options.HasFlag(LookupOptions.AttributesOnly) && symbol is not AttributeSymbol)
+		{
+			return LookupResult.Empty();
+		}
+
 		return LookupResult.Viable(symbol);
 	}
 
@@ -137,6 +142,13 @@ internal partial class Binder
 		// 	Debug.Assert((options & LookupOptions.ModulesOrTypesOnly) == 0);
 		// 	options |= LookupOptions.MustNotBeMethodTypeParameter;
 		// }
+
+		LookupSymbolsWithFallback(result, name, arity, options: options);
+	}
+
+	private void LookupAttribute(LookupResult result, string name, int arity)
+	{
+		LookupOptions options = LookupOptions.IgnoreFunctionArity;
 
 		LookupSymbolsWithFallback(result, name, arity, options: options);
 	}

@@ -25,6 +25,9 @@ public enum SpecialType : byte
 	StdTextCharacterUtf8 = 17,
 	StdTextCharacterUtf16 = 18,
 	StdTextCharacterUtf32 = 19,
+	StdTextStringSliceUtf8 = 20,
+	StdTextStringSliceUtf16 = 21,
+	StdTextStringSliceUtf32 = 22,
 	// Change SpecialTypeExtensions.Count if add new special types
 }
 
@@ -52,6 +55,9 @@ internal static class SpecialTypeExtensions
 		"std::text::CharacterUtf8",
 		"std::text::CharacterUtf16",
 		"std::text::CharacterUtf32",
+		"std::text::StringSliceUtf8",
+		"std::text::StringSliceUtf16",
+		"std::text::StringSliceUtf32",
 	];
 
 	static SpecialTypeExtensions()
@@ -67,7 +73,7 @@ internal static class SpecialTypeExtensions
 
 	extension(SpecialType self)
 	{
-		public static SpecialType Count => SpecialType.StdTextCharacterUtf32 + 1;
+		public static SpecialType Count => SpecialType.StdTextStringSliceUtf32 + 1;
 
 		public static SpecialType GetSpecialTypeFromFullName(string fullName)
 		{
@@ -103,5 +109,10 @@ internal static class SpecialTypeExtensions
 			self is SpecialType.StdTextCharacterUtf8
 				or SpecialType.StdTextCharacterUtf16
 				or SpecialType.StdTextCharacterUtf32;
+
+		public bool IsUnsized =>
+			self is SpecialType.StdTextStringSliceUtf8
+				or SpecialType.StdTextStringSliceUtf16
+				or SpecialType.StdTextStringSliceUtf32;
 	}
 }

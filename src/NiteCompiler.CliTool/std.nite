@@ -9,8 +9,21 @@ public type Void;
 
 module std::numerics;
 
+public type Float16;
 public type Float32;
+public type Float64;
+
+public type SInt8;
+public type SInt16;
 public type SInt32;
+public type SInt64;
+public type SNativeInt;
+
+public type UInt8;
+public type UInt16;
+public type UInt32;
+public type UInt64;
+public type UNativeInt;
 
 module std::text;
 
@@ -24,4 +37,5 @@ public unsized type StringSliceUtf32;
 
 module std::compiler_services;
 
-public attribute optimize;
+public attribute export;
+public attribute import;
