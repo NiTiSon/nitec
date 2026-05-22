@@ -1227,10 +1227,10 @@ public class NiteLexerTests
 	}
 
 	[Test]
-	public void Lex_HashAlone_ReturnsNoneToken()
+	public void Lex_HashAlone_ReturnsHashToken()
 	{
 		Token token = LexSingle("#abc");
-		Assert.That(token.TKind, Is.EqualTo(TokenKind.None));
+		Assert.That(token.TKind, Is.EqualTo(TokenKind.Hash));
 	}
 
 	[Test]
@@ -1246,7 +1246,7 @@ public class NiteLexerTests
 		Token[] tokens = LexAll("@#$");
 		Assert.That(tokens.Length, Is.EqualTo(4)); // @, #, $, EOF
 		Assert.That(tokens[0].TKind, Is.EqualTo(TokenKind.None));
-		Assert.That(tokens[1].TKind, Is.EqualTo(TokenKind.None));
+		Assert.That(tokens[1].TKind, Is.EqualTo(TokenKind.Hash));
 		Assert.That(tokens[2].TKind, Is.EqualTo(TokenKind.None));
 	}
 

@@ -19,7 +19,8 @@ public sealed class TypeDeclarationSyntax : MemberSyntax
 	public override NodeKind Kind => NodeKind.TypeDeclaration;
 
 	internal TypeDeclarationSyntax(SyntaxTree tree, Token accessibilityToken, SyntaxList<Token> modifiers,
-		Token typeKeyword, NameSyntax name, GenericParameterListSyntax? genericParameterList, TypeBodySyntax body) : base(tree)
+		Token typeKeyword, NameSyntax name, GenericParameterListSyntax? genericParameterList, TypeBodySyntax body,
+		SyntaxList<AttributeListSyntax>? attributes = null) : base(tree, attributes)
 	{
 		Debug.Assert(name is SimpleNameSyntax or InlineNameSyntax);
 

@@ -309,6 +309,8 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 	public static readonly TokenKind Retusa = Reg(Punctuator + 13, "->");
 	/// <summary>Represents <c>::</c> token.</summary>
 	public static readonly TokenKind DoubleColon = Reg(Punctuator + 14, "::");
+	/// <summary>Represents <c>#</c> token.</summary>
+	public static readonly TokenKind Hash = Reg(Punctuator + 15, "#");
 
 	private const uint Keyword = 0x00_00__30_00u;
 	private const uint TypeKeyword = 0x00_00__38_00u;
@@ -341,6 +343,7 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 	public static readonly TokenKind Unsized = Reg(Keyword + 27, "unsized");
 	public static readonly TokenKind Self = Reg(Keyword + 28, "self");
 	public static readonly TokenKind New = Reg(Keyword + 29, "new");
+	public static readonly TokenKind Attribute = Reg(Keyword + 30, "attribute");
 
 	// Type keywords have they very own unique values
 	public static readonly TokenKind I8 = Reg(TypeKeyword + (uint)SpecialType.StdNumericsSInt8, "i8");

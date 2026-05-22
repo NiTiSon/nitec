@@ -66,6 +66,9 @@ public abstract class SyntaxVisitor
 	public virtual void VisitErrorStatement(ErrorStatementSyntax statement) => DefaultVisit(statement);
 	public virtual void VisitElseClause(ElseClauseSyntax elseClause) => DefaultVisit(elseClause);
 	public virtual void VisitLifetimeOrGenericConstraintClause(LifetimeOrGenericConstraintClauseSyntax elseClause) => DefaultVisit(elseClause);
+	public virtual void VisitAttribute(AttributeSyntax attribute) => DefaultVisit(attribute);
+	public virtual void VisitAttributeList(AttributeListSyntax attributeList) => DefaultVisit(attributeList);
+	public virtual void VisitAttributeDeclaration(AttributeDeclarationSyntax declaration) => DefaultVisit(declaration);
 }
 
 public abstract class SyntaxVisitor<TResult>
@@ -132,4 +135,7 @@ public abstract class SyntaxVisitor<TResult>
 	public virtual TResult? VisitErrorStatement(ErrorStatementSyntax statement) => DefaultVisit(statement);
 	public virtual TResult? VisitElseClause(ElseClauseSyntax elseClause) => DefaultVisit(elseClause);
 	public virtual TResult? VisitLifetimeOrGenericConstraintClause(LifetimeOrGenericConstraintClauseSyntax elseClause) => DefaultVisit(elseClause);
+	public virtual TResult? VisitAttribute(AttributeSyntax attribute) => DefaultVisit(attribute);
+	public virtual TResult? VisitAttributeList(AttributeListSyntax attributeList) => DefaultVisit(attributeList);
+	public virtual TResult? VisitAttributeDeclaration(AttributeDeclarationSyntax declaration) => DefaultVisit(declaration);
 }

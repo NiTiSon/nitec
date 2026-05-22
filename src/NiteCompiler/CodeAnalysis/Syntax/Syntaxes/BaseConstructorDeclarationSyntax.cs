@@ -14,7 +14,7 @@ public abstract class BaseConstructorDeclarationSyntax : MemberSyntax
 	public override TextSpan Span => TextSpan.FromBounds(AccessibilityToken.Span, Body.Span);
 
 	private protected BaseConstructorDeclarationSyntax(SyntaxTree tree, Token accessibilityToken, SyntaxList<Token> modifiers,
-		Token newKeyword, FunctionBodySyntax body) : base(tree)
+		Token newKeyword, FunctionBodySyntax body, SyntaxList<AttributeListSyntax>? attributes = null) : base(tree, attributes)
 	{
 		AccessibilityToken = accessibilityToken;
 		Modifiers = modifiers;

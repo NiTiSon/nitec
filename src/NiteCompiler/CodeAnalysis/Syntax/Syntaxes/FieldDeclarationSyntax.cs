@@ -15,7 +15,7 @@ public sealed class FieldDeclarationSyntax : MemberSyntax
 	public override NodeKind Kind => NodeKind.FieldDeclaration;
 
 	internal FieldDeclarationSyntax(SyntaxTree tree, Token accessibilityToken, SyntaxList<Token> modifiers, SimpleNameSyntax name,
-		TypeClauseSyntax typeClause, Token semicolonToken) : base(tree)
+		TypeClauseSyntax typeClause, Token semicolonToken, SyntaxList<AttributeListSyntax>? attributes = null) : base(tree, attributes)
 	{
 		AccessibilityToken = accessibilityToken;
 		Modifiers = modifiers;

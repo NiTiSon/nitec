@@ -117,16 +117,25 @@ internal sealed partial class NiteParser
 		SyntaxList<ItemSyntax>.Builder itemsBuilder = new();
 		while (Current.TKind != TokenKind.EndOfFile)
 		{
+			SyntaxList<AttributeListSyntax>? attributes = TryParseAttributeLists();
+
 			if (IsPresentedAnyAccessibilityToken())
 			{
 				// All accessibility tokens are contextual
 				Token elevatedKeyword = PeekAndAdvance().ToContextualKeywordToken();
-				itemsBuilder.Add(ParseMember(elevatedKeyword));
+				itemsBuilder.Add(ParseMember(elevatedKeyword, attributes));
 			}
 			else if (Current.TKind == TokenKind.Module)
 			{
 				Token moduleKeyword = PeekAndAdvance();
 				itemsBuilder.Add(ParseModuleDeclaration(moduleKeyword));
+			}
+			else if (attributes != null)
+			{
+				Token missingToken = new Token.Default(_syntaxTree, TokenKind.None, Current.Span,
+					SyntaxList<Trivia>.GetEmpty(_syntaxTree), SyntaxList<Trivia>.GetEmpty(_syntaxTree));
+				_diagnostics.ReportAccessibilityModifierRequiredBeforeMemberDeclaration(Current.Span.Contextualize(_syntaxTree));
+				itemsBuilder.Add(ParseMember(missingToken, attributes));
 			}
 			else
 			{
@@ -139,6 +148,21 @@ internal sealed partial class NiteParser
 		return new CompilationUnitSyntax(_syntaxTree, itemsBuilder.Build(_syntaxTree), endOfFileToken);
 	}
 
+	private SyntaxList<AttributeListSyntax>? TryParseAttributeLists()
+	{
+		if (Current.TKind != TokenKind.Hash || Peek(1).TKind != TokenKind.OpenBracket)
+		{
+			return null;
+		}
+
+		SyntaxList<AttributeListSyntax>.Builder builder = new();
+		while (Current.TKind == TokenKind.Hash && Peek(1).TKind == TokenKind.OpenBracket)
+		{
+			builder.Add(ParseAttributeList());
+		}
+		return builder.Build(_syntaxTree);
+	}
+
 	private ItemSyntax ParseModuleDeclaration(Token moduleKeyword)
 	{
 		NameSyntax name = ParseModuleName();
@@ -146,10 +170,26 @@ internal sealed partial class NiteParser
 
 		SyntaxList<MemberSyntax>.Builder membersBuilder = new();
 
-		while (IsPresentedAnyAccessibilityToken())
+		while (Current.TKind != TokenKind.EndOfFile)
 		{
-			Token elevatedKeyword = PeekAndAdvance().ToContextualKeywordToken();
-			membersBuilder.Add(ParseMember(elevatedKeyword));
+			SyntaxList<AttributeListSyntax>? memberAttributes = TryParseAttributeLists();
+
+			if (IsPresentedAnyAccessibilityToken())
+			{
+				Token elevatedKeyword = PeekAndAdvance().ToContextualKeywordToken();
+				membersBuilder.Add(ParseMember(elevatedKeyword, memberAttributes));
+			}
+			else if (memberAttributes != null)
+			{
+				Token missingToken = new Token.Default(_syntaxTree, TokenKind.None, Current.Span,
+					SyntaxList<Trivia>.GetEmpty(_syntaxTree), SyntaxList<Trivia>.GetEmpty(_syntaxTree));
+				_diagnostics.ReportAccessibilityModifierRequiredBeforeMemberDeclaration(Current.Span.Contextualize(_syntaxTree));
+				membersBuilder.Add(ParseMember(missingToken, memberAttributes));
+			}
+			else
+			{
+				break;
+			}
 		}
 
 		return new ModuleDeclarationSyntax(_syntaxTree, moduleKeyword, name, semicolon, membersBuilder.Build(_syntaxTree));

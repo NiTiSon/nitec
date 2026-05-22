@@ -96,7 +96,7 @@ internal partial class NiteParser
 		return new LifetimeSyntax(_syntaxTree, lifetimeToken, ((StringToken)lifetimeToken).Text);
 	}
 
-	public MemberSyntax ParseMember(Token accessibilityToken)
+	public MemberSyntax ParseMember(Token accessibilityToken, SyntaxList<AttributeListSyntax>? attributes = null)
 	{
 		Debug.Assert(accessibilityToken.IsKeyword || accessibilityToken.TKind == TokenKind.None);
 		SyntaxList<Token>.Builder modifiers = new();
@@ -105,10 +105,16 @@ internal partial class NiteParser
 			modifiers.Add(PeekAndAdvance());
 		}
 
+		if (Current.TKind == TokenKind.Attribute)
+		{
+			Token attributeKeyword = PeekAndAdvance();
+			return ParseAttributeDeclaration(accessibilityToken, modifiers, attributeKeyword, attributes);
+		}
+
 		if (Current.TKind == TokenKind.Type)
 		{
 			Token typeKeyword = PeekAndAdvance();
-			return ParseTypeDeclaration(accessibilityToken, modifiers, typeKeyword);
+			return ParseTypeDeclaration(accessibilityToken, modifiers, typeKeyword, attributes);
 		}
 
 		if (Current.TKind == TokenKind.Interface)
@@ -123,10 +129,10 @@ internal partial class NiteParser
 
 			if (Current.TKind == TokenKind.OpenParen)
 			{
-				return ParseConstructorDeclaration(accessibilityToken, modifiers, newKeyword);
+				return ParseConstructorDeclaration(accessibilityToken, modifiers, newKeyword, attributes);
 			}
 
-			return ParseNamedConstructorDeclaration(accessibilityToken, modifiers, newKeyword);
+			return ParseNamedConstructorDeclaration(accessibilityToken, modifiers, newKeyword, attributes);
 		}
 
 		SimpleNameSyntax name = ParseSimpleName();
@@ -143,18 +149,31 @@ internal partial class NiteParser
 				_diagnostics.ReportGenericsNotApplicableOnThisItem(genericParameterList.Location);
 			}
 
-			return ParseFieldDeclaration(accessibilityToken, modifiers, name);
+			return ParseFieldDeclaration(accessibilityToken, modifiers, name, attributes);
 		}
 
-		return ParseFunctionDeclaration(accessibilityToken, modifiers, name, genericParameterList);
+		return ParseFunctionDeclaration(accessibilityToken, modifiers, name, genericParameterList, attributes);
 	}
 
-	private ConstructorDeclarationSyntax ParseConstructorDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers, Token newKeyword)
+	private ConstructorDeclarationSyntax ParseConstructorDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers,
+		Token newKeyword, SyntaxList<AttributeListSyntax>? attributes = null)
 	{
 		ParameterListSyntax parameterList = ParseParameterList();
 		FunctionBodySyntax body = ParseFunctionBody();
 
-		return new ConstructorDeclarationSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree), newKeyword, parameterList, body);
+		return new ConstructorDeclarationSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree),
+			newKeyword, parameterList, body, attributes);
+	}
+
+	private NamedConstructorDeclarationSyntax ParseNamedConstructorDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers,
+		Token newKeyword, SyntaxList<AttributeListSyntax>? attributes = null)
+	{
+		SimpleNameSyntax name = ParseSimpleName();
+		ParameterListSyntax parameterList = ParseParameterList();
+		FunctionBodySyntax body = ParseFunctionBody();
+
+		return new NamedConstructorDeclarationSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree),
+			newKeyword, name, parameterList, body, attributes);
 	}
 
 	private NamedConstructorDeclarationSyntax ParseNamedConstructorDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers, Token newKeyword)
@@ -168,17 +187,19 @@ internal partial class NiteParser
 			newKeyword, name, parameterList, body);
 	}
 
-	private FieldDeclarationSyntax ParseFieldDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers, SimpleNameSyntax name)
+	private FieldDeclarationSyntax ParseFieldDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers,
+		SimpleNameSyntax name, SyntaxList<AttributeListSyntax>? attributes = null)
 	{
 		Token colon = MatchToken(TokenKind.Colon);
 		TypeSyntax type = ParseType();
 		Token semicolon = MatchToken(TokenKind.Semicolon);
 		TypeClauseSyntax typeClause = new(_syntaxTree, colon, type);
-		return new FieldDeclarationSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree), name, typeClause, semicolon);
+		return new FieldDeclarationSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree),
+			name, typeClause, semicolon, attributes);
 	}
 
 	private TypeDeclarationSyntax ParseTypeDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers,
-		Token typeKeyword)
+		Token typeKeyword, SyntaxList<AttributeListSyntax>? attributes = null)
 	{
 		NameSyntax name = ParseInlineName();
 		GenericParameterListSyntax? genericParameterList = null;
@@ -189,7 +210,8 @@ internal partial class NiteParser
 
 		TypeBodySyntax body = ParseTypeBody();
 
-		return new TypeDeclarationSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree), typeKeyword, name, genericParameterList, body);
+		return new TypeDeclarationSyntax(_syntaxTree, accessibilityToken, modifiers.Build(_syntaxTree),
+			typeKeyword, name, genericParameterList, body, attributes);
 	}
 
 	private NameSyntax ParseInlineName()
@@ -254,18 +276,27 @@ internal partial class NiteParser
 			while (Current.TKind != TokenKind.CloseBrace &&
 			       Current.TKind != TokenKind.EndOfFile)
 			{
+				SyntaxList<AttributeListSyntax>? memberAttributes = TryParseAttributeLists();
+
 				if (IsPresentedAnyAccessibilityToken())
 				{
 					Token elevatedKeyword = PeekAndAdvance().ToContextualKeywordToken();
-					membersBuilder.Add(ParseMember(elevatedKeyword));
+					membersBuilder.Add(ParseMember(elevatedKeyword, memberAttributes));
 				}
-				else
-				{
-					Token missingToken = new Token.Default(_syntaxTree, TokenKind.None, Current.Span,
-						SyntaxList<Trivia>.GetEmpty(_syntaxTree), SyntaxList<Trivia>.GetEmpty(_syntaxTree));
-					_diagnostics.ReportAccessibilityModifierRequiredBeforeMemberDeclaration(Current.Location);
-					membersBuilder.Add(ParseMember(missingToken));
-				}
+			else if (memberAttributes != null)
+			{
+				Token missingToken = new Token.Default(_syntaxTree, TokenKind.None, Current.Span,
+					SyntaxList<Trivia>.GetEmpty(_syntaxTree), SyntaxList<Trivia>.GetEmpty(_syntaxTree));
+				_diagnostics.ReportAccessibilityModifierRequiredBeforeMemberDeclaration(Current.Location);
+				membersBuilder.Add(ParseMember(missingToken, memberAttributes));
+			}
+			else
+			{
+				Token missingToken = new Token.Default(_syntaxTree, TokenKind.None, Current.Span,
+					SyntaxList<Trivia>.GetEmpty(_syntaxTree), SyntaxList<Trivia>.GetEmpty(_syntaxTree));
+				_diagnostics.ReportAccessibilityModifierRequiredBeforeMemberDeclaration(Current.Location);
+				membersBuilder.Add(ParseMember(missingToken, memberAttributes));
+			}
 			}
 
 			Token closeBrace = MatchToken(TokenKind.CloseBrace);
@@ -302,7 +333,8 @@ internal partial class NiteParser
 	}
 
 	private FunctionDeclarationSyntax ParseFunctionDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers,
-		SimpleNameSyntax name, GenericParameterListSyntax? genericParameterList)
+		SimpleNameSyntax name, GenericParameterListSyntax? genericParameterList,
+		SyntaxList<AttributeListSyntax>? attributes = null)
 	{
 		ParameterListSyntax parameters = ParseParameterList();
 
@@ -326,7 +358,7 @@ internal partial class NiteParser
 
 		return new FunctionDeclarationSyntax(_syntaxTree,
 			accessibilityToken, modifiers.Build(_syntaxTree), name, genericParameterList, parameters, typeClause,
-			constraintClauses, body);
+			constraintClauses, body, attributes);
 	}
 
 	private GenerativeParameterSyntax ParseSelfParameter()
@@ -575,5 +607,92 @@ internal partial class NiteParser
 		{
 			throw new NotImplementedException("Other that lifetime constraints are not implemented.");
 		}
+	}
+
+	private AttributeListSyntax ParseAttributeList()
+	{
+		Debug.Assert(Current.TKind == TokenKind.Hash);
+		Debug.Assert(Peek(1).TKind == TokenKind.OpenBracket);
+
+		Token hash = PeekAndAdvance();
+		Token openBracket = PeekAndAdvance();
+
+		Token name = PeekAndAdvance();
+
+		Token? openParen = null;
+		SyntaxList<Token>? arguments = null;
+		Token? closeParen = null;
+
+		if (Current.TKind == TokenKind.OpenParen)
+		{
+			openParen = PeekAndAdvance();
+
+			SyntaxList<Token>.Builder argsBuilder = new();
+			while (Current.TKind != TokenKind.CloseParen && Current.TKind != TokenKind.EndOfFile)
+			{
+				argsBuilder.Add(MatchToken(TokenKind.StringLiteral));
+
+				if (Current.TKind == TokenKind.Comma)
+				{
+					PeekAndAdvance();
+				}
+				else if (Current.TKind != TokenKind.CloseParen)
+				{
+					break;
+				}
+			}
+
+			arguments = argsBuilder.Build(_syntaxTree);
+			closeParen = MatchToken(TokenKind.CloseParen);
+		}
+
+		Token closeBracket = MatchToken(TokenKind.CloseBracket);
+
+		AttributeSyntax attribute = new(_syntaxTree, name, openParen, arguments, closeParen);
+		return new AttributeListSyntax(_syntaxTree, hash, openBracket, attribute, closeBracket);
+	}
+
+	private AttributeDeclarationSyntax ParseAttributeDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers,
+		Token attributeKeyword, SyntaxList<AttributeListSyntax>? attributes = null)
+	{
+		SimpleNameSyntax name = ParseSimpleName();
+
+		ParameterListSyntax? parameterList = null;
+		if (Current.TKind == TokenKind.OpenParen)
+		{
+			parameterList = ParseParameterList();
+		}
+
+		Token? forKeyword = null;
+		SyntaxList<Token>? targets = null;
+
+		if (Current.TKind == TokenKind.For)
+		{
+			forKeyword = PeekAndAdvance();
+
+			SyntaxList<Token>.Builder targetsBuilder = new();
+			while (Current.TKind.IsAnyIdentifierOrKeyword && Current.TKind != TokenKind.Semicolon)
+			{
+				targetsBuilder.Add(PeekAndAdvance());
+
+				if (Current.TKind == TokenKind.Comma)
+				{
+					PeekAndAdvance();
+				}
+				else
+				{
+					break;
+				}
+			}
+
+			targets = targetsBuilder.Build(_syntaxTree);
+		}
+
+		Token semicolon = MatchToken(TokenKind.Semicolon);
+
+		return new AttributeDeclarationSyntax(_syntaxTree,
+			accessibilityToken, modifiers.Build(_syntaxTree),
+			attributeKeyword, name, parameterList,
+			forKeyword, targets, semicolon);
 	}
 }

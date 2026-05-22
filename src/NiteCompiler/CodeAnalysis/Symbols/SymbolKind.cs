@@ -1,6 +1,6 @@
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
-public enum SymbolKind
+	public enum SymbolKind
 {
 	None = 0,
 	Library,
@@ -18,4 +18,5 @@ public enum SymbolKind
 	Pointer,
 	Reference,
 	Array,
+	Attribute,
 }

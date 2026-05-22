@@ -17,3 +17,11 @@ module std::text;
 public type CharacterUtf8;
 public type CharacterUtf16;
 public type CharacterUtf32;
+
+public unsized type StringSliceUtf8;
+public unsized type StringSliceUtf16;
+public unsized type StringSliceUtf32;
+
+module std::compiler_services;
+
+public attribute optimize;

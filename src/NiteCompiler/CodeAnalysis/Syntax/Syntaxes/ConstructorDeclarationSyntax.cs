@@ -9,8 +9,9 @@ public sealed class ConstructorDeclarationSyntax : BaseConstructorDeclarationSyn
 	public override NodeKind Kind => NodeKind.ConstructorDeclaration;
 
 	internal ConstructorDeclarationSyntax(SyntaxTree tree, Token accessibilityToken, SyntaxList<Token> modifiers,
-		Token newKeyword, ParameterListSyntax parameterList, FunctionBodySyntax body)
-		: base(tree, accessibilityToken, modifiers, newKeyword, body)
+		Token newKeyword, ParameterListSyntax parameterList, FunctionBodySyntax body,
+		SyntaxList<AttributeListSyntax>? attributes = null)
+		: base(tree, accessibilityToken, modifiers, newKeyword, body, attributes)
 	{
 		ParameterList = parameterList;
 	}

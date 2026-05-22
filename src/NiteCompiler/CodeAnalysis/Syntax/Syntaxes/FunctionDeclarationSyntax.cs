@@ -23,7 +23,7 @@ public sealed class FunctionDeclarationSyntax : MemberSyntax
 	internal FunctionDeclarationSyntax(SyntaxTree tree, Token accessibilityToken, SyntaxList<Token> modifiers,
 		SimpleNameSyntax name, GenericParameterListSyntax? genericParameterList, ParameterListSyntax parameterList,
 		TypeClauseSyntax? returnTypeClause, SyntaxList<LifetimeOrGenericConstraintClauseSyntax>? constraintClauses,
-		FunctionBodySyntax body) : base(tree)
+		FunctionBodySyntax body, SyntaxList<AttributeListSyntax>? attributes = null) : base(tree, attributes)
 	{
 		AccessibilityToken = accessibilityToken;
 		Modifiers = modifiers;

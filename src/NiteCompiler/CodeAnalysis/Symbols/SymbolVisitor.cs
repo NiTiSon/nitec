@@ -22,6 +22,7 @@ public abstract class SymbolVisitor
 	public virtual void VisitGenericValueParameter(GenericValueParameterSymbol symbol) => DefaultVisit(symbol);
 	public virtual void VisitLocalVariable(LocalVariableSymbol symbol) => DefaultVisit(symbol);
 	public virtual void VisitParameter(ParameterSymbol symbol) => DefaultVisit(symbol);
+	public virtual void VisitAttribute(AttributeSymbol symbol) => DefaultVisit(symbol);
 }
 
 public abstract class SymbolVisitor<TResult>
@@ -43,6 +44,7 @@ public abstract class SymbolVisitor<TResult>
 	public virtual TResult? VisitGenericValueParameter(GenericValueParameterSymbol symbol) => DefaultVisit(symbol);
 	public virtual TResult? VisitLocalVariable(LocalVariableSymbol symbol) => DefaultVisit(symbol);
 	public virtual TResult? VisitParameter(ParameterSymbol symbol) => DefaultVisit(symbol);
+	public virtual TResult? VisitAttribute(AttributeSymbol symbol) => DefaultVisit(symbol);
 }
 
 public abstract class SymbolVisitor<TResult, TArgument>
@@ -64,4 +66,5 @@ public abstract class SymbolVisitor<TResult, TArgument>
 	public virtual TResult? VisitLocalVariable(LocalVariableSymbol symbol, TArgument arg) => DefaultVisit(symbol, arg);
 	public virtual TResult? VisitField(FieldSymbol symbol, TArgument arg) => DefaultVisit(symbol, arg);
 	public virtual TResult? VisitParameter(ParameterSymbol symbol, TArgument arg) => DefaultVisit(symbol, arg);
+	public virtual TResult? VisitAttribute(AttributeSymbol symbol, TArgument arg) => DefaultVisit(symbol, arg);
 }

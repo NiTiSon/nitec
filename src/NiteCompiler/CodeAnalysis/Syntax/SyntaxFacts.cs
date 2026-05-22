@@ -145,6 +145,9 @@ internal static class SyntaxFacts
 		case "new":
 			info.Kind = TokenKind.New;
 			return;
+		case "attribute":
+			info.Kind = TokenKind.Attribute;
+			return;
 		}
 	}
 

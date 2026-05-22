@@ -203,6 +203,10 @@ internal sealed class SourceModuleSymbol : ModuleSymbol
 			diagnostics.Diagnostics.ReportSymbolIsInvalidInCurrentScope(syntax.Location );
 			return new SourceConstructorSymbol(errorType, (BaseConstructorDeclarationSyntax)syntax);
 		}
+		else if (syntax.Kind == NodeKind.AttributeDeclaration)
+		{
+			return new SourceAttributeSymbol(this, (AttributeDeclarationSyntax)syntax);
+		}
 		else
 		{
 			throw new UnreachableException();

@@ -233,6 +233,7 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind ConstructorDeclaration = Reg(Item + 11, "constructor-declaration");
 	public static readonly NodeKind NamedConstructorDeclaration = Reg(Item + 12, "named-constructor-declaration");
 	public static readonly NodeKind GenerativeParameter = Reg(Item + 13, "generative-parameter");
+	public static readonly NodeKind AttributeDeclaration = Reg(Item + 14, "attribute-declaration");
 
 	private const uint Expression = 0x00_00__20_00;
 	private const uint BinaryFlag = 0x00_01__00_00;
@@ -331,4 +332,7 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind LifetimeConstraintClause = Reg(Other + 12, "lifetime-constraint-clause");
 	public static readonly NodeKind ErrorConstraintClause = Reg(Other + 13, "error-constraint-clause");
 	public static readonly NodeKind LifetimeConstraint = Reg(Other + 14, "lifetime-constraint");
+	public static readonly NodeKind AttributeList = Reg(Other + 15, "attribute-list");
+	public static readonly NodeKind Attribute = Reg(Other + 16, "attribute");
+	public static readonly NodeKind AttributeTargetList = Reg(Other + 17, "attribute-target-list");
 }

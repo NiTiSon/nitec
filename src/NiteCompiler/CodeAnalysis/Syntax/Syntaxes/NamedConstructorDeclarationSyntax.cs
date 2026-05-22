@@ -12,7 +12,8 @@ public sealed class NamedConstructorDeclarationSyntax : BaseConstructorDeclarati
 
 	internal NamedConstructorDeclarationSyntax(SyntaxTree tree, Token accessibilityToken, SyntaxList<Token> modifiers,
 		Token newKeyword, SimpleNameSyntax name, ParameterListSyntax parameterList,
-		FunctionBodySyntax body) : base(tree, accessibilityToken, modifiers, newKeyword, body)
+		FunctionBodySyntax body, SyntaxList<AttributeListSyntax>? attributes = null)
+		: base(tree, accessibilityToken, modifiers, newKeyword, body, attributes)
 	{
 		Name = name;
 		ParameterList = parameterList;
