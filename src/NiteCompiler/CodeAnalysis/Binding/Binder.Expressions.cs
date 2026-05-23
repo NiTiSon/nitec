@@ -540,8 +540,20 @@ internal partial class Binder
 
 	private BoundLiteral BindStringLiteralExpression(LiteralExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
-		// TODO: Implement
-		return new BoundLiteral(syntax, ConstantValue.Create(0), GetSpecialType(SpecialType.StdVoid));
+		StringToken content = (syntax.Token as StringToken)!;
+		SpecialType sliceType = content.LiteralType switch
+		{
+			StringLiteralType.Unicode16 => SpecialType.StdTextStringSliceUtf16,
+			StringLiteralType.Unicode32 => SpecialType.StdTextStringSliceUtf32,
+			_ => SpecialType.StdTextStringSliceUtf8
+		};
+
+		TypeSymbol strType = GetSpecialType(sliceType);
+		TypeSymbol refType = Compilation.CreateReferenceType(strType, isMutable: false, isNullable: false, Compilation.GetStaticLifetime());
+
+		throw new NotImplementedException();
+		// TODO: BoundString
+		// return new BoundLiteral(syntax, constant, refType);
 	}
 
 	private BoundExpression BindIdentifier(SimpleNameSyntax name, bool invoked, bool indexed,

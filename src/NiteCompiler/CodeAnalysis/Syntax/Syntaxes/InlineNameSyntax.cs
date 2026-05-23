@@ -11,13 +11,13 @@ public sealed class InlineNameSyntax : NameSyntax
 	public NameSyntax Left { get; }
 	public Token DoubleColon { get; }
 	public SimpleNameSyntax Right { get; }
-	public GenericParameterListSyntax? GenericParameterList { get; }
+	public LifetimeAndGenericParameterListSyntax? GenericParameterList { get; }
 
 	public override TextSpan Span => TextSpan.FromBounds(Left.Span, GenericParameterList?.Span ?? Right.Span);
 	public override NodeKind Kind => NodeKind.InlineName;
 
 	internal InlineNameSyntax(SyntaxTree tree, NameSyntax left, Token doubleColon,
-		SimpleNameSyntax right, GenericParameterListSyntax? genericParameterList) : base(tree)
+		SimpleNameSyntax right, LifetimeAndGenericParameterListSyntax? genericParameterList) : base(tree)
 	{
 		Left = left;
 		DoubleColon = doubleColon;

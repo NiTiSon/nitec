@@ -8,6 +8,7 @@
 // 	}
 // }
 
+#[]
 public get_name() {
-	let x = "Hello World";
+	// let x = "Hello World";
 }

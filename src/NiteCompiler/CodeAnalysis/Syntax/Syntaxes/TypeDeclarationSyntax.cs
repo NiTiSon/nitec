@@ -11,7 +11,7 @@ public sealed class TypeDeclarationSyntax : MemberSyntax
 	public SyntaxList<Token> Modifiers { get; }
 	public Token TypeKeyword { get; }
 	public NameSyntax Name { get; }
-	public GenericParameterListSyntax? GenericParameterList { get; }
+	public LifetimeAndGenericParameterListSyntax? GenericParameterList { get; }
 	public TypeBodySyntax Body { get; }
 	public SyntaxList<MemberSyntax>? Members => Body is MembersTypeBodySyntax members ? members.Members : null;
 
@@ -19,7 +19,7 @@ public sealed class TypeDeclarationSyntax : MemberSyntax
 	public override NodeKind Kind => NodeKind.TypeDeclaration;
 
 	internal TypeDeclarationSyntax(SyntaxTree tree, Token accessibilityToken, SyntaxList<Token> modifiers,
-		Token typeKeyword, NameSyntax name, GenericParameterListSyntax? genericParameterList, TypeBodySyntax body,
+		Token typeKeyword, NameSyntax name, LifetimeAndGenericParameterListSyntax? genericParameterList, TypeBodySyntax body,
 		SyntaxList<AttributeListSyntax>? attributes = null) : base(tree, attributes)
 	{
 		Debug.Assert(name is SimpleNameSyntax or InlineNameSyntax);

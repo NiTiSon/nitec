@@ -213,7 +213,7 @@ internal sealed partial class NiteParser
 
 			if (tokenKind.IsAnyIdentifierOrKeyword)
 			{
-				return ParsePathName();
+				return ParseName();
 			}
 
 			if (tokenKind == TokenKind.True ||
@@ -531,7 +531,16 @@ internal sealed partial class NiteParser
 
 	private NameSyntax ParseName()
 	{
-		return ParsePathName();
+		NameSyntax result = ParseSimpleName();
+
+		while (Current.TKind == TokenKind.DoubleColon)
+		{
+			Token doubleColon = PeekAndAdvance();
+			SimpleNameSyntax right = ParseSimpleName();
+			result = new PathNameSyntax(_syntaxTree, result, doubleColon, right);
+		}
+
+		return result;
 	}
 
 	private SimpleNameSyntax ParseSimpleName(NameOptions options = NameOptions.None)
@@ -575,7 +584,7 @@ internal sealed partial class NiteParser
 	private NameSyntax ParseModuleName()
 	{
 		// SimpleName (:: SimpleName)*
-		NameSyntax result = ParsePathName();
+		NameSyntax result = ParseName();
 		NameSyntax current = result;
 		while (true)
 		{
@@ -598,19 +607,5 @@ internal sealed partial class NiteParser
 				_diagnostics.ReportGenericsIsNotApplicableOnModuleName(location ?? nameSyntax.Location);
 			}
 		}
-	}
-
-	private NameSyntax ParsePathName()
-	{
-		NameSyntax result = ParseSimpleName();
-
-		while (Current.TKind == TokenKind.DoubleColon)
-		{
-			Token doubleColon = PeekAndAdvance();
-			SimpleNameSyntax right = ParseSimpleName();
-			result = new PathNameSyntax(_syntaxTree, result, doubleColon, right);
-		}
-
-		return result;
 	}
 }

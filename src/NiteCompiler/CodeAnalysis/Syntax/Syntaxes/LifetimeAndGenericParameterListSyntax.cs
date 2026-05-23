@@ -4,19 +4,19 @@ using NiteCompiler.CodeAnalysis.Text;
 
 namespace NiteCompiler.CodeAnalysis.Syntax;
 
-public sealed class GenericParameterListSyntax : SyntaxNode
+public sealed class LifetimeAndGenericParameterListSyntax : SyntaxNode
 {
 	public Token OpenToken { get; }
 	public SyntaxList<LifetimeOrGenericParameterSyntax> Parameters { get; }
 	public Token CloseToken { get; }
 
 	public override TextSpan Span => TextSpan.FromBounds(OpenToken.Span, CloseToken.Span);
-	public override NodeKind Kind => NodeKind.GenericParameterList;
+	public override NodeKind Kind => NodeKind.LifetimeAndGenericParameterList;
 
 	public int LifetimeArity => Parameters.Count(t => !t.IsGenericParameter);
 	public int Arity => Parameters.Count(t => t.IsGenericParameter);
 
-	internal GenericParameterListSyntax(SyntaxTree tree,
+	internal LifetimeAndGenericParameterListSyntax(SyntaxTree tree,
 		Token openToken, SyntaxList<LifetimeOrGenericParameterSyntax> parameters, Token closeToken) : base(tree)
 	{
 		OpenToken = openToken;

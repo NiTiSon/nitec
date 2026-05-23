@@ -9,7 +9,7 @@ public sealed class FunctionDeclarationSyntax : MemberSyntax
 	public Token AccessibilityToken { get; }
 	public SyntaxList<Token> Modifiers { get; }
 	public SimpleNameSyntax Name { get; }
-	public GenericParameterListSyntax? GenericParameterList { get; }
+	public LifetimeAndGenericParameterListSyntax? GenericParameterList { get; }
 	public ParameterListSyntax ParameterList { get; }
 	public TypeClauseSyntax? ReturnTypeClause { get; }
 	public SyntaxList<LifetimeOrGenericConstraintClauseSyntax>? ConstraintClauses { get; }
@@ -21,7 +21,7 @@ public sealed class FunctionDeclarationSyntax : MemberSyntax
 	public override NodeKind Kind => NodeKind.FunctionDeclaration;
 
 	internal FunctionDeclarationSyntax(SyntaxTree tree, Token accessibilityToken, SyntaxList<Token> modifiers,
-		SimpleNameSyntax name, GenericParameterListSyntax? genericParameterList, ParameterListSyntax parameterList,
+		SimpleNameSyntax name, LifetimeAndGenericParameterListSyntax? genericParameterList, ParameterListSyntax parameterList,
 		TypeClauseSyntax? returnTypeClause, SyntaxList<LifetimeOrGenericConstraintClauseSyntax>? constraintClauses,
 		FunctionBodySyntax body, SyntaxList<AttributeListSyntax>? attributes = null) : base(tree, attributes)
 	{

@@ -11,7 +11,7 @@ internal partial class NiteParser
 		return IsPresentedAny(TokenKind.Pure, TokenKind.Static, TokenKind.Const, TokenKind.Partial, TokenKind.Unsized);
 	}
 
-	private GenericParameterListSyntax ParseGenericParameterList()
+	private LifetimeAndGenericParameterListSyntax ParseLifetimeAndGenericParameterList()
 	{
 		Token less = MatchToken(TokenKind.Less);
 
@@ -34,7 +34,7 @@ internal partial class NiteParser
 
 		Token greater = MatchToken(TokenKind.Greater);
 
-		return new GenericParameterListSyntax(_syntaxTree, less, builder.Build(_syntaxTree),  greater);
+		return new LifetimeAndGenericParameterListSyntax(_syntaxTree, less, builder.Build(_syntaxTree),  greater);
 	}
 
 	private LifetimeOrGenericParameterSyntax ParseGenericOrLifetimeParameter()
@@ -136,10 +136,10 @@ internal partial class NiteParser
 		}
 
 		SimpleNameSyntax name = ParseSimpleName();
-		GenericParameterListSyntax? genericParameterList = null;
+		LifetimeAndGenericParameterListSyntax? genericParameterList = null;
 		if (Current.TKind == TokenKind.Less)
 		{
-			genericParameterList = ParseGenericParameterList();
+			genericParameterList = ParseLifetimeAndGenericParameterList();
 		}
 
 		if (Current.TKind == TokenKind.Colon)
@@ -202,10 +202,10 @@ internal partial class NiteParser
 		Token typeKeyword, SyntaxList<AttributeListSyntax>? attributes = null)
 	{
 		NameSyntax name = ParseInlineName();
-		GenericParameterListSyntax? genericParameterList = null;
+		LifetimeAndGenericParameterListSyntax? genericParameterList = null;
 		if (Current.TKind == TokenKind.Less)
 		{
-			genericParameterList = ParseGenericParameterList();
+			genericParameterList = ParseLifetimeAndGenericParameterList();
 		}
 
 		TypeBodySyntax body = ParseTypeBody();
@@ -231,12 +231,12 @@ internal partial class NiteParser
 
 		while (true)
 		{
-			GenericParameterListSyntax? genericParameters = null;
+			LifetimeAndGenericParameterListSyntax? genericParameters = null;
 
 			UpdateResetPoint(ref rp); // in case we reach the end on inline-name, we should come back right before them
 			if (Current.TKind == TokenKind.Less)
 			{
-				genericParameters = ParseGenericParameterList();
+				genericParameters = ParseLifetimeAndGenericParameterList();
 			}
 
 			if (Current.TKind != TokenKind.DoubleColon)
@@ -333,7 +333,7 @@ internal partial class NiteParser
 	}
 
 	private FunctionDeclarationSyntax ParseFunctionDeclaration(Token accessibilityToken, SyntaxList<Token>.Builder modifiers,
-		SimpleNameSyntax name, GenericParameterListSyntax? genericParameterList,
+		SimpleNameSyntax name, LifetimeAndGenericParameterListSyntax? genericParameterList,
 		SyntaxList<AttributeListSyntax>? attributes = null)
 	{
 		ParameterListSyntax parameters = ParseParameterList();
@@ -617,38 +617,17 @@ internal partial class NiteParser
 		Token hash = PeekAndAdvance();
 		Token openBracket = PeekAndAdvance();
 
-		Token name = PeekAndAdvance();
+		NameSyntax name = ParseName();
 
-		Token? openParen = null;
-		SyntaxList<Token>? arguments = null;
-		Token? closeParen = null;
-
+		ArgumentListSyntax? argumentList = null;
 		if (Current.TKind == TokenKind.OpenParen)
 		{
-			openParen = PeekAndAdvance();
-
-			SyntaxList<Token>.Builder argsBuilder = new();
-			while (Current.TKind != TokenKind.CloseParen && Current.TKind != TokenKind.EndOfFile)
-			{
-				argsBuilder.Add(MatchToken(TokenKind.StringLiteral));
-
-				if (Current.TKind == TokenKind.Comma)
-				{
-					PeekAndAdvance();
-				}
-				else if (Current.TKind != TokenKind.CloseParen)
-				{
-					break;
-				}
-			}
-
-			arguments = argsBuilder.Build(_syntaxTree);
-			closeParen = MatchToken(TokenKind.CloseParen);
+			ParseParenthesizedArgumentList();
 		}
 
 		Token closeBracket = MatchToken(TokenKind.CloseBracket);
 
-		AttributeSyntax attribute = new(_syntaxTree, name, openParen, arguments, closeParen);
+		AttributeSyntax attribute = new(_syntaxTree, name, argumentList);
 		return new AttributeListSyntax(_syntaxTree, hash, openBracket, attribute, closeBracket);
 	}
 

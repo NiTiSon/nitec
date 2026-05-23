@@ -6,31 +6,29 @@ namespace NiteCompiler.CodeAnalysis.Syntax;
 
 public sealed class AttributeSyntax : SyntaxNode
 {
-	public Token Name { get; }
-	public Token? OpenParen { get; }
-	public SyntaxList<Token>? Arguments { get; }
-	public Token? CloseParen { get; }
+	public NameSyntax Name { get; }
+	public ArgumentListSyntax? ArgumentList { get; }
 
 	public override TextSpan Span
 	{
 		get
 		{
-			if (CloseParen != null)
-				return TextSpan.FromBounds(Name.Span.Start, CloseParen.Span.End);
+			if (ArgumentList != null)
+			{
+				return TextSpan.FromBounds(Name.Span, ArgumentList.Span);
+			}
+
 			return Name.Span;
 		}
 	}
 
 	public override NodeKind Kind => NodeKind.Attribute;
 
-	internal AttributeSyntax(SyntaxTree tree, Token name,
-		Token? openParen, SyntaxList<Token>? arguments, Token? closeParen) : base(tree)
+	internal AttributeSyntax(SyntaxTree tree, NameSyntax name,
+		ArgumentListSyntax? argumentList) : base(tree)
 	{
-		Debug.Assert(name.IsKeyword || name.TKind.IsAnyIdentifierOrKeyword);
 		Name = name;
-		OpenParen = openParen;
-		Arguments = arguments;
-		CloseParen = closeParen;
+		ArgumentList = argumentList;
 	}
 
 	public override TResult? Accept<TResult>(SyntaxVisitor<TResult> visitor) where TResult : default =>
@@ -42,8 +40,6 @@ public sealed class AttributeSyntax : SyntaxNode
 	public override IEnumerable<SyntaxNode> GetChildren()
 	{
 		yield return Name;
-		if (OpenParen != null) yield return OpenParen;
-		if (Arguments != null) yield return Arguments;
-		if (CloseParen != null) yield return CloseParen;
+		if (ArgumentList != null) yield return ArgumentList;
 	}
 }

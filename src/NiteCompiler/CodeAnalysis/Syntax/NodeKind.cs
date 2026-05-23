@@ -325,7 +325,7 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind ParameterList = Reg(Other + 5, "parameter-list");
 	public static readonly NodeKind ArgumentList = Reg(Other + 6, "argument-list");
 	public static readonly NodeKind BracketedArgumentList = Reg(Other + 7, "bracketed-argument-list");
-	public static readonly NodeKind GenericParameterList = Reg(Other + 8, "generic-parameter-list");
+	public static readonly NodeKind LifetimeAndGenericParameterList = Reg(Other + 8, "generic-parameter-list");
 	public static readonly NodeKind GenericArgumentList = Reg(Other + 9, "generic-argument-list");
 	public static readonly NodeKind TypeConstraintClause = Reg(Other + 10, "type-constraint-clause");
 	public static readonly NodeKind ValueConstraintClause = Reg(Other + 11, "value-constraint-clause");
