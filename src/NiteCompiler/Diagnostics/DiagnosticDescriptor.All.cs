@@ -52,6 +52,14 @@ public partial class DiagnosticDescriptor
 		IntegralValueCantBeSigned,
 		IntegralValueIsGreaterThanMaxValue,
 		IntegralValueIsSmallerThanMinValue,
+		SymbolIsNotAModuleNorAType,
+		SymbolIsNotAnAttribute,
+		WrongTypeArity,
+		SymbolIsNotCreatable,
+		SymbolIsInaccessible,
+		SymbolIsNotAValue,
+		SymbolIsNotInvocable,
+		OverloadResolutionFailure,
 		InternalError,
 		LinkerNotZeroReturnCode
 		;
@@ -125,6 +133,15 @@ public partial class DiagnosticDescriptor
 			"Integral value is greater than max value of specified type.");
 		IntegralValueIsSmallerThanMinValue = new("integral-value-is-smaller-than-min-value",
 			"Integral value is smaller than min value of specified type.");
+
+		SymbolIsNotAModuleNorAType = new("symbol-is-not-module-or-type", "Symbol '{0}' is not a module or type.");
+		SymbolIsNotAnAttribute = new("symbol-is-not-attribute", "Symbol '{0}' is not an attribute.");
+		WrongTypeArity = new("wrong-type-arity", "Wrong number of type arguments for '{0}'.");
+		SymbolIsNotCreatable = new("symbol-is-not-creatable", "Type '{0}' cannot be instantiated.");
+		SymbolIsInaccessible = new("symbol-is-inaccessible", "Symbol '{0}' is inaccessible.");
+		SymbolIsNotAValue = new("symbol-is-not-a-value", "Symbol '{0}' is not a value.");
+		SymbolIsNotInvocable = new("symbol-is-not-invocable", "Symbol '{0}' is not invocable.");
+		OverloadResolutionFailure = new("overload-resolution-failure", "No overload of '{0}' matches.");
 
 		InternalError = new("internal-error", "Critical internal compiler error. Please report this to the nitec developer.\n{0}.");
 		LinkerNotZeroReturnCode = new("linker-not-zero-exit-code", "{0}");

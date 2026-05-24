@@ -113,13 +113,18 @@ internal partial class Binder
 	{
 		if (options.HasFlag(LookupOptions.ModulesOrTypesOnly) && symbol is not (ModuleSymbol or TypeSymbol))
 		{
-			return LookupResult.Empty();
+			return new SingleLookupResult(LookupResultKind.NotAModuleNorAType, symbol, null);
 		}
 
 		if (options.HasFlag(LookupOptions.AttributesOnly) && symbol is not AttributeSymbol)
 		{
-			return LookupResult.Empty();
+			return new SingleLookupResult(LookupResultKind.NotAnAttribute, symbol, null);
 		}
+
+		// TODO: Check WrongArity when symbol has type parameters and arity doesn't match
+		// TODO: Check Inaccessible when symbol is not accessible from current context
+		// TODO: Check NotInvocable when MustBeInvocableIfMember is set and symbol is not invocable
+		// TODO: Check NotCreatable when type cannot be instantiated
 
 		return LookupResult.Viable(symbol);
 	}
@@ -148,7 +153,7 @@ internal partial class Binder
 
 	private void LookupAttribute(LookupResult result, string name, int arity)
 	{
-		LookupOptions options = LookupOptions.IgnoreFunctionArity;
+		LookupOptions options = LookupOptions.AttributesOnly;
 
 		LookupSymbolsWithFallback(result, name, arity, options: options);
 	}

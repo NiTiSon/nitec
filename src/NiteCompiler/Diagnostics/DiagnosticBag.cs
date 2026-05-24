@@ -203,10 +203,50 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.UnresolvedPredefinedType, [], type);
 	}
 
-	// public void ReportAmbiguousReference(Location location, params IEnumerable<Symbol> candidates)
-	// {
-	// 	Add(DiagnosticDescriptor.AmbiguousReference, [location], string.Join(",\n", candidates));
-	// }
+	public void ReportAmbiguousReference(Location location, string symbolName)
+	{
+		Add(DiagnosticDescriptor.AmbiguousReference, [location], symbolName);
+	}
+
+	public void ReportSymbolIsNotAModuleNorAType(Location location, string symbolName)
+	{
+		Add(DiagnosticDescriptor.SymbolIsNotAModuleNorAType, [location], symbolName);
+	}
+
+	public void ReportSymbolIsNotAnAttribute(Location location, string symbolName)
+	{
+		Add(DiagnosticDescriptor.SymbolIsNotAnAttribute, [location], symbolName);
+	}
+
+	public void ReportWrongTypeArity(Location location, string symbolName)
+	{
+		Add(DiagnosticDescriptor.WrongTypeArity, [location], symbolName);
+	}
+
+	public void ReportSymbolIsNotCreatable(Location location, string symbolName)
+	{
+		Add(DiagnosticDescriptor.SymbolIsNotCreatable, [location], symbolName);
+	}
+
+	public void ReportSymbolIsInaccessible(Location location, string symbolName)
+	{
+		Add(DiagnosticDescriptor.SymbolIsInaccessible, [location], symbolName);
+	}
+
+	public void ReportSymbolIsNotAValue(Location location, string symbolName)
+	{
+		Add(DiagnosticDescriptor.SymbolIsNotAValue, [location], symbolName);
+	}
+
+	public void ReportSymbolIsNotInvocable(Location location, string symbolName)
+	{
+		Add(DiagnosticDescriptor.SymbolIsNotInvocable, [location], symbolName);
+	}
+
+	public void ReportOverloadResolutionFailure(Location location, string symbolName)
+	{
+		Add(DiagnosticDescriptor.OverloadResolutionFailure, [location], symbolName);
+	}
 
 	public void ReportIntegralConstantIsTooLarge(Location location)
 	{

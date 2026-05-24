@@ -74,7 +74,7 @@ internal sealed class LookupResult
 		{
 			SetFrom(other);
 		}
-		else if (Kind != LookupResultKind.Viable)
+		else if (Kind != LookupResultKind.Viable && Kind != LookupResultKind.Ambiguous && Kind != LookupResultKind.MemberGroup)
 		{
 			return;
 		}
@@ -94,7 +94,7 @@ internal sealed class LookupResult
 		{
 			SetFrom(other);
 		}
-		else if (Kind != LookupResultKind.Viable)
+		else if (Kind != LookupResultKind.Viable && Kind != LookupResultKind.Ambiguous && Kind != LookupResultKind.MemberGroup)
 		{
 			return;
 		}

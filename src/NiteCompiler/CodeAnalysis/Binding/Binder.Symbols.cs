@@ -79,16 +79,36 @@ internal partial class Binder
 
 		LookupMembersInternal(result, container, rightName, syntax.UnqualifiedName.Arity,
 			LookupOptions.ModulesOrTypesOnly, this, diagnose: true);
+		Debug.Assert(result.Kind != LookupResultKind.NotAnAttribute);
 
-		if (result.Kind == LookupResultKind.Empty)
+		switch (result.Kind)
 		{
-			diagnostics.Diagnostics.ReportUnresolvedSymbol(syntax.Right.Location);
-			return CreateErrorType(syntax.UnqualifiedName.GetName());
+			case LookupResultKind.Empty:
+				diagnostics.Diagnostics.ReportUnresolvedSymbol(syntax.Right.Location);
+				return CreateErrorType(syntax.UnqualifiedName.GetName());
+
+			case LookupResultKind.NotAModuleNorAType:
+				diagnostics.Diagnostics.ReportSymbolIsNotAModuleNorAType(syntax.Right.Location, rightName);
+				return CreateErrorType(syntax.UnqualifiedName.GetName());
+
+			case LookupResultKind.Ambiguous:
+				diagnostics.Diagnostics.ReportAmbiguousReference(syntax.Right.Location, rightName);
+				return CreateErrorType(syntax.UnqualifiedName.GetName());
+
+			case LookupResultKind.NotCreatable:
+				diagnostics.Diagnostics.ReportSymbolIsNotCreatable(syntax.Right.Location, rightName);
+				return CreateErrorType(syntax.UnqualifiedName.GetName());
+
+			case LookupResultKind.Inaccessible:
+				diagnostics.Diagnostics.ReportSymbolIsInaccessible(syntax.Right.Location, rightName);
+				return CreateErrorType(syntax.UnqualifiedName.GetName());
+
+			default:
+			{
+				// Viable or other intermediate kinds
+				return result.Symbols[0];
+			}
 		}
-		else /*(result.Kind == LookupResultKind.Viable) */
-		{
-			return result.Symbols[0];
-		} // TODO: add else if for ambiguous, not a type/module, etc.
 
 	}
 
@@ -224,8 +244,40 @@ internal partial class Binder
 
 		if (result.Kind == LookupResultKind.Empty)
 		{
+			diagnostics.Diagnostics.ReportUnresolvedSymbol(where.Location);
 			wasError = true;
 			return CreateErrorType(simpleName);
+		}
+
+		switch (result.Kind)
+		{
+			case LookupResultKind.NotAModuleNorAType:
+				diagnostics.Diagnostics.ReportSymbolIsNotAModuleNorAType(where.Location, simpleName);
+				break;
+			case LookupResultKind.NotAnAttribute:
+				diagnostics.Diagnostics.ReportSymbolIsNotAnAttribute(where.Location, simpleName);
+				break;
+			case LookupResultKind.WrongArity:
+				diagnostics.Diagnostics.ReportWrongTypeArity(where.Location, simpleName);
+				break;
+			case LookupResultKind.NotCreatable:
+				diagnostics.Diagnostics.ReportSymbolIsNotCreatable(where.Location, simpleName);
+				break;
+			case LookupResultKind.Inaccessible:
+				diagnostics.Diagnostics.ReportSymbolIsInaccessible(where.Location, simpleName);
+				break;
+			case LookupResultKind.NotAValue:
+				diagnostics.Diagnostics.ReportSymbolIsNotAValue(where.Location, simpleName);
+				break;
+			case LookupResultKind.NotInvocable:
+				diagnostics.Diagnostics.ReportSymbolIsNotInvocable(where.Location, simpleName);
+				break;
+			case LookupResultKind.OverloadResolutionFailure:
+				diagnostics.Diagnostics.ReportOverloadResolutionFailure(where.Location, simpleName);
+				break;
+			case LookupResultKind.Ambiguous:
+				diagnostics.Diagnostics.ReportAmbiguousReference(where.Location, simpleName);
+				break;
 		}
 
 		wasError = true;
