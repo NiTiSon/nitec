@@ -20,6 +20,8 @@ internal abstract class ConstantValue
 	public virtual float F32 => (float)F16;
 	public virtual double F64 => (double)F32;
 
+	public virtual string StringValue => throw new InvalidOperationException();
+
 	public static ConstantValue Create(bool value)
 	{
 		return value ? ValueBoolean.True : ValueBoolean.False;
@@ -62,6 +64,11 @@ internal abstract class ConstantValue
 	public static ConstantValue Create(double value)
 	{
 		return new ValueF64(value);
+	}
+
+	public static ConstantValue Create(string value)
+	{
+		return new ValueString(value);
 	}
 
 	private sealed class ValueI32 : ConstantValue
@@ -152,6 +159,20 @@ internal abstract class ConstantValue
 		public override SpecialType SpecialType => SpecialType.StdNumericsFloat64;
 
 		public override double F64 => _value;
+	}
+
+	private sealed class ValueString : ConstantValue
+	{
+		private readonly string _value;
+
+		public ValueString(string value)
+		{
+			_value = value;
+		}
+
+		public override SpecialType SpecialType => SpecialType.None;
+
+		public override string StringValue => _value;
 	}
 
 	private sealed class ValueBoolean : ConstantValue

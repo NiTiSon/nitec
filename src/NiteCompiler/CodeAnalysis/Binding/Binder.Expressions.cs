@@ -551,9 +551,7 @@ internal partial class Binder
 		TypeSymbol strType = GetSpecialType(sliceType);
 		TypeSymbol refType = Compilation.CreateReferenceType(strType, isMutable: false, isNullable: false, Compilation.GetStaticLifetime());
 
-		throw new NotImplementedException();
-		// TODO: BoundString
-		// return new BoundLiteral(syntax, constant, refType);
+		return new BoundLiteral(syntax, ConstantValue.Create(content.Text), refType);
 	}
 
 	private BoundExpression BindIdentifier(SimpleNameSyntax name, bool invoked, bool indexed,

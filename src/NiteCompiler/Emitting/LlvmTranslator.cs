@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Text;
 using LLVMSharp.Interop;
 using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Symbols;
@@ -24,6 +25,7 @@ internal sealed partial class LlvmTranslator
 	private readonly BindingDiagnosticBag _diagnostics;
 	private readonly Dictionary<FunctionSymbol, FunctionPlan> _plans = new();
 	private readonly Dictionary<NamedTypeSymbol, LLVMTypeRef> _structTypes = new();
+	private int _nextStringId = 0;
 
 	private LlvmTranslator(NiteCompilation compilation, string moduleName, BindingDiagnosticBag diagnostics)
 	{

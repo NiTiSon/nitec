@@ -4,6 +4,7 @@ using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Binding;
 using NiteCompiler.CodeAnalysis.Binding.Operators;
 using NiteCompiler.CodeAnalysis.Symbols;
+using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.IntermediateRepresentation.ControlFlow;
 
 namespace NiteCompiler.IntermediateRepresentation.Nir;
@@ -362,6 +363,21 @@ internal sealed class NirBuilder
 
 	private Operand EmitLiteral(BoundLiteral literal, NirBlock block)
 	{
+		if (literal.Type is BaseReferenceTypeSymbol { IsThickPointer: true } refType)
+		{
+			string text = literal.ConstantValue.StringValue;
+			var encoding = refType.PointsTo.SpecialType switch
+			{
+				SpecialType.StdTextStringSliceUtf16 => StringLiteralType.Unicode16,
+				SpecialType.StdTextStringSliceUtf32 => StringLiteralType.Unicode32,
+				_ => StringLiteralType.Unicode8
+			};
+			Temp output = NewTemp(literal.Type);
+			LoadStringInstruction str = new(output, text, encoding);
+			block.Instructions.Add(str);
+			return new Copy(output);
+		}
+
 		switch (literal.Type.SpecialType)
 		{
 			case (>= SpecialType.StdNumericsSInt8 and <= SpecialType.StdNumericsFloat64)

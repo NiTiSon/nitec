@@ -20,17 +20,15 @@ public sealed class ReferenceTypeSymbol : BaseReferenceTypeSymbol
 
 	public override string ToDisplayString(SymbolFormat format = SymbolFormat.Default)
 	{
-		int displayIndex = (IsNullable ? 1 : 0) + (!IsMutable ? 2 : 0);
+		string prefix = IsMutable && IsNullable ? "&?" : "&";
 		string lifetime = Lifetime != null ? $"{Lifetime.ToDisplayString(format)} " : "";
 
-		return $"{Display[displayIndex]}{lifetime}{PointsTo.ToDisplayString(format)}";
-	}
+		if (IsMutable)
+		{
+			return $"{prefix}{lifetime}{PointsTo.ToDisplayString(format)}";
+		}
 
-	private static string[] Display =
-	[
-		"&",
-		"&?",
-		"&const ",
-		"&const? "
-	];
+		string modSuffix = IsNullable ? "const? " : "const ";
+		return $"{prefix}{lifetime}{modSuffix}{PointsTo.ToDisplayString(format)}";
+	}
 }

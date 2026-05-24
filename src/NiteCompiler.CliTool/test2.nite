@@ -8,7 +8,6 @@
 // 	}
 // }
 
-#[]
-public get_name() {
-	// let x = "Hello World";
+public get_name() -> std::numerics::SInt33 {
+	return 1;
 }

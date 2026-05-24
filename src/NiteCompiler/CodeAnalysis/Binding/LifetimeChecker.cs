@@ -233,17 +233,16 @@ internal sealed class LifetimeChecker
 
 	private void CheckReturnEscape(BoundExpression expr)
 	{
-	    // Returning a reference to a local is always an escape.
 		LocalVariableOrParameterSymbol? variable = ExtractVariable(expr);
 		if (variable == null) return;
-	    if (variable.Type is not BaseReferenceTypeSymbol) return;
+		if (variable.Type is not BaseReferenceTypeSymbol) return;
 
-	    // If this local was initialized with &someOtherLocal,
-	    // and someOtherLocal is not a parameter, it escapes.
-	    // (Full escape analysis requires tracking provenance through assignments;
-	    //  this is the conservative first pass.)
-	    _diagnostics.Diagnostics.ReportDanglingReference(
-	        expr.Syntax!.Location, variable, variable);
+		// Returning a reference with 'static lifetime is always safe —
+		// the referent lives for the entire program.
+		if (variable.Type is ReferenceTypeSymbol { Lifetime.IsStaticLifetime: true }) return;
+
+		_diagnostics.Diagnostics.ReportDanglingReference(
+			expr.Syntax!.Location, variable, variable);
 	}
 
 	private static void CollectDefsAndUses(

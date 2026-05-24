@@ -56,7 +56,40 @@ internal partial class Binder
 			return BindArrayType((ArrayTypeSyntax)syntax, diagnostics);
 		}
 
+		if (syntax.Kind == NodeKind.PathNameExpression)
+		{
+			return BindModuleOrTypeSymbol((PathNameSyntax)syntax, diagnostics);
+		}
+
 		throw new NotImplementedException();
+	}
+
+	private Symbol BindModuleOrTypeSymbol(PathNameSyntax syntax, BindingDiagnosticBag diagnostics)
+	{
+		ContainerSymbol? container = ResolveQualifier(syntax.Left, diagnostics);
+
+		if (container == null)
+		{
+			return CreateErrorType(syntax.UnqualifiedName.GetName());
+		}
+
+		string rightName = syntax.Right.GetName();
+
+		LookupResult result = LookupResult.GetInstance();
+
+		LookupMembersInternal(result, container, rightName, syntax.UnqualifiedName.Arity,
+			LookupOptions.ModulesOrTypesOnly, this, diagnose: true);
+
+		if (result.Kind == LookupResultKind.Empty)
+		{
+			diagnostics.Diagnostics.ReportUnresolvedSymbol(syntax.Right.Location);
+			return CreateErrorType(syntax.UnqualifiedName.GetName());
+		}
+		else /*(result.Kind == LookupResultKind.Viable) */
+		{
+			return result.Symbols[0];
+		} // TODO: add else if for ambiguous, not a type/module, etc.
+
 	}
 
 	private Symbol BindModuleOrTypeSymbol(IdentifierNameSyntax identifier, ContainerSymbol? container, BindingDiagnosticBag diagnostics)

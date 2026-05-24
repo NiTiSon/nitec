@@ -37,6 +37,9 @@ internal enum Bytecode : byte
 	CmpLt = 0x20,
 	CmpGe = 0x21,
 	CmpLe = 0x22,
+	LoadStr8 = 0x23,
+	LoadStr16 = 0x24,
+	LoadStr32 = 0x25,
 
 	BrCond = 0xFA,
 	Br = 0xFB,

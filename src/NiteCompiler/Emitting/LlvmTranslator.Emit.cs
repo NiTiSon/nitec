@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using LLVMSharp.Interop;
 using NiteCompiler.CodeAnalysis;
 using NiteCompiler.CodeAnalysis.Symbols;
+using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.IntermediateRepresentation;
 using NiteCompiler.IntermediateRepresentation.ControlFlow;
 using NiteCompiler.IntermediateRepresentation.Nir;
@@ -137,6 +138,9 @@ internal partial class LlvmTranslator
 				break;
 			case LoadImmInstruction imm:
 				valueMap[imm.Output] = EmitConstant(imm.Constant, imm.Output.Type);
+				break;
+			case LoadStringInstruction str:
+				valueMap[str.Output] = EmitLoadString(str);
 				break;
 			case LoadParamInstruction param:
 				valueMap[param.Output] = EmitParam(param.Parameter, parameterMap);
@@ -276,6 +280,60 @@ internal partial class LlvmTranslator
 			default:
 				throw new NotSupportedException($"LLVM translation for '{instruction.GetType().Name}' is not implemented.");
 		}
+	}
+
+	private LLVMValueRef EmitLoadString(LoadStringInstruction instruction)
+	{
+		byte[] encodedBytes = instruction.Encoding switch
+		{
+			StringLiteralType.Unicode16 => System.Text.Encoding.Unicode.GetBytes(instruction.StringData),
+			StringLiteralType.Unicode32 => System.Text.Encoding.UTF32.GetBytes(instruction.StringData),
+			_ => System.Text.Encoding.UTF8.GetBytes(instruction.StringData)
+		};
+
+		LLVMTypeRef elementType = instruction.Encoding switch
+		{
+			StringLiteralType.Unicode16 => _context.Int16Type,
+			StringLiteralType.Unicode32 => _context.Int32Type,
+			_ => _context.Int8Type
+		};
+
+		int elementCount = instruction.Encoding switch
+		{
+			StringLiteralType.Unicode16 => encodedBytes.Length / 2,
+			StringLiteralType.Unicode32 => encodedBytes.Length / 4,
+			_ => encodedBytes.Length
+		};
+
+		int id = _nextStringId++;
+		LLVMTypeRef arrayType = LLVMTypeRef.CreateArray(elementType, (uint)elementCount);
+
+		LLVMValueRef global = _module.AddGlobal(arrayType, $".str.{id}");
+		global.IsGlobalConstant = true;
+		global.Linkage = LLVMLinkage.LLVMPrivateLinkage;
+
+		LLVMValueRef[] elements = new LLVMValueRef[elementCount];
+		for (int i = 0; i < elementCount; i++)
+		{
+			ulong value = instruction.Encoding switch
+			{
+				StringLiteralType.Unicode16 => BitConverter.ToUInt16(encodedBytes, i * 2),
+				StringLiteralType.Unicode32 => BitConverter.ToUInt32(encodedBytes, i * 4),
+				_ => encodedBytes[i]
+			};
+			elements[i] = LLVMValueRef.CreateConstInt(elementType, value, false);
+		}
+		global.Initializer = LLVMValueRef.CreateConstArray(arrayType, elements);
+
+		LLVMValueRef zero = LLVMValueRef.CreateConstInt(_context.Int32Type, 0, false);
+		LLVMValueRef[] gepIndices = [zero, zero];
+		LLVMValueRef dataPtr = LLVMValueRef.CreateConstInBoundsGEP2(arrayType, global, gepIndices);
+
+		LLVMValueRef length = LLVMValueRef.CreateConstInt(_context.Int64Type, (ulong)elementCount, false);
+
+		LLVMValueRef thickPtr = LLVMValueRef.CreateConstStruct([dataPtr, length], false);
+
+		return thickPtr;
 	}
 
 	private LLVMValueRef EmitDefaultValue(TypeSymbol type)
@@ -440,6 +498,18 @@ internal partial class LlvmTranslator
 	{
 		if (type is BaseReferenceTypeSymbol referenceType)
 		{
+			if (referenceType.IsThickPointer)
+			{
+				LLVMTypeRef elementType = referenceType.PointsTo.SpecialType switch
+				{
+					SpecialType.StdTextStringSliceUtf16 => _context.Int16Type,
+					SpecialType.StdTextStringSliceUtf32 => _context.Int32Type,
+					_ => _context.Int8Type
+				};
+				LLVMTypeRef ptrType = LLVMTypeRef.CreatePointer(elementType, 0);
+				LLVMTypeRef lenType = _context.Int64Type;
+				return LLVMTypeRef.CreateStruct([ptrType, lenType], false);
+			}
 			return LLVMTypeRef.CreatePointer(GetLlvmType(referenceType.PointsTo), 0);
 		}
 
