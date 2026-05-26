@@ -208,6 +208,11 @@ public class DiagnosticBag : IEnumerable<Diagnostic>
 		Add(DiagnosticDescriptor.AmbiguousReference, [location], symbolName);
 	}
 
+	public void ReportSymbolIsNotAType(Location location, string symbolName)
+	{
+		Add(DiagnosticDescriptor.SymbolIsNotAModuleNorAType, [location], symbolName);
+	}
+
 	public void ReportSymbolIsNotAModuleNorAType(Location location, string symbolName)
 	{
 		Add(DiagnosticDescriptor.SymbolIsNotAModuleNorAType, [location], symbolName);

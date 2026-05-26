@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Collections.Immutable;
 using NiteCompiler.CodeAnalysis.Symbols;
@@ -109,6 +110,7 @@ internal partial class Binder
 		return arguments.ToImmutableAndFree();
 	}
 
+	[Obsolete("Mark for deletion, will be deleted when OverloadResolution is implemented.")]
 	private static FunctionSymbol? ResolveInvokedFunction(ImmutableArray<FunctionSymbol> candidates, int argumentCount)
 	{
 		foreach (FunctionSymbol function in candidates)

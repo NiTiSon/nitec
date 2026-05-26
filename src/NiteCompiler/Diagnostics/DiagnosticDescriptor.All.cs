@@ -52,6 +52,7 @@ public partial class DiagnosticDescriptor
 		IntegralValueCantBeSigned,
 		IntegralValueIsGreaterThanMaxValue,
 		IntegralValueIsSmallerThanMinValue,
+		SymbolIsNotAType,
 		SymbolIsNotAModuleNorAType,
 		SymbolIsNotAnAttribute,
 		WrongTypeArity,
@@ -134,6 +135,7 @@ public partial class DiagnosticDescriptor
 		IntegralValueIsSmallerThanMinValue = new("integral-value-is-smaller-than-min-value",
 			"Integral value is smaller than min value of specified type.");
 
+		SymbolIsNotAType = new("symbol-is-type", "Symbol '{0}' is not a type.");
 		SymbolIsNotAModuleNorAType = new("symbol-is-not-module-or-type", "Symbol '{0}' is not a module or type.");
 		SymbolIsNotAnAttribute = new("symbol-is-not-attribute", "Symbol '{0}' is not an attribute.");
 		WrongTypeArity = new("wrong-type-arity", "Wrong number of type arguments for '{0}'.");

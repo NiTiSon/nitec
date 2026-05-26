@@ -8,6 +8,6 @@
 // 	}
 // }
 
-public get_name() -> std::numerics::SInt33 {
+public get_name() -> std::numerics::SInt32 {
 	return 1;
 }

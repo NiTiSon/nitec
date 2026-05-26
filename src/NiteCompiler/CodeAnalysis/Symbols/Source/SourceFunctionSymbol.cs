@@ -59,6 +59,7 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 		Binder withGenericsBinder = factory.GetBinder(Syntax.ReturnTypeClause);
 		TypeSymbol result = withGenericsBinder.BindType(Syntax.ReturnTypeClause.Type, diagnostics);
 
+		AddDeclarationDiagnostics(diagnostics);
 		diagnostics.Free();
 		return result;
 	}

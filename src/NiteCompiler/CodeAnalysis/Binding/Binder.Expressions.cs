@@ -26,28 +26,6 @@ internal partial class Binder
 			CreateErrorType());
 	}
 
-	/// <summary>
-	/// Binds lateinit unbound nodes to either default type or to the <paramref name="targetType"/>.
-	/// </summary>
-	private BoundExpression FinallyBind(BoundExpression unbound, TypeSymbol? targetType)
-	{
-		LocalVariableOrParameterSymbol? variable = unbound switch
-		{
-			BoundParameter p => p.Variable,
-			BoundLocalVariable l => l.Variable,
-			_ => null
-		};
-
-		if (variable != null)
-		{
-			return variable.Type.SpecialType != SpecialType.None
-				? new BoundCopy(unbound.Syntax, variable)
-				: new BoundMove(unbound.Syntax, variable);
-		}
-
-		return unbound;
-	}
-
 	internal TypeSymbol CreateErrorType(string name = "<error_type>")
 	{
 		return new ErrorTypeSymbol(Compilation, SpecialType.None, name, lifetimeArity: 0, arity: 0, errorInfo: null, unreported: false);
@@ -356,11 +334,23 @@ internal partial class Binder
 
 	private BoundExpression BindValue(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics, BindValueKind valueKind)
 	{
-		var result = this.BindExpression(syntax, diagnostics);
+		BoundExpression result = this.BindExpression(syntax, diagnostics);
 		result = CheckValue(result, valueKind, diagnostics);
 		if (valueKind == BindValueKind.RValue)
 		{
-			result = FinallyBind(result, targetType: null);
+			LocalVariableOrParameterSymbol? variable = result switch
+			{
+				BoundParameter p => p.Variable,
+				BoundLocalVariable l => l.Variable,
+				_ => null
+			};
+
+			if (variable != null)
+			{
+				return variable.Type.SpecialType != SpecialType.None
+					? new BoundCopy(result.Syntax, variable)
+					: new BoundMove(result.Syntax, variable);
+			}
 		}
 		return result;
 	}
@@ -378,7 +368,7 @@ internal partial class Binder
 	private BoundExpression BindBooleanExpression(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		TypeSymbol booleanType = GetSpecialType(SpecialType.StdBoolean);
-		BoundExpression result = FinallyBind(BindExpression(syntax, diagnostics), booleanType);
+		BoundExpression result = BindRValueWithoutTargetType(syntax, diagnostics);
 
 		if (result.Type.SpecialType != SpecialType.StdBoolean)
 		{

@@ -188,15 +188,14 @@ internal partial class Binder
 
 		if (symbol is TypeSymbol typeSymbol)
 		{
-			if (typeSymbol.IsErrorSymbol)
-			{
-				diagnostics.Diagnostics.ReportUnresolvedSymbol(syntax.Location);
-			}
-
 			return typeSymbol;
 		}
-
-		throw new NotImplementedException();
+		else // Module
+		{
+			diagnostics.Diagnostics.ReportSymbolIsNotAType(syntax.Location, symbol.Name);
+			return new ErrorTypeSymbol(Compilation, SpecialType.None, symbol.Name, symbol.LifetimeArity, symbol.Arity,
+				null, true);
+		}
 	}
 
 	/// <summary>

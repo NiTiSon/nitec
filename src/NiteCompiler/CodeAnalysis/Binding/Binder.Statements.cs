@@ -191,7 +191,7 @@ internal partial class Binder
 		BoundExpression? initializer = null;
 		if (declarator.EqualsValueClause != null)
 		{
-			initializer = FinallyBind(BindExpression(declarator.EqualsValueClause.Expression, diagnostics), null);
+			initializer = BindRValueWithoutTargetType(declarator.EqualsValueClause.Expression, diagnostics);
 		}
 
 		TypeSymbol? declaredType = null;
@@ -256,7 +256,7 @@ internal partial class Binder
 		TypeSymbol retType = GetCurrentReturnType();
 		bool hasErrors = false;
 
-		if (syntax.Expression != null) arg = FinallyBind(BindExpression(syntax.Expression, diagnostics), null);
+		if (syntax.Expression != null) arg = BindRValueWithoutTargetType(syntax.Expression, diagnostics);
 
 		// TODO[NOT-CRITICAL]: add NeverReturn case
 		if (retType.IsVoidType) // func -> void
@@ -321,7 +321,7 @@ internal partial class Binder
 
 	private BoundExpressionStatement BindExpressionStatement(ExpressionStatementSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
-		BoundExpression expression = BindExpression(syntax.Expression, diagnostics, false, false);
+		BoundExpression expression = BindRValueWithoutTargetType(syntax.Expression, diagnostics);
 
 		return new BoundExpressionStatement(syntax, expression);
 	}
