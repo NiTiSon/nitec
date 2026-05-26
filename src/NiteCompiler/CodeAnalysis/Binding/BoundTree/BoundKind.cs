@@ -33,5 +33,6 @@ internal enum BoundKind
 	TypeExpression,
 	FieldAccess,
 	FunctionGroup,
+	Conversion,
 	BadExpression
 }

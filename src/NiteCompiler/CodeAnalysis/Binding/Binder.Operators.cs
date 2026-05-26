@@ -2,6 +2,7 @@ using System;
 using System.Data.SqlTypes;
 using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Binding.Operators;
+using NiteCompiler.CodeAnalysis.Binding.Conversions;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Diagnostics;
@@ -134,8 +135,19 @@ internal partial class Binder
 			return new BoundAssignment(syntax, left, right);
 		}
 
-		// TODO: Conversion
-		// TODO: Errors
+		if (right.Type != left.Type)
+		{
+			BoundConversion? conversion = ConvertImplicitly(right, left.Type, diagnostics);
+			if (conversion != null)
+			{
+				right = conversion;
+			}
+			else
+			{
+				diagnostics.Diagnostics.ReportCannotImplicitlyConvert(right.Syntax!.Location, right.Type, left.Type);
+				return new BoundAssignment(syntax, left, right, hasErrors: true);
+			}
+		}
 
 		return new BoundAssignment(syntax, left, right);
 	}

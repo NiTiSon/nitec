@@ -163,9 +163,36 @@ internal partial class LlvmTranslator
 			case NegInstruction neg:
 				valueMap[neg.Output] = EmitNeg(neg.Input.Value, neg.Output.Type, "neg", valueMap);
 				break;
-			case NotInstruction not:
-				valueMap[not.Output] = EmitNot(not.Input.Value, not.Output.Type, "not", valueMap);
-				break;
+		case NotInstruction not:
+			valueMap[not.Output] = EmitNot(not.Input.Value, not.Output.Type, "not", valueMap);
+			break;
+		case SExtInstruction sext:
+			valueMap[sext.Output] = _builder.BuildSExt(ResolveValue(sext.Input.Value, valueMap), GetLlvmType(sext.Output.Type), "sext");
+			break;
+		case ZExtInstruction zext:
+			valueMap[zext.Output] = _builder.BuildZExt(ResolveValue(zext.Input.Value, valueMap), GetLlvmType(zext.Output.Type), "zext");
+			break;
+		case TruncInstruction trunc:
+			valueMap[trunc.Output] = _builder.BuildTrunc(ResolveValue(trunc.Input.Value, valueMap), GetLlvmType(trunc.Output.Type), "trunc");
+			break;
+		case SIToFPInstruction sitofp:
+			valueMap[sitofp.Output] = _builder.BuildSIToFP(ResolveValue(sitofp.Input.Value, valueMap), GetLlvmType(sitofp.Output.Type), "sitofp");
+			break;
+		case UIToFPInstruction uitofp:
+			valueMap[uitofp.Output] = _builder.BuildUIToFP(ResolveValue(uitofp.Input.Value, valueMap), GetLlvmType(uitofp.Output.Type), "uitofp");
+			break;
+		case FPToSIInstruction fptosi:
+			valueMap[fptosi.Output] = _builder.BuildFPToSI(ResolveValue(fptosi.Input.Value, valueMap), GetLlvmType(fptosi.Output.Type), "fptosi");
+			break;
+		case FPToUIInstruction fptoui:
+			valueMap[fptoui.Output] = _builder.BuildFPToUI(ResolveValue(fptoui.Input.Value, valueMap), GetLlvmType(fptoui.Output.Type), "fptoui");
+			break;
+		case FPExtInstruction fpext:
+			valueMap[fpext.Output] = _builder.BuildFPExt(ResolveValue(fpext.Input.Value, valueMap), GetLlvmType(fpext.Output.Type), "fpext");
+			break;
+		case FPTruncInstruction fptrunc:
+			valueMap[fptrunc.Output] = _builder.BuildFPTrunc(ResolveValue(fptrunc.Input.Value, valueMap), GetLlvmType(fptrunc.Output.Type), "fptrunc");
+			break;
 			case AndInstruction and:
 				valueMap[and.Output] = _builder.BuildAnd(ResolveValue(and.Left.Value, valueMap), ResolveValue(and.Right.Value, valueMap), "and");
 				break;

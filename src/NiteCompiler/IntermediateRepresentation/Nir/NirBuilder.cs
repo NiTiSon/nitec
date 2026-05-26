@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Binding;
+using NiteCompiler.CodeAnalysis.Binding.Conversions;
 using NiteCompiler.CodeAnalysis.Binding.Operators;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
@@ -356,6 +357,7 @@ internal sealed class NirBuilder
 			BoundAddressOfExpression addressOf => EmitAddressOfExpression(addressOf, block),
 			BoundDereferenceExpression dereference => EmitDereferenceExpression(dereference, block),
 			BoundFieldAccess fieldAccess => EmitFieldAccess(fieldAccess, block),
+			BoundConversion conversion => EmitConversion(conversion, block),
 
 			_ => throw new UnreachableException($"RewriteExpression({expression.GetType()})")
 		};
@@ -578,6 +580,71 @@ internal sealed class NirBuilder
 			return new Copy(loaded);
 		}
 		return new Copy(ReadLocal(localVar.Variable));
+	}
+
+	private Operand EmitConversion(BoundConversion conversion, NirBlock block)
+	{
+		if (conversion.ConversionKind == ConversionKind.NoConversion || conversion.ConversionKind == ConversionKind.Identity)
+		{
+			return RewriteExpression(conversion.Operand, block);
+		}
+
+		Operand operand = RewriteExpression(conversion.Operand, block);
+		Temp result = NewTemp(conversion.Type);
+		UnaryInstruction instruction;
+
+		if (conversion.ConversionKind == ConversionKind.ImplicitNumeric)
+		{
+			instruction = conversion.Operand.Type.SpecialType.IsSignedIntegral
+				? new SExtInstruction(result, operand)
+				: new ZExtInstruction(result, operand);
+		}
+		else if (conversion.ConversionKind == ConversionKind.ImplicitFloatExtension)
+		{
+			instruction = new FPExtInstruction(result, operand);
+		}
+		else if (conversion.ConversionKind == ConversionKind.ImplicitSignedIntegerToFloat)
+		{
+			instruction = new SIToFPInstruction(result, operand);
+		}
+		else if (conversion.ConversionKind == ConversionKind.ExplicitNumericTruncate)
+		{
+			instruction = new TruncInstruction(result, operand);
+		}
+		else if (conversion.ConversionKind is ConversionKind.ExplicitNumericSExt)
+		{
+			instruction = new SExtInstruction(result, operand);
+		}
+		else if (conversion.ConversionKind is ConversionKind.ExplicitNumericZExt)
+		{
+			instruction = new ZExtInstruction(result, operand);
+		}
+		else if (conversion.ConversionKind is ConversionKind.ExplicitSignedToUnsigned or ConversionKind.ExplicitUnsignedToSigned)
+		{
+			// Same-size bit reinterpret — handled implicitly by NIR/LLVM type system
+			return operand;
+		}
+		else if (conversion.ConversionKind == ConversionKind.ExplicitUnsignedIntegerToFloat)
+		{
+			instruction = new UIToFPInstruction(result, operand);
+		}
+		else if (conversion.ConversionKind == ConversionKind.ExplicitFloatToInteger)
+		{
+			instruction = conversion.Type.SpecialType.IsSignedIntegral
+				? new FPToSIInstruction(result, operand)
+				: new FPToUIInstruction(result, operand);
+		}
+		else if (conversion.ConversionKind == ConversionKind.ExplicitFloatTruncate)
+		{
+			instruction = new FPTruncInstruction(result, operand);
+		}
+		else
+		{
+			throw new UnreachableException($"EmitConversion({conversion.ConversionKind})");
+		}
+
+		block.Instructions.Add(instruction);
+		return new Copy(result);
 	}
 
 	private Operand EmitCall(BoundCall call, NirBlock block)

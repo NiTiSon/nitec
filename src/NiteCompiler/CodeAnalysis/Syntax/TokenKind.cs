@@ -344,6 +344,7 @@ public readonly struct TokenKind : IEquatable<TokenKind>
 	public static readonly TokenKind Self = Reg(Keyword + 28, "self");
 	public static readonly TokenKind New = Reg(Keyword + 29, "new");
 	public static readonly TokenKind Attribute = Reg(Keyword + 30, "attribute");
+	public static readonly TokenKind As = Reg(Keyword + 31, "as");
 
 	// Type keywords have they very own unique values
 	public static readonly TokenKind I8 = Reg(TypeKeyword + (uint)SpecialType.StdNumericsSInt8, "i8");

@@ -8,6 +8,6 @@
 // 	}
 // }
 
-public get_name() -> std::numerics::SInt32 {
-	return 1;
+public get_name() -> std::numerics::SInt16 {
+	return 1 as i16;
 }

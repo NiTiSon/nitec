@@ -148,6 +148,9 @@ internal static class SyntaxFacts
 		case "attribute":
 			info.Kind = TokenKind.Attribute;
 			return;
+		case "as":
+			info.Kind = TokenKind.As.ToContextualKeyword();
+			return;
 		}
 	}
 

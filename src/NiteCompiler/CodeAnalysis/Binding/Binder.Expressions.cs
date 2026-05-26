@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using NiteCompiler.CodeAnalysis.Binding.Conversions;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Diagnostics;
@@ -80,6 +81,8 @@ internal partial class Binder
 				return BindMemberAccess(memberAccess, diagnostics);
 			case PathNameSyntax path:
 				return BindPath(path, diagnostics);
+			case CastExpressionSyntax cast:
+				return BindCastExpression(cast, diagnostics);
 
 			default:
 				throw new UnreachableException($"BindExpression({syntax.Kind})");
@@ -373,11 +376,51 @@ internal partial class Binder
 		if (result.Type.SpecialType != SpecialType.StdBoolean)
 		{
 			diagnostics.Diagnostics.ReportCannotImplicitlyConvert(syntax.Location, result.Type, GetSpecialType(SpecialType.StdBoolean));
-
-			// TODO: Wrap expression in wrong conversion with hasError = true
+			return new BoundConversion(syntax, result, ConversionKind.NoConversion, booleanType, hasErrors: true);
 		}
 
 		return result;
+	}
+
+	private BoundExpression BindCastExpression(CastExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
+	{
+		BoundExpression operand = BindExpression(syntax.Left, diagnostics);
+		TypeSymbol? targetType = null;
+		if (syntax.TypeExpression is TypeSyntax typeSyntax)
+		{
+			targetType = BindType(typeSyntax, diagnostics);
+		}
+
+		if (targetType == null || targetType.IsErrorSymbol)
+		{
+			return operand;
+		}
+
+		ConversionKind kind = TypeConversions.ClassifyConversion(operand.Type, targetType);
+		if (kind == ConversionKind.NoConversion)
+		{
+			diagnostics.Diagnostics.ReportCannotImplicitlyConvert(syntax.Location, operand.Type, targetType);
+			return new BoundConversion(syntax, operand, ConversionKind.NoConversion, targetType, hasErrors: true);
+		}
+
+		return new BoundConversion(syntax, operand, kind, targetType);
+	}
+
+	internal static BoundConversion? ConvertImplicitly(BoundExpression expression, TypeSymbol targetType, BindingDiagnosticBag diagnostics)
+	{
+		ConversionKind kind = TypeConversions.ClassifyConversion(expression.Type, targetType);
+		if (kind == ConversionKind.NoConversion)
+		{
+			return null;
+		}
+
+		if (!kind.IsImplicit)
+		{
+			return null;
+		}
+
+		BoundConversion conversion = new(expression.Syntax!, expression, kind, targetType);
+		return conversion;
 	}
 
 	private BoundLiteral BindLiteralConstant(LiteralExpressionSyntax syntax, BindingDiagnosticBag diagnostics)

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using NiteCompiler.CodeAnalysis.Binding.Conversions;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Symbols.Source;
 using NiteCompiler.CodeAnalysis.Syntax;
@@ -216,9 +217,16 @@ internal partial class Binder
 		{
 			if (initializer.Type != declaredType)
 			{
-				diagnostics.Diagnostics.ReportCannotImplicitlyConvert(initializer.Syntax!.Location, initializer.Type, declaredType);
-
-				return new BoundLocalVariableDeclarationStatement(declarator, local, initializer, hasErrors: true);
+				BoundConversion? conversion = ConvertImplicitly(initializer, declaredType, diagnostics);
+				if (conversion != null)
+				{
+					initializer = conversion;
+				}
+				else
+				{
+					diagnostics.Diagnostics.ReportCannotImplicitlyConvert(initializer.Syntax!.Location, initializer.Type, declaredType);
+					return new BoundLocalVariableDeclarationStatement(declarator, local, initializer, hasErrors: true);
+				}
 			}
 		}
 
@@ -276,11 +284,18 @@ internal partial class Binder
 			}
 			else // return EXPR;
 			{
-				// TODO: Conversion
 				if (arg.Type != retType)
 				{
-					diagnostics.Diagnostics.ReportWrongReturnExpressionType(arg.Syntax!.Location, arg.Type, retType);
-					hasErrors = true;
+					BoundConversion? conversion = ConvertImplicitly(arg, retType, diagnostics);
+					if (conversion != null)
+					{
+						arg = conversion;
+					}
+					else
+					{
+						diagnostics.Diagnostics.ReportWrongReturnExpressionType(arg.Syntax!.Location, arg.Type, retType);
+						hasErrors = true;
+					}
 				}
 			}
 		}

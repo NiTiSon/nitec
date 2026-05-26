@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Collections.Immutable;
+using NiteCompiler.CodeAnalysis.Binding.Conversions;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Diagnostics;
@@ -77,8 +78,7 @@ internal partial class Binder
 					[..methodGroup.Candidates], arguments, CreateErrorType());
 			}
 
-			bool hasErrors = CheckInvocationArguments(function, arguments, diagnostics);
-
+			arguments = CheckInvocationArguments(function, arguments, diagnostics, out bool hasErrors);
 			// TODO: make it more esthetic
 			TypeSymbol? typeOverride = function is ConstructorSymbol ctor
 				? ctor.ContainingType
@@ -127,13 +127,14 @@ internal partial class Binder
 		return null;
 	}
 
-	private static bool CheckInvocationArguments(FunctionSymbol function, ImmutableArray<BoundExpression> arguments,
-		BindingDiagnosticBag diagnostics)
+	private static ImmutableArray<BoundExpression> CheckInvocationArguments(FunctionSymbol function, ImmutableArray<BoundExpression> arguments,
+		BindingDiagnosticBag diagnostics, out bool hasErrors)
 	{
 		int offset = function is ConstructorSymbol ? 1 : 0;
 		Debug.Assert(function.Parameters.Length - offset == arguments.Length);
 
-		bool hasErrors = false;
+		bool anyErrors = false;
+		ImmutableArray<BoundExpression>.Builder? argumentsBuilder = null;
 		for (int i = 0; i < arguments.Length; i++)
 		{
 			BoundExpression argument = arguments[i];
@@ -141,11 +142,35 @@ internal partial class Binder
 
 			if (argument.Type != parameter.Type)
 			{
-				diagnostics.Diagnostics.ReportCannotImplicitlyConvert(argument.Syntax!.Location, argument.Type, parameter.Type);
-				hasErrors = true;
+				BoundConversion? conversion = ConvertImplicitly(argument, parameter.Type, diagnostics);
+				if (conversion != null)
+				{
+					if (argumentsBuilder == null)
+					{
+						argumentsBuilder = ImmutableArray.CreateBuilder<BoundExpression>(arguments.Length);
+						argumentsBuilder.AddRange(arguments[..i]);
+					}
+
+					argumentsBuilder.Add(conversion);
+				}
+				else
+				{
+					diagnostics.Diagnostics.ReportCannotImplicitlyConvert(argument.Syntax!.Location, argument.Type, parameter.Type);
+					anyErrors = true;
+
+					if (argumentsBuilder != null)
+					{
+						argumentsBuilder.Add(argument);
+					}
+				}
+			}
+			else if (argumentsBuilder != null)
+			{
+				argumentsBuilder.Add(argument);
 			}
 		}
 
-		return hasErrors;
+		hasErrors = anyErrors;
+		return argumentsBuilder?.ToImmutable() ?? arguments;
 	}
 }

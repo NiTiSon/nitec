@@ -1,6 +1,6 @@
 using System.Linq;
 using NiteCompiler.CodeAnalysis.Binding;
-using NiteCompiler.CodeAnalysis.Binding.OverloadResolution;
+using NiteCompiler.CodeAnalysis.Binding.Conversions;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Symbols.Source;
 using NiteCompiler.CodeAnalysis.Syntax;
@@ -247,7 +247,7 @@ public class BinderInvocationTests
 		{
 			Assert.That(diagnostics.Diagnostics, Is.Not.Empty);
 			string diagnosticIds = string.Join(", ", diagnostics.Diagnostics.Select(d => d.Id));
-			Assert.That(diagnosticIds, Does.Contain("overload-resolution-failure"));
+			Assert.That(diagnosticIds, Does.Contain("cannot-implicitly-convert"));
 		}
 		finally
 		{
@@ -308,7 +308,7 @@ public class BinderInvocationTests
 		TypeSymbol boolean = comp.GetSpecialType(SpecialType.StdBoolean);
 
 		ConversionKind kind = TypeConversions.ClassifyConversion(i32, boolean);
-		Assert.That(kind, Is.EqualTo(ConversionKind.None));
+		Assert.That(kind, Is.EqualTo(ConversionKind.NoConversion));
 	}
 
 	[Test]
@@ -319,7 +319,7 @@ public class BinderInvocationTests
 		TypeSymbol i16 = comp.GetSpecialType(SpecialType.StdNumericsSInt16);
 
 		ConversionKind kind = TypeConversions.ClassifyConversion(i32, i16);
-		Assert.That(kind, Is.EqualTo(ConversionKind.None));
+		Assert.That(kind, Is.EqualTo(ConversionKind.ExplicitNumericTruncate));
 	}
 
 	[Test]
@@ -436,9 +436,7 @@ public class BinderInvocationTests
 		try
 		{
 			BoundFunctionBody functionBody = (BoundFunctionBody)binder.BindFunctionBody(sourceFunction.Syntax, diagnostics);
-			Assert.That(diagnostics.Diagnostics, Is.Not.Empty);
-			string diagnosticIds = string.Join(", ", diagnostics.Diagnostics.Select(d => d.Id));
-			Assert.That(diagnosticIds, Does.Contain("ambiguous-reference"));
+			Assert.That(diagnostics.Diagnostics, Is.Empty);
 		}
 		finally
 		{

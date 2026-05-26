@@ -144,6 +144,25 @@ internal sealed partial class NiteParser
 
 	private ExpressionSyntax? TryExpandExpression(ExpressionSyntax leftOperand, Precedence precedence)
 	{
+		// Check for 'expr as Type' cast expression
+		if (Current.TKind == TokenKind.IdentifierOrKeyword
+			&& Current.TKind.GetContextualKeyword() == TokenKind.As)
+		{
+			NodeKind expressionKind = NodeKind.CastExpression;
+			Precedence castPrecedence = expressionKind.Precedence;
+
+			if (castPrecedence < precedence)
+				return null;
+
+			if ((castPrecedence == precedence) && !expressionKind.IsRightAssociative)
+				return null;
+
+			Token asToken = PeekAndAdvance();
+			TypeSyntax type = ParseType();
+
+			return new CastExpressionSyntax(_syntaxTree, leftOperand, asToken, type);
+		}
+
 		(TokenKind operatorTokenKind, NodeKind operatorExpressionKind) = GetExpressionOperatorTokenKindAndExpressionKind();
 
 		if (operatorTokenKind == TokenKind.None)
