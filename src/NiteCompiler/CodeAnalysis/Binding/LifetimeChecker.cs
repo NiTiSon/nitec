@@ -305,6 +305,12 @@ internal sealed class LifetimeChecker
 					CollectUses(arg, block, uses);
 				}
 				break;
+			case BoundCollectionExpression coll:
+				foreach (var element in coll.Elements)
+				{
+					CollectUses(element, block, uses);
+				}
+				break;
 		}
 	}
 }

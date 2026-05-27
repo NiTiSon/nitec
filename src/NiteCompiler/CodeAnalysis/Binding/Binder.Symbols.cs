@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Linq;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Diagnostics;
@@ -179,7 +180,32 @@ internal partial class Binder
 
 	private TypeSymbol BindArrayType(ArrayTypeSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
-		throw new NotImplementedException("Sized array is not implemented yet.");
+		TypeSymbol elementType = BindType(syntax.Type, diagnostics);
+
+		TypeSymbol usizeType = GetSpecialType(SpecialType.StdNumericsUNativeInt);
+		BoundExpression sizeExpression = BindExpression(syntax.Size, diagnostics);
+
+		ulong arraySize;
+		if (sizeExpression is BoundLiteral sizeLiteral)
+		{
+			SpecialType st = sizeLiteral.ConstantValue.SpecialType;
+			BoundConversion? conversion = ConvertImplicitly(sizeExpression, usizeType, diagnostics);
+
+			if (conversion == null)
+			{
+				diagnostics.Diagnostics.ReportCannotImplicitlyConvert(syntax.Size.Location, sizeExpression.Type, usizeType);
+				return CreateErrorType();
+			}
+
+			arraySize = (conversion.Operand as BoundLiteral)!.ConstantValue.U64;
+		}
+		else
+		{
+			diagnostics.Diagnostics.ReportCannotImplicitlyConvert(syntax.Size.Location, sizeExpression.Type, usizeType);
+			return CreateErrorType();
+		}
+
+		return Compilation.CreateSizedArrayType(elementType, arraySize);
 	}
 
 	public TypeSymbol BindType(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics)

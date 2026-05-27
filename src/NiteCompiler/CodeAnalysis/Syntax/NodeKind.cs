@@ -259,6 +259,7 @@ public readonly struct NodeKind : IEquatable<NodeKind>
 	public static readonly NodeKind NeverType = Reg(Expression + 21, "never-type");
 	public static readonly NodeKind SelfExpression = Reg(Expression + 22, "self-expression");
 	public static readonly NodeKind CastExpression = Reg(Expression + 24, Precedence.Cast, "cast-expression");
+	public static readonly NodeKind CollectionExpression = Reg(Expression + 25, "collection-expression");
 	public static readonly NodeKind MemberAccessExpression = Reg(Expression + 23, Precedence.Primary, "member-access-expression");
 	private const uint Operation = 0x00_00__28_00;
 	public static readonly NodeKind UnaryAddExpression = Reg(Operation + 1, Precedence.Unary, "unary-add-expression");

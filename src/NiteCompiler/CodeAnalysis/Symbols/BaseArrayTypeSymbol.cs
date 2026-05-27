@@ -9,7 +9,7 @@ public abstract class BaseArrayTypeSymbol : TypeSymbol
 
 	public abstract TypeSymbol ElementsType { get; }
 	public virtual int Rank => 1;
-	public abstract int? Length { get; }
+	public abstract ulong? Length { get; }
 
 	public override ImmutableArray<Symbol> GetMembers()
 	{

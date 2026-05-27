@@ -83,6 +83,8 @@ internal partial class Binder
 				return BindPath(path, diagnostics);
 			case CastExpressionSyntax cast:
 				return BindCastExpression(cast, diagnostics);
+			case CollectionExpressionSyntax coll:
+				return BindCollectionExpression(coll, diagnostics);
 
 			default:
 				throw new UnreachableException($"BindExpression({syntax.Kind})");
@@ -780,5 +782,113 @@ internal partial class Binder
 			default:
 				throw new UnreachableException();
 		}
+	}
+
+	internal BoundExpression BindToNaturalType(BoundExpression expression, TypeSymbol targetType,
+		BindingDiagnosticBag diagnostics)
+	{
+		if (expression is BoundCollectionExpression coll && targetType is BaseArrayTypeSymbol arrayType)
+		{
+			return BindCollectionToTargetType(coll, arrayType.ElementsType, diagnostics);
+		}
+
+		BoundConversion? conversion = ConvertImplicitly(expression, targetType, diagnostics);
+		if (conversion != null)
+		{
+			return conversion;
+		}
+
+		return expression;
+	}
+
+	private BoundCollectionExpression BindCollectionExpression(CollectionExpressionSyntax syntax,
+		BindingDiagnosticBag diagnostics)
+	{
+		ArrayBuilder<BoundExpression> elements = ArrayBuilder<BoundExpression>.GetInstance(syntax.Elements.Count);
+
+		foreach (ExpressionSyntax elementExpr in syntax.Elements)
+		{
+			BoundExpression bound = BindRValueWithoutTargetType(elementExpr, diagnostics);
+			elements.Add(bound);
+		}
+
+		ImmutableArray<BoundExpression> elementArray = elements.ToImmutableAndFree();
+
+		TypeSymbol? bct = FindBestCommonType(elementArray);
+		if (bct == null)
+		{
+			diagnostics.Diagnostics.ReportCannotImplicitlyConvert(syntax.Location,
+				elementArray.Length > 0 ? elementArray[0].Type : CreateErrorType(),
+				CreateErrorType());
+			SizedArrayTypeSymbol errorArrayType = Compilation.CreateSizedArrayType(CreateErrorType(), (ulong)elementArray.Length);
+			return new BoundCollectionExpression(syntax, elementArray, errorArrayType);
+		}
+
+		SizedArrayTypeSymbol collectionType = Compilation.CreateSizedArrayType(bct, (ulong)elementArray.Length);
+		return new BoundCollectionExpression(syntax, elementArray, collectionType);
+	}
+
+	private BoundCollectionExpression BindCollectionToTargetType(BoundCollectionExpression coll,
+		TypeSymbol targetElementType, BindingDiagnosticBag diagnostics)
+	{
+		ArrayBuilder<BoundExpression> converted = ArrayBuilder<BoundExpression>.GetInstance(coll.Elements.Length);
+		bool hasErrors = coll.HasErrors;
+
+		foreach (BoundExpression element in coll.Elements)
+		{
+			if (element.Type == targetElementType)
+			{
+				converted.Add(element);
+			}
+			else if (ConvertImplicitly(element, targetElementType, diagnostics) is { } conv)
+			{
+				converted.Add(conv);
+			}
+			else
+			{
+				diagnostics.Diagnostics.ReportCannotImplicitlyConvert(
+					element.Syntax!.Location, element.Type, targetElementType);
+				converted.Add(element);
+				hasErrors = true;
+			}
+		}
+
+		SizedArrayTypeSymbol arrayType = Compilation.CreateSizedArrayType(targetElementType, (ulong)converted.Count);
+		return new BoundCollectionExpression(coll.Syntax!, converted.ToImmutableAndFree(), arrayType, hasErrors);
+	}
+
+	private static TypeSymbol? FindBestCommonType(ImmutableArray<BoundExpression> elements)
+	{
+		if (elements.Length == 0)
+		{
+			return null;
+		}
+
+		TypeSymbol bct = elements[0].Type;
+
+		for (int i = 1; i < elements.Length; i++)
+		{
+			TypeSymbol current = elements[i].Type;
+
+			if (current == bct)
+			{
+				continue;
+			}
+
+			if (TypeConversions.HasImplicitConversion(current, bct))
+			{
+				continue;
+			}
+
+			if (TypeConversions.HasImplicitConversion(bct, current))
+			{
+				bct = current;
+				continue;
+			}
+
+			return null;
+		}
+
+		return bct;
 	}
 }

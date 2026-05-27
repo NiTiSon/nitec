@@ -377,7 +377,10 @@ internal sealed partial class NiteParser
 
 	private ExpressionSyntax ParseCollectionExpression()
 	{
-		throw new NotImplementedException();
+		Token openBracket = MatchToken(TokenKind.OpenBracket);
+		SyntaxList<ExpressionSyntax>.Builder elements = ParseCommaSeparatedList(TokenKind.CloseBracket, ParseExpression);
+		Token closeBracket = MatchToken(TokenKind.CloseBracket);
+		return new CollectionExpressionSyntax(_syntaxTree, openBracket, elements.Build(_syntaxTree), closeBracket);
 	}
 
 	private ExpressionSyntax ParsePrimaryOrUnaryExpression(Precedence precedence)

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Binding.Pure;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
@@ -14,6 +15,7 @@ internal sealed class BoundLiteral : BoundExpression
 
 	public BoundLiteral(SyntaxNode syntax, ConstantValue constantValue, TypeSymbol type) : base(syntax)
 	{
+		Debug.Assert(constantValue != null);
 		ConstantValue = constantValue;
 		Type = type;
 	}

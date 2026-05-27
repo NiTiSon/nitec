@@ -200,6 +200,24 @@ public sealed partial class NiteCompilation
 		return value;
 	}
 
+	private ConcurrentDictionary<(TypeSymbol, ulong), SizedArrayTypeSymbol>? _sizedArrayTypeSymbols;
+	internal SizedArrayTypeSymbol CreateSizedArrayType(TypeSymbol elementsType, ulong length)
+	{
+		if (_sizedArrayTypeSymbols == null)
+		{
+			Interlocked.CompareExchange(ref _sizedArrayTypeSymbols, new(), null);
+		}
+
+		var key = (elementsType, length);
+		if (!_sizedArrayTypeSymbols.TryGetValue(key, out SizedArrayTypeSymbol? value))
+		{
+			value = new SizedArrayTypeSymbol(elementsType, length);
+			_sizedArrayTypeSymbols[key] = value;
+		}
+
+		return value;
+	}
+
 	public FunctionSymbol? GetEntryPoint()
 	{
 		// TODO: Binder.Lookup("main") etc.

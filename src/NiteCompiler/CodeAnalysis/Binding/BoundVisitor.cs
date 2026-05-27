@@ -36,4 +36,5 @@ internal abstract class BoundVisitor
 	public virtual void VisitFieldAccess(BoundFieldAccess fieldAccess) => DefaultVisit(fieldAccess);
 	public virtual void VisitMethodGroup(BoundFunctionGroup functionGroup) => DefaultVisit(functionGroup);
 	public virtual void VisitConversion(BoundConversion conversion) => DefaultVisit(conversion);
+	public virtual void VisitCollectionExpression(BoundCollectionExpression collectionExpression) => DefaultVisit(collectionExpression);
 }

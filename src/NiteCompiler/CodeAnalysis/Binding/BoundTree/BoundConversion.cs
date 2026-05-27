@@ -1,13 +1,14 @@
 using NiteCompiler.CodeAnalysis.Binding.Conversions;
 using NiteCompiler.CodeAnalysis.Binding.Pure;
 using NiteCompiler.CodeAnalysis.Symbols;
+using NiteCompiler.CodeAnalysis.Syntax;
 
 namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal sealed class BoundConversion : BoundExpression
 {
-	public BoundConversion(Syntax.SyntaxNode syntax, BoundExpression operand, ConversionKind conversionKind, TypeSymbol type, bool hasErrors = false)
-		: base(syntax, hasErrors)
+	public BoundConversion(SyntaxNode syntax, BoundExpression operand, ConversionKind conversionKind, TypeSymbol type, bool hasErrors = false)
+		: base(syntax, hasErrors || operand.HasErrors)
 	{
 		Operand = operand;
 		ConversionKind = conversionKind;

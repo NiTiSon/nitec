@@ -358,6 +358,7 @@ internal sealed class NirBuilder
 			BoundDereferenceExpression dereference => EmitDereferenceExpression(dereference, block),
 			BoundFieldAccess fieldAccess => EmitFieldAccess(fieldAccess, block),
 			BoundConversion conversion => EmitConversion(conversion, block),
+		BoundCollectionExpression coll => EmitCollectionExpression(coll, block),
 
 			_ => throw new UnreachableException($"RewriteExpression({expression.GetType()})")
 		};
@@ -722,6 +723,11 @@ internal sealed class NirBuilder
 		Temp result2 = NewTemp(fieldAccess.Type);
 		block.Instructions.Add(new ExtractValueInstruction(result2, aggregate, fieldAccess.Field));
 		return new Copy(result2);
+	}
+
+	private Operand EmitCollectionExpression(BoundCollectionExpression coll, NirBlock block)
+	{
+		throw new NotImplementedException("Collection expression codegen is not yet implemented.");
 	}
 
 	private Operand GetReceiverPointer(BoundExpression receiver, NirBlock block)

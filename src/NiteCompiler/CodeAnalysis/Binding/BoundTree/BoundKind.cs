@@ -34,5 +34,6 @@ internal enum BoundKind
 	FieldAccess,
 	FunctionGroup,
 	Conversion,
+	CollectionExpression,
 	BadExpression
 }

@@ -1,9 +1,9 @@
 #!bin/nite
 
-// public type Matrix4x4 {
-// 	private values: [f32; 16];
-//
-// 	public new identity() {
-// 		return;
-// 	}
-// }
+public type Matrix4x4 {
+	private values: [f32; 16];
+
+	public new identity() {
+		return;
+	}
+}

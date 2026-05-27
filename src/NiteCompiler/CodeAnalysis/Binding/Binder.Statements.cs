@@ -217,12 +217,12 @@ internal partial class Binder
 		{
 			if (initializer.Type != declaredType)
 			{
-				BoundConversion? conversion = ConvertImplicitly(initializer, declaredType, diagnostics);
-				if (conversion != null)
+				BoundExpression bound = BindToNaturalType(initializer, declaredType, diagnostics);
+				if (bound != initializer)
 				{
-					initializer = conversion;
+					initializer = bound;
 				}
-				else
+				else if (initializer.Type != declaredType)
 				{
 					diagnostics.Diagnostics.ReportCannotImplicitlyConvert(initializer.Syntax!.Location, initializer.Type, declaredType);
 					return new BoundLocalVariableDeclarationStatement(declarator, local, initializer, hasErrors: true);
