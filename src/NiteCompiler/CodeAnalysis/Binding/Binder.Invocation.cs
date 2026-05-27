@@ -1,7 +1,6 @@
-using System;
 using System.Diagnostics;
 using System.Collections.Immutable;
-using NiteCompiler.CodeAnalysis.Binding.Conversions;
+using NiteCompiler.CodeAnalysis.Binding.OverloadResolution;
 using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Diagnostics;
@@ -70,21 +69,47 @@ internal partial class Binder
 				return new BoundBadExpression(invocation, methodGroup.ResultKind, [], arguments, CreateErrorType());
 			}
 
-			FunctionSymbol? function = ResolveInvokedFunction(methodGroup.Candidates, arguments.Length);
-			if (function == null)
+			OverloadResolutionResult result = OverloadResolution.OverloadResolution.Resolve(methodGroup.Candidates, arguments);
+
+			if (result.Status == OverloadResolutionStatus.Success)
 			{
+				FunctionSymbol bestFunction = result.BestFunction!;
+				arguments = CheckInvocationArguments(bestFunction, arguments, diagnostics, out bool hasErrors);
+				TypeSymbol? typeOverride = bestFunction is ConstructorSymbol ctor
+					? ctor.ContainingType
+					: null;
+
+				return new BoundCall(invocation, bestFunction, arguments, typeOverride, hasErrors);
+			}
+
+			if (result.Status == OverloadResolutionStatus.Ambiguous)
+			{
+				diagnostics.Diagnostics.ReportOverloadResolutionFailure(
+					name.UnqualifiedName.Location, methodGroup.Candidates[0].Name);
+
+				FunctionSymbol? fallback = FindFirstMatchingArity(methodGroup.Candidates, arguments.Length);
+				if (fallback != null)
+				{
+					arguments = CheckInvocationArguments(fallback, arguments, diagnostics, out _);
+				}
+
+				return new BoundBadExpression(invocation, LookupResultKind.OverloadResolutionFailure,
+					[..methodGroup.Candidates], arguments, CreateErrorType());
+			}
+
+			{
+				FunctionSymbol? fallback = FindFirstMatchingArity(methodGroup.Candidates, arguments.Length);
+				if (fallback != null)
+				{
+					arguments = CheckInvocationArguments(fallback, arguments, diagnostics, out _);
+					return new BoundBadExpression(invocation, LookupResultKind.OverloadResolutionFailure,
+						[..methodGroup.Candidates], arguments, CreateErrorType());
+				}
+
 				diagnostics.Diagnostics.ReportUnresolvedFunction(name.UnqualifiedName.Location);
 				return new BoundBadExpression(invocation, methodGroup.ResultKind,
 					[..methodGroup.Candidates], arguments, CreateErrorType());
 			}
-
-			arguments = CheckInvocationArguments(function, arguments, diagnostics, out bool hasErrors);
-			// TODO: make it more esthetic
-			TypeSymbol? typeOverride = function is ConstructorSymbol ctor
-				? ctor.ContainingType
-				: null;
-
-			return new BoundCall(invocation, function, arguments, typeOverride, hasErrors);
 		}
 
 		if (boundExpression.HasErrors)
@@ -110,8 +135,7 @@ internal partial class Binder
 		return arguments.ToImmutableAndFree();
 	}
 
-	[Obsolete("Mark for deletion, will be deleted when OverloadResolution is implemented.")]
-	private static FunctionSymbol? ResolveInvokedFunction(ImmutableArray<FunctionSymbol> candidates, int argumentCount)
+	private static FunctionSymbol? FindFirstMatchingArity(ImmutableArray<FunctionSymbol> candidates, int argumentCount)
 	{
 		foreach (FunctionSymbol function in candidates)
 		{

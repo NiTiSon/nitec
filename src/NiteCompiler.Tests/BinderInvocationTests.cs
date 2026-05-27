@@ -435,8 +435,10 @@ public class BinderInvocationTests
 
 		try
 		{
-			BoundFunctionBody functionBody = (BoundFunctionBody)binder.BindFunctionBody(sourceFunction.Syntax, diagnostics);
-			Assert.That(diagnostics.Diagnostics, Is.Empty);
+			binder.BindFunctionBody(sourceFunction.Syntax, diagnostics);
+			Assert.That(diagnostics.Diagnostics, Is.Not.Empty);
+			string diagnosticIds = string.Join(", ", diagnostics.Diagnostics.Select(d => d.Id));
+			Assert.That(diagnosticIds, Does.Contain("overload-resolution-failure"));
 		}
 		finally
 		{
