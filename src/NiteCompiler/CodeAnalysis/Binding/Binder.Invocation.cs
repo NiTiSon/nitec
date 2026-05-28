@@ -164,7 +164,7 @@ internal partial class Binder
 			BoundExpression argument = arguments[i];
 			ParameterSymbol parameter = function.Parameters[i + offset];
 
-			if (argument.Type != parameter.Type)
+			if (!argument.Type.Equals(parameter.Type))
 			{
 				BoundConversion? conversion = ConvertImplicitly(argument, parameter.Type, diagnostics);
 				if (conversion != null)

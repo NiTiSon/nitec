@@ -36,7 +36,7 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 	{
 		get
 		{
-			if (field == null)
+			if (field is null)
 			{
 				Interlocked.CompareExchange(ref field, MakeReturnType(), null);
 			}

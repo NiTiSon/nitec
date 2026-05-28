@@ -1,9 +1,14 @@
 #!bin/nite
 
 public type Matrix4x4 {
-	private values: [f32; 16];
+	private values: [f32; 16u];
 
 	public new identity() {
-		return;
+		self.values = [
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1,
+		];
 	}
 }

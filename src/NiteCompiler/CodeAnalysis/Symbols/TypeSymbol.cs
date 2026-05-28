@@ -1,9 +1,10 @@
+using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
-public abstract class TypeSymbol : ContainerSymbol
+public abstract class TypeSymbol : ContainerSymbol, IEquatable<TypeSymbol>
 {
 	public abstract TypeKind TypeKind { get; }
 
@@ -20,6 +21,45 @@ public abstract class TypeSymbol : ContainerSymbol
 	public sealed override ImmutableArray<ModuleSymbol> GetNestedModules()
 	{
 		return [];
+	}
+
+	public bool Equals(TypeSymbol? other)
+	{
+		return Equals(lhs: this, other, TypeComparison.None);
+	}
+
+	public bool Equals(TypeSymbol? other, TypeComparison comparison)
+	{
+		return Equals(lhs: this, other, comparison);
+	}
+
+	public static bool Equals(TypeSymbol? lhs, TypeSymbol? rhs, TypeComparison comparison)
+	{
+		if (ReferenceEquals(lhs, rhs))
+		{
+			return true;
+		}
+
+		if (lhs is null || rhs is null)
+		{
+			return false;
+		}
+
+		return false;
+	}
+
+	[Obsolete("Use Equals method instead.")]
+	public static bool operator ==(TypeSymbol? lhs, TypeSymbol? rhs)
+	{
+		Debug.Fail("Should never get here.");
+		throw new UnreachableException();
+	}
+
+	[Obsolete("Use Equals method instead.")]
+	public static bool operator !=(TypeSymbol? lhs, TypeSymbol? rhs)
+	{
+		Debug.Fail("Should never get here.");
+		throw new UnreachableException();
 	}
 
 	public override string ToDisplayString(SymbolFormat format = SymbolFormat.Default)

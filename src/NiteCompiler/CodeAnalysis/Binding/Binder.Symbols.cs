@@ -182,30 +182,58 @@ internal partial class Binder
 	{
 		TypeSymbol elementType = BindType(syntax.Type, diagnostics);
 
-		TypeSymbol usizeType = GetSpecialType(SpecialType.StdNumericsUNativeInt);
 		BoundExpression sizeExpression = BindExpression(syntax.Size, diagnostics);
 
 		ulong arraySize;
 		if (sizeExpression is BoundLiteral sizeLiteral)
 		{
-			SpecialType st = sizeLiteral.ConstantValue.SpecialType;
-			BoundConversion? conversion = ConvertImplicitly(sizeExpression, usizeType, diagnostics);
-
-			if (conversion == null)
+			if (!TryGetUnsignedValue(sizeLiteral.ConstantValue, out arraySize))
 			{
-				diagnostics.Diagnostics.ReportCannotImplicitlyConvert(syntax.Size.Location, sizeExpression.Type, usizeType);
+				diagnostics.Diagnostics.ReportCannotImplicitlyConvert(syntax.Size.Location, sizeExpression.Type, GetSpecialType(SpecialType.StdNumericsUNativeInt));
 				return CreateErrorType();
 			}
-
-			arraySize = (conversion.Operand as BoundLiteral)!.ConstantValue.U64;
 		}
 		else
 		{
-			diagnostics.Diagnostics.ReportCannotImplicitlyConvert(syntax.Size.Location, sizeExpression.Type, usizeType);
+			diagnostics.Diagnostics.ReportCannotImplicitlyConvert(syntax.Size.Location, sizeExpression.Type, GetSpecialType(SpecialType.StdNumericsUNativeInt));
 			return CreateErrorType();
 		}
 
 		return Compilation.CreateSizedArrayType(elementType, arraySize);
+	}
+
+	private static bool TryGetUnsignedValue(ConstantValue constant, out ulong value)
+	{
+		switch (constant.SpecialType)
+		{
+			case SpecialType.StdNumericsSInt8:
+				value = (ulong)(long)constant.S8;
+				return value <= (ulong)long.MaxValue;
+			case SpecialType.StdNumericsSInt16:
+				value = (ulong)(long)constant.S16;
+				return value <= (ulong)long.MaxValue;
+			case SpecialType.StdNumericsSInt32:
+				value = (ulong)(long)constant.S32;
+				return value <= (ulong)long.MaxValue;
+			case SpecialType.StdNumericsSInt64:
+				value = (ulong)constant.S64;
+				return constant.S64 >= 0;
+			case SpecialType.StdNumericsUInt8:
+				value = constant.U8;
+				return true;
+			case SpecialType.StdNumericsUInt16:
+				value = constant.U16;
+				return true;
+			case SpecialType.StdNumericsUInt32:
+				value = constant.U32;
+				return true;
+			case SpecialType.StdNumericsUInt64:
+				value = constant.U64;
+				return true;
+			default:
+				value = 0;
+				return false;
+		}
 	}
 
 	public TypeSymbol BindType(ExpressionSyntax syntax, BindingDiagnosticBag diagnostics)

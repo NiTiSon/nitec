@@ -35,7 +35,7 @@ internal sealed class SourceConstructorSymbol : ConstructorSymbol
 	{
 		get
 		{
-			if (field == null)
+			if (field is null)
 			{
 				Interlocked.CompareExchange(ref field, MakeReturnType(), null);
 			}

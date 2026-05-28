@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NiteCompiler.CodeAnalysis.Symbols;
 
@@ -7,6 +8,8 @@ public sealed class SizedArrayTypeSymbol : BaseArrayTypeSymbol
 	public override TypeKind TypeKind => TypeKind.SizedArray;
 	public override SymbolKind Kind => SymbolKind.Array;
 	public override TypeSymbol ElementsType { get; }
+
+	[NotNull]
 	public override ulong? Length { get; }
 
 	public override bool IsUnsized => false;

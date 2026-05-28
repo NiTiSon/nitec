@@ -21,7 +21,7 @@ internal sealed class SourceLocalVariableSymbol : LocalVariableSymbol
 	{
 		get
 		{
-			if (field == null)
+			if (field is null)
 			{
 				Interlocked.CompareExchange(ref field, InferType(), null);
 			}
@@ -46,7 +46,7 @@ internal sealed class SourceLocalVariableSymbol : LocalVariableSymbol
 		    type = _scopeBinder.BindType(_typeClause.Type, diagnostics);
 	    }
 
-	    if (/*diagnostics.Diagnostics.HasAnyErrors ||*/type == null)
+	    if (/*diagnostics.Diagnostics.HasAnyErrors ||*/type is null)
 	    {
 		    type = _scopeBinder.CreateErrorType();
 	    }

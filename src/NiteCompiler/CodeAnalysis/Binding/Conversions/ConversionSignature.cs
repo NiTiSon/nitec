@@ -22,8 +22,8 @@ internal readonly struct ConversionSignature : IEquatable<ConversionSignature>
 
 	public bool Equals(ConversionSignature other)
 	{
-		return InputType == other.InputType &&
-		       ResultType == other.ResultType &&
+		return InputType.Equals(other.InputType) &&
+		       ResultType.Equals(other.ResultType) &&
 		       CorrespondingFunction == other.CorrespondingFunction &&
 		       Kind == other.Kind;
 	}

@@ -393,7 +393,7 @@ internal partial class Binder
 			targetType = BindType(typeSyntax, diagnostics);
 		}
 
-		if (targetType == null || targetType.IsErrorSymbol)
+		if (targetType is null || targetType.IsErrorSymbol)
 		{
 			return operand;
 		}
@@ -739,7 +739,7 @@ internal partial class Binder
 		Debug.Assert(members.Count > 0);
 
 		TypeSymbol? currentType = ContainingType;
-		if (currentType == null)
+		if (currentType is null)
 		{
 			return null;
 		}
@@ -815,7 +815,7 @@ internal partial class Binder
 		ImmutableArray<BoundExpression> elementArray = elements.ToImmutableAndFree();
 
 		TypeSymbol? bct = FindBestCommonType(elementArray);
-		if (bct == null)
+		if (bct is null)
 		{
 			diagnostics.Diagnostics.ReportCannotImplicitlyConvert(syntax.Location,
 				elementArray.Length > 0 ? elementArray[0].Type : CreateErrorType(),
@@ -836,7 +836,7 @@ internal partial class Binder
 
 		foreach (BoundExpression element in coll.Elements)
 		{
-			if (element.Type == targetElementType)
+			if (element.Type.Equals(targetElementType))
 			{
 				converted.Add(element);
 			}
@@ -870,7 +870,7 @@ internal partial class Binder
 		{
 			TypeSymbol current = elements[i].Type;
 
-			if (current == bct)
+			if (current.Equals(bct))
 			{
 				continue;
 			}

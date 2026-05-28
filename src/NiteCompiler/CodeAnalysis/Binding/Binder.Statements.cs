@@ -206,23 +206,23 @@ internal partial class Binder
 			diagnostics.Diagnostics.ReportCannotUseUnsizedType(declarator.TypeClause?.Type.Location ?? initializer!.Syntax!.Location, declaredType);
 		}
 
-		if (declaredType == null && initializer == null) // It's called: try to guess type or DIE 💀☠️🪦
+		if (declaredType is null && initializer is null) // It's called: try to guess type or DIE 💀☠️🪦
 		{
 			diagnostics.Diagnostics.ReportImplicitlyTypedVariableMustBeInitialized(declarator.Name.Location);
 
 				return new BoundLocalVariableDeclarationStatement(declarator, local, null, hasErrors: true);
 		}
 
-		if (declaredType != null && initializer != null)
+		if (declaredType is not null && initializer != null)
 		{
-			if (initializer.Type != declaredType)
+			if (!initializer.Type.Equals(declaredType))
 			{
 				BoundExpression bound = BindToNaturalType(initializer, declaredType, diagnostics);
 				if (bound != initializer)
 				{
 					initializer = bound;
 				}
-				else if (initializer.Type != declaredType)
+				else if (!initializer.Type.Equals(declaredType))
 				{
 					diagnostics.Diagnostics.ReportCannotImplicitlyConvert(initializer.Syntax!.Location, initializer.Type, declaredType);
 					return new BoundLocalVariableDeclarationStatement(declarator, local, initializer, hasErrors: true);
@@ -284,7 +284,7 @@ internal partial class Binder
 			}
 			else // return EXPR;
 			{
-				if (arg.Type != retType)
+				if (!arg.Type.Equals(retType))
 				{
 					BoundConversion? conversion = ConvertImplicitly(arg, retType, diagnostics);
 					if (conversion != null)

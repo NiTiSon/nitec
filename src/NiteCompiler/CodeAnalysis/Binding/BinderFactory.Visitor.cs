@@ -167,7 +167,7 @@ internal partial class BinderFactory
 				if (usage == NodeUsage.ModuleBody)
 				{
 					var typeSymbol = GetTypeSymbol(declaration, resultBinder);
-					if (typeSymbol != null)
+					if (typeSymbol is not null)
 					{
 						resultBinder = new InContainerBinder(typeSymbol, resultBinder);
 					}

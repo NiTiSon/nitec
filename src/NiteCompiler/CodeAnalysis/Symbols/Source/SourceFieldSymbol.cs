@@ -31,7 +31,7 @@ namespace NiteCompiler.CodeAnalysis.Symbols.Source;
 	{
 		get
 		{
-			if (field == null)
+			if (field is null)
 			{
 				Interlocked.CompareExchange(ref field, MakeType(), null);
 			}

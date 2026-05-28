@@ -126,7 +126,7 @@ internal static class OverloadResolution
 		if (!impA && !impB)
 			return 0;
 
-		if (a.Kind == b.Kind && a.FromType == b.FromType)
+		if (a.Kind == b.Kind && a.FromType.Equals(b.FromType))
 		{
 			int fromRank = GetNumericTypeRank(a.FromType.SpecialType);
 			int rankA = GetNumericTypeRank(a.ToType.SpecialType);

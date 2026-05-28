@@ -100,7 +100,7 @@ public sealed partial class NiteCompilation
 
 			for (int i = 1; i < _lateinitSpecialTypes.Length; i++)
 			{
-				if (_lateinitSpecialTypes[i] == null) return true;
+				if (_lateinitSpecialTypes[i] is null) return true;
 			}
 
 			return false;
@@ -144,7 +144,7 @@ public sealed partial class NiteCompilation
 
 	private bool IsMissingType(SpecialType type)
 	{
-		return _lateinitSpecialTypes?[(int)type] == null;
+		return _lateinitSpecialTypes?[(int)type] is null;
 	}
 
 	public LifetimeSymbol GetStaticLifetime() => StaticLifetimeSymbol.Instance;

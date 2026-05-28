@@ -1,9 +1,4 @@
-using System;
-using System.Data.SqlTypes;
-using System.Diagnostics;
 using NiteCompiler.CodeAnalysis.Binding.Operators;
-using NiteCompiler.CodeAnalysis.Binding.Conversions;
-using NiteCompiler.CodeAnalysis.Symbols;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Diagnostics;
 
@@ -39,7 +34,7 @@ internal partial class Binder
 			{
 				foreach (UnaryOperatorSignature candidate in result)
 				{
-					if (candidate.InputType == expression.Type)
+					if (candidate.InputType.Equals(expression.Type))
 					{
 						resultOperator = candidate;
 						break;
@@ -51,7 +46,7 @@ internal partial class Binder
 		}
 
 		// builtin operators can be built with null return type if returning type is not registered
-		if (resultOperator?.ReturnType == null)
+		if (resultOperator?.ReturnType is null)
 		{
 			resultOperator = null;
 		}
@@ -104,7 +99,7 @@ internal partial class Binder
 			{
 				foreach (BinaryOperatorSignature candidate in result)
 				{
-					if (candidate.LeftType == left.Type && candidate.RightType == right.Type)
+					if (candidate.LeftType.Equals(left.Type) && candidate.RightType.Equals(right.Type))
 					{
 						resultOperator = candidate;
 						break;
@@ -116,7 +111,7 @@ internal partial class Binder
 		}
 
 		// builtin operators can be built with null return type if returning type is not registered
-		if (resultOperator?.ReturnType == null)
+		if (resultOperator?.ReturnType is null)
 		{
 			resultOperator = null;
 		}
@@ -128,14 +123,14 @@ internal partial class Binder
 	private BoundExpression BindAssignmentExpression(AssignmentExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		BoundExpression left = BindLValueWithoutTargetType(syntax.Left, diagnostics);
-		BoundExpression right = BindRValueWithoutTargetType(syntax.Right, diagnostics);
+		BoundExpression right = BindToNaturalType(BindRValueWithoutTargetType(syntax.Right, diagnostics), left.Type, diagnostics);
 
 		if (left.HasErrors || right.HasErrors)
 		{
 			return new BoundAssignment(syntax, left, right);
 		}
 
-		if (right.Type != left.Type)
+		if (!right.Type.Equals(left.Type))
 		{
 			BoundConversion? conversion = ConvertImplicitly(right, left.Type, diagnostics);
 			if (conversion != null)
@@ -174,7 +169,7 @@ internal partial class Binder
 			{
 				foreach (BinaryOperatorSignature candidate in result)
 				{
-					if (candidate.LeftType == left.Type && candidate.RightType == right.Type)
+					if (candidate.LeftType.Equals(left.Type) && candidate.RightType.Equals(right.Type))
 					{
 						resultOperator = candidate;
 						break;
@@ -185,7 +180,7 @@ internal partial class Binder
 			result.Free();
 		}
 
-		if (resultOperator?.ReturnType == null)
+		if (resultOperator?.ReturnType is null)
 		{
 			resultOperator = null;
 		}
