@@ -5,18 +5,17 @@ using System.Threading;
 
 namespace NiteCompiler.Metadata;
 
-/// <summary>
-/// Strings has its own unique table, separated from other metadata entries.
-/// </summary>
 internal sealed class StringTable
 {
 	private volatile uint _counter;
 	private readonly Dictionary<string, uint> _strings;
+	private readonly List<string> _orderedStrings;
 
 	public StringTable()
 	{
 		_counter = 0;
 		_strings = new Dictionary<string, uint>(StringComparer.Ordinal);
+		_orderedStrings = [];
 	}
 
 	public uint AddOrGet(string value)
@@ -25,20 +24,19 @@ internal sealed class StringTable
 		{
 			return index;
 		}
-		else
-		{
-			index = Interlocked.Increment(ref _counter);
-			_strings.Add(value, index);
-			return index;
-		}
+
+		index = Interlocked.Increment(ref _counter);
+		_strings.Add(value, index);
+		_orderedStrings.Add(value);
+		return index;
 	}
 
 	public void Write(BinaryWriter writer)
 	{
-		var strings = _strings.Keys;
-		foreach (string str in strings)
+		writer.Write7BitEncodedInt(_orderedStrings.Count);
+		for (int i = 0; i < _orderedStrings.Count; i++)
 		{
-			writer.Write(str);
+			writer.Write(_orderedStrings[i]);
 		}
 	}
 }

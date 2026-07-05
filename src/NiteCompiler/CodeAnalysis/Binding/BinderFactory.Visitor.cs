@@ -80,7 +80,7 @@ internal partial class BinderFactory
 			{
 				result = SeniorBinder;
 
-				var globalModule = Compilation.SourceLibrary.GlobalModule;
+				var globalModule = Compilation.GlobalModule;
 				result = new InContainerBinder(globalModule, result);
 			}
 

@@ -28,6 +28,8 @@ internal readonly struct MetadataId
 
 	public uint Value => _bits & 0x00FFFFFF;
 
+	public uint RawValue => _bits;
+
 	/// <summary>
 	/// Returns <see langword="true"/> when identifier is equals zero; otherwise <see langword="false"/>.
 	/// </summary>

@@ -12,6 +12,7 @@ using LLVMSharp.Interop;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.CodeAnalysis.Text;
 using NiteCompiler.Compilation;
+using NiteCompiler.Dependencies;
 using NiteCompiler.Diagnostics;
 
 namespace NiteCompiler.CliTool;
@@ -42,13 +43,25 @@ public static class NiteCompiler
 
 		FileInfo[] inputFiles = result.GetValue(Options.Input) ?? [];
 		FileInfo[] dependencies = result.GetValue(Options.Dependencies) ?? [];
+		string? outputKindStr = result.GetValue(Options.OutputKind);
 		string? libraryName = result.GetValue(Options.LibraryName);
 		string? outputPath = result.GetValue(Options.OutputPath);
 		bool emitNir = result.GetValue(Options.EmitNir);
 		bool emitAst = result.GetValue(Options.EmitAst);
 
+		OutputKind outputKind;
+		switch (outputKindStr)
+		{
+			default:
+				outputKind = OutputKind.Executable;
+				break;
+			case Options.NiTiSLibraryOutputKindName:
+				outputKind =  OutputKind.NiTiSLibrary;
+				break;
+		}
+
 		Compile(inputFiles, dependencies, NiteCompilationOptions.Default,
-			OutputKind.Executable, outputPath, libraryName,
+			outputKind, outputPath, libraryName,
 			null, [],
 			emitNir, emitAst);
 	}
@@ -186,7 +199,8 @@ public static class NiteCompiler
 			libraryName = Path.GetFileNameWithoutExtension(name) ?? "a"; // ah
 		}
 
-		var compilation = NiteCompilation.Create(libraryName, trees!, null, options, diagnostics);
+		NiteLibraryDependency[] libDeps = [.. dependencies.Select(d => new NiteLibraryDependency(d.FullName))];
+		var compilation = NiteCompilation.Create(libraryName, trees!, libDeps, options, diagnostics);
 		var parseDiagnostics = compilation.GetParseDiagnostics(cancellationToken);
 		var declarationDiagnostics = compilation.GetDeclarationDiagnostics(cancellationToken);
 		var compilationDiagnostics = compilation.GetFunctionBodyDiagnostics(ssaWriter: nirWriter, cancellationToken);

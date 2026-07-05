@@ -10,6 +10,7 @@ using System.Threading;
 using LLVMSharp.Interop;
 using NiteCompiler.CodeAnalysis.Declarations;
 using NiteCompiler.CodeAnalysis.Symbols;
+using NiteCompiler.CodeAnalysis.Symbols.Metadata;
 using NiteCompiler.CodeAnalysis.Symbols.Source;
 using NiteCompiler.CodeAnalysis.Syntax;
 using NiteCompiler.Dependencies;
@@ -29,6 +30,32 @@ public sealed partial class NiteCompilation
 	public ImmutableArray<SyntaxTree> SyntaxTrees { get; }
 	public NiteCompilationOptions Options { get; }
 	internal SourceLibrarySymbol SourceLibrary { get; }
+
+	internal MergedModuleSymbol GlobalModule
+	{
+		get
+		{
+			if (field == null)
+			{
+				var modules = ArrayBuilder<ModuleSymbol>.GetInstance();
+
+				modules.Add(SourceLibrary.GlobalModule);
+				foreach (LibrarySymbol lib in GetDependencyLibraries())
+				{
+					modules.Add(lib.GlobalModule);
+				}
+
+				MergedModuleSymbol module = new(modules.ToImmutableAndFree());
+
+				Interlocked.CompareExchange(ref field, module, null);
+			}
+
+			return field;
+		}
+	}
+
+	private readonly ImmutableArray<Dependency> _dependencies;
+	private ImmutableArray<LibrarySymbol> _dependencyLibraries;
 
 	internal BuiltInOperators BuiltInOperators
 	{
@@ -52,6 +79,7 @@ public sealed partial class NiteCompilation
 	{
 		SyntaxTrees = syntaxTrees;
 		Options = options;
+		_dependencies = dependencies;
 
 		if (Options.IsCoreLibrary && !dependencies.IsEmpty)
 		{
@@ -187,6 +215,51 @@ public sealed partial class NiteCompilation
 		return null;
 	}
 
+	public ImmutableArray<LibrarySymbol> GetDependencyLibraries()
+	{
+		if (_dependencyLibraries.IsDefault)
+		{
+			if (_dependencies.IsEmpty)
+			{
+				ImmutableInterlocked.InterlockedInitialize(ref _dependencyLibraries, []);
+			}
+			else
+			{
+				var builder = ImmutableArray.CreateBuilder<LibrarySymbol>();
+				foreach (Dependency dep in _dependencies)
+				{
+					if (dep is NiteLibraryDependency nlibDep)
+					{
+						try
+						{
+							using FileStream stream = new(nlibDep.FilePath, FileMode.Open, FileAccess.Read);
+							MetadataLibraryReader reader = new(stream);
+							MetadataLibrarySymbol libSymbol = new(this, reader);
+							builder.Add(libSymbol);
+						}
+						catch (Exception e)
+						{
+							// btw, this should happen outside of compilation infrastructure :|
+							DeclarationDiagnostics.ReportInternalCompilerError(e);
+						}
+					}
+				}
+
+				ImmutableInterlocked.InterlockedInitialize(ref _dependencyLibraries, builder.ToImmutable());
+			}
+		}
+
+		return _dependencyLibraries;
+	}
+
+	internal ImmutableArray<LibrarySymbol> GetAllLibraries()
+	{
+		var builder = ImmutableArray.CreateBuilder<LibrarySymbol>();
+		builder.Add(SourceLibrary);
+		builder.AddRange(GetDependencyLibraries());
+		return builder.ToImmutable();
+	}
+
 	public (LLVMModuleRef, LLVMTargetMachineRef, LLVMTargetDataRef) GetLlvmModule(out DiagnosticBag? resultDiagnostics, [NotNull] ref string? targetTriple)
 	{
 		LLVM.InitializeAllTargetInfos();
@@ -212,7 +285,7 @@ public sealed partial class NiteCompilation
 				LLVMCodeModel.LLVMCodeModelDefault);
 			LLVMTargetDataRef data = machine.CreateTargetDataLayout();
 
-			LLVMModuleRef module = LlvmTranslator.Translate(this, [SourceLibrary], GetEntryPoint(), diagnostics);
+			LLVMModuleRef module = LlvmTranslator.Translate(this, GetAllLibraries(), GetEntryPoint(), diagnostics);
 			module.Target = targetTriple;
 			LlvmOptimizer.Optimize(module, machine);
 			resultDiagnostics = diagnostics.ToBagAndFree();

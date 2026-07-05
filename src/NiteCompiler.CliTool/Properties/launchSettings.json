@@ -4,9 +4,13 @@
       "commandName": "Project",
       "commandLineArgs": "-h"
     },
-    "<input>": {
+    "<input> test3": {
       "commandName": "Project",
-      "commandLineArgs": "test2.nite std.nite -k executable --emit-nir --emit-ast"
+      "commandLineArgs": "test3.nite --emit-nir --emit-ast -d out.nlib"
+    },
+    "<input> test2": {
+      "commandName": "Project",
+      "commandLineArgs": "test2.nite std.nite -k nlib --emit-nir --emit-ast"
     }
   }
 }

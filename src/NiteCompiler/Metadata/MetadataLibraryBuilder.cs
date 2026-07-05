@@ -67,30 +67,25 @@ internal sealed class MetadataLibraryBuilder : SymbolVisitor<MetadataEntry?, Met
 		return lib.GlobalModule.Accept(this, null);
 	}
 
-	public override MetadataEntry VisitModule(ModuleSymbol symbol, MetadataEntry? library)
+	public override MetadataEntry VisitModule(ModuleSymbol symbol, MetadataEntry? containingEntry)
 	{
 		uint nameId = _stringTable.AddOrGet(symbol.IsGlobalModule ? symbol.Name : symbol.ToDisplayString());
 
 		MetadataEntry module;
-		if (library == null)
+		if (containingEntry == null || containingEntry is ModuleDeclarationMetadata or ModuleReferenceMetadata)
 		{
-			module = GetTable(MetadataKind.ModuleDeclaration).Add((id) => new ModuleDeclarationMetadata(id, symbol, nameId));
+			MetadataId? containerId = containingEntry?.Id;
+			module = GetTable(MetadataKind.ModuleDeclaration).Add((id) => new ModuleDeclarationMetadata(id, symbol, containerId, nameId));
 		}
 		else
 		{
-			module = GetTable(MetadataKind.ModuleReference).Add((id) => new ModuleReferenceMetadata(id, symbol, library.Id, nameId));
+			MetadataId libraryId = containingEntry.Id;
+			module = GetTable(MetadataKind.ModuleReference).Add((id) => new ModuleReferenceMetadata(id, symbol, default, libraryId, nameId));
 		}
 
 		foreach (Symbol member in symbol.GetMembers())
 		{
-			if (member.Kind == SymbolKind.Module)
-			{
-				Visit(member, library);
-			}
-			else
-			{
-				Visit(member, module);
-			}
+			Visit(member, module);
 		}
 
 		return module;

@@ -21,8 +21,13 @@ internal sealed class FunctionDeclarationMetadata : MetadataEntry
 		writer.Write(NameId);
 		if (Body != null)
 		{
+			writer.Write((byte)1);
 			writer.Write7BitEncodedInt(Body.IrBytes.Length);
 			writer.Write(Body.IrBytes.AsSpan());
+		}
+		else
+		{
+			writer.Write((byte)0);
 		}
 	}
 }

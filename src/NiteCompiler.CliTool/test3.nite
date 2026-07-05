@@ -1,0 +1,4 @@
+﻿public xxx() {
+	main(false);
+	main(true);
+}
