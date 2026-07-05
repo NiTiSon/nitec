@@ -226,7 +226,7 @@ internal partial class Binder
 	private BoundLiteral BindStringLiteralExpression(LiteralExpressionSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		// TODO: Implement
-		return new BoundLiteral(syntax, ConstantValue.Create(0), GetSpecialType(SpecialType.StdVoid));
+		return new BoundLiteral(syntax, ConstantValue.Create(0), GetSpecialType(SpecialType.StdNeverReturn));
 	}
 
 	private BoundExpression BindIdentifier(SimpleNameSyntax name, bool invoked, bool indexed,

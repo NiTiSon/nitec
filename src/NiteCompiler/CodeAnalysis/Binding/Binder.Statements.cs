@@ -9,16 +9,14 @@ namespace NiteCompiler.CodeAnalysis.Binding;
 
 internal partial class Binder
 {
-	protected TypeSymbol GetCurrentReturnType()
+	protected TypeSymbol? GetCurrentReturnType()
 	{
 		if (ContainingMember is FunctionSymbol symbol)
 		{
-			TypeSymbol returnType = symbol.ReturnType;
-
-			return returnType;
+			return symbol.ReturnType;
 		}
 
-		return null!;
+		return null;
 	}
 
 
@@ -189,13 +187,13 @@ internal partial class Binder
 	private BoundReturn BindReturn(ReturnStatementSyntax syntax, BindingDiagnosticBag diagnostics)
 	{
 		BoundExpression? arg = null;
-		TypeSymbol retType = GetCurrentReturnType();
+		TypeSymbol? retType = GetCurrentReturnType();
 		bool hasErrors = false;
 
 		if (syntax.Expression != null) arg = BindExpression(syntax.Expression, diagnostics, false, false);
 
 		// TODO[NOT-CRITICAL]: add NeverReturn case
-		if (retType.IsVoidType) // func -> void
+		if (retType == null) // func -> void
 		{
 			if (arg != null) // return EXPR;
 			{

@@ -68,7 +68,6 @@ public class AddressDereferenceExpressionTests
 
 		public type Boolean;
 		public type NeverReturn;
-		public type Void;
 		""";
 
 		_ = BindBody(source, "test", out BindingDiagnosticBag diagnostics);
@@ -96,7 +95,6 @@ public class AddressDereferenceExpressionTests
 
 		module std;
 
-		public type Void;
 		""";
 
 		_ = BindBody(source, "test", out BindingDiagnosticBag diagnostics);
@@ -127,7 +125,6 @@ public class AddressDereferenceExpressionTests
 
 		module std;
 
-		public type Void;
 		""";
 
 		_ = BindBody(source, "test", out BindingDiagnosticBag diagnostics);
@@ -155,10 +152,6 @@ public class AddressDereferenceExpressionTests
 		module std::numerics;
 
 		public type SInt32;
-
-		module std;
-
-		public type Void;
 		""";
 
 		FunctionMir mir = BuildMir(source, "test");
@@ -209,10 +202,6 @@ public class AddressDereferenceExpressionTests
 		module std::numerics;
 
 		public type SInt32;
-
-		module std;
-
-		public type Void;
 		""";
 
 		NiteCompilation compilation = CreateCompilation(source);

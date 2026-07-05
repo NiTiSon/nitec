@@ -142,7 +142,7 @@ internal partial class LlvmTranslator
 					CreateFunctionType(call.Function),
 					_plans[call.Function].LlvmFunction,
 					arguments,
-					call.Function.ReturnType.IsVoidType ? string.Empty : "call");
+					call.Function.ReturnType == null ? string.Empty : "call");
 				break;
 			case AddressOfInstruction addressOf:
 				valueMap[addressOf.Output] = ResolveValue(mir.AddressTable![addressOf.Symbol], valueMap);
@@ -320,7 +320,8 @@ internal partial class LlvmTranslator
 			parameterTypes[i] = GetLlvmType(function.Parameters[i].Type);
 		}
 
-		return LLVMTypeRef.CreateFunction(GetLlvmType(function.ReturnType), parameterTypes, IsVarArg: false);
+		LLVMTypeRef returnType = function.ReturnType != null ? GetLlvmType(function.ReturnType) : _context.VoidType;
+		return LLVMTypeRef.CreateFunction(returnType, parameterTypes, IsVarArg: false);
 	}
 
 	private LLVMTypeRef GetLlvmType(TypeSymbol type)
@@ -342,7 +343,7 @@ internal partial class LlvmTranslator
 			SpecialType.StdNumericsFloat32 => _context.FloatType,
 			SpecialType.StdNumericsFloat64 => _context.DoubleType,
 			SpecialType.StdBoolean => _context.Int1Type,
-			SpecialType.StdVoid or SpecialType.StdNeverReturn => _context.VoidType,
+			SpecialType.StdNeverReturn => _context.VoidType,
 			_ => throw new NotSupportedException($"Type '{type.ToDisplayString()}' is not supported in LLVM translation.")
 		};
 	}

@@ -28,7 +28,6 @@ public class LlvmTranslatorTests
 		module std;
 
 		public type Boolean;
-		public type Void;
 		""";
 
 		NiteCompilation compilation = CreateCompilation(source);

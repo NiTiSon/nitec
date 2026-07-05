@@ -24,7 +24,7 @@ internal sealed class ControlFlowGraphBuilder : BoundVisitor
 		builder.Visit(body);
 
 		builder.RemoveUnreachableBlocks(entry);
-		if (function.ReturnType.IsVoidType)
+		if (function.ReturnType == null)
 		{
 			foreach (BasicBlock bb in builder._blocks)
 			{

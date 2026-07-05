@@ -37,7 +37,7 @@ internal sealed class BoundCall : BoundExpression
 	}
 
 	public override BoundKind Kind => BoundKind.InvocationExpression;
-	public override TypeSymbol Type => Function.ReturnType;
+	public override TypeSymbol? Type => Function.ReturnType;
 	public override Binder.BindValueKind ValueKind => Binder.BindValueKind.RValue;
 
 	public override void Accept(BoundVisitor visitor) =>visitor.VisitCall(this);

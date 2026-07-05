@@ -366,7 +366,7 @@ public static class NiteCompiler
 				int windowStart = Math.Max(0, startLine.Index - contextLines);
 				int windowEnd = Math.Min(lines.Count - 1, endLine.Index + contextLines);
 
-				Console.WriteLine($"{new string(' ', gutterWidth - 1)}--> {location.Filename ?? "<ommited filename>"}:{startLine.HumanReadableLineNumber}:{startLine.GetColumnIndex(span.Start) + 1}");
+				Console.WriteLine($"{new string(' ', gutterWidth - 1)}--> {location.Filename ?? "<omitted filename>"}:{startLine.HumanReadableLineNumber}:{startLine.GetColumnIndex(span.Start) + 1}");
 				// Console.WriteLine(new string(' ', gutterWidth) + "|");
 
 				for (int i = windowStart; i <= windowEnd; i++)

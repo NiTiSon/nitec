@@ -19,12 +19,11 @@ public enum SpecialType : byte
 	StdNumericsFloat16 = 11,
 	StdNumericsFloat32 = 12,
 	StdNumericsFloat64 = 13,
-	StdVoid = 14,
-	StdNeverReturn = 15,
-	StdBoolean = 16,
-	StdTextCharacterUtf8 = 17,
-	StdTextCharacterUtf16 = 18,
-	StdTextCharacterUtf32 = 19,
+	StdNeverReturn = 14,
+	StdBoolean = 15,
+	StdTextCharacterUtf8 = 16,
+	StdTextCharacterUtf16 = 17,
+	StdTextCharacterUtf32 = 18,
 	// Change SpecialTypeExtensions.Count if add new special types
 }
 
@@ -46,7 +45,6 @@ internal static class SpecialTypeExtensions
 		"std::numerics::Float16",
 		"std::numerics::Float32",
 		"std::numerics::Float64",
-		"std::Void",
 		"std::NeverReturn",
 		"std::Boolean",
 		"std::text::CharacterUtf8",

@@ -2,7 +2,6 @@
 
 public type Boolean;
 public type NeverReturn;
-public type Void;
 
 // public interface Copyable;
 // public interface Clonable;

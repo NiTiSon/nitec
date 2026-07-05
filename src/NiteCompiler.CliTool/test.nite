@@ -14,8 +14,6 @@ public main() -> i32 {
 
 module std;
 
-public type Void;
-
 public type NeverReturn;
 
 module std::numerics;

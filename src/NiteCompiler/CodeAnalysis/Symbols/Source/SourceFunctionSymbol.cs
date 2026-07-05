@@ -29,7 +29,7 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 		Syntax = syntax;
 	}
 
-	public override TypeSymbol ReturnType
+	public override TypeSymbol? ReturnType
 	{
 		get
 		{
@@ -48,10 +48,9 @@ internal sealed class SourceFunctionSymbol : FunctionSymbol
 
 		BinderFactory factory = DeclaringCompilation!.GetBinderFactory(Syntax.Tree);
 
-		if (Syntax.ReturnTypeClause == null) // void
+		if (Syntax.ReturnTypeClause == null) // no return type -> null
 		{
-			TypeSymbol @void = (TypeSymbol)factory.GetBinder(Syntax).BindVoidType();
-			return @void;
+			return null;
 		}
 		Binder withGenericsBinder = factory.GetBinder(Syntax.ReturnTypeClause);
 		TypeSymbol result = withGenericsBinder.BindType(Syntax.ReturnTypeClause.Type, diagnostics);

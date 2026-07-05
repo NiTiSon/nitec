@@ -314,7 +314,7 @@ internal sealed class MirBuilder
 
 	private TempValue EmitCall(BoundCall call, MirBlock block)
 	{
-		TempValue ret = GetNewTemp(call.Function.ReturnType);
+		TempValue ret = GetNewTemp(call.Function.ReturnType ?? _compilation.GetSpecialType(SpecialType.StdNeverReturn));
 		ArrayBuilder<TempValue> arguments = ArrayBuilder<TempValue>.GetInstance();
 		foreach (var arg in call.Arguments)
 		{

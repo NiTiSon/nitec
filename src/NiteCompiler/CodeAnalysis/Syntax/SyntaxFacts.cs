@@ -52,9 +52,6 @@ internal static class SyntaxFacts
 			case "f64":
 				info.Kind = TokenKind.F64;
 				return;
-			case "void":
-				info.Kind = TokenKind.Void;
-				return;
 			case "bool":
 				info.Kind = TokenKind.Boolean;
 				return;

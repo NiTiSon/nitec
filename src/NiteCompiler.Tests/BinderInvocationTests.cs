@@ -24,7 +24,6 @@ public class BinderInvocationTests
 		module std;
 
 		public type Boolean;
-		public type Void;
 
 		module std::numerics;
 

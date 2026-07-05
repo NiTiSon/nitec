@@ -14,11 +14,6 @@ internal partial class Binder
 		return Compilation.GetSpecialType(specialType);
 	}
 
-	public Symbol BindVoidType()
-	{
-		return GetSpecialType(SpecialType.StdVoid);
-	}
-
 	public Symbol BindPredefinedType(PredefinedTypeSyntax syntax)
 	{
 		return GetSpecialType(syntax.TypeKeyword.TKind.AssociatedSpecialType);
