@@ -318,7 +318,7 @@ internal sealed partial class NiteParser
 		SyntaxList<ExpressionSyntax>.Builder arguments = new();
 		while (true)
 		{
-			if (Current.TKind == TokenKind.EndOfFile) break;
+			if (Current.TKind == TokenKind.EndOfFile || Current.TKind == TokenKind.CloseParen) break;
 
 			arguments.Add(ParseExpression());
 			if (Current.TKind == TokenKind.Comma)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using CommunityToolkit.Diagnostics;
@@ -111,8 +112,19 @@ internal sealed class MetadataLibraryBuilder : SymbolVisitor<MetadataEntry?, Met
 		Debug.Assert(container != null);
 		uint nameId = _stringTable.AddOrGet(symbol.Name);
 
+		var paramBuilder = ImmutableArray.CreateBuilder<ParameterEntry>(symbol.Parameters.Length);
+		Table typeTable = GetTable(MetadataKind.TypeDeclaration);
+		foreach (ParameterSymbol param in symbol.Parameters)
+		{
+			MetadataEntry? typeEntry = typeTable.Get(param.Type);
+			if (typeEntry == null) continue;
+
+			uint paramNameId = _stringTable.AddOrGet(param.Name);
+			paramBuilder.Add(new ParameterEntry(typeEntry.Id, paramNameId));
+		}
+
 		MetadataEntry function =
-			GetTable(MetadataKind.FunctionDeclaration).Add((id) => new FunctionDeclarationMetadata(id, symbol, container.Id, nameId));
+			GetTable(MetadataKind.FunctionDeclaration).Add((id) => new FunctionDeclarationMetadata(id, symbol, container.Id, nameId, paramBuilder.ToImmutable()));
 
 		return function;
 	}

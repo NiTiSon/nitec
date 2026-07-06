@@ -11,6 +11,7 @@ internal sealed class MetadataLibrarySymbol : LibrarySymbol
 	private readonly MetadataLibraryReader _reader;
 	private readonly NiteCompilation _compilation;
 	private readonly MetadataModuleSymbol?[] _modulesById;
+	private readonly MetadataNamedTypeSymbol?[] _typesById;
 	private MetadataModuleSymbol? _globalModule;
 
 	public override string Name { get; }
@@ -44,6 +45,15 @@ internal sealed class MetadataLibrarySymbol : LibrarySymbol
 			string moduleName = reader.GetString(entry.NameId);
 			_modulesById[i] = new MetadataModuleSymbol(this, new MetadataId(MetadataKind.ModuleDeclaration, i), moduleName, entry);
 		}
+
+		int typeCount = reader.GetTableCount(MetadataKind.TypeDeclaration);
+		_typesById = new MetadataNamedTypeSymbol?[typeCount + 1];
+
+		for (uint i = 1; i <= typeCount; i++)
+		{
+			TypeDeclarationEntry entry = reader.GetTypeDeclaration(i);
+			_typesById[i] = new MetadataNamedTypeSymbol(this, new MetadataId(MetadataKind.TypeDeclaration, i), entry);
+		}
 	}
 
 	public string GetString(uint id) => _reader.GetString(id);
@@ -56,6 +66,21 @@ internal sealed class MetadataLibrarySymbol : LibrarySymbol
 		}
 
 		return _modulesById[index];
+	}
+
+	public MetadataNamedTypeSymbol? GetTypeById(uint index)
+	{
+		if (index < 1 || index >= (uint)_typesById.Length)
+		{
+			return null;
+		}
+
+		return _typesById[index];
+	}
+
+	public MetadataNamedTypeSymbol? GetTypeByMetadataId(MetadataId id)
+	{
+		return GetTypeById(id.Value);
 	}
 
 	public ImmutableArray<MetadataNamedTypeSymbol> GetTypesByContainer(MetadataId containerId)
@@ -73,7 +98,7 @@ internal sealed class MetadataLibrarySymbol : LibrarySymbol
 			TypeDeclarationEntry entry = _reader.GetTypeDeclaration(i);
 			if (entry.ContainerId.Value == rawContainerValue)
 			{
-				builder.Add(new MetadataNamedTypeSymbol(this, new MetadataId(MetadataKind.TypeDeclaration, i), entry));
+				builder.Add(_typesById[i]!);
 			}
 		}
 

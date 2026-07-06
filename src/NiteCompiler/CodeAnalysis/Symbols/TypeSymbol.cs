@@ -11,6 +11,36 @@ public abstract class TypeSymbol : ContainerSymbol
 
 	public virtual bool IsUnsized => false;
 
+	public override bool Equals(object? obj)
+	{
+		if (obj is TypeSymbol other && SpecialType != SpecialType.None && other.SpecialType != SpecialType.None)
+		{
+			return SpecialType == other.SpecialType;
+		}
+		return ReferenceEquals(this, obj);
+	}
+
+	public override int GetHashCode()
+	{
+		if (SpecialType != SpecialType.None)
+		{
+			return (int)SpecialType;
+		}
+		return base.GetHashCode();
+	}
+
+	public static bool operator ==(TypeSymbol? left, TypeSymbol? right)
+	{
+		if (ReferenceEquals(left, right)) return true;
+		if (left is null || right is null) return false;
+		return left.Equals(right);
+	}
+
+	public static bool operator !=(TypeSymbol? left, TypeSymbol? right)
+	{
+		return !(left == right);
+	}
+
 	public override ModuleSymbol? GetNestedModule(string name)
 	{
 		return null;

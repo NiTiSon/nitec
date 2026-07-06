@@ -7,6 +7,9 @@
 
 ---
 
+> [!CAUTION]
+> Compiler will be rewritten asap to the self-hosted Nite.
+
 > [!WARN]
 > The following is under development and can be (*definitely will be*) changed.
 

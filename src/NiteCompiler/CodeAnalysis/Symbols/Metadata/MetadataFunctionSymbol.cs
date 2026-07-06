@@ -10,6 +10,7 @@ internal sealed class MetadataFunctionSymbol : FunctionSymbol
 	private readonly MetadataLibrarySymbol _library;
 	private readonly FunctionDeclarationEntry _entry;
 	private readonly string _name;
+	private ImmutableArray<ParameterSymbol> _parameters;
 	private CompletionPart _state;
 
 	public override string Name => _name;
@@ -29,13 +30,46 @@ internal sealed class MetadataFunctionSymbol : FunctionSymbol
 	public override TypeSymbol? ReturnType => null;
 	public override ImmutableArray<LifetimeSymbol> Lifetimes => [];
 	public override ImmutableArray<LifetimeConstraint> LifetimeConstraints => [];
-	public override ImmutableArray<ParameterSymbol> Parameters => [];
+
+	public override ImmutableArray<ParameterSymbol> Parameters
+	{
+		get
+		{
+			if (_parameters.IsDefault)
+			{
+				ImmutableInterlocked.InterlockedInitialize(ref _parameters, MakeParameters());
+			}
+
+			return _parameters;
+		}
+	}
 
 	public MetadataFunctionSymbol(MetadataLibrarySymbol library, FunctionDeclarationEntry entry)
 	{
 		_library = library;
 		_entry = entry;
 		_name = library.GetString(entry.NameId);
+	}
+
+	private ImmutableArray<ParameterSymbol> MakeParameters()
+	{
+		ImmutableArray<ParameterEntry> paramEntries = _entry.Parameters;
+		if (paramEntries.IsEmpty)
+		{
+			return [];
+		}
+
+		var builder = ImmutableArray.CreateBuilder<ParameterSymbol>(paramEntries.Length);
+		foreach (ParameterEntry paramEntry in paramEntries)
+		{
+			TypeSymbol? type = _library.GetTypeByMetadataId(paramEntry.TypeId);
+			if (type == null) continue;
+
+			string name = _library.GetString(paramEntry.NameId);
+			builder.Add(new MetadataParameterSymbol(this, builder.Count, name, type));
+		}
+
+		return builder.ToImmutable();
 	}
 
 	internal override void ForceComplete(Predicate<Symbol>? filter, CancellationToken cancellationToken = default)

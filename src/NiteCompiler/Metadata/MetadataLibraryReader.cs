@@ -208,6 +208,15 @@ internal sealed class MetadataLibraryReader
 		{
 			MetadataId containerId = reader.ReadUInt32();
 			uint nameId = reader.ReadUInt32();
+			int paramCount = reader.Read7BitEncodedInt();
+			var paramBuilder = ImmutableArray.CreateBuilder<ParameterEntry>(paramCount);
+			for (int j = 0; j < paramCount; j++)
+			{
+				MetadataId typeId = reader.ReadUInt32();
+				uint paramNameId = reader.ReadUInt32();
+				paramBuilder.Add(new ParameterEntry(typeId, paramNameId));
+			}
+
 			byte bodyPresent = reader.ReadByte();
 			ImmutableArray<byte>? body = null;
 
@@ -219,7 +228,7 @@ internal sealed class MetadataLibraryReader
 				body = ImmutableArray.Create(bodyBytes);
 			}
 
-			entries[i] = new FunctionDeclarationEntry(containerId, nameId, body);
+			entries[i] = new FunctionDeclarationEntry(containerId, nameId, paramBuilder.ToImmutable(), body);
 		}
 
 		return entries;
@@ -278,11 +287,18 @@ internal readonly struct TypeDeclarationEntry(MetadataId containerId, uint nameI
 	public SpecialType SpecialType { get; } = specialType;
 }
 
-internal readonly struct FunctionDeclarationEntry(MetadataId containerId, uint nameId, ImmutableArray<byte>? body)
+internal readonly struct FunctionDeclarationEntry(MetadataId containerId, uint nameId, ImmutableArray<ParameterEntry> parameters, ImmutableArray<byte>? body)
 {
 	public MetadataId ContainerId { get; } = containerId;
 	public uint NameId { get; } = nameId;
+	public ImmutableArray<ParameterEntry> Parameters { get; } = parameters;
 	public ImmutableArray<byte>? Body { get; } = body;
+}
+
+internal readonly struct ParameterEntry(MetadataId typeId, uint nameId)
+{
+	public MetadataId TypeId { get; } = typeId;
+	public uint NameId { get; } = nameId;
 }
 
 internal readonly struct FunctionReferenceEntry(MetadataId containerId, uint nameId)

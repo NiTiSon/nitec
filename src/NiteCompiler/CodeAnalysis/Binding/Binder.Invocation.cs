@@ -59,23 +59,23 @@ internal partial class Binder
 		return arguments.ToImmutableAndFree();
 	}
 
-	private static FunctionSymbol? ResolveInvokedFunction(LookupResult result, int argumentCount)
-	{
-		foreach (Symbol symbol in result.Symbols)
+		private static FunctionSymbol? ResolveInvokedFunction(LookupResult result, int argumentCount)
 		{
-			if (symbol is not FunctionSymbol function)
+			foreach (Symbol symbol in result.Symbols)
 			{
-				continue;
+				if (symbol is not FunctionSymbol function)
+				{
+					continue;
+				}
+
+				if (function.Parameters.Length == argumentCount)
+				{
+					return function;
+				}
 			}
 
-			if (function.Parameters.Length == argumentCount)
-			{
-				return function;
-			}
+			return null;
 		}
-
-		return null;
-	}
 
 	private static bool CheckInvocationArguments(FunctionSymbol function, ImmutableArray<BoundExpression> arguments,
 		BindingDiagnosticBag diagnostics)
